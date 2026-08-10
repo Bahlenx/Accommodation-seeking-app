@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Search Results"
+            android:textSize="25sp"
+            android:textStyle="bold"
+            android:textColor="#333333"
+            android:layout_marginTop="15dp" />
+
+        <EditText
+            android:id="@+id/searchBox"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:hint="Search area or village"
+            android:inputType="text"
+            android:layout_marginTop="20dp" />
+
+        <Button
+            android:backgroundTint="#FFA500"
+            android:id="@+id/btnSearchAgain"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Search"
+            android:textAllCaps="false"
+            android:layout_marginTop="8dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Filters"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#333333"
+            android:layout_marginTop="25dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:backgroundTint="#FFA500"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Price"
+                android:textAllCaps="false" />
+
+            <Button
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:backgroundTint="#FFA500"
+                android:layout_weight="1"
+                android:text="Rooms"
+                android:textAllCaps="false"
+                android:layout_marginStart="5dp" />
+
+            <Button
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:backgroundTint="#FFA500"
+                android:layout_weight="1"
+                android:text="Type"
+                android:textAllCaps="false"
+                android:layout_marginStart="5dp" />
+
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Available Accommodation"
+            android:textSize="19sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:layout_marginTop="25dp"
+            android:layout_marginBottom="12dp" />
+
+        <TextView
+            android:id="@+id/listingOne"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Affordable Room&#10;&#10;Mthatha, Eastern Cape&#10;R950 / month&#10;2 Rooms&#10;Available"
+            android:textSize="16sp"
+            android:textColor="@color/black"
+            android:padding="18dp"
+            android:background="#EEEEEE" />
+
+        <Button
+            android:id="@+id/btnViewOne"
+            android:layout_width="match_parent"
+            android:backgroundTint="#FFA500"
+            android:layout_height="wrap_content"
+            android:text="View Details"
+            android:textAllCaps="false" />
+
+        <TextView
+            android:id="@+id/listingTwo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Family House&#10;&#10;Mthatha, Eastern Cape&#10;R1,500 / month&#10;3 Bedrooms&#10;Available"
+            android:textSize="16sp"
+            android:textColor="@color/black"
+            android:padding="18dp"
+            android:background="#EEEEEE"
+            android:layout_marginTop="20dp" />
+
+        <Button
+            android:id="@+id/btnViewTwo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="#FFA500"
+            android:text="View Details"
+            android:textAllCaps="false" />
+        <TextView
+            android:id="@+id/listingThree"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Shared Accommodation&#10;&#10;Mthatha, Eastern Cape&#10;R750 / month&#10;1 Room&#10;Available"
+            android:textSize="16sp"
+            android:textColor="#333333"
+            android:padding="18dp"
+            android:background="#EEEEEE"
+            android:layout_marginTop="20dp" />
+
+        <Button
+            android:id="@+id/btnViewThree"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="View Details"
+            android:backgroundTint="#FFA500"
+            android:textAllCaps="false" />
+
+    </LinearLayout>
+
+</ScrollView>

@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Welcome to iKhaya 👋"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:layout_marginTop="15dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Find accommodation in your area"
+            android:textSize="15sp"
+            android:textColor="#777777"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="25dp" />
+
+        <EditText
+            android:id="@+id/searchAccommodation"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:hint="Search village, town or area"
+            android:inputType="text"
+            android:padding="15dp" />
+
+        <Button
+            android:id="@+id/btnSearch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="#FFA500"
+            android:text="Search"
+            android:textAllCaps="false"
+            android:layout_marginTop="10dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Popular Areas"
+            android:textSize="19sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:layout_marginTop="30dp"
+            android:layout_marginBottom="10dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:backgroundTint="#FFA500"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Mthatha"
+                android:textAllCaps="false" />
+
+            <Button
+                android:layout_width="0dp"
+                android:backgroundTint="#FFA500"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Giyani"
+                android:textAllCaps="false"
+                android:layout_marginStart="8dp" />
+
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Accommodation Types"
+            android:textSize="19sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:layout_marginTop="25dp"
+            android:layout_marginBottom="10dp" />
+
+        <Button
+            android:backgroundTint="#FFA500"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Rooms"
+            android:textAllCaps="false" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="#FFA500"
+            android:text="Shared Accommodation"
+            android:textAllCaps="false" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="#FFA500"
+            android:text="Houses"
+            android:textAllCaps="false" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Featured Accommodation"
+            android:textSize="19sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:layout_marginTop="25dp"
+            android:layout_marginBottom="10dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Affordable room&#10;Mthatha&#10;R950 / month&#10;Available"
+            android:textSize="16sp"
+            android:textColor="@color/black"
+            android:padding="15dp" />
+
+    </LinearLayout>
+
+</ScrollView>
