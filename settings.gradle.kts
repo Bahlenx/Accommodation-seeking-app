@@ -21,4 +21,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "ikhaya"
 include(":app")
+include(":app")
  

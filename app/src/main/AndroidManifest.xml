@@ -12,13 +12,19 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Ikhaya">
         <activity
-            android:name=".SearchResultsActivity"
+            android:name=".MyListingsActivity"
             android:exported="false" />
         <activity
-            android:name=".HomeActivity"
+            android:name=".AddListingActivity"
             android:exported="false" />
         <activity
-            android:name=".RegisterActivity"
+            android:name=".LandlordDashboardActivity"
+            android:exported="false" />
+        <activity
+            android:name=".PropertyDetailsActivity"
+            android:exported="false" />
+        <activity
+            android:name="com.example.PropertyDetailsActivity"
             android:exported="false" />
         <activity
             android:name=".MainActivity"
@@ -29,6 +35,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".SearchResultsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".HomeActivity"
+            android:exported="false" />
+        <activity
+            android:name=".RegisterActivity"
+            android:exported="false" />
     </application>
 
 </manifest>
