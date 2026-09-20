@@ -1,0 +1,98 @@
+<problems>
+<problem>
+  <file>file://$PROJECT_DIR$/Icons/city-svgrepo-com.svg</file>
+  <line>4</line>
+  <module>iKhaya_AccomadationApp</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/Icons/city-svgrepo-com.svg" />
+  <problem_class id="XmlUnusedNamespaceDeclaration" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">Unused schema declaration</problem_class>
+  <description>Namespace declaration is never used</description>
+  <highlighted_element>xmlns:xlink=&quot;http://www.w3.org/1999/xlink&quot;</highlighted_element>
+  <language>SVG</language>
+  <offset>67</offset>
+  <length>42</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/Icons/profile-round-1342-svgrepo-com.svg</file>
+  <line>3</line>
+  <module>iKhaya_AccomadationApp</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/Icons/profile-round-1342-svgrepo-com.svg" />
+  <problem_class id="XmlUnusedNamespaceDeclaration" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">Unused schema declaration</problem_class>
+  <description>Namespace declaration is never used</description>
+  <highlighted_element>xmlns:xlink=&quot;http://www.w3.org/1999/xlink&quot;</highlighted_element>
+  <language>SVG</language>
+  <offset>103</offset>
+  <length>42</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/AndroidManifest.xml</file>
+  <line>3</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/AndroidManifest.xml" />
+  <problem_class id="XmlUnusedNamespaceDeclaration" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">Unused schema declaration</problem_class>
+  <description>Namespace declaration is never used</description>
+  <highlighted_element>xmlns:tools=&quot;http://schemas.android.com/tools&quot;</highlighted_element>
+  <language>XML</language>
+  <offset>4</offset>
+  <length>46</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/layout/activity_otp.xml</file>
+  <line>4</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/layout/activity_otp.xml" />
+  <problem_class id="XmlUnusedNamespaceDeclaration" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">Unused schema declaration</problem_class>
+  <description>Namespace declaration is never used</description>
+  <highlighted_element>xmlns:tools=&quot;http://schemas.android.com/tools&quot;</highlighted_element>
+  <language>XML</language>
+  <offset>4</offset>
+  <length>46</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/layout/activity_passwordpage.xml</file>
+  <line>5</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/layout/activity_passwordpage.xml" />
+  <problem_class id="XmlUnusedNamespaceDeclaration" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">Unused schema declaration</problem_class>
+  <description>Namespace declaration is never used</description>
+  <highlighted_element>xmlns:tools=&quot;http://schemas.android.com/tools&quot;</highlighted_element>
+  <language>XML</language>
+  <offset>4</offset>
+  <length>46</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/layout/activity_regitration.xml</file>
+  <line>4</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/layout/activity_regitration.xml" />
+  <problem_class id="XmlUnusedNamespaceDeclaration" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">Unused schema declaration</problem_class>
+  <description>Namespace declaration is never used</description>
+  <highlighted_element>xmlns:tools=&quot;http://schemas.android.com/tools&quot;</highlighted_element>
+  <language>XML</language>
+  <offset>4</offset>
+  <length>46</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/values/themes.xml</file>
+  <line>1</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/values/themes.xml" />
+  <problem_class id="XmlUnusedNamespaceDeclaration" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">Unused schema declaration</problem_class>
+  <description>Namespace declaration is never used</description>
+  <highlighted_element>xmlns:tools=&quot;http://schemas.android.com/tools&quot;</highlighted_element>
+  <language>XML</language>
+  <offset>11</offset>
+  <length>46</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/values-night/themes.xml</file>
+  <line>1</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/values-night/themes.xml" />
+  <problem_class id="XmlUnusedNamespaceDeclaration" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">Unused schema declaration</problem_class>
+  <description>Namespace declaration is never used</description>
+  <highlighted_element>xmlns:tools=&quot;http://schemas.android.com/tools&quot;</highlighted_element>
+  <language>XML</language>
+  <offset>11</offset>
+  <length>46</length>
+</problem>
+</problems>

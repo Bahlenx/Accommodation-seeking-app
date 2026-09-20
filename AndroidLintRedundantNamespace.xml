@@ -1,0 +1,28 @@
+<problems>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/drawable/custom_input.xml</file>
+  <line>5</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/drawable/custom_input.xml" />
+  <problem_class id="AndroidLintRedundantNamespace" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Redundant namespace</problem_class>
+  <hints />
+  <description>&lt;html&gt;This namespace declaration is redundant&lt;/html&gt;</description>
+  <highlighted_element>xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;</highlighted_element>
+  <language>XML</language>
+  <offset>15</offset>
+  <length>58</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/drawable/custom_input.xml</file>
+  <line>19</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/drawable/custom_input.xml" />
+  <problem_class id="AndroidLintRedundantNamespace" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Redundant namespace</problem_class>
+  <hints />
+  <description>&lt;html&gt;This namespace declaration is redundant&lt;/html&gt;</description>
+  <highlighted_element>xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;</highlighted_element>
+  <language>XML</language>
+  <offset>15</offset>
+  <length>58</length>
+</problem>
+</problems>

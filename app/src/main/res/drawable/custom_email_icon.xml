@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- STATE 1: MOST SPECIFIC (When the input is FOCUSED) -->
+    <item android:state_focused="true">
+        <!-- We use a layer-list inside the item to stack the background and icon -->
+        <layer-list>
+            <!-- Background Shape -->
+            <item>
+                <shape android:shape="rectangle">
+                    <solid android:color="@color/colorSecondary" />
+                    <corners android:radius="12dp" />
+                </shape>
+            </item>
+            <!-- White Icon on top -->
+            <item
+                android:drawable="@drawable/ic_email_focused"
+                android:top="8dp"
+                android:bottom="8dp"
+                android:left="8dp"
+                android:right="8dp" />
+        </layer-list>
+    </item>
+
+    <!-- STATE 2: LEAST SPECIFIC (Default / Unfocused) -->
+    <item>
+        <!-- A second layer-list for the default state -->
+        <layer-list>
+            <!-- Background Shape -->
+            <item>
+                <shape android:shape="rectangle">
+                    <solid android:color="@color/colorPrimary" />
+                    <corners android:radius="12dp" />
+                </shape>
+            </item>
+            <!-- Normal Icon on top -->
+            <item
+                android:drawable="@drawable/ic_email"
+                android:top="8dp"
+                android:bottom="8dp"
+                android:left="8dp"
+                android:right="8dp" />
+        </layer-list>
+    </item>
+
+</selector>

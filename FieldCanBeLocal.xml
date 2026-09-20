@@ -1,0 +1,54 @@
+<problems>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/example/ikhaya_accomadationapp/OtpActivity.java</file>
+  <line>19</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <package>com.example.ikhaya_accomadationapp</package>
+  <entry_point TYPE="field" FQNAME="com.example.ikhaya_accomadationapp.OtpActivity verifyBtn" />
+  <problem_class id="FieldCanBeLocal" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Field can be local variable</problem_class>
+  <description>Field can be converted to a local variable</description>
+  <highlighted_element>verifyBtn</highlighted_element>
+  <language>JAVA</language>
+  <offset>19</offset>
+  <length>9</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/example/ikhaya_accomadationapp/PersonalActivity.java</file>
+  <line>14</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <package>com.example.ikhaya_accomadationapp</package>
+  <entry_point TYPE="field" FQNAME="com.example.ikhaya_accomadationapp.PersonalActivity registerBtn" />
+  <problem_class id="FieldCanBeLocal" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Field can be local variable</problem_class>
+  <description>Field can be converted to a local variable</description>
+  <highlighted_element>registerBtn</highlighted_element>
+  <language>JAVA</language>
+  <offset>19</offset>
+  <length>11</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/example/ikhaya_accomadationapp/PersonalActivity.java</file>
+  <line>14</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <package>com.example.ikhaya_accomadationapp</package>
+  <entry_point TYPE="field" FQNAME="com.example.ikhaya_accomadationapp.PersonalActivity gpsBtn" />
+  <problem_class id="FieldCanBeLocal" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Field can be local variable</problem_class>
+  <description>Field can be converted to a local variable</description>
+  <highlighted_element>gpsBtn</highlighted_element>
+  <language>JAVA</language>
+  <offset>32</offset>
+  <length>6</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/example/ikhaya_accomadationapp/PersonalActivity.java</file>
+  <line>15</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <package>com.example.ikhaya_accomadationapp</package>
+  <entry_point TYPE="field" FQNAME="com.example.ikhaya_accomadationapp.PersonalActivity backButton" />
+  <problem_class id="FieldCanBeLocal" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Field can be local variable</problem_class>
+  <description>Field can be converted to a local variable</description>
+  <highlighted_element>backButton</highlighted_element>
+  <language>JAVA</language>
+  <offset>24</offset>
+  <length>10</length>
+</problem>
+</problems>

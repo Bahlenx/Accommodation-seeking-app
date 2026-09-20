@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <!-- We use a layer-list inside the item to stack the background and icon -->
+        <layer-list>
+            <!-- Background Shape -->
+            <item>
+                <shape android:shape="rectangle">
+                    <solid android:color="@color/colorSecondary" />
+                    <corners android:radius="28dp" />
+                </shape>
+            </item>
+            <!-- White Icon on top -->
+            <item
+                android:drawable="@drawable/ic_ikhaya"
+                android:top="8dp"
+                android:bottom="8dp"
+                android:left="8dp"
+                android:right="8dp" />
+        </layer-list>
+    </item>
+
+</selector>

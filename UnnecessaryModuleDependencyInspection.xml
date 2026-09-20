@@ -1,0 +1,26 @@
+<problems>
+<problem>
+  <file>iKhaya_AccomadationApp.app.unitTest</file>
+  <module>iKhaya_AccomadationApp.app.unitTest</module>
+  <entry_point TYPE="module" FQNAME="iKhaya_AccomadationApp.app.unitTest" />
+  <problem_class id="UnnecessaryModuleDependencyInspection" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Unnecessary module dependency</problem_class>
+  <hints>
+    <hint value="iKhaya_AccomadationApp.app.main" />
+  </hints>
+  <description>Module 'iKhaya_AccomadationApp.app.unitTest' sources do not depend on module 'iKhaya_AccomadationApp.app.main' sources</description>
+  <highlighted_element />
+  <language />
+</problem>
+<problem>
+  <file>iKhaya_AccomadationApp.app.androidTest</file>
+  <module>iKhaya_AccomadationApp.app.androidTest</module>
+  <entry_point TYPE="module" FQNAME="iKhaya_AccomadationApp.app.androidTest" />
+  <problem_class id="UnnecessaryModuleDependencyInspection" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Unnecessary module dependency</problem_class>
+  <hints>
+    <hint value="iKhaya_AccomadationApp.app.main" />
+  </hints>
+  <description>Module 'iKhaya_AccomadationApp.app.androidTest' sources do not depend on module 'iKhaya_AccomadationApp.app.main' sources</description>
+  <highlighted_element />
+  <language />
+</problem>
+</problems>

@@ -1,0 +1,67 @@
+<problems>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/layout/activity_otp.xml</file>
+  <line>72</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/layout/activity_otp.xml" />
+  <problem_class id="AndroidLintLabelFor" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Missing accessibility label</problem_class>
+  <hints />
+  <description>&lt;html&gt;Missing accessibility label: provide either a view with an &lt;code&gt;android:labelFor&lt;/code&gt; that references this view or provide an &lt;code&gt;android:hint&lt;/code&gt;&lt;/html&gt;</description>
+  <highlighted_element>EditText</highlighted_element>
+  <language>XML</language>
+  <offset>5</offset>
+  <length>8</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/layout/activity_otp.xml</file>
+  <line>90</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/layout/activity_otp.xml" />
+  <problem_class id="AndroidLintLabelFor" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Missing accessibility label</problem_class>
+  <hints />
+  <description>&lt;html&gt;Missing accessibility label: provide either a view with an &lt;code&gt;android:labelFor&lt;/code&gt; that references this view or provide an &lt;code&gt;android:hint&lt;/code&gt;&lt;/html&gt;</description>
+  <highlighted_element>EditText</highlighted_element>
+  <language>XML</language>
+  <offset>5</offset>
+  <length>8</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/layout/activity_otp.xml</file>
+  <line>106</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/layout/activity_otp.xml" />
+  <problem_class id="AndroidLintLabelFor" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Missing accessibility label</problem_class>
+  <hints />
+  <description>&lt;html&gt;Missing accessibility label: provide either a view with an &lt;code&gt;android:labelFor&lt;/code&gt; that references this view or provide an &lt;code&gt;android:hint&lt;/code&gt;&lt;/html&gt;</description>
+  <highlighted_element>EditText</highlighted_element>
+  <language>XML</language>
+  <offset>5</offset>
+  <length>8</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/layout/activity_otp.xml</file>
+  <line>122</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/layout/activity_otp.xml" />
+  <problem_class id="AndroidLintLabelFor" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Missing accessibility label</problem_class>
+  <hints />
+  <description>&lt;html&gt;Missing accessibility label: provide either a view with an &lt;code&gt;android:labelFor&lt;/code&gt; that references this view or provide an &lt;code&gt;android:hint&lt;/code&gt;&lt;/html&gt;</description>
+  <highlighted_element>EditText</highlighted_element>
+  <language>XML</language>
+  <offset>5</offset>
+  <length>8</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/layout/activity_otp.xml</file>
+  <line>138</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/layout/activity_otp.xml" />
+  <problem_class id="AndroidLintLabelFor" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Missing accessibility label</problem_class>
+  <hints />
+  <description>&lt;html&gt;Missing accessibility label: provide either a view with an &lt;code&gt;android:labelFor&lt;/code&gt; that references this view or provide an &lt;code&gt;android:hint&lt;/code&gt;&lt;/html&gt;</description>
+  <highlighted_element>EditText</highlighted_element>
+  <language>XML</language>
+  <offset>5</offset>
+  <length>8</length>
+</problem>
+</problems>

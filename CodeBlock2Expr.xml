@@ -1,0 +1,15 @@
+<problems>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/example/ikhaya_accomadationapp/PersonalActivity.java</file>
+  <line>39</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <package>com.example.ikhaya_accomadationapp</package>
+  <entry_point TYPE="method" FQNAME="com.example.ikhaya_accomadationapp.PersonalActivity void onCreate(android.os.Bundle savedInstanceState)" />
+  <problem_class id="CodeBlock2Expr" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Statement lambda can be replaced with expression lambda</problem_class>
+  <description>Statement lambda can be replaced with expression lambda</description>
+  <highlighted_element>{</highlighted_element>
+  <language>JAVA</language>
+  <offset>43</offset>
+  <length>1</length>
+</problem>
+</problems>

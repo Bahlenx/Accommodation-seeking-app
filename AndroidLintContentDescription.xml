@@ -1,0 +1,145 @@
+<problems>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/layout/activity_greetingpage.xml</file>
+  <line>13</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/layout/activity_greetingpage.xml" />
+  <problem_class id="AndroidLintContentDescription" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Image without contentDescription</problem_class>
+  <hints />
+  <description>&lt;html&gt;Missing &lt;code&gt;contentDescription&lt;/code&gt; attribute on image&lt;/html&gt;</description>
+  <highlighted_element>ImageView</highlighted_element>
+  <language>XML</language>
+  <offset>5</offset>
+  <length>9</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/layout/activity_greetingpage.xml</file>
+  <line>25</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/layout/activity_greetingpage.xml" />
+  <problem_class id="AndroidLintContentDescription" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Image without contentDescription</problem_class>
+  <hints />
+  <description>&lt;html&gt;Missing &lt;code&gt;contentDescription&lt;/code&gt; attribute on image&lt;/html&gt;</description>
+  <highlighted_element>ImageView</highlighted_element>
+  <language>XML</language>
+  <offset>5</offset>
+  <length>9</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/layout/activity_login.xml</file>
+  <line>12</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/layout/activity_login.xml" />
+  <problem_class id="AndroidLintContentDescription" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Image without contentDescription</problem_class>
+  <hints />
+  <description>&lt;html&gt;Missing &lt;code&gt;contentDescription&lt;/code&gt; attribute on image&lt;/html&gt;</description>
+  <highlighted_element>ImageView</highlighted_element>
+  <language>XML</language>
+  <offset>5</offset>
+  <length>9</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/layout/activity_otp.xml</file>
+  <line>12</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/layout/activity_otp.xml" />
+  <problem_class id="AndroidLintContentDescription" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Image without contentDescription</problem_class>
+  <hints />
+  <description>&lt;html&gt;Missing &lt;code&gt;contentDescription&lt;/code&gt; attribute on image&lt;/html&gt;</description>
+  <highlighted_element>ImageView</highlighted_element>
+  <language>XML</language>
+  <offset>5</offset>
+  <length>9</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/layout/activity_passwordpage.xml</file>
+  <line>15</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/layout/activity_passwordpage.xml" />
+  <problem_class id="AndroidLintContentDescription" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Image without contentDescription</problem_class>
+  <hints />
+  <description>&lt;html&gt;Missing &lt;code&gt;contentDescription&lt;/code&gt; attribute on image&lt;/html&gt;</description>
+  <highlighted_element>ImageView</highlighted_element>
+  <language>XML</language>
+  <offset>5</offset>
+  <length>9</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/layout/activity_passwordpage.xml</file>
+  <line>123</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/layout/activity_passwordpage.xml" />
+  <problem_class id="AndroidLintContentDescription" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Image without contentDescription</problem_class>
+  <hints />
+  <description>&lt;html&gt;Missing &lt;code&gt;contentDescription&lt;/code&gt; attribute on image&lt;/html&gt;</description>
+  <highlighted_element>ImageView</highlighted_element>
+  <language>XML</language>
+  <offset>5</offset>
+  <length>9</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/layout/activity_passwordpage.xml</file>
+  <line>149</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/layout/activity_passwordpage.xml" />
+  <problem_class id="AndroidLintContentDescription" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Image without contentDescription</problem_class>
+  <hints />
+  <description>&lt;html&gt;Missing &lt;code&gt;contentDescription&lt;/code&gt; attribute on image&lt;/html&gt;</description>
+  <highlighted_element>ImageView</highlighted_element>
+  <language>XML</language>
+  <offset>5</offset>
+  <length>9</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/layout/activity_passwordpage.xml</file>
+  <line>175</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/layout/activity_passwordpage.xml" />
+  <problem_class id="AndroidLintContentDescription" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Image without contentDescription</problem_class>
+  <hints />
+  <description>&lt;html&gt;Missing &lt;code&gt;contentDescription&lt;/code&gt; attribute on image&lt;/html&gt;</description>
+  <highlighted_element>ImageView</highlighted_element>
+  <language>XML</language>
+  <offset>5</offset>
+  <length>9</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/layout/activity_passwordpage.xml</file>
+  <line>201</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/layout/activity_passwordpage.xml" />
+  <problem_class id="AndroidLintContentDescription" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Image without contentDescription</problem_class>
+  <hints />
+  <description>&lt;html&gt;Missing &lt;code&gt;contentDescription&lt;/code&gt; attribute on image&lt;/html&gt;</description>
+  <highlighted_element>ImageView</highlighted_element>
+  <language>XML</language>
+  <offset>5</offset>
+  <length>9</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/layout/activity_regitration.xml</file>
+  <line>11</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/layout/activity_regitration.xml" />
+  <problem_class id="AndroidLintContentDescription" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Image without contentDescription</problem_class>
+  <hints />
+  <description>&lt;html&gt;Missing &lt;code&gt;contentDescription&lt;/code&gt; attribute on image&lt;/html&gt;</description>
+  <highlighted_element>ImageView</highlighted_element>
+  <language>XML</language>
+  <offset>5</offset>
+  <length>9</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/layout/activity_userverification.xml</file>
+  <line>12</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/layout/activity_userverification.xml" />
+  <problem_class id="AndroidLintContentDescription" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Image without contentDescription</problem_class>
+  <hints />
+  <description>&lt;html&gt;Missing &lt;code&gt;contentDescription&lt;/code&gt; attribute on image&lt;/html&gt;</description>
+  <highlighted_element>ImageView</highlighted_element>
+  <language>XML</language>
+  <offset>5</offset>
+  <length>9</length>
+</problem>
+</problems>

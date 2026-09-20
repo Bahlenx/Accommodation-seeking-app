@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+
+    <!--this code is for the background image-->
+    <!--control the background opacity using this the android:alpha code-->
+    <ImageView
+        android:id="@+id/backgroundImage"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="0.18"
+        android:scaleType="centerCrop"
+        android:src="@drawable/ikhaya_background"
+        android:contentDescription="@null"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <ImageButton
+    android:id="@+id/back_button"
+    android:layout_width="66dp"
+    android:layout_height="56dp"
+    android:background="@drawable/selector_button_background"
+    android:clickable="true"
+    android:contentDescription="@string/desc_go_back"
+    android:focusable="true"
+    android:src="@drawable/selector_icon_color"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintHorizontal_bias="0.0"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent"
+    app:layout_constraintVertical_bias="0.0"
+    app:srcCompat="@drawable/ic_arrow_back" />
+
+
+    <TextView
+        android:id="@+id/otp_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/otp_text"
+        android:textColor="@color/labelGray"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.126" />
+
+    <TextView
+        android:id="@+id/otp_hint"
+        android:layout_width="363dp"
+        android:layout_height="53dp"
+        app:drawableStartCompat="@drawable/ic_otp"
+        android:text="@string/otp_hint"
+        android:textColor="@color/light_gray"
+        android:textStyle="bold"
+        android:textSize="15sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/otp_text"
+        app:layout_constraintVertical_bias="0.379" />
+
+    <EditText
+        android:id="@+id/otp_num_1"
+        android:layout_width="65dp"
+        android:layout_height="75dp"
+        android:background="@drawable/custom_input"
+        android:inputType="number"
+        android:maxLength="1"
+        android:textAlignment="center"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:importantForAutofill="no"
+        android:contentDescription="@string/otp_digit_1"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/otp_num_2"
+        app:layout_constraintHorizontal_chainStyle="spread"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.316" />
+
+    <EditText
+        android:id="@+id/otp_num_2"
+        android:layout_width="65dp"
+        android:layout_height="75dp"
+        android:background="@drawable/custom_input"
+        android:inputType="number"
+        android:maxLength="1"
+        android:textAlignment="center"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:importantForAutofill="no"
+        android:contentDescription="@string/otp_digit_2"
+        app:layout_constraintStart_toEndOf="@+id/otp_num_1"
+        app:layout_constraintEnd_toStartOf="@+id/otp_num_3"
+        app:layout_constraintTop_toTopOf="@+id/otp_num_1" />
+
+    <!-- BOX 3 -->
+    <EditText
+        android:id="@+id/otp_num_3"
+        android:layout_width="65dp"
+        android:layout_height="75dp"
+        android:background="@drawable/custom_input"
+        android:inputType="number"
+        android:maxLength="1"
+        android:textAlignment="center"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:importantForAutofill="no"
+        android:contentDescription="@string/otp_digit_3"
+        app:layout_constraintStart_toEndOf="@+id/otp_num_2"
+        app:layout_constraintEnd_toStartOf="@+id/otp_num_4"
+        app:layout_constraintTop_toTopOf="@+id/otp_num_1" />
+
+    <!-- BOX 4 -->
+    <EditText
+        android:id="@+id/otp_num_4"
+        android:layout_width="65dp"
+        android:layout_height="75dp"
+        android:background="@drawable/custom_input"
+        android:inputType="number"
+        android:maxLength="1"
+        android:textAlignment="center"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:importantForAutofill="no"
+        android:contentDescription="@string/otp_digit_4"
+        app:layout_constraintStart_toEndOf="@+id/otp_num_3"
+        app:layout_constraintEnd_toStartOf="@+id/otp_num_5"
+        app:layout_constraintTop_toTopOf="@+id/otp_num_1" />
+
+    <!-- BOX 5 -->
+    <EditText
+        android:id="@+id/otp_num_5"
+        android:layout_width="65dp"
+        android:layout_height="75dp"
+        android:background="@drawable/custom_input"
+        android:inputType="number"
+        android:maxLength="1"
+        android:textAlignment="center"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:importantForAutofill="no"
+        android:contentDescription="@string/otp_digit_5"
+        app:layout_constraintStart_toEndOf="@+id/otp_num_4"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/otp_num_1" />
+
+    <Button
+        android:id="@+id/button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/selector_regular_button"
+        android:text="@string/verify_otp_btn"
+        app:backgroundTint="@null"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.816" /> <!-- Moved button slightly down -->
+
+</androidx.constraintlayout.widget.ConstraintLayout>

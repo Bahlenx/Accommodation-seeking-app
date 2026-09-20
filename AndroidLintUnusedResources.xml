@@ -1,0 +1,236 @@
+<problems>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/color/selector_text_color.xml</file>
+  <line>2</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/color/selector_text_color.xml" />
+  <problem_class id="AndroidLintUnusedResources" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Unused resources</problem_class>
+  <hints />
+  <description>&lt;html&gt;The resource &lt;code&gt;R.color.selector_text_color&lt;/code&gt; appears to be unused&lt;/html&gt;</description>
+  <highlighted_element>&lt;selector xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;&gt; &lt;!-- Text color when the b...</highlighted_element>
+  <language>XML</language>
+  <offset>0</offset>
+  <length>352</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/drawable/ic_city.xml</file>
+  <line>1</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/drawable/ic_city.xml" />
+  <problem_class id="AndroidLintUnusedResources" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Unused resources</problem_class>
+  <hints />
+  <description>&lt;html&gt;The resource &lt;code&gt;R.drawable.ic_city&lt;/code&gt; appears to be unused&lt;/html&gt;</description>
+  <highlighted_element>&lt;vector xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot; android:height=&quot;24dp&quot; android:vie...</highlighted_element>
+  <language>XML</language>
+  <offset>0</offset>
+  <length>1025</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/drawable/ic_launcher_background.xml</file>
+  <line>2</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/drawable/ic_launcher_background.xml" />
+  <problem_class id="AndroidLintUnusedResources" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Unused resources</problem_class>
+  <hints />
+  <description>&lt;html&gt;The resource &lt;code&gt;R.drawable.ic_launcher_background&lt;/code&gt; appears to be unused&lt;/html&gt;</description>
+  <highlighted_element>&lt;vector xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot; android:width=&quot;108dp&quot; and...</highlighted_element>
+  <language>XML</language>
+  <offset>0</offset>
+  <length>5566</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/drawable/ic_south_africa.xml</file>
+  <line>1</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/drawable/ic_south_africa.xml" />
+  <problem_class id="AndroidLintUnusedResources" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Unused resources</problem_class>
+  <hints />
+  <description>&lt;html&gt;The resource &lt;code&gt;R.drawable.ic_south_africa&lt;/code&gt; appears to be unused&lt;/html&gt;</description>
+  <highlighted_element>&lt;vector xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot; android:height=&quot;24dp&quot; android:vie...</highlighted_element>
+  <language>XML</language>
+  <offset>0</offset>
+  <length>727</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/drawable/ic_suburb.xml</file>
+  <line>1</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/drawable/ic_suburb.xml" />
+  <problem_class id="AndroidLintUnusedResources" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Unused resources</problem_class>
+  <hints />
+  <description>&lt;html&gt;The resource &lt;code&gt;R.drawable.ic_suburb&lt;/code&gt; appears to be unused&lt;/html&gt;</description>
+  <highlighted_element>&lt;vector xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot; android:height=&quot;24dp&quot; android:vie...</highlighted_element>
+  <language>XML</language>
+  <offset>0</offset>
+  <length>691</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/drawable/selector_toggle_button.xml</file>
+  <line>2</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/drawable/selector_toggle_button.xml" />
+  <problem_class id="AndroidLintUnusedResources" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Unused resources</problem_class>
+  <hints />
+  <description>&lt;html&gt;The resource &lt;code&gt;R.drawable.selector_toggle_button&lt;/code&gt; appears to be unused&lt;/html&gt;</description>
+  <highlighted_element>&lt;selector xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;&gt; &lt;!-- When the radio butto...</highlighted_element>
+  <language>XML</language>
+  <offset>0</offset>
+  <length>671</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/drawable-v24/ic_launcher_foreground.xml</file>
+  <line>1</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" />
+  <problem_class id="AndroidLintUnusedResources" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Unused resources</problem_class>
+  <hints />
+  <description>&lt;html&gt;The resource &lt;code&gt;R.drawable.ic_launcher_foreground&lt;/code&gt; appears to be unused&lt;/html&gt;</description>
+  <highlighted_element>&lt;vector xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot; xmlns:aapt=&quot;http://schemas.an...</highlighted_element>
+  <language>XML</language>
+  <offset>0</offset>
+  <length>1702</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/layout/activity_alerts.xml</file>
+  <line>2</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/layout/activity_alerts.xml" />
+  <problem_class id="AndroidLintUnusedResources" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Unused resources</problem_class>
+  <hints />
+  <description>&lt;html&gt;The resource &lt;code&gt;R.layout.activity_alerts&lt;/code&gt; appears to be unused&lt;/html&gt;</description>
+  <highlighted_element>&lt;androidx.constraintlayout.widget.ConstraintLayout xmlns:android=&quot;http://schemas.android.com/apk/res...</highlighted_element>
+  <language>XML</language>
+  <offset>0</offset>
+  <length>245</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/layout/activity_homepage.xml</file>
+  <line>2</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/layout/activity_homepage.xml" />
+  <problem_class id="AndroidLintUnusedResources" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Unused resources</problem_class>
+  <hints />
+  <description>&lt;html&gt;The resource &lt;code&gt;R.layout.activity_homepage&lt;/code&gt; appears to be unused&lt;/html&gt;</description>
+  <highlighted_element>&lt;androidx.constraintlayout.widget.ConstraintLayout xmlns:android=&quot;http://schemas.android.com/apk/res...</highlighted_element>
+  <language>XML</language>
+  <offset>0</offset>
+  <length>245</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/layout/activity_login.xml</file>
+  <line>2</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/layout/activity_login.xml" />
+  <problem_class id="AndroidLintUnusedResources" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Unused resources</problem_class>
+  <hints />
+  <description>&lt;html&gt;The resource &lt;code&gt;R.layout.activity_login&lt;/code&gt; appears to be unused&lt;/html&gt;</description>
+  <highlighted_element>&lt;androidx.constraintlayout.widget.ConstraintLayout xmlns:android=&quot;http://schemas.android.com/apk...</highlighted_element>
+  <language>XML</language>
+  <offset>0</offset>
+  <length>5718</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/layout/activity_profile.xml</file>
+  <line>2</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/layout/activity_profile.xml" />
+  <problem_class id="AndroidLintUnusedResources" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Unused resources</problem_class>
+  <hints />
+  <description>&lt;html&gt;The resource &lt;code&gt;R.layout.activity_profile&lt;/code&gt; appears to be unused&lt;/html&gt;</description>
+  <highlighted_element>&lt;androidx.constraintlayout.widget.ConstraintLayout xmlns:android=&quot;http://schemas.android.com/apk/res...</highlighted_element>
+  <language>XML</language>
+  <offset>0</offset>
+  <length>245</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/layout/activity_saved.xml</file>
+  <line>2</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/layout/activity_saved.xml" />
+  <problem_class id="AndroidLintUnusedResources" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Unused resources</problem_class>
+  <hints />
+  <description>&lt;html&gt;The resource &lt;code&gt;R.layout.activity_saved&lt;/code&gt; appears to be unused&lt;/html&gt;</description>
+  <highlighted_element>&lt;androidx.constraintlayout.widget.ConstraintLayout xmlns:android=&quot;http://schemas.android.com/apk/res...</highlighted_element>
+  <language>XML</language>
+  <offset>0</offset>
+  <length>245</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/layout/activity_search.xml</file>
+  <line>2</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/layout/activity_search.xml" />
+  <problem_class id="AndroidLintUnusedResources" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Unused resources</problem_class>
+  <hints />
+  <description>&lt;html&gt;The resource &lt;code&gt;R.layout.activity_search&lt;/code&gt; appears to be unused&lt;/html&gt;</description>
+  <highlighted_element>&lt;androidx.constraintlayout.widget.ConstraintLayout xmlns:android=&quot;http://schemas.android.com/apk/res...</highlighted_element>
+  <language>XML</language>
+  <offset>0</offset>
+  <length>245</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/values/strings.xml</file>
+  <line>4</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/values/strings.xml" />
+  <problem_class id="AndroidLintUnusedResources" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Unused resources</problem_class>
+  <hints />
+  <description>&lt;html&gt;The resource &lt;code&gt;R.string.app_description&lt;/code&gt; appears to be unused&lt;/html&gt;</description>
+  <highlighted_element>name=&quot;app_description&quot;</highlighted_element>
+  <language>XML</language>
+  <offset>12</offset>
+  <length>22</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/values/strings.xml</file>
+  <line>11</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/values/strings.xml" />
+  <problem_class id="AndroidLintUnusedResources" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Unused resources</problem_class>
+  <hints />
+  <description>&lt;html&gt;The resource &lt;code&gt;R.string.login_text&lt;/code&gt; appears to be unused&lt;/html&gt;</description>
+  <highlighted_element>name=&quot;login_text&quot;</highlighted_element>
+  <language>XML</language>
+  <offset>12</offset>
+  <length>17</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/values/strings.xml</file>
+  <line>45</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/values/strings.xml" />
+  <problem_class id="AndroidLintUnusedResources" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Unused resources</problem_class>
+  <hints />
+  <description>&lt;html&gt;The resource &lt;code&gt;R.string.login_btn&lt;/code&gt; appears to be unused&lt;/html&gt;</description>
+  <highlighted_element>name=&quot;login_btn&quot;</highlighted_element>
+  <language>XML</language>
+  <offset>12</offset>
+  <length>16</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/values/strings.xml</file>
+  <line>48</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/values/strings.xml" />
+  <problem_class id="AndroidLintUnusedResources" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Unused resources</problem_class>
+  <hints />
+  <description>&lt;html&gt;The resource &lt;code&gt;R.string.password_fieldText&lt;/code&gt; appears to be unused&lt;/html&gt;</description>
+  <highlighted_element>name=&quot;password_fieldText&quot;</highlighted_element>
+  <language>XML</language>
+  <offset>12</offset>
+  <length>25</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/values/strings.xml</file>
+  <line>49</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/values/strings.xml" />
+  <problem_class id="AndroidLintUnusedResources" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Unused resources</problem_class>
+  <hints />
+  <description>&lt;html&gt;The resource &lt;code&gt;R.string.forgot_password&lt;/code&gt; appears to be unused&lt;/html&gt;</description>
+  <highlighted_element>name=&quot;forgot_password&quot;</highlighted_element>
+  <language>XML</language>
+  <offset>12</offset>
+  <length>22</length>
+</problem>
+</problems>

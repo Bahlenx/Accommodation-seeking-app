@@ -1,0 +1,328 @@
+<problems>
+<problem>
+  <file>file://$PROJECT_DIR$/App icon/house-svgrepo-com.svg</file>
+  <line>3</line>
+  <module>iKhaya_AccomadationApp</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/App icon/house-svgrepo-com.svg" />
+  <problem_class id="SpellCheckingInspection" severity="TYPO" attribute_key="TYPO">Spelling</problem_class>
+  <description>Typo: In word 'svgrepo'</description>
+  <highlighted_element>svgrepo</highlighted_element>
+  <language>SVG</language>
+  <offset>32</offset>
+  <length>7</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/Icons/city-svgrepo-com.svg</file>
+  <line>3</line>
+  <module>iKhaya_AccomadationApp</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/Icons/city-svgrepo-com.svg" />
+  <problem_class id="SpellCheckingInspection" severity="TYPO" attribute_key="TYPO">Spelling</problem_class>
+  <description>Typo: In word 'svgrepo'</description>
+  <highlighted_element>svgrepo</highlighted_element>
+  <language>SVG</language>
+  <offset>32</offset>
+  <length>7</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/Icons/home-1-svgrepo-com.svg</file>
+  <line>1</line>
+  <module>iKhaya_AccomadationApp</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/Icons/home-1-svgrepo-com.svg" />
+  <problem_class id="SpellCheckingInspection" severity="TYPO" attribute_key="TYPO">Spelling</problem_class>
+  <description>Typo: In word 'svgrepo'</description>
+  <highlighted_element>svgrepo</highlighted_element>
+  <language>SVG</language>
+  <offset>70</offset>
+  <length>7</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/Icons/notification-9-svgrepo-com.svg</file>
+  <line>1</line>
+  <module>iKhaya_AccomadationApp</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/Icons/notification-9-svgrepo-com.svg" />
+  <problem_class id="SpellCheckingInspection" severity="TYPO" attribute_key="TYPO">Spelling</problem_class>
+  <description>Typo: In word 'svgrepo'</description>
+  <highlighted_element>svgrepo</highlighted_element>
+  <language>SVG</language>
+  <offset>70</offset>
+  <length>7</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/Icons/profile-round-1342-svgrepo-com.svg</file>
+  <line>2</line>
+  <module>iKhaya_AccomadationApp</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/Icons/profile-round-1342-svgrepo-com.svg" />
+  <problem_class id="SpellCheckingInspection" severity="TYPO" attribute_key="TYPO">Spelling</problem_class>
+  <description>Typo: In word 'svgrepo'</description>
+  <highlighted_element>svgrepo</highlighted_element>
+  <language>SVG</language>
+  <offset>32</offset>
+  <length>7</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/Icons/profile-round-1342-svgrepo-com.svg</file>
+  <line>11</line>
+  <module>iKhaya_AccomadationApp</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/Icons/profile-round-1342-svgrepo-com.svg" />
+  <problem_class id="SpellCheckingInspection" severity="TYPO" attribute_key="TYPO">Spelling</problem_class>
+  <description>Typo: In word 'Dribbble'</description>
+  <highlighted_element>Dribbble</highlighted_element>
+  <language>SVG</language>
+  <offset>15</offset>
+  <length>8</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/Icons/south-africa-svgrepo-com.svg</file>
+  <line>3</line>
+  <module>iKhaya_AccomadationApp</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/Icons/south-africa-svgrepo-com.svg" />
+  <problem_class id="SpellCheckingInspection" severity="TYPO" attribute_key="TYPO">Spelling</problem_class>
+  <description>Typo: In word 'svgrepo'</description>
+  <highlighted_element>svgrepo</highlighted_element>
+  <language>SVG</language>
+  <offset>32</offset>
+  <length>7</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/Icons/village-svgrepo-com.svg</file>
+  <line>1</line>
+  <module>iKhaya_AccomadationApp</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/Icons/village-svgrepo-com.svg" />
+  <problem_class id="SpellCheckingInspection" severity="TYPO" attribute_key="TYPO">Spelling</problem_class>
+  <description>Typo: In word 'svgrepo'</description>
+  <highlighted_element>svgrepo</highlighted_element>
+  <language>SVG</language>
+  <offset>70</offset>
+  <length>7</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/AndroidManifest.xml</file>
+  <line>13</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/AndroidManifest.xml" />
+  <problem_class id="SpellCheckingInspection" severity="TYPO" attribute_key="TYPO">Spelling</problem_class>
+  <description>Typo: In word 'Accomadation'</description>
+  <highlighted_element>Accomadation</highlighted_element>
+  <language>XML</language>
+  <offset>43</offset>
+  <length>12</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/example/ikhaya_accomadationapp/MainActivity.java</file>
+  <line>60</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <package>com.example.ikhaya_accomadationapp</package>
+  <entry_point TYPE="method" FQNAME="com.example.ikhaya_accomadationapp.MainActivity void onCreate(android.os.Bundle savedInstanceState)" />
+  <problem_class id="SpellCheckingInspection" severity="TYPO" attribute_key="TYPO">Spelling</problem_class>
+  <description>Typo: In word 'isiXhosa'</description>
+  <highlighted_element>isiXhosa</highlighted_element>
+  <language>JAVA</language>
+  <offset>36</offset>
+  <length>8</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/example/ikhaya_accomadationapp/MainActivity.java</file>
+  <line>68</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <package>com.example.ikhaya_accomadationapp</package>
+  <entry_point TYPE="method" FQNAME="com.example.ikhaya_accomadationapp.MainActivity void onCreate(android.os.Bundle savedInstanceState)" />
+  <problem_class id="SpellCheckingInspection" severity="TYPO" attribute_key="TYPO">Spelling</problem_class>
+  <description>Typo: In word 'isiZulu'</description>
+  <highlighted_element>isiZulu</highlighted_element>
+  <language>JAVA</language>
+  <offset>36</offset>
+  <length>7</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/values/themes.xml</file>
+  <line>3</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/values/themes.xml" />
+  <problem_class id="SpellCheckingInspection" severity="TYPO" attribute_key="TYPO">Spelling</problem_class>
+  <description>Typo: In word 'Accomadation'</description>
+  <highlighted_element>Accomadation</highlighted_element>
+  <language>XML</language>
+  <offset>35</offset>
+  <length>12</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/values/themes.xml</file>
+  <line>8</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/values/themes.xml" />
+  <problem_class id="SpellCheckingInspection" severity="TYPO" attribute_key="TYPO">Spelling</problem_class>
+  <description>Typo: In word 'Accomadation'</description>
+  <highlighted_element>Accomadation</highlighted_element>
+  <language>XML</language>
+  <offset>30</offset>
+  <length>12</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/values/themes.xml</file>
+  <line>8</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/values/themes.xml" />
+  <problem_class id="SpellCheckingInspection" severity="TYPO" attribute_key="TYPO">Spelling</problem_class>
+  <description>Typo: In word 'Accomadation'</description>
+  <highlighted_element>Accomadation</highlighted_element>
+  <language>XML</language>
+  <offset>73</offset>
+  <length>12</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/values-night/themes.xml</file>
+  <line>3</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/values-night/themes.xml" />
+  <problem_class id="SpellCheckingInspection" severity="TYPO" attribute_key="TYPO">Spelling</problem_class>
+  <description>Typo: In word 'Accomadation'</description>
+  <highlighted_element>Accomadation</highlighted_element>
+  <language>XML</language>
+  <offset>35</offset>
+  <length>12</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/gradle/gradle-daemon-jvm.properties</file>
+  <line>2</line>
+  <module>iKhaya_AccomadationApp</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/gradle/gradle-daemon-jvm.properties" />
+  <problem_class id="SpellCheckingInspection" severity="TYPO" attribute_key="TYPO">Spelling</problem_class>
+  <description>Typo: In word 'AARCH'</description>
+  <highlighted_element>AARCH</highlighted_element>
+  <language>Properties</language>
+  <offset>22</offset>
+  <length>5</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/gradle/gradle-daemon-jvm.properties</file>
+  <line>4</line>
+  <module>iKhaya_AccomadationApp</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/gradle/gradle-daemon-jvm.properties" />
+  <problem_class id="SpellCheckingInspection" severity="TYPO" attribute_key="TYPO">Spelling</problem_class>
+  <description>Typo: In word 'AARCH'</description>
+  <highlighted_element>AARCH</highlighted_element>
+  <language>Properties</language>
+  <offset>19</offset>
+  <length>5</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/gradle/gradle-daemon-jvm.properties</file>
+  <line>6</line>
+  <module>iKhaya_AccomadationApp</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/gradle/gradle-daemon-jvm.properties" />
+  <problem_class id="SpellCheckingInspection" severity="TYPO" attribute_key="TYPO">Spelling</problem_class>
+  <description>Typo: In word 'AARCH'</description>
+  <highlighted_element>AARCH</highlighted_element>
+  <language>Properties</language>
+  <offset>20</offset>
+  <length>5</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/gradle/gradle-daemon-jvm.properties</file>
+  <line>8</line>
+  <module>iKhaya_AccomadationApp</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/gradle/gradle-daemon-jvm.properties" />
+  <problem_class id="SpellCheckingInspection" severity="TYPO" attribute_key="TYPO">Spelling</problem_class>
+  <description>Typo: In word 'AARCH'</description>
+  <highlighted_element>AARCH</highlighted_element>
+  <language>Properties</language>
+  <offset>18</offset>
+  <length>5</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/gradle/gradle-daemon-jvm.properties</file>
+  <line>10</line>
+  <module>iKhaya_AccomadationApp</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/gradle/gradle-daemon-jvm.properties" />
+  <problem_class id="SpellCheckingInspection" severity="TYPO" attribute_key="TYPO">Spelling</problem_class>
+  <description>Typo: In word 'AARCH'</description>
+  <highlighted_element>AARCH</highlighted_element>
+  <language>Properties</language>
+  <offset>21</offset>
+  <length>5</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/gradlew.bat</file>
+  <line>16</line>
+  <module>iKhaya_AccomadationApp</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/gradlew.bat" />
+  <problem_class id="SpellCheckingInspection" severity="TYPO" attribute_key="TYPO">Spelling</problem_class>
+  <description>Typo: In word 'SPDX'</description>
+  <highlighted_element>SPDX</highlighted_element>
+  <language>textmate</language>
+  <offset>5</offset>
+  <length>4</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/gradlew.bat</file>
+  <line>27</line>
+  <module>iKhaya_AccomadationApp</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/gradlew.bat" />
+  <problem_class id="SpellCheckingInspection" severity="TYPO" attribute_key="TYPO">Spelling</problem_class>
+  <description>Typo: In word 'setlocal'</description>
+  <highlighted_element>setlocal</highlighted_element>
+  <language>textmate</language>
+  <offset>0</offset>
+  <length>8</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/gradlew.bat</file>
+  <line>46</line>
+  <module>iKhaya_AccomadationApp</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/gradlew.bat" />
+  <problem_class id="SpellCheckingInspection" severity="TYPO" attribute_key="TYPO">Spelling</problem_class>
+  <description>Typo: In word 'ERRORLEVEL'</description>
+  <highlighted_element>ERRORLEVEL</highlighted_element>
+  <language>textmate</language>
+  <offset>4</offset>
+  <length>10</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/gradlew.bat</file>
+  <line>54</line>
+  <module>iKhaya_AccomadationApp</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/gradlew.bat" />
+  <problem_class id="SpellCheckingInspection" severity="TYPO" attribute_key="TYPO">Spelling</problem_class>
+  <description>Typo: In word 'COMSPEC'</description>
+  <highlighted_element>COMSPEC</highlighted_element>
+  <language>textmate</language>
+  <offset>2</offset>
+  <length>7</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/gradlew.bat</file>
+  <line>76</line>
+  <module>iKhaya_AccomadationApp</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/gradlew.bat" />
+  <problem_class id="SpellCheckingInspection" severity="TYPO" attribute_key="TYPO">Spelling</problem_class>
+  <description>Typo: In word 'endlocal'</description>
+  <highlighted_element>endlocal</highlighted_element>
+  <language>textmate</language>
+  <offset>5</offset>
+  <length>8</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/gradlew.bat</file>
+  <line>78</line>
+  <module>iKhaya_AccomadationApp</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/gradlew.bat" />
+  <problem_class id="SpellCheckingInspection" severity="TYPO" attribute_key="TYPO">Spelling</problem_class>
+  <description>Typo: In word 'Dorg'</description>
+  <highlighted_element>Dorg</highlighted_element>
+  <language>textmate</language>
+  <offset>71</offset>
+  <length>4</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/gradlew.bat</file>
+  <line>78</line>
+  <module>iKhaya_AccomadationApp</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/gradlew.bat" />
+  <problem_class id="SpellCheckingInspection" severity="TYPO" attribute_key="TYPO">Spelling</problem_class>
+  <description>Typo: In word 'appname'</description>
+  <highlighted_element>appname</highlighted_element>
+  <language>textmate</language>
+  <offset>83</offset>
+  <length>7</length>
+</problem>
+</problems>

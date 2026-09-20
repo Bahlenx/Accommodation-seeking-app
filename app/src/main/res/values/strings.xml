@@ -1,0 +1,73 @@
+<resources>
+    <!--This is system text(does not change unless developer or setting change)-->
+    <string name="app_name">iKhaya</string>
+    <string name="app_description">iKhaya Accommodation Application</string>
+    <string name="app_title">iKhaya</string>
+    <string name="slogan">Find your Home, simply</string>
+    <string name="get_started_btn">Get Started</string>
+    <string name="register_text">Register</string>
+    <string name="resident_radio_option">Resident</string>
+    <string name="landlord_radio_option">Landlord</string>
+    <string name="login_text">Login</string>
+    <string name="username_text">Name</string>
+    <string name="username_hint">Enter your name</string>
+    <string name="usersurname_text">Surname</string>
+    <string name="usersurname_hint">Enter your surname</string>
+    <string name="email_text">Email</string>
+    <string name="email_hint">Enter your email</string>
+    <string name="phone_text">Phone number</string>
+    <string name="Phone_hint">Enter your phone number</string>
+    <string name="otp_button">Send Verification SMS</string>
+    <string name="otp_warning">We will send a free SMS OTP code to verify your phone number. No airtime or data needed</string>
+    <string name="otp_text">OTP Verification</string>
+    <string name="otp_hint">Please enter the code sent to you by sms as it allows use to confirm that you are using the correct number and can be contacted if needed</string>
+    <string name="verify_otp_btn">Verify OTP</string>
+    <string name="password_title">Please enter a Strong Password</string>
+    <string name="password_warning">Please use</string>
+    <string name="password_hint">Password</string>
+    <string name="uppercase_checker">Uppercase</string>
+    <string name="lowercase_checker">Lowercase</string>
+    <string name="number_checker">Number</string>
+    <string name="special_character">Special Character</string>
+    <string name="password_checker">Password Strength</string>
+    <string name="id_hint">Enter you ID number</string>
+    <string name="id_text">ID Number</string>
+    <string name="id_title">ID Number</string>
+    <string name="id_warning">Your ID number is securely encrypted and used strictly for identity verification and rental eligibility. We never share or use your data for malicious purposes. Please enter a valid ID number.</string>
+    <string name="province_text">Province</string>
+    <string name="province_hint">Enter you Province</string>
+    <string name="city_text">City</string>
+    <string name="city_hint">Enter your City</string>
+    <string name="suburb_text">Suburb</string>
+    <string name="suburb_hint">Enter your Suburb</string>
+    <string name="register_btn">Register</string>
+    <string name="gps_btn">Get GPS Location</string>
+    <string name="login_btn">Login</string>
+    <string name="existing_user">Already have an account?</string>
+    <string name="existing_user_btn">Login</string>
+    <string name="password_fieldText">Password</string>
+    <string name="forgot_password">Forgot Password?</string>
+
+    <!--this is the language text-->
+    <string name="language_selection">Choose your preferred language</string>
+    <string name="english_btn">English</string>
+    <string name="isiZulu_btn">isiZulu</string>
+    <string name="isiXhosa_btn">isiXhosa</string>
+    <string name="sepedi_btn">Sepedi</string>
+    <string name="sesotho_btn">Sesotho</string>
+    <string name="afrikaans_btn">Afrikaans</string>
+
+    <!--This is for the talkBack feature-->
+    <string name="desc_go_back">Go Back to previous screen</string>
+    <string name="otp_digit_1">First digit of OTP</string>
+    <string name="otp_digit_2">Second digit of OTP</string>
+    <string name="otp_digit_3">Third digit of OTP</string>
+    <string name="otp_digit_4">Fourth digit of OTP</string>
+    <string name="otp_digit_5">Fifth digit of OTP</string>
+
+    <!-- Registration Errors -->
+    <string name="error_first_name">Please enter a valid first name (letters only)</string>
+    <string name="error_surname">Please enter a valid surname (letters only)</string>
+    <string name="error_phone">Enter a valid SA number (e.g., 082 123 4567)</string>
+    <string name="error_email">Please enter a valid email address</string>
+</resources>

@@ -1,0 +1,28 @@
+<problems>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/drawable/custom_password_icon.xml</file>
+  <line>38</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/drawable/custom_password_icon.xml" />
+  <problem_class id="AndroidLintPrivateResource" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Using private resources</problem_class>
+  <hints />
+  <description>&lt;html&gt;The resource &lt;code&gt;@drawable/ic_password&lt;/code&gt; is marked as private in androidx.credentials:credentials:1.2.0-rc01&lt;/html&gt;</description>
+  <highlighted_element>@drawable/ic_password</highlighted_element>
+  <language>XML</language>
+  <offset>34</offset>
+  <length>21</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/drawable/ic_password.xml</file>
+  <line>1</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/drawable/ic_password.xml" />
+  <problem_class id="AndroidLintPrivateResource" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Using private resources</problem_class>
+  <hints />
+  <description>&lt;html&gt;Overriding &lt;code&gt;@drawable/ic_password&lt;/code&gt; which is marked as private in androidx.credentials:credentials:1.2.0-rc01. If deliberate, use tools:override=&quot;true&quot;, otherwise pick a different name.&lt;/html&gt;</description>
+  <highlighted_element>&lt;!-- ~ Copyright (C) 2026 The Android Open Source Project ~ ~ Licensed under the Apache Licens...</highlighted_element>
+  <language>XML</language>
+  <offset>0</offset>
+  <length>1423</length>
+</problem>
+</problems>

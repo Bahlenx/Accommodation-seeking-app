@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "933206733134",
+    "project_id": "ikhaya-accommodation-app",
+    "storage_bucket": "ikhaya-accommodation-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:933206733134:android:dc4d2011bb3c2dbda3ee1f",
+        "android_client_info": {
+          "package_name": "com.example.ikhaya_accomadationapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDpTA-teZSUDPwHbiBdvrPNuQ1vaRN6DE4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

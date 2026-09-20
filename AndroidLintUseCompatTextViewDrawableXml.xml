@@ -1,0 +1,41 @@
+<problems>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/layout/activity_otp.xml</file>
+  <line>61</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/layout/activity_otp.xml" />
+  <problem_class id="AndroidLintUseCompatTextViewDrawableXml" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Compat compound drawable attributes should be used on TextView</problem_class>
+  <hints />
+  <description>&lt;html&gt;Use &lt;code&gt;app:drawableStartCompat&lt;/code&gt; instead of &lt;code&gt;android:drawableStart&lt;/code&gt;&lt;/html&gt;</description>
+  <highlighted_element>android:drawableStart=&quot;@drawable/ic_otp&quot;</highlighted_element>
+  <language>XML</language>
+  <offset>8</offset>
+  <length>40</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/layout/activity_regitration.xml</file>
+  <line>272</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/layout/activity_regitration.xml" />
+  <problem_class id="AndroidLintUseCompatTextViewDrawableXml" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Compat compound drawable attributes should be used on TextView</problem_class>
+  <hints />
+  <description>&lt;html&gt;Use &lt;code&gt;app:drawableStartCompat&lt;/code&gt; instead of &lt;code&gt;android:drawableStart&lt;/code&gt;&lt;/html&gt;</description>
+  <highlighted_element>android:drawableStart=&quot;@drawable/ic_authentification_warning&quot;</highlighted_element>
+  <language>XML</language>
+  <offset>8</offset>
+  <length>61</length>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/res/layout/activity_userverification.xml</file>
+  <line>202</line>
+  <module>iKhaya_AccomadationApp.app.main</module>
+  <entry_point TYPE="file" FQNAME="file://$PROJECT_DIR$/app/src/main/res/layout/activity_userverification.xml" />
+  <problem_class id="AndroidLintUseCompatTextViewDrawableXml" severity="WARNING" attribute_key="WARNING_ATTRIBUTES">Compat compound drawable attributes should be used on TextView</problem_class>
+  <hints />
+  <description>&lt;html&gt;Use &lt;code&gt;app:drawableStartCompat&lt;/code&gt; instead of &lt;code&gt;android:drawableStart&lt;/code&gt;&lt;/html&gt;</description>
+  <highlighted_element>android:drawableStart=&quot;@drawable/ic_identification&quot;</highlighted_element>
+  <language>XML</language>
+  <offset>8</offset>
+  <length>51</length>
+</problem>
+</problems>
