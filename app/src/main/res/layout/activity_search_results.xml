@@ -15,7 +15,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Search Results"
+            android:text="@string/search_results"
             android:textSize="25sp"
             android:textStyle="bold"
             android:textColor="#333333"
@@ -25,7 +25,7 @@
             android:id="@+id/searchBox"
             android:layout_width="match_parent"
             android:layout_height="55dp"
-            android:hint="Search area or village"
+            android:hint="@string/search_area_or_village"
             android:inputType="text"
             android:layout_marginTop="20dp" />
 
@@ -34,14 +34,14 @@
             android:id="@+id/btnSearchAgain"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Search"
+            android:text="@string/search"
             android:textAllCaps="false"
             android:layout_marginTop="8dp" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Filters"
+            android:text="@string/filters"
             android:textSize="18sp"
             android:textStyle="bold"
             android:textColor="#333333"
@@ -57,7 +57,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Price"
+                android:text="@string/price"
                 android:textAllCaps="false" />
 
             <Button
@@ -65,7 +65,7 @@
                 android:layout_height="wrap_content"
                 android:backgroundTint="#FFA500"
                 android:layout_weight="1"
-                android:text="Rooms"
+                android:text="@string/rooms"
                 android:textAllCaps="false"
                 android:layout_marginStart="5dp" />
 
@@ -74,7 +74,7 @@
                 android:layout_height="wrap_content"
                 android:backgroundTint="#FFA500"
                 android:layout_weight="1"
-                android:text="Type"
+                android:text="@string/type"
                 android:textAllCaps="false"
                 android:layout_marginStart="5dp" />
 
@@ -83,7 +83,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Available Accommodation"
+            android:text="@string/available_accommodation"
             android:textSize="19sp"
             android:textStyle="bold"
             android:textColor="@color/black"
@@ -94,7 +94,7 @@
             android:id="@+id/listingOne"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Affordable Room&#10;&#10;Mthatha, Eastern Cape&#10;R950 / month&#10;2 Rooms&#10;Available"
+            android:text="@string/affordable_room_10_10_mthatha_eastern_cape_10_r950_month_10_2_rooms_10_available"
             android:textSize="16sp"
             android:textColor="@color/black"
             android:padding="18dp"
@@ -105,14 +105,14 @@
             android:layout_width="match_parent"
             android:backgroundTint="#FFA500"
             android:layout_height="wrap_content"
-            android:text="View Details"
+            android:text="@string/view_details"
             android:textAllCaps="false" />
 
         <TextView
             android:id="@+id/listingTwo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Family House&#10;&#10;Mthatha, Eastern Cape&#10;R1,500 / month&#10;3 Bedrooms&#10;Available"
+            android:text="@string/family_house_10_10_mthatha_eastern_cape_10_r1_500_month_10_3_bedrooms_10_available"
             android:textSize="16sp"
             android:textColor="@color/black"
             android:padding="18dp"
@@ -124,13 +124,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:backgroundTint="#FFA500"
-            android:text="View Details"
+            android:text="@string/view_details"
             android:textAllCaps="false" />
         <TextView
             android:id="@+id/listingThree"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Shared Accommodation&#10;&#10;Mthatha, Eastern Cape&#10;R750 / month&#10;1 Room&#10;Available"
+            android:text="@string/shared_accommodation_10_10_mthatha_eastern_cape_10_r750_month_10_1_room_10_available"
             android:textSize="16sp"
             android:textColor="#333333"
             android:padding="18dp"
@@ -141,7 +141,7 @@
             android:id="@+id/btnViewThree"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="View Details"
+            android:text="@string/view_details"
             android:backgroundTint="#FFA500"
             android:textAllCaps="false" />
 

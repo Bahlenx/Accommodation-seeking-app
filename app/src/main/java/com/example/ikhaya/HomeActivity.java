@@ -16,6 +16,14 @@ public class HomeActivity extends AppCompatActivity {
 
         Button btnSearch = findViewById(R.id.btnSearch);
 
+        Button btnProfile = findViewById(R.id.btnProfile);
+
+        btnProfile.setOnClickListener(v -> {
+            Intent intent = new Intent(HomeActivity.this,
+                    TenantProfileActivity.class);
+            startActivity(intent);
+        });
+
         btnSearch.setOnClickListener(v -> {
 
             Intent intent = new Intent(

@@ -16,13 +16,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:backgroundTint="#FFA500"
-            android:text="← Back"
+            android:text="@string/back"
             android:textAllCaps="false" />
         <TextView
             android:id="@+id/propertyImage"
             android:layout_width="match_parent"
             android:layout_height="220dp"
-            android:text="Property Photo"
+            android:text="@string/property_photo"
             android:textSize="20sp"
             android:gravity="center"
             android:textColor="#666666"
@@ -32,7 +32,7 @@
             android:id="@+id/propertyName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Affordable Room"
+            android:text="@string/affordable_room"
             android:textSize="25sp"
             android:textStyle="bold"
             android:textColor="#333333"
@@ -42,7 +42,7 @@
             android:id="@+id/propertyPrice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="R950 / month"
+            android:text="@string/r950_month"
             android:textSize="20sp"
             android:textStyle="bold"
             android:textColor="#C95A32"
@@ -51,7 +51,7 @@
             android:id="@+id/propertyLocation"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="📍 Mthatha, Eastern Cape"
+            android:text="@string/mthatha_eastern_cape"
             android:textSize="16sp"
             android:textColor="#555555"
             android:layout_marginTop="12dp" />
@@ -59,7 +59,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Property Information"
+            android:text="@string/property_information"
             android:textSize="19sp"
             android:textStyle="bold"
             android:textColor="#333333"
@@ -69,7 +69,7 @@
             android:id="@+id/propertyInfo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="2 Rooms&#10;Water available&#10;Electricity available&#10;Parking available&#10;Available now"
+            android:text="@string/_2_rooms_10_water_available_10_electricity_available_10_parking_available_10_available_now"
             android:textSize="16sp"
             android:textColor="#555555"
             android:layout_marginTop="10dp" />
@@ -88,7 +88,7 @@
             android:id="@+id/propertyDescription"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Affordable accommodation located in a convenient area of Mthatha. Suitable for individuals looking for accessible and affordable housing."
+            android:text="@string/affordable_accommodation_located_in_a_convenient_area_of_mthatha_suitable_for_individuals_looking_for_accessible_and_affordable_housing"
             android:textSize="16sp"
             android:textColor="#555555"
             android:layout_marginTop="10dp" />
@@ -97,7 +97,7 @@
             android:id="@+id/btnSave"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="♡ Save Listing"
+            android:text="@string/save_listing"
             android:textAllCaps="false"
             android:layout_marginTop="30dp" />
 
@@ -105,7 +105,7 @@
             android:id="@+id/btnContact"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Contact Owner"
+            android:text="@string/contact_owner"
             android:textAllCaps="false"
             android:layout_marginTop="10dp" />
 

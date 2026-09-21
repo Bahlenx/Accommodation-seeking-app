@@ -12,6 +12,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Ikhaya">
         <activity
+            android:name=".LandlordProfileActivity"
+            android:exported="false" />
+        <activity
+            android:name=".TenantProfileActivity"
+            android:exported="false" />
+        <activity
             android:name=".MyListingsActivity"
             android:exported="false" />
         <activity
@@ -22,9 +28,6 @@
             android:exported="false" />
         <activity
             android:name=".PropertyDetailsActivity"
-            android:exported="false" />
-        <activity
-            android:name="com.example.PropertyDetailsActivity"
             android:exported="false" />
         <activity
             android:name=".MainActivity"
@@ -44,6 +47,7 @@
         <activity
             android:name=".RegisterActivity"
             android:exported="false" />
+
     </application>
 
 </manifest>

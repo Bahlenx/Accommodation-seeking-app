@@ -17,7 +17,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             android:layout_marginBottom="30dp"
-            android:text="Register / Login"
+            android:text="@string/register_login"
             android:textColor="#333333"
             android:textSize="24sp"
             android:textStyle="bold" />
@@ -25,7 +25,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="I am a:"
+            android:text="@string/i_am_a"
             android:textSize="16sp"
             android:textStyle="bold"
             android:textColor="#444444"
@@ -43,7 +43,7 @@
                 android:layout_height="wrap_content"
                 android:buttonTint="#FFA500"
                 android:checked="true"
-                android:text="Tenant" />
+                android:text="@string/tenant" />
 
             <RadioButton
                 android:id="@+id/radioLandlord"
@@ -51,7 +51,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
                 android:buttonTint="#FFA500"
-                android:text="Landlord" />
+                android:text="@string/landlord" />
 
         </RadioGroup>
 
@@ -60,7 +60,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="25dp"
-            android:hint="Full name"
+            android:hint="@string/full_name"
             android:inputType="textPersonName"
             android:textColor="@color/black" />
 
@@ -68,7 +68,7 @@
             android:id="@+id/editPhone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Phone number"
+            android:hint="@string/phone_number"
             android:inputType="phone"
             android:textColor="@color/black"
             android:layout_marginTop="15dp" />
@@ -77,7 +77,7 @@
             android:id="@+id/editVillage"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Town / village preferred "
+            android:hint="@string/town_village_preferred"
             android:inputType="text"
             android:textColor="@color/black"
             android:layout_marginTop="15dp" />
@@ -86,7 +86,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:text="We will use your phone number to verify your account."
+            android:text="@string/we_will_use_your_phone_number_to_verify_your_account"
             android:textColor="#C80E0E"
             android:textSize="13sp" />
 

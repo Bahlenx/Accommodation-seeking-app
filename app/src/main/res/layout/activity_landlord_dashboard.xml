@@ -11,7 +11,7 @@
         android:id="@+id/txtDashboardTitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Landlord Dashboard"
+        android:text="@string/landlord_dashboard"
         android:textSize="24sp"
         android:textStyle="bold"
         android:textColor="#222222"
@@ -37,7 +37,7 @@
         android:id="@+id/txtWelcome"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Manage your accommodation listings"
+        android:text="@string/manage_your_accommodation_listings"
         android:textSize="15sp"
         android:textColor="#666666"
         android:layout_marginStart="24dp"
@@ -52,7 +52,7 @@
         android:layout_width="0dp"
         android:layout_height="55dp"
         android:backgroundTint="#FFA500"
-        android:text="+  Add Accommodation"
+        android:text="@string/add_accommodation"
         android:textSize="16sp"
         android:textAllCaps="false"
         android:layout_marginStart="24dp"
@@ -66,7 +66,7 @@
         android:id="@+id/txtStatistics"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Listing Overview"
+        android:text="@string/listing_overview"
         android:textSize="19sp"
         android:textStyle="bold"
         android:textColor="#222222"
@@ -103,7 +103,7 @@
                 android:id="@+id/txtTotalListings"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="0"
+                android:text="@string/_0"
                 android:textSize="25sp"
                 android:textStyle="bold"
                 android:textColor="#222222" />
@@ -111,7 +111,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Total"
+                android:text="@string/total"
                 android:textSize="13sp"
                 android:textColor="#777777" />
 
@@ -130,7 +130,7 @@
                 android:id="@+id/txtAvailableListings"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="0"
+                android:text="@string/_0"
                 android:textSize="25sp"
                 android:textStyle="bold"
                 android:textColor="#222222" />
@@ -138,7 +138,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Available"
+                android:text="@string/available"
                 android:textSize="13sp"
                 android:textColor="#777777" />
 
@@ -157,7 +157,7 @@
                 android:id="@+id/txtPendingListings"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="0"
+                android:text="@string/_0"
                 android:textSize="25sp"
                 android:textStyle="bold"
                 android:textColor="#222222" />
@@ -165,7 +165,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Pending"
+                android:text="@string/pending"
                 android:textSize="13sp"
                 android:textColor="#777777" />
 
@@ -177,7 +177,7 @@
         android:id="@+id/txtMyListings"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="My Listings"
+        android:text="@string/my_listings"
         android:textSize="19sp"
         android:textStyle="bold"
         android:textColor="#222222"
@@ -212,6 +212,8 @@
         </LinearLayout>
 
     </ScrollView>
+
+    <!-- Bottom Navigation -->
     <LinearLayout
         android:id="@+id/bottomNavigation"
         android:layout_width="0dp"
@@ -220,6 +222,7 @@
         android:gravity="center"
         android:background="#FFFFFF"
         android:elevation="8dp"
+        android:layout_marginBottom="20dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent">
@@ -230,7 +233,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:backgroundTint="#FFA500"
-            android:text="Home"
+            android:text="@string/home"
             android:textAllCaps="false" />
 
         <Button
@@ -239,7 +242,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:backgroundTint="#FFA500"
-            android:text="Listings"
+            android:text="@string/listings"
             android:textAllCaps="false" />
 
         <Button
@@ -248,7 +251,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:backgroundTint="#FFA500"
-            android:text="Add"
+            android:text="@string/add"
             android:textAllCaps="false" />
 
         <Button
@@ -257,7 +260,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:backgroundTint="#FFA500"
-            android:text="Profile"
+            android:text="@string/profile"
             android:textAllCaps="false" />
 
     </LinearLayout>

@@ -40,14 +40,17 @@ public class LandlordDashboardActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        // Profile buttons - temporary until ProfileActivity is built
-        btnProfile.setOnClickListener(v ->
-                Toast.makeText(this, "Profile coming soon", Toast.LENGTH_SHORT).show()
-        );
+        btnProfile.setOnClickListener(v -> {
+            Intent intent = new Intent(LandlordDashboardActivity.this,
+                    LandlordProfileActivity.class);
+            startActivity(intent);
+        });
 
-        navProfile.setOnClickListener(v ->
-                Toast.makeText(this, "Profile coming soon", Toast.LENGTH_SHORT).show()
-        );
+        navProfile.setOnClickListener(v -> {
+            Intent intent = new Intent(LandlordDashboardActivity.this,
+                    LandlordProfileActivity.class);
+            startActivity(intent);
+        });
 
         navListings.setOnClickListener(v -> {
             Intent intent = new Intent(

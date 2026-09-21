@@ -10,57 +10,56 @@
         android:id="@+id/txtAddListingTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Add Accommodation"
+        android:text="@string/add_new_listing"
         android:textSize="24sp"
         android:textStyle="bold"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="24dp"/>
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"/>
 
     <ScrollView
         android:id="@+id/listingScroll"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:fillViewport="true"
         app:layout_constraintTop_toBottomOf="@id/txtAddListingTitle"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="20dp">
+        android:layout_marginTop="16dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="24dp">
+            android:padding="16dp">
 
             <EditText
                 android:id="@+id/edtPropertyName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Property name"/>
+                android:hint="@string/property_name"/>
 
             <EditText
                 android:id="@+id/edtLocation"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Location"
+                android:hint="@string/location_hint"
                 android:layout_marginTop="12dp"/>
 
             <EditText
                 android:id="@+id/edtPrice"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:hint="Price per month"
-                android:inputType="numberDecimal" />
+                android:hint="@string/price_per_month"
+                android:inputType="numberDecimal"
+                android:layout_marginTop="12dp"/>
 
             <EditText
                 android:id="@+id/edtRooms"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Number of rooms"
+                android:hint="@string/price_per_month"
                 android:inputType="number"
                 android:layout_marginTop="12dp"/>
 
@@ -68,7 +67,7 @@
                 android:id="@+id/edtDescription"
                 android:layout_width="match_parent"
                 android:layout_height="120dp"
-                android:hint="Accommodation description"
+                android:hint="@string/accommodation_description"
                 android:gravity="top"
                 android:inputType="textMultiLine"
                 android:layout_marginTop="12dp"/>
@@ -78,22 +77,22 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:backgroundTint="#FFA500"
-                android:text="Upload Property Image"
+                android:text="@string/upload_property_image"
                 android:layout_marginTop="20dp"/>
 
             <ImageView
                 android:id="@+id/imgProperty"
                 android:layout_width="match_parent"
-                android:layout_height="200dp"
+                android:layout_height="127dp"
                 android:layout_marginTop="12dp"
-                android:scaleType="centerCrop"
-                android:contentDescription="Property image"/>
+                android:scaleType="centerCrop" />
 
             <Button
                 android:id="@+id/btnSubmitListing"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Submit Listing"
+                android:backgroundTint="#FFA500"
+                android:text="@string/submit_listing"
                 android:layout_marginTop="20dp"/>
 
         </LinearLayout>

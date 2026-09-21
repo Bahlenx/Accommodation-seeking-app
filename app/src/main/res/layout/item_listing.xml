@@ -20,13 +20,13 @@
             android:layout_width="match_parent"
             android:layout_height="180dp"
             android:scaleType="centerCrop"
-            android:contentDescription="Property image"/>
+            android:contentDescription="@string/property_image"/>
 
         <TextView
             android:id="@+id/txtListingName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Property Name"
+            android:text="@string/property_name"
             android:textSize="20sp"
             android:textStyle="bold"
             android:layout_marginTop="12dp"/>
@@ -35,7 +35,7 @@
             android:id="@+id/txtListingLocation"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Location"
+            android:text="@string/location"
             android:textSize="16sp"
             android:layout_marginTop="6dp"/>
 
@@ -43,7 +43,7 @@
             android:id="@+id/txtListingPrice"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="R1 500 / month"
+            android:text="@string/r1_500_month"
             android:textSize="16sp"
             android:layout_marginTop="6dp"/>
 
@@ -51,7 +51,7 @@
             android:id="@+id/txtListingRooms"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="2 Rooms"
+            android:text="@string/_2_rooms"
             android:textSize="16sp"
             android:layout_marginTop="6dp"/>
 
@@ -67,7 +67,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:backgroundTint="#FFA500"
-                android:text="Edit"/>
+                android:text="@string/edit"/>
 
             <Button
                 android:id="@+id/btnDeleteListing"
@@ -75,7 +75,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:backgroundTint="#FFA500"
-                android:text="Delete"
+                android:text="@string/delete"
                 android:layout_marginStart="8dp"/>
 
         </LinearLayout>
