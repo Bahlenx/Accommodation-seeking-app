@@ -1,5 +1,5 @@
 package com.example.ikhaya;
-
+import com.example.ikhaya.BuildConfig;
 import android.os.Handler;
 import android.os.Looper;
 
@@ -18,7 +18,7 @@ import okhttp3.Response;
 
 public class GeminiTranslator {
 
-    private static final String API_KEY = "AQ.Ab8RN6LAPskSD2CoMH0mQtAcf_4QotxlDmXpUUCzh5ovlAVlOw";
+    private static final String API_KEY = BuildConfig.GEMINI_API_KEY;
     // Using the exact endpoint provisioned in your Google AI Studio cURL quickstart
     private static final String API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent";
 
