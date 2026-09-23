@@ -11,6 +11,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="20dp">
+
         <Button
             android:id="@+id/btnBack"
             android:layout_width="wrap_content"
@@ -18,6 +19,7 @@
             android:backgroundTint="#FFA500"
             android:text="@string/back"
             android:textAllCaps="false" />
+
         <TextView
             android:id="@+id/propertyImage"
             android:layout_width="match_parent"
@@ -28,6 +30,7 @@
             android:textColor="#666666"
             android:background="#E0E0E0"
             android:layout_marginTop="15dp" />
+
         <TextView
             android:id="@+id/propertyName"
             android:layout_width="match_parent"
@@ -47,6 +50,7 @@
             android:textStyle="bold"
             android:textColor="#C95A32"
             android:layout_marginTop="8dp" />
+
         <TextView
             android:id="@+id/propertyLocation"
             android:layout_width="match_parent"
@@ -74,15 +78,46 @@
             android:textColor="#555555"
             android:layout_marginTop="10dp" />
 
-        <!-- Description -->
-        <TextView
-            android:layout_width="wrap_content"
+        <!-- Header row with Section Title + Translate Action -->
+        <RelativeLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Description"
-            android:textSize="19sp"
-            android:textStyle="bold"
-            android:textColor="#333333"
-            android:layout_marginTop="25dp" />
+            android:layout_marginTop="25dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:text="Description"
+                android:textColor="#333333"
+                android:textSize="19sp"
+                android:textStyle="bold" />
+
+            <ProgressBar
+                android:id="@+id/progressTranslate"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="8dp"
+                android:layout_toStartOf="@id/btnTranslate"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/btnTranslate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:padding="6dp"
+                android:text="Translate"
+                android:textColor="#FFA500"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+        </RelativeLayout>
 
         <TextView
             android:id="@+id/propertyDescription"

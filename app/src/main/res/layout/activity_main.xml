@@ -7,6 +7,7 @@
     android:orientation="vertical"
     android:gravity="center"
     android:padding="24dp"
+    android:fitsSystemWindows="true"
     android:background="#FFFFFF">
 
     <TextView
@@ -19,7 +20,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="iKhaya"
+        android:text="@string/app_name"
         android:textSize="30sp"
         android:textStyle="bold"
         android:textColor="#333333" />
@@ -27,7 +28,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Find your home, simply"
+        android:text="@string/find_your_home_simply"
         android:textSize="16sp"
         android:layout_marginTop="4dp"
         android:layout_marginBottom="50dp" />
@@ -35,7 +36,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="CHOOSE LANGUAGE"
+        android:text="@string/choose_language"
         android:textSize="14sp"
         android:textStyle="bold"
         android:textColor="#555555"
@@ -47,21 +48,24 @@
         android:orientation="horizontal">
 
         <Button
+            android:id="@+id/btnZulu"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:backgroundTint="#FFA500"
-            android:text="isiZulu"
+            android:text="@string/isizulu"
             android:textAllCaps="false" />
 
         <Button
+            android:id="@+id/btnEnglish"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:backgroundTint="#FFA500"
-            android:text="English"
+            android:text="@string/english"
             android:textAllCaps="false"
             android:layout_marginStart="8dp" />
 
     </LinearLayout>
+
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -69,17 +73,19 @@
         android:layout_marginTop="8dp">
 
         <Button
+            android:id="@+id/btnXhosa"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:backgroundTint="#FFA500"
-            android:text="isiXhosa"
+            android:text="@string/isixhosa"
             android:textAllCaps="false" />
 
         <Button
+            android:id="@+id/btnSesotho"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:backgroundTint="#FFA500"
-            android:text="Sesotho"
+            android:text="@string/sesotho"
             android:textAllCaps="false"
             android:layout_marginStart="8dp" />
 
@@ -91,7 +97,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="45dp"
         android:backgroundTint="#FFA500"
-        android:text="Get Started"
+        android:text="@string/get_started"
         android:textAllCaps="false"
         android:textSize="16sp" />
 

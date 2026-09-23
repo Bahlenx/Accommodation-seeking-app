@@ -4,7 +4,11 @@ import android.os.Bundle;
 import android.widget.Button;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.core.os.LocaleListCompat;
+import android.content.Intent;
 
 public class TenantProfileActivity extends AppCompatActivity {
 
@@ -20,6 +24,7 @@ public class TenantProfileActivity extends AppCompatActivity {
         Button btnPaymentHistory = findViewById(R.id.btnPaymentHistory);
         Button btnNotifications = findViewById(R.id.btnNotifications);
         Button btnChangePassword = findViewById(R.id.btnChangePassword);
+        Button btnChangeLanguage = findViewById(R.id.btnChangeLanguage);
         Button btnReportProblem = findViewById(R.id.btnReportProblem);
         Button btnLogout = findViewById(R.id.btnLogout);
 
@@ -55,6 +60,11 @@ public class TenantProfileActivity extends AppCompatActivity {
                         "Change Password coming soon",
                         Toast.LENGTH_SHORT).show());
 
+        btnChangeLanguage.setOnClickListener(v -> {
+            Intent intent = new Intent(TenantProfileActivity.this, LanguageSettingsActivity.class);
+            startActivity(intent);
+        });
+
         btnReportProblem.setOnClickListener(v ->
                 Toast.makeText(this,
                         "Report a Problem coming soon",
@@ -66,5 +76,19 @@ public class TenantProfileActivity extends AppCompatActivity {
                     Toast.LENGTH_SHORT).show();
             finish();
         });
+    }
+
+    private void showLanguageDialog() {
+        String[] languages = {"English", "isiZulu", "isiXhosa", "Sesotho"};
+        String[] langCodes = {"en", "zu", "xh", "st"};
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(getString(R.string.change_language));
+        builder.setItems(languages, (dialog, which) -> {
+            String selectedCode = langCodes[which];
+            LocaleListCompat appLocale = LocaleListCompat.forLanguageTags(selectedCode);
+            AppCompatDelegate.setApplicationLocales(appLocale);
+        });
+        builder.create().show();
     }
 }

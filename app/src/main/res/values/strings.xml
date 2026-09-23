@@ -1,7 +1,15 @@
 <resources>
+    <string name="change_language">Change Language</string>
+    <string name="find_your_home_simply">Find your home, simply</string>
+    <string name="choose_language">CHOOSE LANGUAGE</string>
+    <string name="isizulu">isiZulu</string>
+    <string name="english">English</string>
+    <string name="isixhosa">isiXhosa</string>
+    <string name="sesotho">Sesotho</string>
+    <string name="get_started">Get Started</string>
     <string name="app_name">ikhaya</string>
     <string name="my_profile">My Profile</string>
-    <string name="welcome_to_ikhaya">Welcome to iKhaya 👋</string>
+    <string name="welcome_to_ikhaya">Welcome to iKhaya </string>
     <string name="find_accommodation_in_your_area">Find accommodation in your area</string>
     <string name="search_village_town_or_area">Search village, town or area</string>
     <string name="search">Search</string>
