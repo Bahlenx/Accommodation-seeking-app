@@ -12,6 +12,36 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Ikhaya">
         <activity
+            android:name=".PaymentsReceivedActivity"
+            android:exported="false" />
+        <activity
+            android:name=".EnquiriesActivity"
+            android:exported="false" />
+        <activity
+            android:name=".LandlordPersonalInformationActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ReportProblemActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ChangePasswordActivity"
+            android:exported="false" />
+        <activity
+            android:name=".NotificationsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".PaymentHistoryActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ApplicationsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".PersonalInformationActivity"
+            android:exported="false" />
+        <activity
+            android:name=".SavedListingsActivity"
+            android:exported="false" />
+        <activity
             android:name=".LandlordProfileActivity"
             android:exported="false" />
         <activity
@@ -47,7 +77,6 @@
         <activity
             android:name=".RegisterActivity"
             android:exported="false" />
-
     </application>
 
 </manifest>
