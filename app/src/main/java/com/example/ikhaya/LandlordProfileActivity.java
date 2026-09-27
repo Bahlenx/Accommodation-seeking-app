@@ -27,46 +27,71 @@ public class LandlordProfileActivity extends AppCompatActivity {
 
         btnBack.setOnClickListener(v -> finish());
 
-        btnPersonalInfo.setOnClickListener(v ->
-                Toast.makeText(this,
-                        "Personal Information coming soon",
-                        Toast.LENGTH_SHORT).show());
+        btnPersonalInfo.setOnClickListener(v -> {
+            Intent intent = new Intent(
+                    LandlordProfileActivity.this,
+                    LandlordPersonalInformationActivity.class
+            );
 
-        btnMyListings.setOnClickListener(v -> {
-            Intent intent = new Intent(LandlordProfileActivity.this,
-                    MyListingsActivity.class);
             startActivity(intent);
         });
 
-        btnEnquiries.setOnClickListener(v ->
-                Toast.makeText(this,
-                        "Listing Enquiries coming soon",
-                        Toast.LENGTH_SHORT).show());
+        btnMyListings.setOnClickListener(v -> {
+            Intent intent = new Intent(
+                    LandlordProfileActivity.this,
+                    MyListingsActivity.class
+            );
 
-        btnPaymentsReceived.setOnClickListener(v ->
-                Toast.makeText(this,
-                        "Payments Received coming soon",
-                        Toast.LENGTH_SHORT).show());
+            startActivity(intent);
+        });
 
-        btnPaymentHistory.setOnClickListener(v ->
-                Toast.makeText(this,
-                        "Payment History coming soon",
-                        Toast.LENGTH_SHORT).show());
+        btnEnquiries.setOnClickListener(v -> {
+            Intent intent = new Intent(
+                    LandlordProfileActivity.this,
+                    EnquiriesActivity.class
+            );
 
-        btnNotifications.setOnClickListener(v ->
-                Toast.makeText(this,
-                        "Notifications coming soon",
-                        Toast.LENGTH_SHORT).show());
+            startActivity(intent);
+        });
+
+        btnPaymentsReceived.setOnClickListener(v -> {
+            Intent intent = new Intent(
+                    LandlordProfileActivity.this,
+                    PaymentsReceivedActivity.class
+            );
+
+            startActivity(intent);
+        });
+        btnPaymentHistory.setOnClickListener(v -> {
+            Intent intent = new Intent(
+                    LandlordProfileActivity.this,
+                    PaymentHistoryActivity.class
+            );
+
+            startActivity(intent);
+        });
+        btnNotifications.setOnClickListener(v -> {
+            Intent intent = new Intent(
+                    LandlordProfileActivity.this,
+                    NotificationsActivity.class
+            );
+
+            startActivity(intent);
+        });
 
         btnChangePassword.setOnClickListener(v ->
                 Toast.makeText(this,
                         "Change Password coming soon",
                         Toast.LENGTH_SHORT).show());
 
-        btnReportProblem.setOnClickListener(v ->
-                Toast.makeText(this,
-                        "Report a Problem coming soon",
-                        Toast.LENGTH_SHORT).show());
+        btnReportProblem.setOnClickListener(v -> {
+            Intent intent = new Intent(
+                    LandlordProfileActivity.this,
+                    ReportProblemActivity.class
+            );
+
+            startActivity(intent);
+        });
 
         btnLogout.setOnClickListener(v -> {
             Toast.makeText(this,

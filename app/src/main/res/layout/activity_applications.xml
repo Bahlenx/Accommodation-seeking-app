@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="#F7F7F7">
+
+    <Button
+        android:id="@+id/btnBack"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Back"
+        android:textAllCaps="false"
+        android:backgroundTint="#FFA500"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="My Applications"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginTop="20dp"/>
+
+    <TextView
+        android:id="@+id/txtNoApplications"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="You have no applications yet."
+        android:textSize="17sp"
+        android:gravity="center"
+        android:padding="30dp"/>
+
+</LinearLayout>

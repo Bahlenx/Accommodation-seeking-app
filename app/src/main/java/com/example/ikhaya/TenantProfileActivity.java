@@ -1,5 +1,6 @@
 package com.example.ikhaya;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.Toast;
@@ -25,40 +26,54 @@ public class TenantProfileActivity extends AppCompatActivity {
 
         btnBack.setOnClickListener(v -> finish());
 
-        btnPersonalInfo.setOnClickListener(v ->
-                Toast.makeText(this,
-                        "Personal Information coming soon",
-                        Toast.LENGTH_SHORT).show());
+        btnPersonalInfo.setOnClickListener(v -> {
+            startActivity(new Intent(
+                    TenantProfileActivity.this,
+                    PersonalInformationActivity.class
+            ));
+        });
+        btnSavedListings.setOnClickListener(v -> {
+            Intent intent = new Intent(
+                    TenantProfileActivity.this,
+                    SavedListingsActivity.class
+            );
 
-        btnSavedListings.setOnClickListener(v ->
-                Toast.makeText(this,
-                        "Saved Listings coming soon",
-                        Toast.LENGTH_SHORT).show());
+            startActivity(intent);
+        });
 
-        btnApplications.setOnClickListener(v ->
-                Toast.makeText(this,
-                        "Applications coming soon",
-                        Toast.LENGTH_SHORT).show());
+        btnApplications.setOnClickListener(v -> {
+            startActivity(new Intent(
+                    TenantProfileActivity.this,
+                    ApplicationsActivity.class
+            ));
+        });
 
-        btnPaymentHistory.setOnClickListener(v ->
-                Toast.makeText(this,
-                        "Payment History coming soon",
-                        Toast.LENGTH_SHORT).show());
+        btnPaymentHistory.setOnClickListener(v -> {
+            startActivity(new Intent(
+                    TenantProfileActivity.this,
+                    PaymentHistoryActivity.class
+            ));
+        });
 
-        btnNotifications.setOnClickListener(v ->
-                Toast.makeText(this,
-                        "Notifications coming soon",
-                        Toast.LENGTH_SHORT).show());
+        btnNotifications.setOnClickListener(v -> {
+            startActivity(new Intent(
+                    TenantProfileActivity.this,
+                    NotificationsActivity.class
+            ));
+        });
+        btnChangePassword.setOnClickListener(v -> {
+            startActivity(new Intent(
+                    TenantProfileActivity.this,
+                    ChangePasswordActivity.class
+            ));
+        });
 
-        btnChangePassword.setOnClickListener(v ->
-                Toast.makeText(this,
-                        "Change Password coming soon",
-                        Toast.LENGTH_SHORT).show());
-
-        btnReportProblem.setOnClickListener(v ->
-                Toast.makeText(this,
-                        "Report a Problem coming soon",
-                        Toast.LENGTH_SHORT).show());
+        btnReportProblem.setOnClickListener(v -> {
+            startActivity(new Intent(
+                    TenantProfileActivity.this,
+                    ReportProblemActivity.class
+            ));
+        });
 
         btnLogout.setOnClickListener(v -> {
             Toast.makeText(this,
