@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- State: Focused or Pressed -->
+    <item android:state_focused="true" android:state_pressed="true">
+        <shape android:shape="rectangle">
+            <solid android:color="#22000000" /> <!-- A soft semi-transparent dark tint when tapped -->
+            <corners android:radius="8dp" />
+        </shape>
+    </item>
+
+    <!-- State: Default (Transparent so the background image shows through) -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@android:color/transparent" />
+            <corners android:radius="8dp" />
+        </shape>
+    </item>
+</selector>

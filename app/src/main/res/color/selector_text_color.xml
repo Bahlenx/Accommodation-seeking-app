@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Text color when the button IS selected (Black) -->
+    <item android:color="@color/black" android:state_checked="true" />
+
+    <!-- Text color when the button is NOT selected (Grey) -->
+    <item android:color="@color/dark_gray" android:state_checked="false" />
+</selector>

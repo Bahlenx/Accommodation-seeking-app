@@ -1,0 +1,205 @@
+<resources>
+    <!-- System text -->
+    <string name="app_name">iKhaya</string>
+    <string name="app_description">iKhaya Accommodation Application</string>
+    <string name="app_title">iKhaya</string>
+    <string name="slogan">Find your home, simply</string>
+    <string name="home_icon">🏠</string>
+    <string name="choose_language">CHOOSE LANGUAGE</string>
+
+    <!-- Welcome / Registration / Login -->
+    <string name="get_started_btn">Get Started</string>
+    <string name="register_text">Register</string>
+    <string name="register_login">Register / Login</string>
+    <string name="resident_radio_option">Resident</string>
+    <string name="landlord_radio_option">Landlord</string>
+    <string name="login_text">Login</string>
+    <string name="login_btn">Login</string>
+    <string name="register_btn">Register</string>
+    <string name="create_account">Create Account</string>
+    <string name="existing_user">Already have an account?</string>
+    <string name="existing_user_login">Already have an account? Log In</string>
+    <string name="existing_user_btn">Login</string>
+
+    <!-- Input fields & hints -->
+    <string name="username_text">Name</string>
+    <string name="username_hint">Enter your name</string>
+    <string name="usersurname_text">Surname</string>
+    <string name="usersurname_hint">Enter your surname</string>
+    <string name="full_name">Full name</string>
+    <string name="email_text">Email</string>
+    <string name="email_hint">Enter your email</string>
+    <string name="email_placeholder" />
+    <string name="phone_text">Phone number</string>
+    <string name="Phone_hint">Enter your phone number</string>
+    <string name="phone_number">Phone number</string>
+    <string name="phone_placeholder" />
+
+    <string name="password_title">Please enter a Strong Password</string>
+    <string name="password_warning">Please use</string>
+    <string name="password_hint">Password</string>
+    <string name="password_fieldText">Password</string>
+    <string name="current_password">Current password</string>
+    <string name="new_password">New password</string>
+    <string name="confirm_new_password">Confirm new password</string>
+    <string name="change_password">Change Password</string>
+    <string name="forgot_password">Forgot Password?</string>
+
+    <string name="uppercase_checker">Uppercase</string>
+    <string name="lowercase_checker">Lowercase</string>
+    <string name="number_checker">Number</string>
+    <string name="special_character">Special Character</string>
+    <string name="password_checker">Password Strength</string>
+
+    <string name="id_hint">Enter your ID number</string>
+    <string name="id_text">ID Number</string>
+    <string name="id_title">ID Number</string>
+    <string name="id_warning">Your ID number is securely encrypted and used strictly for identity verification and rental eligibility. We never share or use your data for malicious purposes. Please enter a valid ID number.</string>
+
+    <string name="province_text">Province</string>
+    <string name="province_hint">Enter your Province</string>
+    <string name="city_text">City</string>
+    <string name="city_hint">Enter your City</string>
+    <string name="suburb_text">Suburb</string>
+    <string name="suburb_hint">Enter your Suburb</string>
+    <string name="gps_btn">Get GPS Location</string>
+    <string name="town_village_preferred">Town / village preferred</string>
+    <string name="we_will_use_your_phone_number_to_verify_your_account">We will use your phone number to verify your account.</string>
+
+    <!-- OTP -->
+    <string name="otp_button">Send Verification SMS</string>
+    <string name="otp_warning">We will send a free SMS OTP code to verify your phone number. No airtime or data needed</string>
+    <string name="otp_text">OTP Verification</string>
+    <string name="otp_hint">Please enter the code sent to you by sms as it allows use to confirm that you are using the correct number and can be contacted if needed</string>
+    <string name="verify_otp_btn">Verify OTP</string>
+    <string name="otp_digit_1">First digit of OTP</string>
+    <string name="otp_digit_2">Second digit of OTP</string>
+    <string name="otp_digit_3">Third digit of OTP</string>
+    <string name="otp_digit_4">Fourth digit of OTP</string>
+    <string name="otp_digit_5">Fifth digit of OTP</string>
+
+    <!-- Dashboard / Home -->
+    <string name="welcome_dashboard">Welcome to iKhaya!</string>
+    <string name="subtitle_dashboard">Your dashboard will load here soon.</string>
+    <string name="welcome_to_ikhaya">Welcome to iKhaya 👋</string>
+    <string name="home">Home</string>
+    <string name="search">Search</string>
+    <string name="find_accommodation_in_your_area">Find accommodation in your area</string>
+    <string name="search_village_town_or_area">Search village, town or area</string>
+    <string name="search_area_or_village">Search area or village</string>
+    <string name="search_results">Search Results</string>
+    <string name="filters">Filters</string>
+    <string name="popular_areas">Popular Areas</string>
+    <string name="mthatha">Mthatha</string>
+    <string name="giyani">Giyani</string>
+
+    <!-- Profiles / Personal Information -->
+    <string name="profile">Profile</string>
+    <string name="my_profile">My Profile</string>
+    <string name="tenant">Tenant</string>
+    <string name="tenant_name">Tenant Name</string>
+    <string name="tenant_profile">Tenant Profile</string>
+    <string name="landlord">Landlord</string>
+    <string name="landlord_name">Landlord Name</string>
+    <string name="landlord_dashboard">Landlord Dashboard</string>
+    <string name="landlord_profile">Landlord Profile</string>
+    <string name="personal_information">Personal Information</string>
+    <string name="i_am_a">I am a:</string>
+    <string name="name_tenant_name">Name: Tenant Name</string>
+    <string name="email_example_email_com">Email: example@email.com</string>
+    <string name="phone_000_000_0000">Phone: 000 000 0000</string>
+    <string name="log_out">Log Out</string>
+    <string name="back">← Back</string>
+
+    <!-- Navigation / General Actions -->
+    <string name="chat_with_us">Chat with us</string>
+    <string name="desc_go_back">Go Back to previous screen</string>
+    <string name="report_a_problem">Report a Problem</string>
+    <string name="submit_report">Submit Report</string>
+    <string name="describe_the_problem">Describe the problem</string>
+
+    <!-- Accommodation / Listings -->
+    <string name="accommodation_types">Accommodation Types</string>
+    <string name="rooms">Rooms</string>
+    <string name="_2_rooms">2 Rooms</string>
+    <string name="shared_accommodation">Shared Accommodation</string>
+    <string name="houses">Houses</string>
+    <string name="featured_accommodation">Featured Accommodation</string>
+    <string name="available_accommodation">Available Accommodation</string>
+    <string name="add_accommodation">Add Accommodation</string>
+    <string name="add_new_listing">Add New Listing</string>
+    <string name="submit_listing">Submit Listing</string>
+    <string name="save_listing">♡ Save Listing</string>
+    <string name="property_name">Property name</string>
+    <string name="location">Location</string>
+    <string name="location_hint">Location</string>
+    <string name="price_per_month">Price per month</string>
+    <string name="price">Price</string>
+    <string name="type">Type</string>
+    <string name="number_of_rooms">Number of rooms</string>
+    <string name="accommodation_description">Accommodation description</string>
+    <string name="property_information">Property Information</string>
+    <string name="upload_property_image">Upload Property Image</string>
+    <string name="property_image">Property image</string>
+    <string name="property_photo">Property Photo</string>
+    <string name="listings">Listings</string>
+    <string name="my_listings">My Listings</string>
+    <string name="saved_listings">Saved Listings</string>
+    <string name="favourite_saved_listings">Favourite / Saved Listings</string>
+    <string name="manage_your_accommodation_listings">Manage your accommodation listings</string>
+    <string name="listing_overview">Listing Overview</string>
+    <string name="contact_owner">Contact Owner</string>
+    <string name="add">Add</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+    <string name="view_details">View Details</string>
+    <string name="pending">Pending</string>
+    <string name="available">Available</string>
+    <string name="total">Total</string>
+    <string name="_0">0</string>
+
+    <!-- Dummy Accommodation Data for UI Views -->
+    <string name="affordable_room">Affordable Room</string>
+    <string name="affordable_room_10_mthatha_10_r950_month_10_available">Affordable room\nMthatha\nR950 / month\nAvailable</string>
+    <string name="affordable_room_10_10_mthatha_eastern_cape_10_r950_month_10_2_rooms_10_available">Affordable Room\n\nMthatha, Eastern Cape\nR950 / month\n2 Rooms\nAvailable</string>
+    <string name="family_house_10_10_mthatha_eastern_cape_10_r1_500_month_10_3_bedrooms_10_available">Family House\n\nMthatha, Eastern Cape\nR1,500 / month\n3 Bedrooms\nAvailable</string>
+    <string name="shared_accommodation_10_10_mthatha_eastern_cape_10_r750_month_10_1_room_10_available">Shared Accommodation\n\nMthatha, Eastern Cape\nR750 / month\n1 Room\nAvailable</string>
+    <string name="r950_month">R950 / month</string>
+    <string name="r1_500_month">R1 500 / month</string>
+    <string name="mthatha_eastern_cape">Mthatha, Eastern Cape</string>
+    <string name="_2_rooms_10_water_available_10_electricity_available_10_parking_available_10_available_now">2 Rooms\nWater available\nElectricity available\nParking available\nAvailable now</string>
+    <string name="affordable_accommodation_located_in_a_convenient_area_of_mthatha_suitable_for_individuals_looking_for_accessible_and_affordable_housing">Affordable accommodation located in a convenient area of Mthatha. Suitable for individuals looking for accessible and affordable housing.</string>
+
+    <!-- Activity Status / Empty states -->
+    <string name="no_listings_yet">No listings yet</string>
+    <string name="no_saved_listings_yet">No saved listings yet.</string>
+    <string name="accommodation_you_have_saved_will_appear_here">Accommodation you have saved will appear here.</string>
+    <string name="no_payment_history_available">No payment history available.</string>
+    <string name="no_applications_yet">You have no applications yet.</string>
+    <string name="no_new_notifications">No new notifications.</string>
+    <string name="no_enquiries">No enquiries yet.</string>
+    <string name="no_payments_received">No payments received yet.</string>
+
+    <!-- Dashboard Sections -->
+    <string name="my_applications">My Applications</string>
+    <string name="listing_enquiries">Listing Enquiries</string>
+    <string name="enquiries">Enquiries</string>
+    <string name="payments_received">Payments Received</string>
+    <string name="payment_history">Payment History</string>
+    <string name="notifications">Notifications</string>
+
+    <!-- Languages -->
+    <string name="language_selection">Choose your preferred language</string>
+    <string name="english_btn">English</string>
+    <string name="isiZulu_btn">isiZulu</string>
+    <string name="isiXhosa_btn">isiXhosa</string>
+    <string name="sepedi_btn">Sepedi</string>
+    <string name="sesotho_btn">Sesotho</string>
+    <string name="afrikaans_btn">Afrikaans</string>
+
+    <!-- Registration Errors -->
+    <string name="error_first_name">Please enter a valid first name (letters only)</string>
+    <string name="error_surname">Please enter a valid surname (letters only)</string>
+    <string name="error_phone">Enter a valid SA number (e.g., 082 123 4567)</string>
+    <string name="error_email">Please enter a valid email address</string>
+</resources>

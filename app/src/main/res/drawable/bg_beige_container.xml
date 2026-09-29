@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+    <!-- A soft beige color to match your image -->
+    <solid android:color="#F4F0E6" />
+
+    <!-- Rounded corners -->
+    <corners android:radius="12dp" />
+</shape>
