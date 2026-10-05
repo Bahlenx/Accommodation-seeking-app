@@ -21,7 +21,7 @@ import androidx.core.content.ContextCompat;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.FirebaseFirestore;
+// Removed unused Firestore import as we are migrating to Supabase
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -184,50 +184,26 @@ public class PersonalActivity extends AppCompatActivity {
                 FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, password)
                         .addOnCompleteListener(task -> {
                             if (task.isSuccessful()) {
-                                // Account created! Now save the rest of the profile data
-                                String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-
-                                Map<String, Object> user = new HashMap<>();
-                                user.put("firstName", firstName);
-                                user.put("surname", surname);
-                                user.put("phone", phone);
-                                user.put("email", email);
-                                user.put("role", role);
-                                
-                                // Location info
-                                user.put("province", province);
-                                user.put("city", city);
-                                user.put("suburb", suburb);
-
-                                // Save the encrypted ID
-                                user.put("secureId", encryptedId);
-
-                                FirebaseFirestore.getInstance().collection("Users").document(userId)
-                                        .set(user)
-                                        .addOnSuccessListener(aVoid -> {
-                                            Log.d("iKayaAuth", "SUCCESS: User profile securely saved to Firestore!");
-                                            Toast.makeText(PersonalActivity.this, "Registration Successful!", Toast.LENGTH_SHORT).show();
+                                // Account created! Now fetch the ID token and send to Supabase
+                                com.google.firebase.auth.FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                                if (user != null) {
+                                    user.getIdToken(true).addOnCompleteListener(tokenTask -> {
+                                        if (tokenTask.isSuccessful()) {
+                                            String idToken = tokenTask.getResult().getToken();
+                                            String uid = user.getUid();
                                             
-                                            // The user is authenticated by Firebase automatically.
-                                            // Immediately route them to the inner app's dashboard based on their role instead of LoginActivity!
-                                            Intent intent;
-                                            if ("Landlord".equals(role)) {
-                                                intent = new Intent(PersonalActivity.this, LandlordDashboardActivity.class);
-                                            } else {
-                                                intent = new Intent(PersonalActivity.this, HomeActivity.class);
-                                            }
+                                            // Log the idToken and the uid to the console so we can verify this part works
+                                            android.util.Log.d("FirebaseRegister", "ID Token: " + idToken);
+                                            android.util.Log.d("FirebaseRegister", "User UID: " + uid);
                                             
-                                            // Clear the back stack so they can't hit "back" into registration
-                                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                                            startActivity(intent);
-                                            finish();
-                                        })
-                                        .addOnFailureListener(e -> {
-                                            Log.e("iKayaAuth", "ERROR: Failed to save to Firestore", e);
+                                            // Proceed to Supabase Backend
+                                            proceedToSupabaseBackend(idToken, uid);
+                                        } else {
                                             registerBtn.setEnabled(true);
-                                            Toast.makeText(PersonalActivity.this, "Database Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                                        });
-
+                                            Toast.makeText(PersonalActivity.this, "Failed to retrieve authentication token", Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                                }
                             } else {
                                 registerBtn.setEnabled(true);
                                 Toast.makeText(PersonalActivity.this, "Registration Failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
@@ -295,5 +271,44 @@ public class PersonalActivity extends AppCompatActivity {
         } else {
             runOnUiThread(() -> Toast.makeText(PersonalActivity.this, "Could not find a physical address for this location.", Toast.LENGTH_SHORT).show());
         }
+    }
+
+    /**
+     * Placeholder method for the teammate to implement the Supabase HTTP request.
+     * Use the idToken as the Bearer token in the Authorization header.
+     */
+    private void proceedToSupabaseBackend(String idToken, String uid) {
+        // TODO: Implement HTTP POST request to Supabase profiles endpoint using the idToken
+        // Example logic for your teammate:
+        // 1. Send POST request to https://<YOUR_PROJECT_REF>.supabase.co/rest/v1/profiles
+        // 2. Add Headers:
+        //    Authorization: Bearer <idToken>
+        //    apikey: <your_supabase_anon_key>
+        //    Content-Type: application/json
+        // 3. Include all the user data (name, surname, role, encrypted ID, location, etc.) in the JSON body.
+        // 4. Route to LandlordDashboardActivity, TenantDashboardActivity, etc. based on role
+
+        // The teammate will use these variables in the JSON body of the Supabase POST request.
+        String province = provinceInput.getText().toString().trim();
+        String city = cityInput.getText().toString().trim();
+        String suburb = suburbInput.getText().toString().trim();
+        String role = getIntent().getStringExtra("USER_ROLE") != null ? getIntent().getStringExtra("USER_ROLE") : "Resident";
+        String firstName = getIntent().getStringExtra("USER_NAME");
+        String surname = getIntent().getStringExtra("USER_SURNAME");
+        String phone = getIntent().getStringExtra("USER_PHONE");
+        
+        // Log the variables to silence warnings and verify data is passing correctly.
+        android.util.Log.d("SupabaseIntegration", "User Info -> Name: " + firstName + " " + surname + ", Phone: " + phone + ", Role: " + role);
+        android.util.Log.d("SupabaseIntegration", "Location -> " + suburb + ", " + city + ", " + province);
+
+        android.util.Log.d("SupabaseIntegration", "proceedToSupabaseBackend called. Ready for HTTP implementation.");
+        android.util.Log.d("SupabaseIntegration", "Received UID: " + uid);
+        android.util.Log.d("SupabaseIntegration", "Received Token: " + idToken);
+
+        // Temporarily routing to HomeActivity so the app still functions while the teammate works on this
+        Intent homeIntent = new Intent(PersonalActivity.this, HomeActivity.class);
+        homeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(homeIntent);
+        finish();
     }
 }
