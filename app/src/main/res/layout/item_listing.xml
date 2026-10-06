@@ -66,7 +66,8 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:backgroundTint="#FFA500"
+                android:background="@drawable/selector_regular_button"
+                app:backgroundTint="@null"
                 android:text="@string/edit"/>
 
             <Button
@@ -74,7 +75,8 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:backgroundTint="#FFA500"
+                android:background="@drawable/selector_regular_button"
+                app:backgroundTint="@null"
                 android:text="@string/delete"
                 android:layout_marginStart="8dp"/>
 

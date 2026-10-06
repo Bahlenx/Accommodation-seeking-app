@@ -37,20 +37,38 @@
             <EditText
                 android:id="@+id/edtPropertyName"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="56dp"
+                android:background="@drawable/custom_input"
+                android:padding="7dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:textColor="#0B0A0A"
+                android:textColorHint="#4A4A4A"
                 android:hint="@string/property_name"/>
 
             <EditText
                 android:id="@+id/edtLocation"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="56dp"
+                android:background="@drawable/custom_input"
+                android:padding="7dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:textColor="#0B0A0A"
+                android:textColorHint="#4A4A4A"
                 android:hint="@string/location_hint"
                 android:layout_marginTop="12dp"/>
 
             <EditText
                 android:id="@+id/edtPrice"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="56dp"
+                android:background="@drawable/custom_input"
+                android:padding="7dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:textColor="#0B0A0A"
+                android:textColorHint="#4A4A4A"
                 android:hint="@string/price_per_month"
                 android:inputType="numberDecimal"
                 android:layout_marginTop="12dp"/>
@@ -58,7 +76,13 @@
             <EditText
                 android:id="@+id/edtRooms"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="56dp"
+                android:background="@drawable/custom_input"
+                android:padding="7dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:textColor="#0B0A0A"
+                android:textColorHint="#4A4A4A"
                 android:hint="@string/price_per_month"
                 android:inputType="number"
                 android:layout_marginTop="12dp"/>
@@ -67,6 +91,10 @@
                 android:id="@+id/edtDescription"
                 android:layout_width="match_parent"
                 android:layout_height="120dp"
+                android:background="@drawable/custom_input"
+                android:padding="16dp"
+                android:textColor="#0B0A0A"
+                android:textColorHint="#4A4A4A"
                 android:hint="@string/accommodation_description"
                 android:gravity="top"
                 android:inputType="textMultiLine"
@@ -76,7 +104,8 @@
                 android:id="@+id/btnUploadImage"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:backgroundTint="#FFA500"
+                android:background="@drawable/selector_regular_button"
+                app:backgroundTint="@null"
                 android:text="@string/upload_property_image"
                 android:layout_marginTop="20dp"/>
 
@@ -91,7 +120,8 @@
                 android:id="@+id/btnSubmitListing"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:backgroundTint="#FFA500"
+                android:background="@drawable/selector_regular_button"
+                app:backgroundTint="@null"
                 android:text="@string/submit_listing"
                 android:layout_marginTop="20dp"/>
 

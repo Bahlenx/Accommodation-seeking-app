@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.Toast;
+import com.google.firebase.auth.FirebaseAuth;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -94,9 +95,15 @@ public class LandlordProfileActivity extends AppCompatActivity {
         });
 
         btnLogout.setOnClickListener(v -> {
-            Toast.makeText(this,
-                    "Logged out",
-                    Toast.LENGTH_SHORT).show();
+            // Explicitly clear the Firebase session to fix the auto-login bypass bug
+            FirebaseAuth.getInstance().signOut();
+            
+            Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show();
+            
+            // Redirect to Greetings Page and clear back stack
+            Intent intent = new Intent(LandlordProfileActivity.this, OuterMainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
             finish();
         });
     }

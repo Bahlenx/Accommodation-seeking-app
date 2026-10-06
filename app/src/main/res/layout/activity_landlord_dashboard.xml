@@ -26,7 +26,8 @@
         android:id="@+id/btnProfile"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:backgroundTint="#FFA500"
+        android:background="@drawable/selector_regular_button"
+        app:backgroundTint="@null"
         android:text="@string/profile"
         android:textAllCaps="false"
         android:layout_marginEnd="20dp"
@@ -51,7 +52,8 @@
         android:id="@+id/btnAddListing"
         android:layout_width="0dp"
         android:layout_height="55dp"
-        android:backgroundTint="#FFA500"
+        android:background="@drawable/selector_regular_button"
+        app:backgroundTint="@null"
         android:text="@string/add_accommodation"
         android:textSize="16sp"
         android:textAllCaps="false"
@@ -232,7 +234,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:backgroundTint="#FFA500"
+            android:background="@drawable/selector_regular_button"
+        app:backgroundTint="@null"
             android:text="@string/home"
             android:textAllCaps="false" />
 
@@ -241,7 +244,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:backgroundTint="#FFA500"
+            android:background="@drawable/selector_regular_button"
+        app:backgroundTint="@null"
             android:text="@string/listings"
             android:textAllCaps="false" />
 
@@ -250,7 +254,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:backgroundTint="#FFA500"
+            android:background="@drawable/selector_regular_button"
+        app:backgroundTint="@null"
             android:text="@string/add"
             android:textAllCaps="false" />
 
@@ -259,7 +264,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:backgroundTint="#FFA500"
+            android:background="@drawable/selector_regular_button"
+        app:backgroundTint="@null"
             android:text="@string/profile"
             android:textAllCaps="false" />
 
