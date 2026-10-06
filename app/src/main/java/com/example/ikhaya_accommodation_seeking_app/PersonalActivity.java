@@ -250,12 +250,35 @@ public class PersonalActivity extends AppCompatActivity {
         if (addresses != null && !addresses.isEmpty()) {
             Address address = addresses.get(0);
             
+            // 1. Province Field: Exact match for the state/province
             String province = address.getAdminArea();
+            
+            // 2. City Field: Primary locality, fallback to sub-admin area (district/municipality)
             String city = address.getLocality();
-            if (city == null) {
+            if (city == null || city.trim().isEmpty()) {
                 city = address.getSubAdminArea(); // Fallback
             }
+            
+            // 3. Suburb Field: Sub-locality, fallback to address line string parsing
             String suburb = address.getSubLocality();
+            if (suburb == null || suburb.trim().isEmpty()) {
+                // Android Geocoder AddressLine(0) usually looks like: "123 Main St, Midrand, Johannesburg, 1685, South Africa"
+                String fullAddress = address.getAddressLine(0);
+                if (fullAddress != null && !fullAddress.trim().isEmpty()) {
+                    String[] parts = fullAddress.split(",");
+                    if (parts.length > 1) {
+                        // If the first part contains a number (e.g., street number), the suburb/neighborhood is usually the second part.
+                        if (parts[0].matches(".*\\d.*")) {
+                            suburb = parts[1].trim();
+                        } else {
+                            // Otherwise, take the very first part
+                            suburb = parts[0].trim();
+                        }
+                    } else {
+                        suburb = parts[0].trim();
+                    }
+                }
+            }
             
             final String finalProvince = province != null ? province : "";
             final String finalCity = city != null ? city : "";

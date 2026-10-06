@@ -10,7 +10,10 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
-// Firestore import removed as we are migrating to Supabase
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FieldValue;
+import java.util.HashMap;
+import java.util.Map;
 
 public class LoginActivity extends AppCompatActivity {
     @Override
@@ -18,15 +21,22 @@ public class LoginActivity extends AppCompatActivity {
         super.onStart();
         // The Session Gatekeeper (Auto-Login)
         com.google.firebase.auth.FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user != null) {
+        
+        // If the user navigated here manually (explicit login intent), don't bypass
+        boolean explicitLogin = getIntent().getBooleanExtra("EXPLICIT_LOGIN", false);
+
+        if (!explicitLogin && user != null) {
             // User is already logged in, fetch the fresh token and proceed to Supabase
             user.getIdToken(true).addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
                     String idToken = task.getResult().getToken();
                     String userId = user.getUid();
+                    
+                    logDeviceSecurityEvent(userId);
                     proceedToSupabaseBackend(idToken, userId);
                 } else {
-                    Toast.makeText(LoginActivity.this, "Failed to refresh authentication", Toast.LENGTH_SHORT).show();
+                    FirebaseAuth.getInstance().signOut();
+                    Toast.makeText(LoginActivity.this, "Session expired, please log in again", Toast.LENGTH_SHORT).show();
                 }
             });
         }
@@ -84,6 +94,7 @@ public class LoginActivity extends AppCompatActivity {
                                             android.util.Log.d("FirebaseLogin", "ID Token: " + idToken);
                                             android.util.Log.d("FirebaseLogin", "User UID: " + uid);
                                             
+                                            logDeviceSecurityEvent(uid);
                                             // Proceed to fetch the application role from Supabase
                                             proceedToSupabaseBackend(idToken, uid);
                                         } else {
@@ -125,5 +136,51 @@ public class LoginActivity extends AppCompatActivity {
         homeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(homeIntent);
         finish();
+    }
+
+    /**
+     * Logs every successful authentication event to Firestore for security auditing.
+     * Records timestamp, manufacturer, model, OS version, time zone, and IP address.
+     */
+    private void logDeviceSecurityEvent(String uid) {
+        new Thread(() -> {
+            String ipAddress = "Unknown";
+            try {
+                java.net.URL url = new java.net.URL("https://api.ipify.org");
+                java.net.HttpURLConnection connection = (java.net.HttpURLConnection) url.openConnection();
+                connection.setConnectTimeout(5000);
+                connection.setReadTimeout(5000);
+                connection.setRequestMethod("GET");
+                
+                if (connection.getResponseCode() == 200) {
+                    java.io.BufferedReader reader = new java.io.BufferedReader(
+                            new java.io.InputStreamReader(connection.getInputStream()));
+                    ipAddress = reader.readLine();
+                    reader.close();
+                }
+                connection.disconnect();
+            } catch (Exception e) {
+                android.util.Log.e("SecurityLogs", "Failed to fetch IP address", e);
+            }
+
+            String finalIpAddress = ipAddress;
+            Map<String, Object> logData = new HashMap<>();
+            logData.put("timestamp", FieldValue.serverTimestamp());
+            logData.put("manufacturer", android.os.Build.MANUFACTURER);
+            logData.put("model", android.os.Build.MODEL);
+            logData.put("osVersion", android.os.Build.VERSION.RELEASE);
+            logData.put("timeZone", java.util.TimeZone.getDefault().getID());
+            logData.put("ipAddress", finalIpAddress);
+            
+            FirebaseFirestore.getInstance()
+                    .collection("SecurityLogs")
+                    .document(uid)
+                    .collection("Logins")
+                    .add(logData)
+                    .addOnSuccessListener(documentReference -> 
+                        android.util.Log.d("SecurityLogs", "Security event logged successfully with ID: " + documentReference.getId()))
+                    .addOnFailureListener(e -> 
+                        android.util.Log.e("SecurityLogs", "Error logging security event", e));
+        }).start();
     }
 }

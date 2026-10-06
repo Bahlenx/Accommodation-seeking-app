@@ -113,6 +113,7 @@ public class OuterMainActivity extends AppCompatActivity {
         // 5. "Existing User" button logic to move to the Login page
         btnExistingUser.setOnClickListener(v -> {
             Intent intent = new Intent(OuterMainActivity.this, LoginActivity.class);
+            intent.putExtra("EXPLICIT_LOGIN", true); // Pass explicit intent to bypass auto-login gatekeeper if user wants to log in manually
             startActivity(intent);
         });
     }

@@ -12,7 +12,8 @@
         android:layout_height="wrap_content"
         android:text="@string/back"
         android:textAllCaps="false"
-        android:backgroundTint="#FFA500"
+        android:background="@drawable/selector_regular_button"
+        app:backgroundTint="@null"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginStart="16dp"
@@ -67,7 +68,8 @@
                 android:id="@+id/btnPersonalInfo"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:backgroundTint="#FFA500"
+                android:background="@drawable/selector_regular_button"
+        app:backgroundTint="@null"
                 android:text="@string/personal_information"
                 android:textAllCaps="false"
                 android:layout_marginTop="12dp"/>
@@ -76,7 +78,8 @@
                 android:id="@+id/btnSavedListings"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:backgroundTint="#FFA500"
+                android:background="@drawable/selector_regular_button"
+        app:backgroundTint="@null"
                 android:text="@string/favourite_saved_listings"
                 android:textAllCaps="false"/>
 
@@ -84,7 +87,8 @@
                 android:id="@+id/btnApplications"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:backgroundTint="#FFA500"
+                android:background="@drawable/selector_regular_button"
+        app:backgroundTint="@null"
                 android:text="@string/my_applications"
                 android:textAllCaps="false"/>
 
@@ -92,7 +96,8 @@
                 android:id="@+id/btnPaymentHistory"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:backgroundTint="#FFA500"
+                android:background="@drawable/selector_regular_button"
+        app:backgroundTint="@null"
                 android:text="@string/payment_history"
                 android:textAllCaps="false"/>
 
@@ -100,7 +105,8 @@
                 android:id="@+id/btnNotifications"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:backgroundTint="#FFA500"
+                android:background="@drawable/selector_regular_button"
+        app:backgroundTint="@null"
                 android:text="@string/notifications"
                 android:textAllCaps="false"/>
 
@@ -108,7 +114,8 @@
                 android:id="@+id/btnChangePassword"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:backgroundTint="#FFA500"
+                android:background="@drawable/selector_regular_button"
+        app:backgroundTint="@null"
                 android:text="@string/change_password"
                 android:textAllCaps="false"/>
 
@@ -116,7 +123,8 @@
                 android:id="@+id/btnReportProblem"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:backgroundTint="#FFA500"
+                android:background="@drawable/selector_regular_button"
+        app:backgroundTint="@null"
                 android:text="@string/report_a_problem"
                 android:textAllCaps="false"/>
 
@@ -124,7 +132,8 @@
                 android:id="@+id/btnLogout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:backgroundTint="#FFA500"
+                android:background="@drawable/selector_regular_button"
+        app:backgroundTint="@null"
                 android:text="@string/log_out"
                 android:textAllCaps="false"
                 android:layout_marginTop="16dp"/>
