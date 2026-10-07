@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="24dp"
+    android:padding="20dp"
     android:background="#F7F7F7">
 
     <Button
@@ -14,7 +13,8 @@
         android:layout_height="wrap_content"
         android:text="@string/back"
         android:textAllCaps="false"
-        android:backgroundTint="#FFA500"/>
+        android:backgroundTint="@color/colorSecondary"
+        android:textColor="@color/white" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -22,15 +22,31 @@
         android:text="@string/my_applications"
         android:textSize="24sp"
         android:textStyle="bold"
-        android:layout_marginTop="20dp"/>
+        android:textColor="@color/black"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="12dp" />
 
     <TextView
         android:id="@+id/txtNoApplications"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/no_applications_yet"
-        android:textSize="17sp"
+        android:textSize="16sp"
         android:gravity="center"
-        android:padding="30dp"/>
+        android:padding="30dp"
+        android:textColor="#7A7A7A" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:id="@+id/applicationsContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+    </ScrollView>
 
 </LinearLayout>

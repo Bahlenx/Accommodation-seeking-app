@@ -17,6 +17,7 @@ public class LandlordProfileActivity extends AppCompatActivity {
 
         Button btnBack = findViewById(R.id.btnBack);
         Button btnPersonalInfo = findViewById(R.id.btnPersonalInfo);
+        Button btnChangeLanguage = findViewById(R.id.btnChangeLanguage);
         Button btnMyListings = findViewById(R.id.btnMyListings);
         Button btnEnquiries = findViewById(R.id.btnEnquiries);
         Button btnPaymentsReceived = findViewById(R.id.btnPaymentsReceived);
@@ -29,78 +30,46 @@ public class LandlordProfileActivity extends AppCompatActivity {
         btnBack.setOnClickListener(v -> finish());
 
         btnPersonalInfo.setOnClickListener(v -> {
-            Intent intent = new Intent(
-                    LandlordProfileActivity.this,
-                    LandlordPersonalInformationActivity.class
-            );
-
-            startActivity(intent);
+            startActivity(new Intent(LandlordProfileActivity.this, LandlordPersonalInformationActivity.class));
         });
 
-        btnMyListings.setOnClickListener(v -> {
-            Intent intent = new Intent(
-                    LandlordProfileActivity.this,
-                    MyListingsActivity.class
-            );
+        if (btnChangeLanguage != null) {
+            btnChangeLanguage.setOnClickListener(v -> {
+                startActivity(new Intent(LandlordProfileActivity.this, LanguageSettingsActivity.class));
+            });
+        }
 
-            startActivity(intent);
+        btnMyListings.setOnClickListener(v -> {
+            startActivity(new Intent(LandlordProfileActivity.this, MyListingsActivity.class));
         });
 
         btnEnquiries.setOnClickListener(v -> {
-            Intent intent = new Intent(
-                    LandlordProfileActivity.this,
-                    EnquiriesActivity.class
-            );
-
-            startActivity(intent);
+            startActivity(new Intent(LandlordProfileActivity.this, EnquiriesActivity.class));
         });
 
         btnPaymentsReceived.setOnClickListener(v -> {
-            Intent intent = new Intent(
-                    LandlordProfileActivity.this,
-                    PaymentsReceivedActivity.class
-            );
-
-            startActivity(intent);
+            startActivity(new Intent(LandlordProfileActivity.this, PaymentsReceivedActivity.class));
         });
+
         btnPaymentHistory.setOnClickListener(v -> {
-            Intent intent = new Intent(
-                    LandlordProfileActivity.this,
-                    PaymentHistoryActivity.class
-            );
-
-            startActivity(intent);
+            startActivity(new Intent(LandlordProfileActivity.this, PaymentHistoryActivity.class));
         });
+
         btnNotifications.setOnClickListener(v -> {
-            Intent intent = new Intent(
-                    LandlordProfileActivity.this,
-                    NotificationsActivity.class
-            );
-
-            startActivity(intent);
+            startActivity(new Intent(LandlordProfileActivity.this, NotificationsActivity.class));
         });
 
-        btnChangePassword.setOnClickListener(v ->
-                Toast.makeText(this,
-                        "Change Password coming soon",
-                        Toast.LENGTH_SHORT).show());
+        btnChangePassword.setOnClickListener(v -> {
+            startActivity(new Intent(LandlordProfileActivity.this, ChangePasswordActivity.class));
+        });
 
         btnReportProblem.setOnClickListener(v -> {
-            Intent intent = new Intent(
-                    LandlordProfileActivity.this,
-                    ReportProblemActivity.class
-            );
-
-            startActivity(intent);
+            startActivity(new Intent(LandlordProfileActivity.this, ReportProblemActivity.class));
         });
 
         btnLogout.setOnClickListener(v -> {
-            // Explicitly clear the Firebase session to fix the auto-login bypass bug
             FirebaseAuth.getInstance().signOut();
-            
             Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show();
-            
-            // Redirect to Greetings Page and clear back stack
             Intent intent = new Intent(LandlordProfileActivity.this, OuterMainActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);

@@ -1,233 +1,208 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<androidx.constraintlayout.widget.ConstraintLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:background="#F7F7F7">
 
-    <TextView
-        android:id="@+id/txtDashboardTitle"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="@string/landlord_dashboard"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:textColor="#222222"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="28dp"
-        android:layout_marginEnd="24dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/btnProfile"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <Button
-        android:id="@+id/btnProfile"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@drawable/selector_regular_button"
-        app:backgroundTint="@null"
-        android:text="@string/profile"
-        android:textAllCaps="false"
-        android:layout_marginEnd="20dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/txtDashboardTitle" />
-
-    <TextView
-        android:id="@+id/txtWelcome"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="@string/manage_your_accommodation_listings"
-        android:textSize="15sp"
-        android:textColor="#666666"
-        android:layout_marginStart="24dp"
-        android:layout_marginEnd="24dp"
-        android:layout_marginTop="6dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/txtDashboardTitle" />
-
-    <Button
-        android:id="@+id/btnAddListing"
-        android:layout_width="0dp"
-        android:layout_height="55dp"
-        android:background="@drawable/selector_regular_button"
-        app:backgroundTint="@null"
-        android:text="@string/add_accommodation"
-        android:textSize="16sp"
-        android:textAllCaps="false"
-        android:layout_marginStart="24dp"
-        android:layout_marginEnd="24dp"
-        android:layout_marginTop="24dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/txtWelcome" />
-
-    <TextView
-        android:id="@+id/txtStatistics"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="@string/listing_overview"
-        android:textSize="19sp"
-        android:textStyle="bold"
-        android:textColor="#222222"
-        android:layout_marginStart="24dp"
-        android:layout_marginEnd="24dp"
-        android:layout_marginTop="28dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btnAddListing" />
-
+    <!-- 1. Pinned Top Header: Profile Button is always visible & clickable -->
     <LinearLayout
-        android:id="@+id/statisticsContainer"
-        android:layout_width="0dp"
-        android:layout_height="110dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:weightSum="3"
-        android:layout_marginStart="20dp"
-        android:layout_marginEnd="20dp"
-        android:layout_marginTop="12dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/txtStatistics">
+        android:gravity="center_vertical"
+        android:paddingHorizontal="24dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="12dp"
+        android:background="#F7F7F7">
 
-        <LinearLayout
+        <TextView
+            android:id="@+id/txtDashboardTitle"
             android:layout_width="0dp"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:layout_margin="4dp"
-            android:background="#FFFFFF">
+            android:text="@string/landlord_dashboard"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="#222222" />
 
-            <TextView
-                android:id="@+id/txtTotalListings"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/_0"
-                android:textSize="25sp"
-                android:textStyle="bold"
-                android:textColor="#222222" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/total"
-                android:textSize="13sp"
-                android:textColor="#777777" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:layout_margin="4dp"
-            android:background="#FFFFFF">
-
-            <TextView
-                android:id="@+id/txtAvailableListings"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/_0"
-                android:textSize="25sp"
-                android:textStyle="bold"
-                android:textColor="#222222" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/available"
-                android:textSize="13sp"
-                android:textColor="#777777" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:layout_margin="4dp"
-            android:background="#FFFFFF">
-
-            <TextView
-                android:id="@+id/txtPendingListings"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/_0"
-                android:textSize="25sp"
-                android:textStyle="bold"
-                android:textColor="#222222" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/pending"
-                android:textSize="13sp"
-                android:textColor="#777777" />
-
-        </LinearLayout>
-
+        <Button
+            android:id="@+id/btnProfile"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/selector_regular_button"
+            app:backgroundTint="@null"
+            android:text="@string/profile"
+            android:textAllCaps="false"
+            android:textSize="13sp" />
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/txtMyListings"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="@string/my_listings"
-        android:textSize="19sp"
-        android:textStyle="bold"
-        android:textColor="#222222"
-        android:layout_marginStart="24dp"
-        android:layout_marginEnd="24dp"
-        android:layout_marginTop="24dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/statisticsContainer" />
-
+    <!-- 2. Scrollable Dashboard Body -->
     <ScrollView
-        android:id="@+id/listingsScroll"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:layout_weight="1"
         android:fillViewport="true"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="10dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/txtMyListings"
-        app:layout_constraintBottom_toTopOf="@id/bottomNavigation">
+        android:scrollbars="vertical">
 
         <LinearLayout
-            android:id="@+id/listingsContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingStart="20dp"
-            android:paddingEnd="20dp"
-            android:paddingBottom="20dp">
+            android:paddingHorizontal="24dp"
+            android:paddingBottom="24dp">
+
+            <TextView
+                android:id="@+id/txtWelcome"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/manage_your_accommodation_listings"
+                android:textSize="14sp"
+                android:textColor="#666666"
+                android:layout_marginTop="2dp" />
+
+            <Button
+                android:id="@+id/btnAddListing"
+                android:layout_width="match_parent"
+                android:layout_height="54dp"
+                android:background="@drawable/selector_regular_button"
+                app:backgroundTint="@null"
+                android:text="@string/add_accommodation"
+                android:textSize="16sp"
+                android:textAllCaps="false"
+                android:layout_marginTop="16dp" />
+
+            <TextView
+                android:id="@+id/txtStatistics"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/listing_overview"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#222222"
+                android:layout_marginTop="24dp" />
+
+            <!-- Statistics Cards -->
+            <LinearLayout
+                android:id="@+id/statisticsContainer"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:orientation="horizontal"
+                android:weightSum="3"
+                android:layout_marginTop="12dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:layout_marginEnd="6dp"
+                    android:background="#FFFFFF">
+
+                    <TextView
+                        android:id="@+id/txtTotalListings"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/_0"
+                        android:textSize="22sp"
+                        android:textStyle="bold"
+                        android:textColor="#222222" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/total"
+                        android:textSize="12sp"
+                        android:textColor="#777777" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:layout_marginHorizontal="3dp"
+                    android:background="#FFFFFF">
+
+                    <TextView
+                        android:id="@+id/txtAvailableListings"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/_0"
+                        android:textSize="22sp"
+                        android:textStyle="bold"
+                        android:textColor="#222222" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/available"
+                        android:textSize="12sp"
+                        android:textColor="#777777" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:layout_marginStart="6dp"
+                    android:background="#FFFFFF">
+
+                    <TextView
+                        android:id="@+id/txtPendingListings"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/_0"
+                        android:textSize="22sp"
+                        android:textStyle="bold"
+                        android:textColor="#222222" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/pending"
+                        android:textSize="12sp"
+                        android:textColor="#777777" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/txtMyListings"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/my_listings"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#222222"
+                android:layout_marginTop="24dp" />
+
+            <!-- Container for dynamically populated listing items -->
+            <LinearLayout
+                android:id="@+id/listingsContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="12dp">
+            </LinearLayout>
 
         </LinearLayout>
-
     </ScrollView>
 
-    <!-- Bottom Navigation -->
+    <!-- 3. Bottom Navigation Bar -->
     <LinearLayout
         android:id="@+id/bottomNavigation"
-        android:layout_width="0dp"
-        android:layout_height="65dp"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
         android:orientation="horizontal"
         android:gravity="center"
         android:background="#FFFFFF"
-        android:elevation="8dp"
-        android:layout_marginBottom="20dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent">
+        android:elevation="8dp">
 
         <Button
             android:id="@+id/navHome"
@@ -235,9 +210,10 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:background="@drawable/selector_regular_button"
-        app:backgroundTint="@null"
+            app:backgroundTint="@null"
             android:text="@string/home"
-            android:textAllCaps="false" />
+            android:textAllCaps="false"
+            android:textSize="12sp" />
 
         <Button
             android:id="@+id/navListings"
@@ -245,9 +221,10 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:background="@drawable/selector_regular_button"
-        app:backgroundTint="@null"
+            app:backgroundTint="@null"
             android:text="@string/listings"
-            android:textAllCaps="false" />
+            android:textAllCaps="false"
+            android:textSize="12sp" />
 
         <Button
             android:id="@+id/navAdd"
@@ -255,9 +232,10 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:background="@drawable/selector_regular_button"
-        app:backgroundTint="@null"
+            app:backgroundTint="@null"
             android:text="@string/add"
-            android:textAllCaps="false" />
+            android:textAllCaps="false"
+            android:textSize="12sp" />
 
         <Button
             android:id="@+id/navProfile"
@@ -265,10 +243,10 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:background="@drawable/selector_regular_button"
-        app:backgroundTint="@null"
+            app:backgroundTint="@null"
             android:text="@string/profile"
-            android:textAllCaps="false" />
-
+            android:textAllCaps="false"
+            android:textSize="12sp" />
     </LinearLayout>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>

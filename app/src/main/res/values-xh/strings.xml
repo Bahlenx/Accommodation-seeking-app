@@ -1,0 +1,223 @@
+<resources>
+    <string name="change_language">Tshintsha Ulwimi</string>
+    <string name="find_your_home_simply">Fumana ikhaya lakho, lula nje</string>
+    <string name="choose_language">KHETHA ULWIMI</string>
+    <string name="isizulu">isiZulu</string>
+    <string name="english">English</string>
+    <string name="isixhosa">isiXhosa</string>
+    <string name="sesotho">Sesotho</string>
+    <string name="get_started">Qalisa Apha</string>
+    <string name="app_name">ikhaya</string>
+    <string name="my_profile">Iprofayili Yam</string>
+    <string name="welcome_to_ikhaya">Wamkelekile e-iKhaya</string>
+    <string name="find_accommodation_in_your_area">Fumana indawo yokuhlala kwingingqi yakho</string>
+    <string name="search_village_town_or_area">Khangela ilali, idolophu okanye indawo</string>
+    <string name="search">Khangela</string>
+    <string name="popular_areas">Iindawo Ezithandwayo</string>
+    <string name="mthatha">EMthatha</string>
+    <string name="giyani">EGiyani</string>
+    <string name="accommodation_types">Iindidi Zokuhlala</string>
+    <string name="rooms">Amagumbi</string>
+    <string name="shared_accommodation">Indawo Yokwabelana</string>
+    <string name="houses">Izindlu</string>
+    <string name="featured_accommodation">Iindawo Ezikhethiweyo</string>
+    <string name="affordable_room_10_mthatha_10_r950_month_10_available">Igumbi elifikelelekayo\nEMthatha\nR950 / ngenyanga\nLikhona</string>
+    <string name="add_accommodation">Faka Indawo Yokuhlala</string>
+    <string name="property_name">Igama lendawo</string>
+    <string name="location">Indawo</string>
+    <string name="price_per_month">Ixabiso ngenyanga</string>
+    <string name="number_of_rooms">Inani lamagumbi</string>
+    <string name="accommodation_description">Inkcazo ngendawo yokuhlala</string>
+    <string name="upload_property_image">Faka Umfanekiso Wendawo</string>
+    <string name="add_new_listing">Faka Uluhlu Olutsha</string>
+    <string name="location_hint">Indawo</string>
+    <string name="submit_listing">Ngenisa Uluhlu</string>
+    <string name="listings">Uluhlu Lwezindlu</string>
+    <string name="add">Faka</string>
+    <string name="profile">Iprofayili</string>
+    <string name="home">Ekhaya</string>
+    <string name="my_listings">Uluhlu Lwam</string>
+    <string name="pending">Kusalindwe</string>
+    <string name="landlord_dashboard">Ideshibhodi Yomnini-ndlu</string>
+    <string name="manage_your_accommodation_listings">Lawula iindawo zakho zokuhlala</string>
+    <string name="listing_overview">Isishwankathelo Soluhlu</string>
+    <string name="_0">0</string>
+    <string name="total">Lulonke</string>
+    <string name="available">Ikhona</string>
+    <string name="back">← Emva</string>
+    <string name="landlord_profile">Iprofayili Yomnini-ndlu</string>
+    <string name="landlord_name">Igama Lomnini-ndlu</string>
+    <string name="landlord">Umnini-ndlu</string>
+    <string name="personal_information">Iinkcukacha Zakho</string>
+    <string name="listing_enquiries">Imibuzo Ngendawo</string>
+    <string name="payments_received">Iintlawulo Ezifunyenweyo</string>
+    <string name="payment_history">Imbali Yeentlawulo</string>
+    <string name="notifications">Izaziso</string>
+    <string name="change_password">Tshintsha Igama Lokugqithisa</string>
+    <string name="report_a_problem">Xela Ingxaki</string>
+    <string name="log_out">Phuma</string>
+    <string name="no_listings_yet">Alukho uluhlu okwangoku</string>
+    <string name="property_photo">Umfanekiso Wendawo</string>
+    <string name="affordable_room">Igumbi Elifikelelekayo</string>
+    <string name="r950_month">R950 / ngenyanga</string>
+    <string name="mthatha_eastern_cape">EMthatha, Eastern Cape</string>
+    <string name="property_information">Iinkcukacha Zendawo</string>
+    <string name="_2_rooms_10_water_available_10_electricity_available_10_parking_available_10_available_now">Amagumbi amabini\nAmanzi akhona\nUmbane ukhona\nIndawo yokupaka ikhona\nIyafumaneka ngoku</string>
+    <string name="affordable_accommodation_located_in_a_convenient_area_of_mthatha_suitable_for_individuals_looking_for_accessible_and_affordable_housing">Indawo yokuhlala efikelelekayo eMthatha. Ilungele abantu abafuna izindlu ezifikelelekayo nezifanelekileyo.</string>
+    <string name="save_listing">♡ Gcina Uluhlu</string>
+    <string name="contact_owner">Qhagamshelana Nomnini</string>
+    <string name="register_login">Bhalisa / Ngena</string>
+    <string name="i_am_a">Ndingu:</string>
+    <string name="tenant">Umqeshi</string>
+    <string name="full_name">Igama elipheleleyo</string>
+    <string name="phone_number">Inombolo yomnxeba</string>
+    <string name="town_village_preferred">Idolophu okanye ilali oyikhethayo</string>
+    <string name="we_will_use_your_phone_number_to_verify_your_account">Siza kusebenzisa inombolo yakho yomnxeba ukuqinisekisa i-akhawunti yakho.</string>
+    <string name="search_results">Iziphumo Zokukhangela</string>
+    <string name="search_area_or_village">Khangela indawo okanye ilali</string>
+    <string name="filters">Izihluzi</string>
+    <string name="price">Ixabiso</string>
+    <string name="type">Uhlobo</string>
+    <string name="available_accommodation">Iindawo Ezikhoyo</string>
+    <string name="affordable_room_10_10_mthatha_eastern_cape_10_r950_month_10_2_rooms_10_available">Igumbi Elifikelelekayo\n\nEMthatha, Eastern Cape\nR950 / ngenyanga\nAmagumbi amabini\nLikhona</string>
+    <string name="view_details">Jonga Iinkcukacha</string>
+    <string name="family_house_10_10_mthatha_eastern_cape_10_r1_500_month_10_3_bedrooms_10_available">Indlu Yosapho\n\nEMthatha, Eastern Cape\nR1,500 / ngenyanga\nAmagumbi okulala amathathu\nIkhona</string>
+    <string name="shared_accommodation_10_10_mthatha_eastern_cape_10_r750_month_10_1_room_10_available">Indawo Yokwabelana\n\nEMthatha, Eastern Cape\nR750 / ngenyanga\nIgumbi elinye\nLikhona</string>
+    <string name="edit">Hlela</string>
+    <string name="delete">Cima</string>
+    <string name="_2_rooms">Amagumbi amabini</string>
+    <string name="r1_500_month">R1 500 / ngenyanga</string>
+    <string name="property_image">Umfanekiso wendawo</string>
+    <string name="my_applications">Izicelo Zam</string>
+    <string name="favourite_saved_listings">Iindawo Ezigciniweyo</string>
+    <string name="tenant_name">Igama Lomqeshi</string>
+    <string name="amenity_water">Amanzi (Umasipala / Itanki)</string>
+    <string name="amenity_electricity">Umbane Othe ngaphambili</string>
+    <string name="amenity_parking">Indawo Yokupaka Ekhuselekileyo</string>
+    <string name="amenity_wifi">I-Wi-Fi Ifakiwe</string>
+    <string name="amenity_borehole">Amanzi Ompompo/Borehole</string>
+    <string name="rule_available_now">Iyafumaneka Ngoku</string>
+    <string name="rule_deposit_req">Kufuneka Idiphozithi</string>
+    <string name="rule_no_pets">Izilwanyana Azivumelekanga</string>
+    <string name="rule_fenced">Kubiyelwe Ngesango</string>
+    <string name="view_on_map">Jonga Emaphini</string>
+    <string name="amenities_header">Iinkonzo/Izinto Ezikhoyo</string>
+    <string name="rules_header">Imithetho Nokufumaneka</string>
+    <string name="section_property_type">Uhlobo lwendawo</string>
+    <string name="section_amenities">Khetha izinto ezikhoyo</string>
+    <string name="section_rules">Imithetho nokufumaneka</string>
+    <string name="type_single_room">Igumbi elinye / Igumbi langasemva</string>
+    <string name="type_flatlet">Ifletana / Ikotshi</string>
+    <string name="type_commune">Indlu yabafundi yokuhlala kunye</string>
+    <string name="type_house">Indlu epheleleyo</string>
+    <string name="verify">Qinisekisa</string>
+    <string name="verify_location_hint">Faka idolophu, ilali okanye indawo uze ucinezele Qinisekisa</string>
+    <string name="description_hint">Nika inkcazo emfutshane ngegumbi, izithuthi, njl.</string>
+    <string name="hint_property_type">Uhlobo Lwendawo</string>
+    <string name="hint_water_infra">Iziseko Zamanzi</string>
+    <string name="hint_power_infra">Umbane Namandla</string>
+    <string name="hint_sanitation_infra">Indlu Yangasese Nococeko</string>
+    <string name="select_features_rules">Khetha Iimpawu Nemithetho</string>
+    <string name="btn_add_extra_features">+ Khetha Ezinye Izinto Ezikhoyo</string>
+    <string name="error_first_name">Nceda ufake igama lakho</string>
+    <string name="error_surname">Nceda ufake ifani yakho</string>
+    <string name="error_phone">Nceda ufake inombolo yomnxeba echanekileyo</string>
+    <string name="error_email">Nceda ufake i-imeyile echanekileyo</string>
+    <string name="email_placeholder">umzekelo@email.com</string>
+    <string name="phone_placeholder">012 345 6789</string>
+    <string name="desc_go_back">Buyela Emva</string>
+    <string name="email_hint">Faka i-imeyile yakho</string>
+    <string name="email_text">Idilesi ye-imeyile</string>
+    <string name="password_fieldText">Igama lokugqithisa</string>
+    <string name="password_hint">Faka igama lakho lokugqithisa</string>
+    <string name="login_text">Ngena</string>
+    <string name="login_btn">Ngena</string>
+    <string name="forgot_password">Ulibale igama lokugqithisa?</string>
+    <string name="chat_with_us">Thetha nathi</string>
+    <string name="otp_text">Faka i-OTP</string>
+    <string name="otp_hint">000000</string>
+    <string name="home_icon">I-ayikhoni yasekhaya</string>
+    <string name="no_new_notifications">Akukho zaziso zintsha</string>
+    <string name="no_applications_yet">Akukho zicelo okwangoku</string>
+    <string name="current_password">Igama lokugqithisa langoku</string>
+    <string name="new_password">Igama lokugqithisa elitsha</string>
+    <string name="confirm_new_password">Qinisekisa igama elitsha</string>
+    <string name="enquiries">Imibuzo</string>
+    <string name="no_enquiries">Akukho mibuzo okwangoku</string>
+    <string name="app_title">iKhaya</string>
+    <string name="slogan">Fumana ikhaya lakho, lula nje</string>
+    <string name="language_selection">KHETHA ULWIMI</string>
+    <string name="english_btn">English</string>
+    <string name="afrikaans_btn">Afrikaans</string>
+    <string name="sepedi_btn">Sepedi</string>
+    <string name="sesotho_btn">Sesotho</string>
+    <string name="isiXhosa_btn">isiXhosa</string>
+    <string name="isiZulu_btn">isiZulu</string>
+    <string name="get_started_btn">Qalisa Apha</string>
+    <string name="existing_user_btn">Ndiyenayo i-akhawunti</string>
+    <string name="existing_user">Ndiyenayo i-akhawunti</string>
+    <string name="welcome_dashboard">Wamkelekile kwiDeshibhodi yakho</string>
+    <string name="subtitle_dashboard">Lawula iprofayili neendawo zakho</string>
+
+    <!-- Rental Application Form & Verification -->
+    <string name="apply_title">Isicelo Sokurenta Indawo</string>
+    <string name="btn_apply_to_rent">Faka Isicelo Sokurenta</string>
+    <string name="btn_pending_review">Isicelo Sisaphononongwa</string>
+    <string name="label_full_name">Amagama Apheleleyo</string>
+    <string name="hint_full_name">umz. Tsosang Mashiane</string>
+    <string name="label_id_number">Inombolo Yesazisi / Passport</string>
+    <string name="hint_id_number">Inombolo yesazisi enamanani ali-13</string>
+    <string name="label_contact_phone">Inombolo Yoqhagamshelwano</string>
+    <string name="label_emergency_contact">Umntu Ongaphantsi / Umxhasi</string>
+    <string name="label_occupation_status">Ubume Bomsebenzi</string>
+    <string name="label_move_in_date">Umhla Wokungena Owukhethayo</string>
+    <string name="select_date_placeholder">Khetha Umhla 📅</string>
+    <string name="label_lease_duration">Isithuba Sesivumelwano</string>
+    <string name="label_occupants">Inani Labantu</string>
+    <string name="label_special_notes">Iinkcukacha Ezongezelelweyo / Umyalezo</string>
+    <string name="hint_special_notes">umz. Umfundi ofuna indawo ezolileyo</string>
+    <string name="label_agreement_checkbox">Ndiyaqinisekisa ukuba ezi nkcukacha ziyinyani kwaye ndiyavuma ukulandela imithetho yendawo xa ndamkelwe.</string>
+    <string name="btn_submit_application">Thumela Isicelo</string>
+
+    <!-- Dialog Alerts & Validation Messages -->
+    <string name="dialog_discard_title">Cima Isicelo?</string>
+    <string name="dialog_discard_message">Ukuphuma ngoku kuza kucima zonke iinkcukacha ozifakileyo.</string>
+    <string name="dialog_btn_discard">Cima</string>
+    <string name="dialog_btn_continue">Qhubeka Nesicelo</string>
+    <string name="msg_toast_applied">Isicelo Sithunyelwe Kumnini-ndawo!</string>
+    <string name="err_enter_name">Nceda ufake amagama akho apheleleyo</string>
+    <string name="err_enter_id">Nceda ufake inombolo yesazisi esemthethweni enamanani ali-13</string>
+    <string name="err_enter_phone">Nceda ufake inombolo yomnxeba esemthethweni enamanani ali-10</string>
+    <string name="err_enter_emergency">Nceda ufake inombolo yomntu osondeleyo enamanani ali-10</string>
+    <string name="err_accept_terms">Nceda uvumele imigaqo yendawo ukuze uqhubeleke phambili.</string>
+
+    <!-- Landlord Decision Actions & Status -->
+    <string name="btn_approve_lease">Vuma Isivumelwano</string>
+    <string name="btn_decline_lease">Khaba</string>
+    <string name="status_pending">Ubume: KUSALINDELWE</string>
+    <string name="status_approved">Ubume: KWAMKELWE</string>
+    <string name="status_declined">Ubume: KUKHABIWE</string>
+    <string name="msg_application_approved">Isicelo Samkelwe! Umqeshi wazisiwe.</string>
+    <string name="msg_application_declined">Isicelo Sikhabiwe</string>
+
+    <!-- Dropdown Arrays -->
+    <string-array name="occupations_array">
+        <item>Umfundi</item>
+        <item>Uqeshiwe (Ngokusisigxina / Ikhontrakthi)</item>
+        <item>Uyazisebenzela</item>
+        <item>Ezinye</item>
+    </string-array>
+
+    <string-array name="lease_durations_array">
+        <item>Iinyanga eziyi-12 (Isivumelwano Esiqhelekileyo)</item>
+        <item>Iinyanga eziyi-10 (Unyaka Wemfundo)</item>
+        <item>Iinyanga ezi-6 (Isiqingatha Sonyaka)</item>
+        <item>Inyanga Nenyanga</item>
+    </string-array>
+
+    <string-array name="occupants_count_array">
+        <item>Umntu Omnye (1)</item>
+        <item>Abantu Ababini (2)</item>
+        <item>Abantu Abathathu Okanye Ngaphezulu (3+)</item>
+    </string-array>
+</resources>

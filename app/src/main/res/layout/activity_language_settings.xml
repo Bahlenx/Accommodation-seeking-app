@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="20dp"
+    android:background="#FFFFFF">
+
+    <Button
+        android:id="@+id/btnBack"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/back"
+        android:textAllCaps="false"
+        android:backgroundTint="#FFA500" />
+
+    <TextView
+        android:id="@+id/txtTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/change_language"
+        android:textSize="26sp"
+        android:textStyle="bold"
+        android:textColor="#333333"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="24dp" />
+
+    <RadioGroup
+        android:id="@+id/radioGroupLanguages"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <RadioButton
+            android:id="@+id/rbEnglish"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="@string/english"
+            android:textSize="18sp"
+            android:paddingStart="12dp" />
+
+        <RadioButton
+            android:id="@+id/rbZulu"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="@string/isizulu"
+            android:textSize="18sp"
+            android:paddingStart="12dp" />
+
+        <RadioButton
+            android:id="@+id/rbXhosa"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="@string/isixhosa"
+            android:textSize="18sp"
+            android:paddingStart="12dp" />
+
+        <RadioButton
+            android:id="@+id/rbSesotho"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="@string/sesotho"
+            android:textSize="18sp"
+            android:paddingStart="12dp" />
+
+    </RadioGroup>
+
+    <Button
+        android:id="@+id/btnApplyLanguage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:backgroundTint="#FFA500"
+        android:text="Apply"
+        android:textAllCaps="false"
+        android:textSize="16sp" />
+
+</LinearLayout>

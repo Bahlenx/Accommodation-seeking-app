@@ -22,6 +22,15 @@ public class LandlordDashboardActivity extends AppCompatActivity {
         Button navAdd = findViewById(R.id.navAdd);
         Button navProfile = findViewById(R.id.navProfile);
 
+        // Open Applications screen from dashboard (adjust ID if you have a card/button for applications)
+        int applicationsBtnId = getResources().getIdentifier("btnViewApplications", "id", getPackageName());
+        if (applicationsBtnId != 0) {
+            Button btnViewApps = findViewById(applicationsBtnId);
+            if (btnViewApps != null) {
+                btnViewApps.setOnClickListener(v -> startActivity(new Intent(this, ApplicationsActivity.class)));
+            }
+        }
+
         // Add Accommodation
         btnAddListing.setOnClickListener(v -> {
             Intent intent = new Intent(
