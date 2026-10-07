@@ -1,5 +1,6 @@
 package com.example.ikhaya_accommodation_seeking_app;
 
+import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
@@ -8,8 +9,11 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ProgressBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,6 +31,7 @@ import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
 
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
@@ -37,7 +42,7 @@ public class PropertyDetailsActivity extends AppCompatActivity {
     private String cachedTranslatedDescription = "";
 
     private MapView mapView;
-    private Button btnSave;
+    private Button btnApplyToRent;
 
     // Default coordinates (can also be passed via Intent extras)
     private double verifiedLatitude = -31.5889;
@@ -62,7 +67,6 @@ public class PropertyDetailsActivity extends AppCompatActivity {
         ProgressBar progressTranslate = findViewById(R.id.progressTranslate);
         ChipGroup chipGroupAmenities = findViewById(R.id.chipGroupAmenities);
         ChipGroup chipGroupRules = findViewById(R.id.chipGroupRules);
-        btnSave = findViewById(R.id.btnSave);
 
         mapView = findViewById(R.id.mapView);
         Button btnGetDirections = findViewById(R.id.btnGetDirections);
@@ -180,30 +184,60 @@ public class PropertyDetailsActivity extends AppCompatActivity {
             });
         });
 
-        // 8. Tenant Acquisition: Apply to Rent Action
-        if (btnSave != null) {
-            btnSave.setText(getString(R.string.btn_apply_to_rent));
-            btnSave.setOnClickListener(v -> showApplicationBottomSheet());
+        // Role Switching Handling
+        boolean isLandlord = getIntent().getBooleanExtra("isLandlord", false);
+        Button btnContact = findViewById(R.id.btnContactLandlord);
+        Button btnEditListing = findViewById(R.id.btnEditListing);
+        btnApplyToRent = findViewById(R.id.btnApplyToRent);
+
+        if (isLandlord) {
+            // 1. Hide Tenant-Specific Actions
+            if (btnContact != null) {
+                btnContact.setVisibility(View.GONE);
+            }
+
+            // 2. Show "Edit Listing"
+            if (btnEditListing != null) {
+                btnEditListing.setVisibility(View.VISIBLE);
+                if (btnApplyToRent != null) btnApplyToRent.setVisibility(View.GONE);
+
+                btnEditListing.setOnClickListener(v -> {
+                    Intent editIntent = new Intent(this, AddListingActivity.class);
+                    editIntent.putExtra("isEditing", true);
+                    editIntent.putExtra("listingId", getIntent().getStringExtra("listingId"));
+                    editIntent.putExtra("propertyName", propertyName);
+                    startActivity(editIntent);
+                });
+            }
+        } else {
+            // Tenant View: Show Contact & Apply to Rent
+            if (btnContact != null) btnContact.setVisibility(View.VISIBLE);
+            if (btnEditListing != null) btnEditListing.setVisibility(View.GONE);
+            if (btnApplyToRent != null) {
+                btnApplyToRent.setVisibility(View.VISIBLE);
+                btnApplyToRent.setText(getString(R.string.btn_apply_to_rent));
+                btnApplyToRent.setOnClickListener(v -> showApplicationBottomSheet());
+            }
         }
     }
 
     private void showApplicationBottomSheet() {
-        com.google.android.material.bottomsheet.BottomSheetDialog dialog =
-                new com.google.android.material.bottomsheet.BottomSheetDialog(this);
+        BottomSheetDialog dialog =
+                new BottomSheetDialog(this);
         dialog.setContentView(R.layout.dialog_apply_rental);
 
-        android.widget.ImageButton btnCloseDialog = dialog.findViewById(R.id.btnCloseDialog);
+        ImageButton btnCloseDialog = dialog.findViewById(R.id.btnCloseDialog);
         TextView dialogTitle = dialog.findViewById(R.id.dialogPropertyTitle);
         EditText etApplicantName = dialog.findViewById(R.id.etApplicantName);
         EditText etIdNumber = dialog.findViewById(R.id.etIdNumber);
         EditText etPhone = dialog.findViewById(R.id.etPhone);
         EditText etEmergencyContact = dialog.findViewById(R.id.etEmergencyContact);
-        android.widget.Spinner spinnerOccupation = dialog.findViewById(R.id.spinnerOccupation);
+        Spinner spinnerOccupation = dialog.findViewById(R.id.spinnerOccupation);
         TextView tvSelectedMoveInDate = dialog.findViewById(R.id.tvSelectedMoveInDate);
-        android.widget.Spinner spinnerLeaseDuration = dialog.findViewById(R.id.spinnerLeaseDuration);
-        android.widget.Spinner spinnerOccupants = dialog.findViewById(R.id.spinnerOccupants);
+        Spinner spinnerLeaseDuration = dialog.findViewById(R.id.spinnerLeaseDuration);
+        Spinner spinnerOccupants = dialog.findViewById(R.id.spinnerOccupants);
         EditText etTenantNote = dialog.findViewById(R.id.etTenantNote);
-        android.widget.CheckBox cbAcceptTerms = dialog.findViewById(R.id.cbAcceptTerms);
+        CheckBox cbAcceptTerms = dialog.findViewById(R.id.cbAcceptTerms);
         Button btnSubmit = dialog.findViewById(R.id.btnSubmitApplication);
 
         if (dialogTitle != null) {
@@ -228,11 +262,11 @@ public class PropertyDetailsActivity extends AppCompatActivity {
         final String[] chosenDate = {"01/11/2026"};
         if (tvSelectedMoveInDate != null) {
             tvSelectedMoveInDate.setOnClickListener(v -> {
-                java.util.Calendar cal = java.util.Calendar.getInstance();
-                new android.app.DatePickerDialog(this, (view, year, month, dayOfMonth) -> {
+                Calendar cal = Calendar.getInstance();
+                new DatePickerDialog(this, (view, year, month, dayOfMonth) -> {
                     chosenDate[0] = String.format(Locale.getDefault(), "%02d/%02d/%d", dayOfMonth, month + 1, year);
                     tvSelectedMoveInDate.setText(chosenDate[0]);
-                }, cal.get(java.util.Calendar.YEAR), cal.get(java.util.Calendar.MONTH), cal.get(java.util.Calendar.DAY_OF_MONTH)).show();
+                }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show();
             });
         }
 
@@ -279,7 +313,7 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                         ? etTenantNote.getText().toString().trim() : "Responsible tenant seeking quiet study space.";
 
                 String appId = "APP-" + (System.currentTimeMillis() % 10000);
-                ApplicationManager.addApplication(new ApplicationManager.RentalApplication(
+                ApplicationManager.addApplication(PropertyDetailsActivity.this, new ApplicationManager.RentalApplication(
                         appId,
                         propertyName,
                         name,
@@ -297,10 +331,10 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                 dialog.dismiss();
                 Toast.makeText(this, getString(R.string.msg_toast_applied), Toast.LENGTH_LONG).show();
 
-                if (btnSave != null) {
-                    btnSave.setText(getString(R.string.btn_pending_review));
-                    btnSave.setEnabled(false);
-                    btnSave.setBackgroundTintList(ColorStateList.valueOf(Color.GRAY));
+                if (btnApplyToRent != null) {
+                    btnApplyToRent.setText(getString(R.string.btn_pending_review));
+                    btnApplyToRent.setEnabled(false);
+                    btnApplyToRent.setBackgroundTintList(ColorStateList.valueOf(Color.GRAY));
                 }
             });
         }

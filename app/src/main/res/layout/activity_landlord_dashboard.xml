@@ -93,6 +93,7 @@
                 android:weightSum="3"
                 android:layout_marginTop="12dp">
 
+                <!-- Total Listings Card -->
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
@@ -100,7 +101,8 @@
                     android:orientation="vertical"
                     android:gravity="center"
                     android:layout_marginEnd="6dp"
-                    android:background="#FFFFFF">
+                    android:background="@drawable/selector_regular_button"
+                    android:backgroundTint="#FFFFFF">
 
                     <TextView
                         android:id="@+id/txtTotalListings"
@@ -119,6 +121,7 @@
                         android:textColor="#777777" />
                 </LinearLayout>
 
+                <!-- Available Listings Card -->
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
@@ -126,7 +129,8 @@
                     android:orientation="vertical"
                     android:gravity="center"
                     android:layout_marginHorizontal="3dp"
-                    android:background="#FFFFFF">
+                    android:background="@drawable/selector_regular_button"
+                    android:backgroundTint="#FFFFFF">
 
                     <TextView
                         android:id="@+id/txtAvailableListings"
@@ -145,14 +149,20 @@
                         android:textColor="#777777" />
                 </LinearLayout>
 
+                <!-- Clickable Pending Applications Card -->
                 <LinearLayout
+                    android:id="@+id/cardPendingApplications"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:orientation="vertical"
                     android:gravity="center"
                     android:layout_marginStart="6dp"
-                    android:background="#FFFFFF">
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:background="@drawable/selector_regular_button"
+                    android:backgroundTint="#FFFFFF">
 
                     <TextView
                         android:id="@+id/txtPendingListings"
@@ -161,7 +171,7 @@
                         android:text="@string/_0"
                         android:textSize="22sp"
                         android:textStyle="bold"
-                        android:textColor="#222222" />
+                        android:textColor="#C85A32" />
 
                     <TextView
                         android:layout_width="wrap_content"

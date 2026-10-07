@@ -1,7 +1,6 @@
 package com.example.ikhaya_accommodation_seeking_app;
 
 import android.graphics.Color;
-import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -18,14 +17,17 @@ public class ApplicationsActivity extends AppCompatActivity {
 
     private LinearLayout applicationsContainer;
     private TextView txtNoApplications;
+    private boolean isLandlordView = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_applications);
 
+        isLandlordView = getIntent().getBooleanExtra("isLandlord", true);
+
         Button btnBack = findViewById(R.id.btnBack);
-        btnBack.setOnClickListener(v -> finish());
+        if (btnBack != null) btnBack.setOnClickListener(v -> finish());
 
         applicationsContainer = findViewById(R.id.applicationsContainer);
         txtNoApplications = findViewById(R.id.txtNoApplications);
@@ -43,7 +45,7 @@ public class ApplicationsActivity extends AppCompatActivity {
         if (applicationsContainer == null) return;
 
         applicationsContainer.removeAllViews();
-        List<ApplicationManager.RentalApplication> list = ApplicationManager.getApplications();
+        List<ApplicationManager.RentalApplication> list = ApplicationManager.getApplications(this);
 
         if (list.isEmpty()) {
             if (txtNoApplications != null) txtNoApplications.setVisibility(View.VISIBLE);
@@ -58,96 +60,80 @@ public class ApplicationsActivity extends AppCompatActivity {
                     LinearLayout.LayoutParams.MATCH_PARENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT
             );
-            cardParams.setMargins(0, 0, 0, 20);
+            cardParams.setMargins(0, 0, 0, 24);
             card.setLayoutParams(cardParams);
             card.setRadius(20);
-            card.setCardElevation(3);
+            card.setCardElevation(4);
             card.setCardBackgroundColor(Color.WHITE);
 
             LinearLayout content = new LinearLayout(this);
             content.setOrientation(LinearLayout.VERTICAL);
-            content.setPadding(24, 24, 24, 24);
+            content.setPadding(28, 28, 28, 28);
 
-            // Property Title & Rate
             TextView tvTitle = new TextView(this);
             tvTitle.setText(app.propertyTitle + " (" + app.rentalPrice + ")");
             tvTitle.setTextSize(16);
-            tvTitle.setTypeface(null, Typeface.BOLD);
+            tvTitle.setTypeface(null, android.graphics.Typeface.BOLD);
             tvTitle.setTextColor(Color.BLACK);
 
-            // Detailed Applicant Bio
-            TextView tvDetails = new TextView(this);
-            String info = "• Applicant: " + app.applicantName + " (" + app.occupation + ")\n"
-                    + "• Contact: " + app.phone + " | Ref: " + app.emergencyContact + "\n"
-                    + "• Move-in: " + app.moveInDate + " (" + app.leaseDuration + ")\n"
-                    + "• Occupants: " + app.occupants + "\n"
-                    + "• Note: \"" + app.note + "\"";
-            tvDetails.setText(info);
-            tvDetails.setTextSize(13);
-            tvDetails.setTextColor(Color.parseColor("#444444"));
-            tvDetails.setLineSpacing(4, 1);
-            tvDetails.setPadding(0, 10, 0, 14);
+            TextView tvApplicant = new TextView(this);
+            tvApplicant.setText("Applicant: " + app.applicantName + "\nMove-in: " + app.moveInDate + "\nDuration: " + app.leaseDuration);
+            tvApplicant.setTextSize(13);
+            tvApplicant.setTextColor(Color.DKGRAY);
+            tvApplicant.setPadding(0, 8, 0, 12);
 
-            // Status Badge
             TextView tvStatus = new TextView(this);
             tvStatus.setText("Status: " + app.status);
             tvStatus.setTextSize(13);
-            tvStatus.setTypeface(null, Typeface.BOLD);
+            tvStatus.setTypeface(null, android.graphics.Typeface.BOLD);
             tvStatus.setTextColor("APPROVED".equalsIgnoreCase(app.status)
                     ? Color.parseColor("#2E7D32")
                     : ("DECLINED".equalsIgnoreCase(app.status) ? Color.RED : Color.parseColor("#C85A32")));
             tvStatus.setPadding(0, 0, 0, 14);
 
-            // Actions Layout
-            LinearLayout actionsLayout = new LinearLayout(this);
-            actionsLayout.setOrientation(LinearLayout.HORIZONTAL);
-
-            Button btnApprove = new Button(this);
-            btnApprove.setText(getString(R.string.btn_approve_lease));
-            btnApprove.setAllCaps(false);
-            btnApprove.setTextColor(Color.WHITE);
-            btnApprove.setBackgroundResource(R.drawable.selector_regular_button);
-            LinearLayout.LayoutParams p1 = new LinearLayout.LayoutParams(0, 88, 1);
-            p1.setMarginEnd(6);
-            btnApprove.setLayoutParams(p1);
-
-            Button btnDecline = new Button(this);
-            btnDecline.setText(getString(R.string.btn_decline_lease));
-            btnDecline.setAllCaps(false);
-            btnDecline.setTextColor(Color.DKGRAY);
-            btnDecline.setBackgroundResource(R.drawable.selector_regular_button);
-            LinearLayout.LayoutParams p2 = new LinearLayout.LayoutParams(0, 88, 1);
-            p2.setMarginStart(6);
-            btnDecline.setLayoutParams(p2);
-
-            tvStatus.setText("APPROVED".equalsIgnoreCase(app.status)
-                    ? getString(R.string.status_approved)
-                    : ("DECLINED".equalsIgnoreCase(app.status) ? getString(R.string.status_declined) : getString(R.string.status_pending)));
-
-            if (!"PENDING".equalsIgnoreCase(app.status)) {
-                btnApprove.setVisibility(View.GONE);
-                btnDecline.setVisibility(View.GONE);
-            }
-
-            btnApprove.setOnClickListener(v -> {
-                ApplicationManager.updateStatus(app.id, "APPROVED");
-                Toast.makeText(this, getString(R.string.msg_application_approved), Toast.LENGTH_SHORT).show();
-                renderApplications();
-            });
-
-            btnDecline.setOnClickListener(v -> {
-                ApplicationManager.updateStatus(app.id, "DECLINED");
-                Toast.makeText(this, getString(R.string.msg_application_declined), Toast.LENGTH_SHORT).show();
-                renderApplications();
-            });
-
-            actionsLayout.addView(btnApprove);
-            actionsLayout.addView(btnDecline);
-
             content.addView(tvTitle);
-            content.addView(tvDetails);
+            content.addView(tvApplicant);
             content.addView(tvStatus);
-            content.addView(actionsLayout);
+
+            // Landlord Action Buttons (only visible to Landlord if PENDING)
+            if (isLandlordView && "PENDING".equalsIgnoreCase(app.status)) {
+                LinearLayout actionsLayout = new LinearLayout(this);
+                actionsLayout.setOrientation(LinearLayout.HORIZONTAL);
+
+                Button btnApprove = new Button(this);
+                btnApprove.setText(getString(R.string.btn_approve_lease));
+                btnApprove.setAllCaps(false);
+                btnApprove.setTextColor(Color.WHITE);
+                btnApprove.setBackgroundResource(R.drawable.selector_regular_button);
+                LinearLayout.LayoutParams p1 = new LinearLayout.LayoutParams(0, 90, 1);
+                p1.setMarginEnd(8);
+                btnApprove.setLayoutParams(p1);
+
+                Button btnDecline = new Button(this);
+                btnDecline.setText(getString(R.string.btn_decline_lease));
+                btnDecline.setAllCaps(false);
+                btnDecline.setTextColor(Color.DKGRAY);
+                btnDecline.setBackgroundResource(R.drawable.selector_regular_button);
+                LinearLayout.LayoutParams p2 = new LinearLayout.LayoutParams(0, 90, 1);
+                p2.setMarginStart(8);
+                btnDecline.setLayoutParams(p2);
+
+                btnApprove.setOnClickListener(v -> {
+                    ApplicationManager.updateStatus(this, app.id, "APPROVED");
+                    Toast.makeText(this, getString(R.string.msg_application_approved), Toast.LENGTH_SHORT).show();
+                    renderApplications();
+                });
+
+                btnDecline.setOnClickListener(v -> {
+                    ApplicationManager.updateStatus(this, app.id, "DECLINED");
+                    Toast.makeText(this, getString(R.string.msg_application_declined), Toast.LENGTH_SHORT).show();
+                    renderApplications();
+                });
+
+                actionsLayout.addView(btnApprove);
+                actionsLayout.addView(btnDecline);
+                content.addView(actionsLayout);
+            }
 
             card.addView(content);
             applicationsContainer.addView(card);

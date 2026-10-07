@@ -106,9 +106,9 @@ public class AddListingActivity extends AppCompatActivity {
 
         // 6. Submit Action
         btnSubmitListing.setOnClickListener(v -> {
-            String propertyName = edtPropertyName.getText().toString().trim();
-            String location = edtLocation.getText().toString().trim();
+            String title = edtPropertyName.getText().toString().trim();
             String price = edtPrice.getText().toString().trim();
+            String location = edtLocation != null ? edtLocation.getText().toString().trim() : "Mthatha";
             String rooms = edtRooms.getText().toString().trim();
             String description = edtDescription.getText().toString().trim();
 
@@ -116,7 +116,11 @@ public class AddListingActivity extends AppCompatActivity {
             String water = dropdownWaterSource.getText().toString();
             String power = dropdownElectricity.getText().toString();
 
-            if (propertyName.isEmpty() || location.isEmpty() || price.isEmpty() || rooms.isEmpty() || description.isEmpty()) {
+            if (title.isEmpty()) title = "Spacious Room in Mthatha";
+            if (price.isEmpty()) price = "1200";
+            if (location.isEmpty()) location = "Mthatha";
+
+            if (rooms.isEmpty() || description.isEmpty()) {
                 Toast.makeText(this, "Please fill in all text fields", Toast.LENGTH_SHORT).show();
                 return;
             }
@@ -136,7 +140,16 @@ public class AddListingActivity extends AppCompatActivity {
                 return;
             }
 
-            Toast.makeText(this, "Listing created with " + activeAmenities.size() + " custom amenities!", Toast.LENGTH_SHORT).show();
+            String listingId = "LIST-" + (System.currentTimeMillis() % 10000);
+            ListingManager.addListing(this, new ListingManager.Listing(
+                    listingId,
+                    title,
+                    location,
+                    price.startsWith("R") ? price : "R" + price + "/month",
+                    "Available"
+            ));
+
+            Toast.makeText(this, "Listing Published Successfully!", Toast.LENGTH_SHORT).show();
             finish();
         });
     }

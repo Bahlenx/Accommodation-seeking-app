@@ -260,29 +260,50 @@
                 android:layout_marginTop="8dp" />
 
             <!-- Action CTAs -->
-            <Button
-                android:id="@+id/btnSave"
+            <LinearLayout
+                android:id="@+id/bottomActionLayout"
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:background="@drawable/selector_regular_button"
-                app:backgroundTint="@null"
-                android:text="@string/save_listing"
-                android:textColor="@color/white"
-                android:textAllCaps="false"
-                android:textSize="15sp"
-                android:layout_marginTop="24dp" />
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="24dp">
 
-            <Button
-                android:id="@+id/btnContact"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:background="@drawable/selector_regular_button"
-                app:backgroundTint="@null"
-                android:text="@string/contact_owner"
-                android:textColor="@color/white"
-                android:textAllCaps="false"
-                android:textSize="15sp"
-                android:layout_marginTop="10dp" />
+                <Button
+                    android:id="@+id/btnContactLandlord"
+                    android:layout_width="0dp"
+                    android:layout_height="50dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/selector_regular_button"
+                    app:backgroundTint="@null"
+                    android:text="Contact"
+                    android:textColor="@color/white"
+                    android:textAllCaps="false"
+                    android:textSize="15sp" />
+
+                <Button
+                    android:id="@+id/btnApplyToRent"
+                    android:layout_width="0dp"
+                    android:layout_height="50dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/selector_regular_button"
+                    app:backgroundTint="@null"
+                    android:text="@string/btn_apply_to_rent"
+                    android:textColor="@color/white"
+                    android:textAllCaps="false"
+                    android:textSize="15sp" />
+
+                <Button
+                    android:id="@+id/btnEditListing"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:visibility="gone"
+                    android:background="@drawable/selector_regular_button"
+                    app:backgroundTint="@null"
+                    android:text="Edit Listing"
+                    android:textColor="@color/white"
+                    android:textAllCaps="false"
+                    android:textSize="15sp" />
+            </LinearLayout>
 
         </LinearLayout>
     </ScrollView>
