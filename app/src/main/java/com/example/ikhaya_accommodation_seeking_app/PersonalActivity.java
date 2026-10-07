@@ -181,34 +181,8 @@ public class PersonalActivity extends AppCompatActivity {
                 registerBtn.setEnabled(false);
                 Toast.makeText(PersonalActivity.this, "Registering account...", Toast.LENGTH_SHORT).show();
 
-                FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, password)
-                        .addOnCompleteListener(task -> {
-                            if (task.isSuccessful()) {
-                                // Account created! Now fetch the ID token and send to Supabase
-                                com.google.firebase.auth.FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                                if (user != null) {
-                                    user.getIdToken(true).addOnCompleteListener(tokenTask -> {
-                                        if (tokenTask.isSuccessful()) {
-                                            String idToken = tokenTask.getResult().getToken();
-                                            String uid = user.getUid();
-                                            
-                                            // Log the idToken and the uid to the console so we can verify this part works
-                                            android.util.Log.d("FirebaseRegister", "ID Token: " + idToken);
-                                            android.util.Log.d("FirebaseRegister", "User UID: " + uid);
-                                            
-                                            // Proceed to Supabase Backend
-                                            proceedToSupabaseBackend(idToken, uid);
-                                        } else {
-                                            registerBtn.setEnabled(true);
-                                            Toast.makeText(PersonalActivity.this, "Failed to retrieve authentication token", Toast.LENGTH_SHORT).show();
-                                        }
-                                    });
-                                }
-                            } else {
-                                registerBtn.setEnabled(true);
-                                Toast.makeText(PersonalActivity.this, "Registration Failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
-                            }
-                        });
+                // Call Supabase registration (bypassing Firebase completely)
+                proceedToSupabaseBackend(encryptedId);
             });
         }
     }
@@ -296,21 +270,7 @@ public class PersonalActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Placeholder method for the teammate to implement the Supabase HTTP request.
-     * Use the idToken as the Bearer token in the Authorization header.
-     */
-    private void proceedToSupabaseBackend(String idToken, String uid) {
-        // TODO: Implement HTTP POST request to Supabase profiles endpoint using the idToken
-        // Example logic for your teammate:
-        // 1. Send POST request to https://<YOUR_PROJECT_REF>.supabase.co/rest/v1/profiles
-        // 2. Add Headers:
-        //    Authorization: Bearer <idToken>
-        //    apikey: <your_supabase_anon_key>
-        //    Content-Type: application/json
-        // 3. Include all the user data (name, surname, role, encrypted ID, location, etc.) in the JSON body.
-        // 4. Route to LandlordDashboardActivity, TenantDashboardActivity, etc. based on role
-
+    private void proceedToSupabaseBackend(String encryptedId) {
         // The teammate will use these variables in the JSON body of the Supabase POST request.
         String province = provinceInput.getText().toString().trim();
         String city = cityInput.getText().toString().trim();
@@ -320,18 +280,188 @@ public class PersonalActivity extends AppCompatActivity {
         String surname = getIntent().getStringExtra("USER_SURNAME");
         String phone = getIntent().getStringExtra("USER_PHONE");
         
-        // Log the variables to silence warnings and verify data is passing correctly.
-        android.util.Log.d("SupabaseIntegration", "User Info -> Name: " + firstName + " " + surname + ", Phone: " + phone + ", Role: " + role);
-        android.util.Log.d("SupabaseIntegration", "Location -> " + suburb + ", " + city + ", " + province);
+        executorService.execute(() -> {
+            java.net.HttpURLConnection connection = null;
+            try {
+                // 1. Sign up user via Supabase Auth API
+                String endpoint = "https://wdtazumjjurumrhklwgv.supabase.co/auth/v1/signup";
+                java.net.URL url = new java.net.URL(endpoint);
+                connection = (java.net.HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("POST");
+                connection.setRequestProperty("apikey", "sb_publishable_SgXZRNFBL4tswVtapc3pFQ_qpD-DijB");
+                connection.setRequestProperty("Content-Type", "application/json");
+                connection.setDoOutput(true);
+                
+                String email = getIntent().getStringExtra("USER_EMAIL");
+                String password = getIntent().getStringExtra("USER_PASSWORD");
+                
+                org.json.JSONObject body = new org.json.JSONObject();
+                body.put("email", email);
+                body.put("password", password);
+                
+                connection.getOutputStream().write(body.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                
+                int responseCode = connection.getResponseCode();
+                
+                if (responseCode >= 200 && responseCode < 300) {
+                    // 2. Read Response for access_token and UUID
+                    java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(connection.getInputStream()));
+                    StringBuilder result = new StringBuilder();
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        result.append(line);
+                    }
+                    reader.close();
+                    
+                    org.json.JSONObject data = new org.json.JSONObject(result.toString());
+                    String accessToken = data.optString("access_token", "");
+                    org.json.JSONObject user = data.optJSONObject("user");
+                    
+                    if (!accessToken.isEmpty() && user != null) {
+                        String supabaseUserId = user.optString("id", "");
+                        
+                        // 3. Save profile to Supabase Users table
+                        saveProfileToSupabase(supabaseUserId, accessToken, firstName, surname, email, phone, role, province, city, suburb, encryptedId);
+                        
+                        // Log device security event after successful registration
+                        logDeviceSecurityEvent(supabaseUserId, accessToken);
+                        
+                        // 4. Save session locally
+                        getSharedPreferences("iKhayaSession", MODE_PRIVATE)
+                            .edit()
+                            .putString("access_token", accessToken)
+                            .putString("user_id", supabaseUserId)
+                            .apply();
+                            
+                        // 5. Route user
+                        runOnUiThread(() -> {
+                            Toast.makeText(PersonalActivity.this, "Registration Successful!", Toast.LENGTH_SHORT).show();
+                            Intent homeIntent;
+                            if ("Landlord".equalsIgnoreCase(role)) {
+                                homeIntent = new Intent(PersonalActivity.this, LandlordDashboardActivity.class);
+                            } else {
+                                homeIntent = new Intent(PersonalActivity.this, HomeActivity.class);
+                            }
+                            homeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                            startActivity(homeIntent);
+                            finish();
+                        });
+                    }
+                } else {
+                    java.io.BufferedReader errorReader = new java.io.BufferedReader(new java.io.InputStreamReader(connection.getErrorStream()));
+                    StringBuilder errorResult = new StringBuilder();
+                    String errorLine;
+                    while ((errorLine = errorReader.readLine()) != null) {
+                        errorResult.append(errorLine);
+                    }
+                    errorReader.close();
+                    
+                    String errorMsg = "Registration Failed";
+                    try {
+                        org.json.JSONObject errorJson = new org.json.JSONObject(errorResult.toString());
+                        errorMsg = errorJson.optString("msg", "Registration Failed");
+                    } catch (Exception ignored) {}
+                    
+                    final String finalError = errorMsg;
+                    runOnUiThread(() -> {
+                        registerBtn.setEnabled(true);
+                        Toast.makeText(PersonalActivity.this, finalError, Toast.LENGTH_LONG).show();
+                    });
+                }
+            } catch (Exception e) {
+                runOnUiThread(() -> {
+                    registerBtn.setEnabled(true);
+                    Toast.makeText(PersonalActivity.this, "Network Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
+            } finally {
+                if (connection != null) {
+                    connection.disconnect();
+                }
+            }
+        });
+    }
 
-        android.util.Log.d("SupabaseIntegration", "proceedToSupabaseBackend called. Ready for HTTP implementation.");
-        android.util.Log.d("SupabaseIntegration", "Received UID: " + uid);
-        android.util.Log.d("SupabaseIntegration", "Received Token: " + idToken);
+    private void saveProfileToSupabase(String userId, String accessToken, String firstName, String surname, String email, String phone, String role, String province, String city, String suburb, String encryptedId) {
+        java.net.HttpURLConnection connection = null;
+        try {
+            String endpoint = "https://wdtazumjjurumrhklwgv.supabase.co/rest/v1/Users";
+            java.net.URL url = new java.net.URL(endpoint);
+            connection = (java.net.HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("POST");
+            connection.setRequestProperty("apikey", "sb_publishable_SgXZRNFBL4tswVtapc3pFQ_qpD-DijB");
+            connection.setRequestProperty("Authorization", "Bearer " + accessToken);
+            connection.setRequestProperty("Content-Type", "application/json");
+            connection.setRequestProperty("Prefer", "return=minimal");
+            connection.setDoOutput(true);
+            
+            org.json.JSONObject body = new org.json.JSONObject();
+            body.put("id", userId);
+            body.put("firstName", firstName);
+            body.put("surname", surname);
+            body.put("email", email);
+            body.put("phone", phone);
+            body.put("user_role", role);
+            body.put("province", province);
+            body.put("city", city);
+            body.put("suburb", suburb);
+            body.put("secureId", encryptedId); 
 
-        // Temporarily routing to HomeActivity so the app still functions while the teammate works on this
-        Intent homeIntent = new Intent(PersonalActivity.this, HomeActivity.class);
-        homeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(homeIntent);
-        finish();
+            connection.getOutputStream().write(body.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            connection.getResponseCode(); // Execute
+            
+        } catch (Exception e) {
+            android.util.Log.e("SupabaseIntegration", "Failed to save profile", e);
+        } finally {
+            if (connection != null) {
+                connection.disconnect();
+            }
+        }
+    }
+
+    private void logDeviceSecurityEvent(String userId, String accessToken) {
+        try {
+            // Fetch IP Address
+            String ipAddress = "Unknown";
+            try {
+                java.net.URL ipUrl = new java.net.URL("https://api.ipify.org");
+                java.net.HttpURLConnection ipConn = (java.net.HttpURLConnection) ipUrl.openConnection();
+                ipConn.setConnectTimeout(5000);
+                ipConn.setReadTimeout(5000);
+                ipConn.setRequestMethod("GET");
+                if (ipConn.getResponseCode() == 200) {
+                    java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(ipConn.getInputStream()));
+                    ipAddress = reader.readLine();
+                    reader.close();
+                }
+                ipConn.disconnect();
+            } catch (Exception ignored) {
+                // Ignore if it fails, IP will remain Unknown
+            }
+
+            // Push to Supabase
+            String endpoint = "https://wdtazumjjurumrhklwgv.supabase.co/rest/v1/security_logs";
+            java.net.URL url = new java.net.URL(endpoint);
+            java.net.HttpURLConnection connection = (java.net.HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("POST");
+            connection.setRequestProperty("apikey", "sb_publishable_SgXZRNFBL4tswVtapc3pFQ_qpD-DijB");
+            connection.setRequestProperty("Authorization", "Bearer " + accessToken);
+            connection.setRequestProperty("Content-Type", "application/json");
+            connection.setDoOutput(true);
+
+            org.json.JSONObject body = new org.json.JSONObject();
+            body.put("user_id", userId);
+            body.put("manufacturer", android.os.Build.MANUFACTURER);
+            body.put("model", android.os.Build.MODEL);
+            body.put("os_version", android.os.Build.VERSION.RELEASE);
+            body.put("time_zone", java.util.TimeZone.getDefault().getID());
+            body.put("ip_address", ipAddress);
+
+            connection.getOutputStream().write(body.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            connection.getResponseCode(); // Execute the request
+            connection.disconnect();
+
+        } catch (Exception e) {
+            android.util.Log.e("SupabaseSecurity", "Failed to log security event", e);
+        }
     }
 }
