@@ -5,16 +5,22 @@ import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-public class LandlordPersonalInformationActivity extends AppCompatActivity {
+public class LandlordPersonalInformationActivity
+        extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
+        setContentView(
+                R.layout.activity_landlord_personal_information
+        );
 
-        setContentView(R.layout.activity_landlord_personal_information);
+        Button btnBack =
+                findViewById(R.id.btnBack);
 
-        Button btnBack = findViewById(R.id.btnBack);
-
-        btnBack.setOnClickListener(v -> finish());
+        btnBack.setOnClickListener(
+                v -> finish()
+        );
     }
 }

@@ -6,6 +6,19 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <Button
+        android:id="@+id/btnBack"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:text="@string/back"
+        android:textAllCaps="false"
+        android:background="@drawable/selector_regular_button"
+        app:backgroundTint="@null"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"/>
+
     <TextView
         android:id="@+id/txtMyListingsTitle"
         android:layout_width="wrap_content"
@@ -13,21 +26,23 @@
         android:text="@string/my_listings"
         android:textSize="24sp"
         android:textStyle="bold"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btnBack"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginStart="24dp"
-        android:layout_marginTop="24dp"/>
+        android:layout_marginTop="12dp"/>
 
     <TextView
         android:id="@+id/txtNoListings"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/no_listings_yet"
         android:textSize="16sp"
+        android:gravity="center"
         app:layout_constraintTop_toBottomOf="@id/txtMyListingsTitle"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="40dp"/>
+        android:layout_marginTop="40dp"
+        android:padding="24dp"/>
 
     <ScrollView
         android:id="@+id/myListingsScroll"
@@ -44,9 +59,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="24dp">
-
-        </LinearLayout>
+            android:padding="24dp"/>
 
     </ScrollView>
 

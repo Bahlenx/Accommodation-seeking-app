@@ -20,7 +20,7 @@
             android:textSize="25sp"
             android:textStyle="bold"
             android:textColor="#333333"
-            android:layout_marginTop="15dp" />
+            android:layout_marginTop="15dp"/>
 
         <EditText
             android:id="@+id/searchBox"
@@ -34,17 +34,17 @@
             android:textColorHint="#4A4A4A"
             android:hint="@string/search_area_or_village"
             android:inputType="text"
-            android:layout_marginTop="20dp" />
+            android:layout_marginTop="20dp"/>
 
         <Button
-            android:background="@drawable/selector_regular_button"
-            app:backgroundTint="@null"
             android:id="@+id/btnSearchAgain"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@drawable/selector_regular_button"
+            app:backgroundTint="@null"
             android:text="@string/search"
             android:textAllCaps="false"
-            android:layout_marginTop="8dp" />
+            android:layout_marginTop="8dp"/>
 
         <TextView
             android:layout_width="wrap_content"
@@ -53,7 +53,7 @@
             android:textSize="18sp"
             android:textStyle="bold"
             android:textColor="#333333"
-            android:layout_marginTop="25dp" />
+            android:layout_marginTop="25dp"/>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -61,33 +61,33 @@
             android:orientation="horizontal">
 
             <Button
-                android:background="@drawable/selector_regular_button"
-            app:backgroundTint="@null"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:background="@drawable/selector_regular_button"
+                app:backgroundTint="@null"
                 android:text="@string/price"
-                android:textAllCaps="false" />
+                android:textAllCaps="false"/>
 
             <Button
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:background="@drawable/selector_regular_button"
-            app:backgroundTint="@null"
                 android:layout_weight="1"
+                android:background="@drawable/selector_regular_button"
+                app:backgroundTint="@null"
                 android:text="@string/rooms"
                 android:textAllCaps="false"
-                android:layout_marginStart="5dp" />
+                android:layout_marginStart="5dp"/>
 
             <Button
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:background="@drawable/selector_regular_button"
-            app:backgroundTint="@null"
                 android:layout_weight="1"
+                android:background="@drawable/selector_regular_button"
+                app:backgroundTint="@null"
                 android:text="@string/type"
                 android:textAllCaps="false"
-                android:layout_marginStart="5dp" />
+                android:layout_marginStart="5dp"/>
 
         </LinearLayout>
 
@@ -99,65 +99,23 @@
             android:textStyle="bold"
             android:textColor="@color/black"
             android:layout_marginTop="25dp"
-            android:layout_marginBottom="12dp" />
+            android:layout_marginBottom="12dp"/>
 
         <TextView
-            android:id="@+id/listingOne"
+            android:id="@+id/txtNoResults"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/affordable_room_10_10_mthatha_eastern_cape_10_r950_month_10_2_rooms_10_available"
+            android:text="@string/no_listings_found"
             android:textSize="16sp"
-            android:textColor="@color/black"
-            android:padding="18dp"
-            android:background="#EEEEEE" />
+            android:gravity="center"
+            android:padding="25dp"
+            android:visibility="gone"/>
 
-        <Button
-            android:id="@+id/btnViewOne"
-            android:layout_width="match_parent"
-            android:background="@drawable/selector_regular_button"
-            app:backgroundTint="@null"
-            android:layout_height="wrap_content"
-            android:text="@string/view_details"
-            android:textAllCaps="false" />
-
-        <TextView
-            android:id="@+id/listingTwo"
+        <LinearLayout
+            android:id="@+id/searchResultsContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/family_house_10_10_mthatha_eastern_cape_10_r1_500_month_10_3_bedrooms_10_available"
-            android:textSize="16sp"
-            android:textColor="@color/black"
-            android:padding="18dp"
-            android:background="#EEEEEE"
-            android:layout_marginTop="20dp" />
-
-        <Button
-            android:id="@+id/btnViewTwo"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@drawable/selector_regular_button"
-            app:backgroundTint="@null"
-            android:text="@string/view_details"
-            android:textAllCaps="false" />
-        <TextView
-            android:id="@+id/listingThree"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/shared_accommodation_10_10_mthatha_eastern_cape_10_r750_month_10_1_room_10_available"
-            android:textSize="16sp"
-            android:textColor="#333333"
-            android:padding="18dp"
-            android:background="#EEEEEE"
-            android:layout_marginTop="20dp" />
-
-        <Button
-            android:id="@+id/btnViewThree"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/view_details"
-            android:background="@drawable/selector_regular_button"
-            app:backgroundTint="@null"
-            android:textAllCaps="false" />
+            android:orientation="vertical"/>
 
     </LinearLayout>
 

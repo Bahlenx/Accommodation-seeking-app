@@ -68,7 +68,8 @@
                 android:layout_weight="1"
                 android:background="@drawable/selector_regular_button"
                 app:backgroundTint="@null"
-                android:text="@string/edit"/>
+                android:text="@string/edit"
+                android:textAllCaps="false"/>
 
             <Button
                 android:id="@+id/btnDeleteListing"
@@ -78,6 +79,7 @@
                 android:background="@drawable/selector_regular_button"
                 app:backgroundTint="@null"
                 android:text="@string/delete"
+                android:textAllCaps="false"
                 android:layout_marginStart="8dp"/>
 
         </LinearLayout>

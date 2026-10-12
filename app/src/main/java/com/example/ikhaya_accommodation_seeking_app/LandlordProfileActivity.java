@@ -3,10 +3,10 @@ package com.example.ikhaya_accommodation_seeking_app;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
-import android.widget.Toast;
-import com.google.firebase.auth.FirebaseAuth;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.firebase.auth.FirebaseAuth;
 
 public class LandlordProfileActivity extends AppCompatActivity {
 
@@ -28,83 +28,82 @@ public class LandlordProfileActivity extends AppCompatActivity {
 
         btnBack.setOnClickListener(v -> finish());
 
-        btnPersonalInfo.setOnClickListener(v -> {
-            Intent intent = new Intent(
-                    LandlordProfileActivity.this,
-                    LandlordPersonalInformationActivity.class
-            );
+        btnPersonalInfo.setOnClickListener(v ->
+                startActivity(new Intent(
+                        LandlordProfileActivity.this,
+                        LandlordPersonalInformationActivity.class
+                ))
+        );
 
-            startActivity(intent);
-        });
+        btnMyListings.setOnClickListener(v ->
+                startActivity(new Intent(
+                        LandlordProfileActivity.this,
+                        MyListingsActivity.class
+                ))
+        );
 
-        btnMyListings.setOnClickListener(v -> {
-            Intent intent = new Intent(
-                    LandlordProfileActivity.this,
-                    MyListingsActivity.class
-            );
+        btnEnquiries.setOnClickListener(v ->
+                startActivity(new Intent(
+                        LandlordProfileActivity.this,
+                        EnquiriesActivity.class
+                ))
+        );
 
-            startActivity(intent);
-        });
+        btnPaymentsReceived.setOnClickListener(v ->
+                startActivity(new Intent(
+                        LandlordProfileActivity.this,
+                        PaymentsReceivedActivity.class
+                ))
+        );
 
-        btnEnquiries.setOnClickListener(v -> {
-            Intent intent = new Intent(
-                    LandlordProfileActivity.this,
-                    EnquiriesActivity.class
-            );
+        btnPaymentHistory.setOnClickListener(v ->
+                startActivity(new Intent(
+                        LandlordProfileActivity.this,
+                        PaymentHistoryActivity.class
+                ))
+        );
 
-            startActivity(intent);
-        });
-
-        btnPaymentsReceived.setOnClickListener(v -> {
-            Intent intent = new Intent(
-                    LandlordProfileActivity.this,
-                    PaymentsReceivedActivity.class
-            );
-
-            startActivity(intent);
-        });
-        btnPaymentHistory.setOnClickListener(v -> {
-            Intent intent = new Intent(
-                    LandlordProfileActivity.this,
-                    PaymentHistoryActivity.class
-            );
-
-            startActivity(intent);
-        });
-        btnNotifications.setOnClickListener(v -> {
-            Intent intent = new Intent(
-                    LandlordProfileActivity.this,
-                    NotificationsActivity.class
-            );
-
-            startActivity(intent);
-        });
+        btnNotifications.setOnClickListener(v ->
+                startActivity(new Intent(
+                        LandlordProfileActivity.this,
+                        NotificationsActivity.class
+                ))
+        );
 
         btnChangePassword.setOnClickListener(v ->
-                Toast.makeText(this,
-                        "Change Password coming soon",
-                        Toast.LENGTH_SHORT).show());
+                startActivity(new Intent(
+                        LandlordProfileActivity.this,
+                        ChangePasswordActivity.class
+                ))
+        );
 
-        btnReportProblem.setOnClickListener(v -> {
-            Intent intent = new Intent(
-                    LandlordProfileActivity.this,
-                    ReportProblemActivity.class
-            );
+        btnReportProblem.setOnClickListener(v ->
+                startActivity(new Intent(
+                        LandlordProfileActivity.this,
+                        ReportProblemActivity.class
+                ))
+        );
 
-            startActivity(intent);
-        });
+        btnLogout.setOnClickListener(v -> logout());
+    }
 
-        btnLogout.setOnClickListener(v -> {
-            // Explicitly clear the Firebase session to fix the auto-login bypass bug
-            FirebaseAuth.getInstance().signOut();
-            
-            Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show();
-            
-            // Redirect to Greetings Page and clear back stack
-            Intent intent = new Intent(LandlordProfileActivity.this, OuterMainActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(intent);
-            finish();
-        });
+    private void logout() {
+
+        FirebaseAuth.getInstance().signOut();
+
+        SupabaseHelper.clearSession(this);
+
+        Intent intent = new Intent(
+                LandlordProfileActivity.this,
+                OuterMainActivity.class
+        );
+
+        intent.setFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK |
+                        Intent.FLAG_ACTIVITY_CLEAR_TASK
+        );
+
+        startActivity(intent);
+        finish();
     }
 }

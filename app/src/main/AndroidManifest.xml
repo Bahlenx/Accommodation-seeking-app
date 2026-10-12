@@ -16,7 +16,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.IKhaya_Accommodation_Seeking_App">
 
-        <!-- Outer App Activities -->
+        <!-- Outer App -->
         <activity
             android:name=".OuterMainActivity"
             android:exported="true"
@@ -27,36 +27,117 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".RegistrationActivity" android:exported="false" />
-        <activity android:name=".OtpActivity" android:exported="false" android:windowSoftInputMode="adjustResize" />
-        <activity android:name=".CreatePasswordActivity" android:exported="false" android:windowSoftInputMode="adjustResize" />
-        <activity android:name=".PersonalActivity" android:exported="false" android:windowSoftInputMode="adjustResize" />
-        <activity android:name=".LoginActivity" android:exported="false" />
+        <activity
+            android:name=".RegistrationActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
 
-        <!-- Inner App Activities -->
+        <activity
+            android:name=".OtpActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".CreatePasswordActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".PersonalActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".LoginActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- Inner App -->
         <activity
             android:name=".InnerMainActivity"
             android:exported="false" />
 
-        <activity android:name=".PaymentsReceivedActivity" android:exported="false" />
-        <activity android:name=".EnquiriesActivity" android:exported="false" />
-        <activity android:name=".LandlordPersonalInformationActivity" android:exported="false" />
-        <activity android:name=".ReportProblemActivity" android:exported="false" />
-        <activity android:name=".ChangePasswordActivity" android:exported="false" />
-        <activity android:name=".NotificationsActivity" android:exported="false" />
-        <activity android:name=".PaymentHistoryActivity" android:exported="false" />
-        <activity android:name=".ApplicationsActivity" android:exported="false" />
-        <activity android:name=".PersonalInformationActivity" android:exported="false" />
-        <activity android:name=".SavedListingsActivity" android:exported="false" />
-        <activity android:name=".LandlordProfileActivity" android:exported="false" />
-        <activity android:name=".TenantProfileActivity" android:exported="false" />
-        <activity android:name=".MyListingsActivity" android:exported="false" />
-        <activity android:name=".AddListingActivity" android:exported="false" />
-        <activity android:name=".LandlordDashboardActivity" android:exported="false" />
-        <activity android:name=".PropertyDetailsActivity" android:exported="false" />
-        <activity android:name=".SearchResultsActivity" android:exported="false" />
-        <activity android:name=".HomeActivity" android:exported="false" />
-        <activity android:name=".RegisterActivity" android:exported="false" />
-    </application>
+        <activity
+            android:name=".HomeActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
 
+        <activity
+            android:name=".SearchResultsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".PropertyDetailsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".SavedListingsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ApplicationsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".PaymentHistoryActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".NotificationsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ChangePasswordActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".ReportProblemActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".PersonalInformationActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".TenantProfileActivity"
+            android:exported="false" />
+
+        <!-- Landlord -->
+        <activity
+            android:name=".LandlordDashboardActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".LandlordProfileActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".LandlordPersonalInformationActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".MyListingsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".AddListingActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".EnquiriesActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".PaymentsReceivedActivity"
+            android:exported="false" />
+
+        <!-- Other -->
+        <activity
+            android:name=".RegisterActivity"
+            android:exported="false" />
+
+    </application>
 </manifest>

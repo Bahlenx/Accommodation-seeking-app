@@ -14,9 +14,10 @@
         android:layout_height="wrap_content"
         android:text="@string/back"
         android:textAllCaps="false"
-        android:backgroundTint="#FFA500"/>
+        android:background="@drawable/selector_regular_button"/>
 
     <TextView
+        android:id="@+id/txtApplicationsTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/my_applications"
@@ -32,5 +33,19 @@
         android:textSize="17sp"
         android:gravity="center"
         android:padding="30dp"/>
+
+    <ScrollView
+        android:id="@+id/applicationsScroll"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:id="@+id/applicationsContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"/>
+
+    </ScrollView>
 
 </LinearLayout>

@@ -29,11 +29,11 @@
     <string name="full_name">Full name</string>
     <string name="email_text">Email</string>
     <string name="email_hint">Enter your email</string>
-    <string name="email_placeholder" />
+    <string name="email_placeholder"></string>
     <string name="phone_text">Phone number</string>
     <string name="Phone_hint">Enter your phone number</string>
     <string name="phone_number">Phone number</string>
-    <string name="phone_placeholder" />
+    <string name="phone_placeholder"></string>
 
     <string name="password_title">Please enter a Strong Password</string>
     <string name="password_warning">Please use</string>
@@ -70,7 +70,7 @@
     <string name="otp_button">Send Verification SMS</string>
     <string name="otp_warning">We will send a free SMS OTP code to verify your phone number. No airtime or data needed</string>
     <string name="otp_text">OTP Verification</string>
-    <string name="otp_hint">Please enter the code sent to you by sms as it allows use to confirm that you are using the correct number and can be contacted if needed</string>
+    <string name="otp_hint">Please enter the code sent to you by SMS as it allows us to confirm that you are using the correct number and can be contacted if needed</string>
     <string name="verify_otp_btn">Verify OTP</string>
     <string name="otp_digit_1">First digit of OTP</string>
     <string name="otp_digit_2">Second digit of OTP</string>
@@ -120,6 +120,8 @@
 
     <!-- Accommodation / Listings -->
     <string name="accommodation_types">Accommodation Types</string>
+    <string name="accommodation_type">Accommodation type</string>
+    <string name="select_accommodation_type">Select accommodation type</string>
     <string name="rooms">Rooms</string>
     <string name="_2_rooms">2 Rooms</string>
     <string name="shared_accommodation">Shared Accommodation</string>
@@ -139,9 +141,12 @@
     <string name="number_of_rooms">Number of rooms</string>
     <string name="accommodation_description">Accommodation description</string>
     <string name="property_information">Property Information</string>
-    <string name="upload_property_image">Upload Property Image</string>
+    <string name="upload_property_image">Select Accommodation Images</string>
     <string name="property_image">Property image</string>
     <string name="property_photo">Property Photo</string>
+    <string name="select_accommodation_images">Select accommodation images</string>
+    <string name="images_selected">images selected</string>
+    <string name="no_images_selected">No images selected</string>
     <string name="listings">Listings</string>
     <string name="my_listings">My Listings</string>
     <string name="saved_listings">Saved Listings</string>
@@ -157,6 +162,17 @@
     <string name="available">Available</string>
     <string name="total">Total</string>
     <string name="_0">0</string>
+
+    <!-- Accommodation types: keep these values consistent with listings.property_type -->
+    <string-array name="accommodation_types">
+        <item>Select accommodation type</item>
+        <item>Room</item>
+        <item>Flat / Apartment</item>
+        <item>House</item>
+        <item>Shared Accommodation</item>
+        <item>Backyard Room</item>
+        <item>Cottage</item>
+    </string-array>
 
     <!-- Dummy Accommodation Data for UI Views -->
     <string name="affordable_room">Affordable Room</string>
@@ -202,4 +218,37 @@
     <string name="error_surname">Please enter a valid surname (letters only)</string>
     <string name="error_phone">Enter a valid SA number (e.g., 082 123 4567)</string>
     <string name="error_email">Please enter a valid email address</string>
+
+    <string name="rooms_label">Rooms</string>
+    <string name="price_label">Price</string>
+    <string name="property_type_label">Property Type</string>
+    <string name="availability_label">Availability</string>
+
+    <!-- General -->
+    <string name="loading">Loading...</string>
+    <string name="error_loading_data">Unable to load data.</string>
+    <string name="please_try_again">Please try again.</string>
+    <string name="listing_deleted">Listing deleted.</string>
+    <string name="listing_saved">Listing saved.</string>
+    <string name="listing_submitted">Listing submitted successfully.</string>
+    <string name="login_required">Please log in first.</string>
+    <string name="something_went_wrong">Something went wrong.</string>
+    <string name="translation_not_available">Translation is not available yet.</string>
+    <string name="description_not_available">No description available.</string>
+    <string name="property_image_available">Property image available.</string>
+    <string name="interested_in_listing">I am interested in this accommodation.</string>
+    <string name="enquiry_sent">Enquiry sent successfully.</string>
+    <string name="message"></string>
+    <string name="application_status"></string>
+    <string name="status"></string>
+    <string name="no_listings_found">No listings found.</string>
+    <string name="get_directions">Get directions</string>
+    <string name="location_on_map">Location on map</string>
+    <string name="amenities_header">Amenities</string>
+    <string name="view_on_map">View on map</string>
+    <string name="open_google_maps">Open Google Maps</string>
+    <string name="rules_header">Rules</string>
+    <string name="description">Description</string>
+    <string name="translate">Translate</string>
+    <string name="search_location">Search location</string>
 </resources>
