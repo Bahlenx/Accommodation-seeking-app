@@ -74,6 +74,18 @@
                 android:textAllCaps="false"
                 android:layout_marginTop="16dp" />
 
+            <!-- NEW CHAT BUTTON FOR LANDLORDS -->
+            <Button
+                android:id="@+id/btnLandlordChat"
+                android:layout_width="match_parent"
+                android:layout_height="54dp"
+                android:background="@drawable/selector_regular_button"
+                app:backgroundTint="@null"
+                android:text="Messages &amp; Community Chat"
+                android:textSize="16sp"
+                android:textAllCaps="false"
+                android:layout_marginTop="12dp" />
+
             <TextView
                 android:id="@+id/txtStatistics"
                 android:layout_width="match_parent"

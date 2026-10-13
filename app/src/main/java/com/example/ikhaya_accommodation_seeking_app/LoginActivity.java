@@ -262,7 +262,7 @@ public class LoginActivity extends AppCompatActivity {
 
                 String endpoint =
                         "/rest/v1/profiles"
-                                + "?select=role"
+                                + "?select=role,full_name"
                                 + "&firebase_uid=eq."
                                 + encodedUserId
                                 + "&limit=1";
@@ -308,20 +308,11 @@ public class LoginActivity extends AppCompatActivity {
                                 .putString("USER_ROLE", role)
                                 .apply();
 
-                        routeUser(role);
+                        runOnUiThread(() -> routeUser(role));
 
                     } else {
-
-                        runOnUiThread(() -> {
-
-                            loginBtn.setEnabled(true);
-
-                            Toast.makeText(
-                                    LoginActivity.this,
-                                    "Your account profile was not found.",
-                                    Toast.LENGTH_LONG
-                            ).show();
-                        });
+                        // Fallback: check Users table if profiles table missed
+                        fallbackToUsersTable(userId, accessToken);
                     }
 
                 } else {
@@ -360,6 +351,53 @@ public class LoginActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private void fallbackToUsersTable(String userId, String accessToken) {
+        try {
+            String encodedUserId = URLEncoder.encode(userId, "UTF-8");
+            String endpoint = "/rest/v1/Users?select=user_role,firstName,surname&id=eq." + encodedUserId + "&limit=1";
+            
+            HttpURLConnection conn = SupabaseHelper.createConnection(endpoint, "GET", accessToken);
+            int code = conn.getResponseCode();
+            String response = SupabaseHelper.readResponse(conn);
+            
+            if (code >= 200 && code < 300) {
+                JSONArray data = new JSONArray(response);
+                if (data.length() > 0) {
+                    JSONObject userObj = data.getJSONObject(0);
+                    String role = userObj.optString("user_role", "tenant");
+                    String firstName = userObj.optString("firstName", "");
+                    String surname = userObj.optString("surname", "");
+                    String fullName = (firstName + " " + surname).trim();
+                    if (fullName.isEmpty()) fullName = "User";
+                    
+                    getSharedPreferences("iKhayaSession", MODE_PRIVATE)
+                            .edit()
+                            .putString("USER_NAME", fullName)
+                            .putString("USER_ROLE", role)
+                            .apply();
+
+                    runOnUiThread(() -> routeUser(role));
+                } else {
+                    runOnUiThread(() -> {
+                        loginBtn.setEnabled(true);
+                        Toast.makeText(LoginActivity.this, "Your account profile was not found in either table.", Toast.LENGTH_LONG).show();
+                    });
+                }
+            } else {
+                runOnUiThread(() -> {
+                    loginBtn.setEnabled(true);
+                    Toast.makeText(LoginActivity.this, "Could not load fallback profile: " + extractErrorMessage(response), Toast.LENGTH_LONG).show();
+                });
+            }
+            conn.disconnect();
+        } catch (Exception e) {
+            runOnUiThread(() -> {
+                loginBtn.setEnabled(true);
+                Toast.makeText(LoginActivity.this, "Could not load fallback profile: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            });
+        }
     }
 
     private void routeUser(String role) {

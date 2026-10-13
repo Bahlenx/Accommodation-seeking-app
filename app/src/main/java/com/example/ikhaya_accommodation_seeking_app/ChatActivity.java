@@ -32,6 +32,7 @@ public class ChatActivity extends AppCompatActivity {
 
     private String senderId;
     private String senderName;
+    private String senderRole;
     private String receiverId;
     private boolean isCommunity;
     private String accessToken;
@@ -62,6 +63,9 @@ public class ChatActivity extends AppCompatActivity {
 
         senderId = getIntent().getStringExtra("SENDER_ID");
         senderName = getIntent().getStringExtra("SENDER_NAME");
+        senderRole = getIntent().getStringExtra("SENDER_ROLE");
+        if (senderRole == null) senderRole = "Member";
+        
         receiverId = getIntent().getStringExtra("RECEIVER_ID");
         String receiverName = getIntent().getStringExtra("RECEIVER_NAME");
         isCommunity = getIntent().getBooleanExtra("IS_COMMUNITY", false);
@@ -129,10 +133,11 @@ public class ChatActivity extends AppCompatActivity {
                 JSONObject msg = messages.getJSONObject(i);
                 String msgSenderId = msg.optString("sender_id", "");
                 String msgSenderName = msg.optString("sender_name", "User");
+                String msgSenderRole = msg.optString("sender_role", "Member");
                 String text = msg.optString("message_text", "");
                 boolean isMe = msgSenderId.equals(senderId);
 
-                addMessageBubble(msgSenderName, text, isMe);
+                addMessageBubble(msgSenderName, msgSenderRole, text, isMe);
             }
             chatScrollView.post(() -> chatScrollView.fullScroll(View.FOCUS_DOWN));
         } catch (Exception e) {
@@ -140,7 +145,7 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
-    private void addMessageBubble(String authorName, String messageText, boolean isMe) {
+    private void addMessageBubble(String authorName, String authorRole, String messageText, boolean isMe) {
         LinearLayout wrapper = new LinearLayout(this);
         wrapper.setLayoutParams(new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
@@ -166,7 +171,7 @@ public class ChatActivity extends AppCompatActivity {
 
         if (!isMe && isCommunity) {
             TextView txtAuthor = new TextView(this);
-            txtAuthor.setText(authorName);
+            txtAuthor.setText(authorName + " • " + authorRole.toUpperCase());
             txtAuthor.setTextSize(12f);
             txtAuthor.setTypeface(null, Typeface.BOLD);
             txtAuthor.setTextColor(Color.parseColor("#D9480F"));
@@ -198,6 +203,7 @@ public class ChatActivity extends AppCompatActivity {
                 JSONObject body = new JSONObject();
                 body.put("sender_id", senderId);
                 body.put("sender_name", senderName);
+                body.put("sender_role", senderRole);
                 body.put("receiver_id", receiverId);
                 body.put("message_text", text);
 
