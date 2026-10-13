@@ -295,6 +295,18 @@ public class LoginActivity extends AppCompatActivity {
                                         "role",
                                         "tenant"
                                 );
+                                
+                        String fullName =
+                                profile.optString(
+                                        "full_name",
+                                        "User"
+                                );
+
+                        getSharedPreferences("iKhayaSession", MODE_PRIVATE)
+                                .edit()
+                                .putString("USER_NAME", fullName)
+                                .putString("USER_ROLE", role)
+                                .apply();
 
                         routeUser(role);
 

@@ -55,6 +55,8 @@
         <activity android:name=".LandlordPersonalInformationActivity" android:exported="false" />
         <activity android:name=".ReportProblemActivity" android:exported="false" />
         <activity android:name=".LanguageSettingsActivity" android:exported="false" />
+        <activity android:name=".UserSelectionActivity" android:exported="false" />
+        <activity android:name=".ChatActivity" android:exported="false" />
 
     </application>
 

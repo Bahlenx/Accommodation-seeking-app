@@ -18,6 +18,17 @@ public class HomeActivity extends AppCompatActivity {
         EditText searchAccommodation = findViewById(R.id.searchAccommodation);
         Button btnSearch = findViewById(R.id.btnSearch);
         Button btnProfile = findViewById(R.id.btnProfile);
+        Button btnChat = findViewById(R.id.btnChat);
+
+        if (btnChat != null) {
+            btnChat.setOnClickListener(v -> {
+                Intent intent = new Intent(
+                        HomeActivity.this,
+                        UserSelectionActivity.class
+                );
+                startActivity(intent);
+            });
+        }
 
         if (btnProfile != null) {
             btnProfile.setOnClickListener(v -> {
