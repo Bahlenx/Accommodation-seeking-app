@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <!-- System text -->
     <string name="app_name">iKhaya</string>
     <string name="app_description">iKhaya Accommodation Application</string>
@@ -6,6 +6,7 @@
     <string name="slogan">Find your home, simply</string>
     <string name="home_icon">🏠</string>
     <string name="choose_language">CHOOSE LANGUAGE</string>
+    <string name="change_language">Change Language</string>
 
     <!-- Welcome / Registration / Login -->
     <string name="get_started_btn">Get Started</string>
@@ -29,11 +30,11 @@
     <string name="full_name">Full name</string>
     <string name="email_text">Email</string>
     <string name="email_hint">Enter your email</string>
-    <string name="email_placeholder"></string>
+    <string name="email_placeholder">example@email.com</string>
     <string name="phone_text">Phone number</string>
     <string name="Phone_hint">Enter your phone number</string>
     <string name="phone_number">Phone number</string>
-    <string name="phone_placeholder"></string>
+    <string name="phone_placeholder">012 345 6789</string>
 
     <string name="password_title">Please enter a Strong Password</string>
     <string name="password_warning">Please use</string>
@@ -52,7 +53,7 @@
     <string name="password_checker">Password Strength</string>
 
     <string name="id_hint">Enter your ID number</string>
-    <string name="id_text">ID Number</string>
+    <string name="id_text">ID Number / Passport</string>
     <string name="id_title">ID Number</string>
     <string name="id_warning">Your ID number is securely encrypted and used strictly for identity verification and rental eligibility. We never share or use your data for malicious purposes. Please enter a valid ID number.</string>
 
@@ -70,8 +71,10 @@
     <string name="otp_button">Send Verification SMS</string>
     <string name="otp_warning">We will send a free SMS OTP code to verify your phone number. No airtime or data needed</string>
     <string name="otp_text">OTP Verification</string>
-    <string name="otp_hint">Please enter the code sent to you by SMS as it allows us to confirm that you are using the correct number and can be contacted if needed</string>
+    <string name="otp_hint">Please enter the code sent to you by SMS</string>
     <string name="verify_otp_btn">Verify OTP</string>
+    <string name="verify">Verify</string>
+    <string name="verify_location_hint">Enter a town, suburb, or landmark and tap Verify</string>
     <string name="otp_digit_1">First digit of OTP</string>
     <string name="otp_digit_2">Second digit of OTP</string>
     <string name="otp_digit_3">Third digit of OTP</string>
@@ -88,6 +91,7 @@
     <string name="search_village_town_or_area">Search village, town or area</string>
     <string name="search_area_or_village">Search area or village</string>
     <string name="search_results">Search Results</string>
+    <string name="search_location">Search location</string>
     <string name="filters">Filters</string>
     <string name="popular_areas">Popular Areas</string>
     <string name="mthatha">Mthatha</string>
@@ -110,18 +114,16 @@
     <string name="phone_000_000_0000">Phone: 000 000 0000</string>
     <string name="log_out">Log Out</string>
     <string name="back">← Back</string>
+    <string name="desc_go_back">Go Back to previous screen</string>
 
     <!-- Navigation / General Actions -->
     <string name="chat_with_us">Chat with us</string>
-    <string name="desc_go_back">Go Back to previous screen</string>
     <string name="report_a_problem">Report a Problem</string>
     <string name="submit_report">Submit Report</string>
     <string name="describe_the_problem">Describe the problem</string>
 
-    <!-- Accommodation / Listings -->
+    <!-- Accommodation / Listings / Add Listing Fields -->
     <string name="accommodation_types">Accommodation Types</string>
-    <string name="accommodation_type">Accommodation type</string>
-    <string name="select_accommodation_type">Select accommodation type</string>
     <string name="rooms">Rooms</string>
     <string name="_2_rooms">2 Rooms</string>
     <string name="shared_accommodation">Shared Accommodation</string>
@@ -140,13 +142,11 @@
     <string name="type">Type</string>
     <string name="number_of_rooms">Number of rooms</string>
     <string name="accommodation_description">Accommodation description</string>
+    <string name="description_hint">Provide a brief summary of the room, proximity to transport, etc.</string>
     <string name="property_information">Property Information</string>
     <string name="upload_property_image">Select Accommodation Images</string>
     <string name="property_image">Property image</string>
     <string name="property_photo">Property Photo</string>
-    <string name="select_accommodation_images">Select accommodation images</string>
-    <string name="images_selected">images selected</string>
-    <string name="no_images_selected">No images selected</string>
     <string name="listings">Listings</string>
     <string name="my_listings">My Listings</string>
     <string name="saved_listings">Saved Listings</string>
@@ -163,6 +163,38 @@
     <string name="total">Total</string>
     <string name="_0">0</string>
 
+    <!-- Map & Translation -->
+    <string name="get_directions">Get directions</string>
+    <string name="location_on_map">Location on map</string>
+    <string name="view_on_map">View on map</string>
+    <string name="open_google_maps">Open Google Maps</string>
+    <string name="description">Description</string>
+    <string name="translate">Translate</string>
+
+    <!-- Extended Listing Sections (From Right) -->
+    <string name="section_property_type">Property Type</string>
+    <string name="section_amenities">Amenities</string>
+    <string name="section_rules">Rules &amp; Availability</string>
+    <string name="hint_property_type">Property Type</string>
+    <string name="hint_water_infra">Water Infrastructure</string>
+    <string name="hint_power_infra">Electricity &amp; Power</string>
+    <string name="hint_sanitation_infra">Bathroom &amp; Sanitation</string>
+    <string name="select_features_rules">Select Features &amp; Rules</string>
+    <string name="btn_add_extra_features">+ Select Additional Features</string>
+
+    <!-- Chips / Rules (From Right) -->
+    <string name="amenities_header">Amenities</string>
+    <string name="rules_header">Rules &amp; Availability</string>
+    <string name="amenity_water">Municipal / Tank Water</string>
+    <string name="amenity_electricity">Prepaid Electricity</string>
+    <string name="amenity_parking">Secure Yard Parking</string>
+    <string name="amenity_wifi">Wi-Fi Included</string>
+    <string name="amenity_borehole">Borehole Water</string>
+    <string name="rule_available_now">Available Immediately</string>
+    <string name="rule_deposit_req">Deposit Required</string>
+    <string name="rule_no_pets">No Pets Allowed</string>
+    <string name="rule_fenced">Fenced &amp; Gated</string>
+
     <!-- Accommodation types: keep these values consistent with listings.property_type -->
     <string-array name="accommodation_types">
         <item>Select accommodation type</item>
@@ -172,6 +204,42 @@
         <item>Shared Accommodation</item>
         <item>Backyard Room</item>
         <item>Cottage</item>
+    </string-array>
+
+    <!-- South African Infrastructure Arrays (From Right) -->
+    <string-array name="sa_property_types">
+        <item>Single Backroom (Mkhukhu / Brick)</item>
+        <item>Self-Contained Flatlet / Cottage</item>
+        <item>Rondavel / Traditional Dwelling</item>
+        <item>Shared Student Commune Room</item>
+        <item>Full Freestanding House</item>
+        <item>Townhouse / Suburban Apartment</item>
+        <item>Vacant Stand / Yard Space</item>
+    </string-array>
+
+    <string-array name="sa_water_sources">
+        <item>Municipal Running Water (Inside Tap)</item>
+        <item>Communal / Yard Tap (Outside)</item>
+        <item>Borehole Water / Pump System</item>
+        <item>Jojo Tank (Rainwater / Tanker Delivery)</item>
+        <item>River / Natural Source</item>
+        <item>No Dedicated Water On-site</item>
+    </string-array>
+
+    <string-array name="sa_electricity_types">
+        <item>Prepaid Meter (Tenant Buys Tokens)</item>
+        <item>Electricity Included in Rent</item>
+        <item>Sub-metered / Shared Usage</item>
+        <item>Solar / Inverter Backup Installed</item>
+        <item>Off-grid / Gas &amp; Paraffin Only</item>
+    </string-array>
+
+    <string-array name="sa_sanitation_types">
+        <item>En-suite Flush Toilet</item>
+        <item>Shared Indoor Bathroom</item>
+        <item>Outside Flush Toilet</item>
+        <item>VIP Pit Latrine / Septic Tank</item>
+        <item>Chemical / Portable Toilet</item>
     </string-array>
 
     <!-- Dummy Accommodation Data for UI Views -->
@@ -219,36 +287,80 @@
     <string name="error_phone">Enter a valid SA number (e.g., 082 123 4567)</string>
     <string name="error_email">Please enter a valid email address</string>
 
-    <string name="rooms_label">Rooms</string>
-    <string name="price_label">Price</string>
-    <string name="property_type_label">Property Type</string>
-    <string name="availability_label">Availability</string>
+    <!-- Rental Application Form Strings (From Right) -->
+    <string name="apply_title">Tenant Rental Application</string>
+    <string name="label_full_name">Full Name</string>
+    <string name="label_id_number">RSA ID / Passport Number</string>
+    <string name="label_contact_phone">Contact Phone</string>
+    <string name="label_emergency_contact">Emergency Contact / Guarantor</string>
+    <string name="label_occupation_status">Tenant Status</string>
+    <string name="label_move_in_date">Preferred Move-in Date</string>
+    <string name="label_lease_duration">Lease Duration</string>
+    <string name="label_occupants">Number of Occupants</string>
+    <string name="label_special_notes">Additional Notes / Message</string>
+    <string name="label_agreement_checkbox">I confirm these details are accurate and agree to abide by the property guidelines upon approval.</string>
+    <string name="btn_submit_application">Submit Application</string>
 
-    <!-- General -->
-    <string name="loading">Loading...</string>
-    <string name="error_loading_data">Unable to load data.</string>
-    <string name="please_try_again">Please try again.</string>
-    <string name="listing_deleted">Listing deleted.</string>
-    <string name="listing_saved">Listing saved.</string>
-    <string name="listing_submitted">Listing submitted successfully.</string>
-    <string name="login_required">Please log in first.</string>
-    <string name="something_went_wrong">Something went wrong.</string>
-    <string name="translation_not_available">Translation is not available yet.</string>
-    <string name="description_not_available">No description available.</string>
-    <string name="property_image_available">Property image available.</string>
-    <string name="interested_in_listing">I am interested in this accommodation.</string>
-    <string name="enquiry_sent">Enquiry sent successfully.</string>
-    <string name="message"></string>
-    <string name="application_status"></string>
-    <string name="status"></string>
-    <string name="no_listings_found">No listings found.</string>
-    <string name="get_directions">Get directions</string>
-    <string name="location_on_map">Location on map</string>
-    <string name="amenities_header">Amenities</string>
-    <string name="view_on_map">View on map</string>
-    <string name="open_google_maps">Open Google Maps</string>
-    <string name="rules_header">Rules</string>
-    <string name="description">Description</string>
-    <string name="translate">Translate</string>
-    <string name="search_location">Search location</string>
+    <!-- Dropdown Options for Application Form (From Right) -->
+    <string-array name="occupations_array">
+        <item>Student</item>
+        <item>Employed (Permanent / Contract)</item>
+        <item>Self-Employed</item>
+        <item>Other</item>
+    </string-array>
+
+    <string-array name="lease_durations_array">
+        <item>12 Months (Standard Lease)</item>
+        <item>10 Months (Academic Year)</item>
+        <item>6 Months (Semester)</item>
+        <item>Month-to-Month</item>
+    </string-array>
+
+    <string-array name="occupants_count_array">
+        <item>1 Person</item>
+        <item>2 People</item>
+        <item>3+ People</item>
+    </string-array>
+
+    <!-- Dialog Alerts & Validation Messages (From Right) -->
+    <string name="dialog_discard_title">Discard Application?</string>
+    <string name="dialog_discard_message">Exiting now will discard the details you have entered.</string>
+    <string name="dialog_btn_discard">Discard</string>
+    <string name="dialog_btn_continue">Continue Applying</string>
+    <string name="msg_toast_applied">Application Sent to Landlord!</string>
+    <string name="err_enter_name">Please enter your full name</string>
+    <string name="err_enter_id">Please enter a valid 13-digit RSA ID Number</string>
+    <string name="err_enter_phone">Please enter a valid 10-digit South African phone number</string>
+    <string name="err_enter_emergency">Please enter a valid 10-digit emergency contact number</string>
+    <string name="err_accept_terms">Please agree to the property lease guidelines to continue.</string>
+
+    <!-- Landlord Decision Actions & Status (From Right) -->
+    <string name="btn_apply_to_rent">Apply to Rent</string>
+    <string name="btn_pending_review">Application Pending Review</string>
+    <string name="btn_approve_lease">Approve Lease</string>
+    <string name="btn_decline_lease">Decline</string>
+    <string name="status_pending">Status: PENDING</string>
+    <string name="status_approved">Status: APPROVED</string>
+    <string name="status_declined">Status: DECLINED</string>
+    <string name="msg_application_approved">Application Approved! Tenant notified.</string>
+    <string name="msg_application_declined">Application Declined</string>
+
+    <!-- Language settings references -->
+    <string name="english">English</string>
+    <string name="isizulu">isiZulu</string>
+    <string name="isixhosa">isiXhosa</string>
+    <string name="sesotho">Sesotho</string>
+    <string name="find_your_home_simply">Find your home, simply</string>
+    <string name="get_started">Get Started</string>
+    <string name="hint_full_name">Enter full name</string>
+    <string name="hint_id_number">Enter ID number</string>
+    <string name="hint_special_notes">Enter special notes</string>
+    <string name="select_date_placeholder">Select date</string>
+    <string name="type_commune">Shared Student Commune Room</string>
+    <string name="type_flatlet">Self-Contained Flatlet / Cottage</string>
+    <string name="type_house">Full Freestanding House</string>
+    <string name="type_single_room">Single Backroom (Mkhukhu / Brick)</string>
+
+    <!-- Search Results -->
+    <string name="no_listings_found">No listings found</string>
 </resources>

@@ -4,203 +4,243 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F7F7F7"
-    android:fitsSystemWindows="true">
-
-    <!-- Fixed top bar -->
-    <Button
-        android:id="@+id/btnBack"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:text="@string/back"
-        android:textAllCaps="false"
-        android:contentDescription="@string/desc_go_back"
-        android:background="@drawable/selector_regular_button"
-        app:backgroundTint="@null"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+    android:background="#FFFFFF">
 
     <TextView
         android:id="@+id/txtAddListingTitle"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="16dp"
         android:text="@string/add_new_listing"
-        android:textColor="#222222"
         android:textSize="22sp"
         android:textStyle="bold"
-        app:layout_constraintStart_toEndOf="@id/btnBack"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/btnBack"
-        app:layout_constraintBottom_toBottomOf="@id/btnBack" />
+        android:textColor="#222222"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"/>
 
-    <!-- Scrollable form -->
     <ScrollView
         android:id="@+id/listingScroll"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:fillViewport="true"
-        android:clipToPadding="false"
-        android:scrollbars="vertical"
-        android:paddingBottom="16dp"
-        app:layout_constraintTop_toBottomOf="@id/btnBack"
+        app:layout_constraintTop_toBottomOf="@id/txtAddListingTitle"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="12dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:paddingHorizontal="20dp"
+            android:paddingBottom="40dp">
 
             <EditText
                 android:id="@+id/edtPropertyName"
                 android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:background="@drawable/custom_input"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:textColor="#0B0A0A"
-                android:textColorHint="#4A4A4A"
+                android:layout_height="wrap_content"
                 android:hint="@string/property_name"
-                android:inputType="textCapSentences" />
+                android:inputType="textCapWords" />
 
-            <EditText
-                android:id="@+id/edtLocation"
+            <!-- Location Input + Verification Button -->
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_marginTop="12dp"
-                android:background="@drawable/custom_input"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:textColor="#0B0A0A"
-                android:textColorHint="#4A4A4A"
-                android:hint="@string/location_hint"
-                android:inputType="textCapSentences" />
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="12dp">
 
-            <!-- Accommodation type dropdown -->
+                <EditText
+                    android:id="@+id/edtLocation"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="@string/location_hint"
+                    android:inputType="textPostalAddress" />
+
+                <Button
+                    android:id="@+id/btnVerifyLocation"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/verify"
+                    android:backgroundTint="#FFA500"
+                    android:textAllCaps="false"
+                    android:layout_marginStart="8dp" />
+            </LinearLayout>
+
             <TextView
+                android:id="@+id/tvLocationStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/verify_location_hint"
+                android:textSize="12sp"
+                android:textColor="#666666"
+                android:layout_marginTop="2dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="12dp">
+
+                <EditText
+                    android:id="@+id/edtPrice"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="@string/price_per_month"
+                    android:inputType="numberDecimal" />
+
+                <EditText
+                    android:id="@+id/edtRooms"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="12dp"
+                    android:hint="@string/number_of_rooms"
+                    android:inputType="number" />
+            </LinearLayout>
+
+            <!-- 1. Property Type Dropdown -->
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:layout_marginBottom="6dp"
-                android:text="@string/accommodation_type"
-                android:textColor="#222222"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:hint="@string/hint_property_type">
 
-            <Spinner
-                android:id="@+id/spinnerAccommodationType"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:background="@drawable/custom_input"
-                android:paddingStart="12dp"
-                android:paddingEnd="12dp"
-                android:entries="@array/accommodation_types"
-                android:spinnerMode="dropdown"
-                android:contentDescription="@string/accommodation_type" />
+                <AutoCompleteTextView
+                    android:id="@+id/dropdownPropertyType"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="none"
+                    android:padding="16dp" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-            <EditText
-                android:id="@+id/edtPrice"
+            <!-- 2. Water Infrastructure Dropdown -->
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                 android:layout_width="match_parent"
-                android:layout_height="56dp"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:background="@drawable/custom_input"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:textColor="#0B0A0A"
-                android:textColorHint="#4A4A4A"
-                android:hint="@string/price_per_month"
-                android:inputType="numberDecimal" />
+                android:hint="@string/hint_water_infra">
 
-            <EditText
-                android:id="@+id/edtRooms"
+                <AutoCompleteTextView
+                    android:id="@+id/dropdownWaterSource"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="none"
+                    android:padding="16dp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- 3. Electricity & Power Dropdown -->
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                 android:layout_width="match_parent"
-                android:layout_height="56dp"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:background="@drawable/custom_input"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:textColor="#0B0A0A"
-                android:textColorHint="#4A4A4A"
-                android:hint="@string/number_of_rooms"
-                android:inputType="number" />
+                android:hint="@string/hint_power_infra">
+
+                <AutoCompleteTextView
+                    android:id="@+id/dropdownElectricity"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="none"
+                    android:padding="16dp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- 4. Sanitation / Restroom Dropdown -->
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:hint="@string/hint_sanitation_infra">
+
+                <AutoCompleteTextView
+                    android:id="@+id/dropdownSanitation"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="none"
+                    android:padding="16dp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- 5. Additional Amenities: Multi-Select Selector Button + Dynamic Chips -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/select_features_rules"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:textColor="#333333"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="8dp" />
+
+            <Button
+                android:id="@+id/btnSelectExtraAmenities"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/btn_add_extra_features"
+                android:textAllCaps="false" />
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/cgSelectedAmenities"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                app:chipSpacingHorizontal="6dp"
+                app:chipSpacingVertical="4dp" />
+
+            <!-- Description (Gemini AI Target) -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/accommodation_description"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:textColor="#333333"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="4dp"/>
 
             <EditText
                 android:id="@+id/edtDescription"
                 android:layout_width="match_parent"
-                android:layout_height="120dp"
-                android:layout_marginTop="12dp"
-                android:background="@drawable/custom_input"
-                android:padding="16dp"
-                android:textColor="#0B0A0A"
-                android:textColorHint="#4A4A4A"
-                android:hint="@string/accommodation_description"
-                android:gravity="top"
-                android:inputType="textMultiLine|textCapSentences" />
+                android:layout_height="110dp"
+                android:hint="@string/description_hint"
+                android:gravity="top|start"
+                android:padding="12dp"
+                android:background="@android:drawable/editbox_background_normal"
+                android:inputType="textMultiLine" />
 
-            <!-- Multi-image selection button -->
             <Button
                 android:id="@+id/btnUploadImage"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:background="@drawable/selector_regular_button"
-                app:backgroundTint="@null"
+                android:backgroundTint="#FFA500"
                 android:text="@string/upload_property_image"
-                android:textAllCaps="false" />
+                android:textAllCaps="false"
+                android:layout_marginTop="20dp"/>
 
-            <TextView
-                android:id="@+id/txtSelectedImages"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:padding="4dp"
-                android:text="No images selected"
-                android:textColor="#4A4A4A"
-                android:textSize="14sp" />
-
-            <!-- Horizontal preview for selected photos -->
-            <HorizontalScrollView
-                android:layout_width="match_parent"
-                android:layout_height="150dp"
-                android:layout_marginTop="8dp"
-                android:fillViewport="false"
-                android:scrollbars="horizontal">
-
-                <LinearLayout
-                    android:id="@+id/imagePreviewContainer"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical" />
-
-            </HorizontalScrollView>
-
-            <!-- Kept for compatibility with the existing Java file.
-                 Multi-image Java code should use imagePreviewContainer. -->
             <ImageView
                 android:id="@+id/imgProperty"
-                android:layout_width="1dp"
-                android:layout_height="1dp"
-                android:visibility="gone"
-                android:contentDescription="@string/property_image" />
+                android:layout_width="match_parent"
+                android:layout_height="160dp"
+                android:layout_marginTop="12dp"
+                android:scaleType="centerCrop"
+                android:background="#EEEEEE" />
 
             <Button
                 android:id="@+id/btnSubmitListing"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:layout_marginBottom="24dp"
-                android:background="@drawable/selector_regular_button"
-                app:backgroundTint="@null"
+                android:layout_height="52dp"
+                android:backgroundTint="#FFA500"
                 android:text="@string/submit_listing"
-                android:textAllCaps="false" />
+                android:textAllCaps="false"
+                android:textSize="16sp"
+                android:layout_marginTop="24dp"/>
 
         </LinearLayout>
     </ScrollView>
-
 </androidx.constraintlayout.widget.ConstraintLayout>

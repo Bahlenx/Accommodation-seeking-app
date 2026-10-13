@@ -3,6 +3,7 @@ package com.example.ikhaya_accommodation_seeking_app;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -12,127 +13,93 @@ public class TenantProfileActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tenant_profile);
 
-        Button btnBack =
-                findViewById(R.id.btnBack);
+        Button btnBack = findViewById(R.id.btnBack);
+        Button btnPersonalInfo = findViewById(R.id.btnPersonalInfo);
+        Button btnChangeLanguage = findViewById(R.id.btnChangeLanguage);
+        Button btnSavedListings = findViewById(R.id.btnSavedListings);
+        Button btnApplications = findViewById(R.id.btnApplications);
+        Button btnPaymentHistory = findViewById(R.id.btnPaymentHistory);
+        Button btnNotifications = findViewById(R.id.btnNotifications);
+        Button btnChangePassword = findViewById(R.id.btnChangePassword);
+        Button btnReportProblem = findViewById(R.id.btnReportProblem);
+        Button btnLogout = findViewById(R.id.btnLogout);
 
-        Button btnPersonalInfo =
-                findViewById(R.id.btnPersonalInfo);
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> finish());
+        }
 
-        Button btnSavedListings =
-                findViewById(R.id.btnSavedListings);
+        if (btnPersonalInfo != null) {
+            btnPersonalInfo.setOnClickListener(v ->
+                    startActivity(new Intent(TenantProfileActivity.this, PersonalInformationActivity.class))
+            );
+        }
 
-        Button btnApplications =
-                findViewById(R.id.btnApplications);
+        if (btnChangeLanguage != null) {
+            btnChangeLanguage.setOnClickListener(v ->
+                    startActivity(new Intent(TenantProfileActivity.this, LanguageSettingsActivity.class))
+            );
+        }
 
-        Button btnPaymentHistory =
-                findViewById(R.id.btnPaymentHistory);
+        if (btnSavedListings != null) {
+            btnSavedListings.setOnClickListener(v ->
+                    startActivity(new Intent(TenantProfileActivity.this, SavedListingsActivity.class))
+            );
+        }
 
-        Button btnNotifications =
-                findViewById(R.id.btnNotifications);
+        if (btnApplications != null) {
+            btnApplications.setOnClickListener(v ->
+                    startActivity(new Intent(TenantProfileActivity.this, ApplicationsActivity.class))
+            );
+        }
 
-        Button btnChangePassword =
-                findViewById(R.id.btnChangePassword);
+        if (btnPaymentHistory != null) {
+            btnPaymentHistory.setOnClickListener(v ->
+                    startActivity(new Intent(TenantProfileActivity.this, PaymentHistoryActivity.class))
+            );
+        }
 
-        Button btnReportProblem =
-                findViewById(R.id.btnReportProblem);
+        if (btnNotifications != null) {
+            btnNotifications.setOnClickListener(v ->
+                    startActivity(new Intent(TenantProfileActivity.this, NotificationsActivity.class))
+            );
+        }
 
-        Button btnLogout =
-                findViewById(R.id.btnLogout);
+        if (btnChangePassword != null) {
+            btnChangePassword.setOnClickListener(v ->
+                    startActivity(new Intent(TenantProfileActivity.this, ChangePasswordActivity.class))
+            );
+        }
 
-        btnBack.setOnClickListener(
-                v -> finish()
-        );
+        if (btnReportProblem != null) {
+            btnReportProblem.setOnClickListener(v ->
+                    startActivity(new Intent(TenantProfileActivity.this, ReportProblemActivity.class))
+            );
+        }
 
-        btnPersonalInfo.setOnClickListener(
-                v -> startActivity(
-                        new Intent(
-                                this,
-                                PersonalInformationActivity.class
-                        )
-                )
-        );
-
-        btnSavedListings.setOnClickListener(
-                v -> startActivity(
-                        new Intent(
-                                this,
-                                SavedListingsActivity.class
-                        )
-                )
-        );
-
-        btnApplications.setOnClickListener(
-                v -> startActivity(
-                        new Intent(
-                                this,
-                                ApplicationsActivity.class
-                        )
-                )
-        );
-
-        btnPaymentHistory.setOnClickListener(
-                v -> startActivity(
-                        new Intent(
-                                this,
-                                PaymentHistoryActivity.class
-                        )
-                )
-        );
-
-        btnNotifications.setOnClickListener(
-                v -> startActivity(
-                        new Intent(
-                                this,
-                                NotificationsActivity.class
-                        )
-                )
-        );
-
-        btnChangePassword.setOnClickListener(
-                v -> startActivity(
-                        new Intent(
-                                this,
-                                ChangePasswordActivity.class
-                        )
-                )
-        );
-
-        btnReportProblem.setOnClickListener(
-                v -> startActivity(
-                        new Intent(
-                                this,
-                                ReportProblemActivity.class
-                        )
-                )
-        );
-
-        btnLogout.setOnClickListener(
-                v -> logout()
-        );
+        if (btnLogout != null) {
+            btnLogout.setOnClickListener(v -> logout());
+        }
     }
 
     private void logout() {
+        // Clear Firebase session
+        try {
+            FirebaseAuth.getInstance().signOut();
+        } catch (Exception ignored) {}
 
-        FirebaseAuth.getInstance()
-                .signOut();
+        // Clear Supabase session
+        try {
+            SupabaseHelper.clearSession(this);
+        } catch (Exception ignored) {}
 
-        SupabaseHelper.clearSession(this);
+        Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show();
 
-        Intent intent =
-                new Intent(
-                        this,
-                        OuterMainActivity.class
-                );
-
-        intent.setFlags(
-                Intent.FLAG_ACTIVITY_NEW_TASK |
-                        Intent.FLAG_ACTIVITY_CLEAR_TASK
-        );
-
+        // Redirect to Greeting / OuterMainActivity and clear task stack
+        Intent intent = new Intent(TenantProfileActivity.this, OuterMainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
     }

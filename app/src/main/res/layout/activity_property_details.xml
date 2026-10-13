@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -26,11 +25,10 @@
             android:layout_height="40dp"
             android:background="@drawable/selector_regular_button"
             app:backgroundTint="@null"
-            android:text="@string/back"
+            android:text="← Back"
             android:textColor="@color/white"
             android:textSize="13sp"
             android:textAllCaps="false" />
-
     </LinearLayout>
 
     <ScrollView
@@ -55,14 +53,15 @@
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp">
 
-                <ImageView
+                <TextView
                     android:id="@+id/propertyImage"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:scaleType="centerCrop"
-                    android:contentDescription="@string/property_photo"
+                    android:text="@string/property_photo"
+                    android:textSize="16sp"
+                    android:gravity="center"
+                    android:textColor="#7A7A7A"
                     android:background="#EFEBE4" />
-
             </androidx.cardview.widget.CardView>
 
             <!-- Title & Price -->
@@ -115,7 +114,6 @@
                     android:textColor="@color/white"
                     android:textSize="12sp"
                     android:textAllCaps="false" />
-
             </LinearLayout>
 
             <!-- Dynamic Amenities Section -->
@@ -140,7 +138,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/location_on_map"
+                android:text="Location on Map"
                 android:textSize="17sp"
                 android:textStyle="bold"
                 android:textColor="@color/black"
@@ -157,7 +155,6 @@
                     android:id="@+id/mapView"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" />
-
             </androidx.cardview.widget.CardView>
 
             <!-- Navigation Buttons (Fixed Colors) -->
@@ -174,7 +171,7 @@
                     android:layout_weight="1"
                     android:background="@drawable/selector_regular_button"
                     app:backgroundTint="@null"
-                    android:text="@string/get_directions"
+                    android:text="Get Directions"
                     android:textColor="@color/white"
                     android:textAllCaps="false"
                     android:textSize="13sp" />
@@ -187,11 +184,10 @@
                     android:layout_marginStart="10dp"
                     android:background="@drawable/selector_regular_button"
                     app:backgroundTint="@null"
-                    android:text="@string/open_google_maps"
+                    android:text="Open Google Maps"
                     android:textColor="@color/white"
                     android:textAllCaps="false"
                     android:textSize="13sp" />
-
             </LinearLayout>
 
             <!-- Rules & Availability Section -->
@@ -223,7 +219,7 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentStart="true"
                     android:layout_centerVertical="true"
-                    android:text="@string/description"
+                    android:text="Description"
                     android:textColor="@color/black"
                     android:textSize="17sp"
                     android:textStyle="bold" />
@@ -248,11 +244,10 @@
                     android:focusable="true"
                     android:paddingVertical="4dp"
                     android:paddingHorizontal="8dp"
-                    android:text="@string/translate"
+                    android:text="Translate"
                     android:textColor="@color/colorSecondary"
                     android:textSize="14sp"
                     android:textStyle="bold" />
-
             </RelativeLayout>
 
             <TextView
@@ -265,31 +260,51 @@
                 android:layout_marginTop="8dp" />
 
             <!-- Action CTAs -->
-            <Button
-                android:id="@+id/btnSave"
+            <LinearLayout
+                android:id="@+id/bottomActionLayout"
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:background="@drawable/selector_regular_button"
-                app:backgroundTint="@null"
-                android:text="@string/save_listing"
-                android:textColor="@color/white"
-                android:textAllCaps="false"
-                android:textSize="15sp"
-                android:layout_marginTop="24dp" />
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="24dp">
 
-            <Button
-                android:id="@+id/btnContact"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:background="@drawable/selector_regular_button"
-                app:backgroundTint="@null"
-                android:text="@string/contact_owner"
-                android:textColor="@color/white"
-                android:textAllCaps="false"
-                android:textSize="15sp"
-                android:layout_marginTop="10dp" />
+                <Button
+                    android:id="@+id/btnContactLandlord"
+                    android:layout_width="0dp"
+                    android:layout_height="50dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/selector_regular_button"
+                    app:backgroundTint="@null"
+                    android:text="Contact"
+                    android:textColor="@color/white"
+                    android:textAllCaps="false"
+                    android:textSize="15sp" />
+
+                <Button
+                    android:id="@+id/btnApplyToRent"
+                    android:layout_width="0dp"
+                    android:layout_height="50dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/selector_regular_button"
+                    app:backgroundTint="@null"
+                    android:text="@string/btn_apply_to_rent"
+                    android:textColor="@color/white"
+                    android:textAllCaps="false"
+                    android:textSize="15sp" />
+
+                <Button
+                    android:id="@+id/btnEditListing"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:visibility="gone"
+                    android:background="@drawable/selector_regular_button"
+                    app:backgroundTint="@null"
+                    android:text="Edit Listing"
+                    android:textColor="@color/white"
+                    android:textAllCaps="false"
+                    android:textSize="15sp" />
+            </LinearLayout>
 
         </LinearLayout>
     </ScrollView>
-
 </androidx.constraintlayout.widget.ConstraintLayout>

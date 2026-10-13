@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:background="#FFFFFF"
+    android:padding="16dp"
+    android:layout_marginBottom="8dp"
+    android:gravity="center_vertical">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tvUserName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="John Doe"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:textColor="#212529" />
+
+        <TextView
+            android:id="@+id/tvUserRole"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="LANDLORD"
+            android:textSize="12sp"
+            android:textColor="#6C757D" />
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/btnSuspendUser"
+        android:layout_width="wrap_content"
+        android:layout_height="36dp"
+        android:backgroundTint="#DC3545"
+        android:text="Suspend"
+        android:textColor="#FFFFFF"
+        android:textSize="12sp" />
+</LinearLayout>

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#F8F9FA"
+    android:fitsSystemWindows="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#212529"
+        android:padding="16dp">
+
+        <Button
+            android:id="@+id/btnBackInspection"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:text="Back"
+            android:backgroundTint="#6C757D"
+            android:textColor="#FFFFFF"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Property Inspection"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginStart="16dp"
+            android:layout_gravity="center_vertical"/>
+    </LinearLayout>
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="250dp"
+        android:background="#E9ECEF"
+        android:src="@android:drawable/ic_menu_gallery"
+        android:scaleType="centerInside" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:id="@+id/tvInspectTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Listing Title"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="#212529" />
+
+        <TextView
+            android:id="@+id/tvInspectDetails"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Location / Price"
+            android:textSize="16sp"
+            android:textColor="#495057"
+            android:layout_marginTop="8dp" />
+
+        <TextView
+            android:id="@+id/tvInspectLandlord"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Landlord Name"
+            android:textSize="14sp"
+            android:textColor="#6C757D"
+            android:layout_marginTop="4dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Status: Pending Review"
+            android:textSize="14sp"
+            android:textColor="#FFA500"
+            android:textStyle="bold"
+            android:layout_marginTop="24dp" />
+    </LinearLayout>
+</LinearLayout>

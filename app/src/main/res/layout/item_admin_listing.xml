@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="#FFFFFF"
+    android:padding="16dp"
+    android:layout_marginBottom="12dp">
+
+    <TextView
+        android:id="@+id/tvListingTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Standard Single Room"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:textColor="#212529" />
+
+    <TextView
+        android:id="@+id/tvListingDetails"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Centurion, Gauteng • R 3,500 / month"
+        android:textSize="13sp"
+        android:textColor="#495057"
+        android:layout_marginTop="2dp" />
+
+    <TextView
+        android:id="@+id/tvLandlordInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Submitted by: Landlord Dave"
+        android:textSize="12sp"
+        android:textColor="#6C757D"
+        android:layout_marginTop="2dp" />
+
+    <!-- Action Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="12dp"
+        android:gravity="end">
+
+        <Button
+            android:id="@+id/btnRejectListing"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:backgroundTint="#E0E0E0"
+            android:text="Reject"
+            android:textColor="#C82333"
+            android:textSize="12sp"
+            android:layout_marginEnd="8dp" />
+
+        <Button
+            android:id="@+id/btnApproveListing"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:backgroundTint="#28A745"
+            android:text="Approve"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp" />
+    </LinearLayout>
+</LinearLayout>

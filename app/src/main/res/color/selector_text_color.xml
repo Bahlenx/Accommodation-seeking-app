@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Text color when the button IS selected (Black) -->
-    <item android:color="@color/black" android:state_checked="true" />
+    <!-- Text is White when the button is activated/tapped -->
+    <item android:color="#FFFFFF" android:state_activated="true" />
+    <item android:color="#FFFFFF" android:state_pressed="true" />
 
-    <!-- Text color when the button is NOT selected (Grey) -->
-    <item android:color="@color/dark_gray" android:state_checked="false" />
+    <!-- Text is Dark Gray when sitting idle on the beige background -->
+    <item android:color="#333333" />
 </selector>

@@ -1,424 +1,235 @@
-
 package com.example.ikhaya_accommodation_seeking_app;
 
+
+import android.location.Address;
+import android.location.Geocoder;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.Locale;
 
 public class AddListingActivity extends AppCompatActivity {
 
-    private EditText propertyNameInput;
-    private EditText locationInput;
-    private EditText priceInput;
-    private EditText roomsInput;
-    private EditText descriptionInput;
-    private Spinner accommodationTypeInput;
+    private AutoCompleteTextView dropdownPropertyType, dropdownWaterSource, dropdownElectricity, dropdownSanitation;
+    private ChipGroup cgSelectedAmenities;
+    private EditText edtPropertyName, edtLocation, edtPrice, edtRooms, edtDescription;
+    private TextView tvLocationStatus;
+    private Button btnVerifyLocation, btnSelectExtraAmenities, btnUploadImage, btnSubmitListing;
+    private ImageView imgProperty;
+    private Uri selectedImageUri;
 
-    private LinearLayout imagePreviewContainer;
-    private TextView txtSelectedImages;
-    private Button submitButton;
+    private double verifiedLatitude = 0.0;
+    private double verifiedLongitude = 0.0;
+    private boolean isLocationVerified = false;
 
-    private final List<Uri> selectedImageUris = new ArrayList<>();
-    private final ExecutorService executor =
-            Executors.newSingleThreadExecutor();
-
-    private final ActivityResultLauncher<String> imagePicker =
-            registerForActivityResult(
-                    new ActivityResultContracts.GetMultipleContents(),
-                    uris -> {
-                        if (uris == null || uris.isEmpty()) {
-                            return;
-                        }
-
-                        selectedImageUris.clear();
-                        selectedImageUris.addAll(uris);
-                        displaySelectedImages();
-
-                        Toast.makeText(
-                                this,
-                                selectedImageUris.size() + " photo(s) selected",
-                                Toast.LENGTH_SHORT
-                        ).show();
-                    }
-            );
+    private final String[] extraAmenitiesList = {
+            "Secure Yard Parking", "Fenced & Gated Yard", "Free Wi-Fi Included",
+            "Pet Friendly", "Deposit Required", "Available Immediately",
+            "Near Taxi Rank / Bus Stop", "DSTV / OpenView Port", "Burglar Bars / Security Gate"
+    };
+    private final boolean[] selectedAmenitiesState = new boolean[extraAmenitiesList.length];
+    private final List<String> activeAmenities = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_listing);
 
-        propertyNameInput = findViewById(R.id.edtPropertyName);
-        locationInput = findViewById(R.id.edtLocation);
-        priceInput = findViewById(R.id.edtPrice);
-        roomsInput = findViewById(R.id.edtRooms);
-        descriptionInput = findViewById(R.id.edtDescription);
-        accommodationTypeInput = findViewById(R.id.spinnerAccommodationType);
+        // 1. Bind All Views First
+        edtPropertyName = findViewById(R.id.edtPropertyName);
+        edtLocation = findViewById(R.id.edtLocation);
+        edtPrice = findViewById(R.id.edtPrice);
+        edtRooms = findViewById(R.id.edtRooms);
+        edtDescription = findViewById(R.id.edtDescription);
+        imgProperty = findViewById(R.id.imgProperty);
 
-        imagePreviewContainer = findViewById(R.id.imagePreviewContainer);
-        txtSelectedImages = findViewById(R.id.txtSelectedImages);
-        submitButton = findViewById(R.id.btnSubmitListing);
+        tvLocationStatus = findViewById(R.id.tvLocationStatus);
+        btnVerifyLocation = findViewById(R.id.btnVerifyLocation);
 
-        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
+        dropdownPropertyType = findViewById(R.id.dropdownPropertyType);
+        dropdownWaterSource = findViewById(R.id.dropdownWaterSource);
+        dropdownElectricity = findViewById(R.id.dropdownElectricity);
+        dropdownSanitation = findViewById(R.id.dropdownSanitation);
+        cgSelectedAmenities = findViewById(R.id.cgSelectedAmenities);
 
-        findViewById(R.id.btnUploadImage).setOnClickListener(
-                v -> imagePicker.launch("image/*")
+        btnSelectExtraAmenities = findViewById(R.id.btnSelectExtraAmenities);
+        btnUploadImage = findViewById(R.id.btnUploadImage);
+        btnSubmitListing = findViewById(R.id.btnSubmitListing);
+
+        // 2. Setup Dropdown Adapters
+        setupDropdown(dropdownPropertyType, R.array.sa_property_types);
+        setupDropdown(dropdownWaterSource, R.array.sa_water_sources);
+        setupDropdown(dropdownElectricity, R.array.sa_electricity_types);
+        setupDropdown(dropdownSanitation, R.array.sa_sanitation_types);
+
+        // 3. Location Verification Action
+        btnVerifyLocation.setOnClickListener(v -> {
+            String locationInput = edtLocation.getText().toString().trim();
+            if (locationInput.isEmpty()) {
+                edtLocation.setError("Enter an address or area first");
+                return;
+            }
+            verifyAddress(locationInput);
+        });
+
+        // 4. Amenities Multi-Select Action
+        btnSelectExtraAmenities.setOnClickListener(v -> showAmenitiesPickerDialog());
+
+        // 5. Image Picker Action
+        ActivityResultLauncher<String> imagePickerLauncher = registerForActivityResult(
+                new ActivityResultContracts.GetContent(),
+                uri -> {
+                    if (uri != null) {
+                        selectedImageUri = uri;
+                        imgProperty.setImageURI(uri);
+                    }
+                }
         );
+        btnUploadImage.setOnClickListener(v -> imagePickerLauncher.launch("image/*"));
 
-        submitButton.setOnClickListener(v -> addListing());
+        // 6. Submit Action
+        btnSubmitListing.setOnClickListener(v -> {
+            String title = edtPropertyName.getText().toString().trim();
+            String price = edtPrice.getText().toString().trim();
+            String location = edtLocation != null ? edtLocation.getText().toString().trim() : "Mthatha";
+            String rooms = edtRooms.getText().toString().trim();
+            String description = edtDescription.getText().toString().trim();
+
+            String propType = dropdownPropertyType.getText().toString();
+            String water = dropdownWaterSource.getText().toString();
+            String power = dropdownElectricity.getText().toString();
+
+            if (title.isEmpty()) title = "Spacious Room in Mthatha";
+            if (price.isEmpty()) price = "1200";
+            if (location.isEmpty()) location = "Mthatha";
+
+            if (rooms.isEmpty() || description.isEmpty()) {
+                Toast.makeText(this, "Please fill in all text fields", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (propType.isEmpty() || water.isEmpty() || power.isEmpty()) {
+                Toast.makeText(this, "Please select property, water, and power specifications", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (!isLocationVerified) {
+                Toast.makeText(this, "Please verify your property location first so tenants can find it on a map", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (selectedImageUri == null) {
+                Toast.makeText(this, "Please select a property image", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            String listingId = "LIST-" + (System.currentTimeMillis() % 10000);
+            ListingManager.addListing(this, new ListingManager.Listing(
+                    listingId,
+                    title,
+                    location,
+                    price.startsWith("R") ? price : "R" + price + "/month",
+                    "Available"
+            ));
+
+            Toast.makeText(this, "Listing Published Successfully!", Toast.LENGTH_SHORT).show();
+            finish();
+        });
     }
 
-    private void displaySelectedImages() {
-        imagePreviewContainer.removeAllViews();
-
-        for (Uri uri : selectedImageUris) {
-            ImageView preview = new ImageView(this);
-            int size = (int) (120 * getResources().getDisplayMetrics().density);
-
-            LinearLayout.LayoutParams params =
-                    new LinearLayout.LayoutParams(size, size);
-            params.setMargins(0, 0, 12, 0);
-
-            preview.setLayoutParams(params);
-            preview.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            preview.setImageURI(uri);
-            preview.setContentDescription("Selected property photo");
-
-            imagePreviewContainer.addView(preview);
-        }
-
-        txtSelectedImages.setText(
-                selectedImageUris.size() == 0
-                        ? getString(R.string.no_images_selected)
-                        : selectedImageUris.size() + " photo(s) selected"
-        );
-
-        txtSelectedImages.setVisibility(View.VISIBLE);
-        imagePreviewContainer.setVisibility(
-                selectedImageUris.isEmpty() ? View.GONE : View.VISIBLE
-        );
+    private void setupDropdown(AutoCompleteTextView dropdown, int arrayResId) {
+        String[] items = getResources().getStringArray(arrayResId);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, items);
+        dropdown.setAdapter(adapter);
     }
 
-    private void addListing() {
-        String propertyName = propertyNameInput.getText().toString().trim();
-        String location = locationInput.getText().toString().trim();
-        String priceText = priceInput.getText().toString().trim();
-        String roomsText = roomsInput.getText().toString().trim();
-        String description = descriptionInput.getText().toString().trim();
+    private void showAmenitiesPickerDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Select Features & Rules");
+        builder.setMultiChoiceItems(extraAmenitiesList, selectedAmenitiesState, (dialog, which, isChecked) -> {
+            selectedAmenitiesState[which] = isChecked;
+        });
 
-        String propertyType = accommodationTypeInput.getSelectedItem() == null
-                ? ""
-                : accommodationTypeInput.getSelectedItem().toString().trim();
+        builder.setPositiveButton("Done", (dialog, which) -> {
+            cgSelectedAmenities.removeAllViews();
+            activeAmenities.clear();
 
-        if (propertyName.isEmpty() || location.isEmpty()
-                || priceText.isEmpty() || roomsText.isEmpty()
-                || description.isEmpty()) {
-            Toast.makeText(this, "Please fill in all fields.", Toast.LENGTH_SHORT).show();
-            return;
-        }
+            for (int i = 0; i < extraAmenitiesList.length; i++) {
+                if (selectedAmenitiesState[i]) {
+                    String amenity = extraAmenitiesList[i];
+                    activeAmenities.add(amenity);
 
-        if (propertyType.isEmpty()
-                || propertyType.equalsIgnoreCase("Select accommodation type")) {
-            Toast.makeText(this, "Please select an accommodation type.", Toast.LENGTH_SHORT).show();
-            return;
-        }
+                    Chip chip = new Chip(this);
+                    chip.setText(amenity);
+                    chip.setCloseIconVisible(true);
+                    final int index = i;
+                    chip.setOnCloseIconClickListener(v -> {
+                        selectedAmenitiesState[index] = false;
+                        activeAmenities.remove(amenity);
+                        cgSelectedAmenities.removeView(chip);
+                    });
+                    cgSelectedAmenities.addView(chip);
+                }
+            }
+        });
 
-        if (selectedImageUris.isEmpty()) {
-            Toast.makeText(this, "Please select at least one property photo.", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        builder.setNegativeButton("Cancel", null);
+        builder.show();
+    }
 
-        double price;
-        int rooms;
+    private void verifyAddress(String addressQuery) {
+        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+        tvLocationStatus.setText("Verifying address with map registry...");
+        tvLocationStatus.setTextColor(android.graphics.Color.parseColor("#FFA500"));
 
-        try {
-            price = Double.parseDouble(priceText);
-            rooms = Integer.parseInt(roomsText);
-        } catch (NumberFormatException e) {
-            Toast.makeText(this, "Enter a valid price and number of rooms.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        if (price <= 0 || rooms <= 0) {
-            Toast.makeText(this, "Price and rooms must be greater than zero.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        String userId = SupabaseHelper.getUserId(this);
-        String accessToken = SupabaseHelper.getAccessToken(this);
-
-        if (userId == null || userId.isEmpty()
-                || accessToken == null || accessToken.isEmpty()) {
-            Toast.makeText(
-                    this,
-                    "Your session has expired. Please log in again.",
-                    Toast.LENGTH_LONG
-            ).show();
-            return;
-        }
-
-        List<Uri> photosToUpload = new ArrayList<>(selectedImageUris);
-        submitButton.setEnabled(false);
-
-        executor.execute(() -> {
+        new Thread(() -> {
             try {
-                HttpURLConnection connection = SupabaseHelper.createConnection(
-                        "/rest/v1/listings",
-                        "POST",
-                        accessToken
-                );
+                String query = addressQuery.toLowerCase().contains("south africa")
+                        ? addressQuery
+                        : addressQuery + ", South Africa";
 
-                connection.setRequestProperty("Prefer", "return=representation");
-
-                JSONObject listing = new JSONObject();
-                listing.put("landlord_uid", userId);
-                listing.put("property_name", propertyName);
-                listing.put("location", location);
-                listing.put("price", price);
-                listing.put("rooms", rooms);
-                listing.put("property_type", propertyType);
-                listing.put("description", description);
-                listing.put("availability", "Available");
-
-                SupabaseHelper.writeJson(connection, listing);
-
-                int code = connection.getResponseCode();
-                String response = SupabaseHelper.readResponse(connection);
-                connection.disconnect();
-
-                if (code < 200 || code >= 300) {
-                    Log.e("iKhayaListing", "Create listing failed: " + response);
-                    showError("Listing could not be created. Check the details and try again.");
-                    return;
-                }
-
-                JSONArray returned = new JSONArray(response);
-                if (returned.length() == 0) {
-                    showError("The new listing could not be confirmed.");
-                    return;
-                }
-
-                String listingId = returned.getJSONObject(0).getString("id");
-                List<String> uploadedUrls = new ArrayList<>();
-
-                for (int i = 0; i < photosToUpload.size(); i++) {
-                    Uri photoUri = photosToUpload.get(i);
-                    String mimeType = getContentResolver().getType(photoUri);
-
-                    if (mimeType == null || !mimeType.startsWith("image/")) {
-                        mimeType = "image/jpeg";
-                    }
-
-                    String extension = extensionForMimeType(mimeType);
-                    String imagePath = userId + "/" + listingId
-                            + "/image_" + (i + 1) + extension;
-
-                    if (!uploadImage(accessToken, imagePath, photoUri, mimeType)) {
-                        Log.e("iKhayaImage", "Upload failed for " + imagePath);
-                        showError(
-                                "The listing was created, but photo "
-                                        + (i + 1) + " failed to upload. Please check Storage permissions."
-                        );
-                        return;
-                    }
-
-                    String publicUrl = SupabaseHelper.getPublicStorageUrl(
-                            "property-images",
-                            imagePath
-                    );
-
-                    if (!saveImageRecord(accessToken, listingId, publicUrl)) {
-                        showError(
-                                "A photo uploaded, but its database record could not be saved. Check listing_images permissions."
-                        );
-                        return;
-                    }
-
-                    uploadedUrls.add(publicUrl);
-                }
-
-                if (!uploadedUrls.isEmpty()) {
-                    updateListingImagePath(accessToken, listingId, uploadedUrls.get(0));
-                }
+                List<Address> addresses = geocoder.getFromLocationName(query, 5);
 
                 runOnUiThread(() -> {
-                    Toast.makeText(
-                            AddListingActivity.this,
-                            "Listing added with " + uploadedUrls.size() + " photo(s).",
-                            Toast.LENGTH_LONG
-                    ).show();
-                    finish();
-                });
+                    if (addresses != null && !addresses.isEmpty()) {
+                        Address matched = addresses.get(0);
+                        verifiedLatitude = matched.getLatitude();
+                        verifiedLongitude = matched.getLongitude();
+                        isLocationVerified = true;
 
-            } catch (Exception e) {
-                Log.e("iKhayaListing", "Add listing failed", e);
-                showError("Error adding listing. Please try again.");
-            }
-        });
-    }
-
-    private String extensionForMimeType(String mimeType) {
-        if ("image/png".equalsIgnoreCase(mimeType)) return ".png";
-        if ("image/webp".equalsIgnoreCase(mimeType)) return ".webp";
-        if ("image/gif".equalsIgnoreCase(mimeType)) return ".gif";
-        return ".jpg";
-    }
-
-    private boolean uploadImage(
-            String accessToken,
-            String imagePath,
-            Uri imageUri,
-            String mimeType
-    ) {
-        HttpURLConnection connection = null;
-
-        try {
-            connection = SupabaseHelper.createStorageConnection(
-                    "property-images",
-                    imagePath,
-                    "POST",
-                    accessToken
-            );
-
-            connection.setRequestProperty("Content-Type", mimeType);
-            connection.setRequestProperty("x-upsert", "true");
-            connection.setDoOutput(true);
-
-            try (InputStream input = getContentResolver().openInputStream(imageUri)) {
-                if (input == null) return false;
-
-                try (OutputStream output = connection.getOutputStream()) {
-                    byte[] buffer = new byte[8192];
-                    int count;
-
-                    while ((count = input.read(buffer)) != -1) {
-                        output.write(buffer, 0, count);
+                        String fullMatchedAddress = matched.getAddressLine(0);
+                        tvLocationStatus.setText("Verified: " + fullMatchedAddress);
+                        tvLocationStatus.setTextColor(android.graphics.Color.parseColor("#28A745"));
+                        Toast.makeText(this, "Location verified successfully!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        isLocationVerified = false;
+                        tvLocationStatus.setText("Could not find address. Try adding the town or municipality.");
+                        tvLocationStatus.setTextColor(android.graphics.Color.parseColor("#DC3545"));
                     }
-
-                    output.flush();
-                }
+                });
+            } catch (Exception e) {
+                runOnUiThread(() -> {
+                    tvLocationStatus.setText("Verification error: " + e.getMessage());
+                    tvLocationStatus.setTextColor(android.graphics.Color.parseColor("#DC3545"));
+                });
             }
-
-            int code = connection.getResponseCode();
-            String response = SupabaseHelper.readResponse(connection);
-
-            Log.d("iKhayaImage", "Upload code: " + code + " response: " + response);
-            return code >= 200 && code < 300;
-
-        } catch (Exception e) {
-            Log.e("iKhayaImage", "Image upload failed", e);
-            return false;
-        } finally {
-            if (connection != null) connection.disconnect();
-        }
-    }
-
-    private boolean saveImageRecord(
-            String accessToken,
-            String listingId,
-            String imageUrl
-    ) {
-        HttpURLConnection connection = null;
-
-        try {
-            connection = SupabaseHelper.createConnection(
-                    "/rest/v1/listing_images",
-                    "POST",
-                    accessToken
-            );
-
-            JSONObject body = new JSONObject();
-            body.put("listing_id", listingId);
-            body.put("image_url", imageUrl);
-
-            SupabaseHelper.writeJson(connection, body);
-
-            int code = connection.getResponseCode();
-            String response = SupabaseHelper.readResponse(connection);
-
-            if (code < 200 || code >= 300) {
-                Log.e("iKhayaImage", "Image record failed: " + response);
-                return false;
-            }
-
-            return true;
-        } catch (Exception e) {
-            Log.e("iKhayaImage", "Could not save image record", e);
-            return false;
-        } finally {
-            if (connection != null) connection.disconnect();
-        }
-    }
-
-    private void updateListingImagePath(
-            String accessToken,
-            String listingId,
-            String imageUrl
-    ) {
-        HttpURLConnection connection = null;
-
-        try {
-            connection = SupabaseHelper.createConnection(
-                    "/rest/v1/listings?id=eq."
-                            + URLEncoder.encode(listingId, "UTF-8"),
-                    "PATCH",
-                    accessToken
-            );
-
-            JSONObject body = new JSONObject();
-            body.put("image_url", imageUrl);
-            SupabaseHelper.writeJson(connection, body);
-
-            int code = connection.getResponseCode();
-            String response = SupabaseHelper.readResponse(connection);
-
-            if (code < 200 || code >= 300) {
-                Log.e("iKhayaListing", "Image URL update failed: " + response);
-            }
-        } catch (Exception e) {
-            Log.e("iKhayaListing", "Could not update listing image URL", e);
-        } finally {
-            if (connection != null) connection.disconnect();
-        }
-    }
-
-    private void showError(String message) {
-        runOnUiThread(() -> {
-            submitButton.setEnabled(true);
-            Toast.makeText(
-                    AddListingActivity.this,
-                    message,
-                    Toast.LENGTH_LONG
-            ).show();
-        });
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        executor.shutdown();
+        }).start();
     }
 }

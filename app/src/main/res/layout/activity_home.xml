@@ -1,90 +1,106 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFFF"
-    android:fitsSystemWindows="true">
+    android:orientation="vertical"
+    android:background="#FFFFFF">
 
-    <Button
-        android:id="@+id/btnProfile"
-        android:layout_width="wrap_content"
+    <!-- Pinned Top Header with Profile Button -->
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="8dp"
-        android:background="@drawable/selector_regular_button"
-        android:backgroundTint="@null"
-        android:text="@string/my_profile"
-        android:textAllCaps="false"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="20dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp"
+        android:background="#FFFFFF">
 
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/app_name"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="@color/black" />
+
+        <Button
+            android:id="@+id/btnProfile"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/selector_regular_button"
+            app:backgroundTint="@null"
+            android:text="@string/my_profile"
+            android:textSize="13sp"
+            android:textAllCaps="false" />
+    </LinearLayout>
+
+    <!-- Scrollable Body with layout_weight=1 -->
     <ScrollView
-        android:id="@+id/homeScroll"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:layout_weight="1"
         android:fillViewport="true"
-        android:clipToPadding="false"
-        android:paddingStart="20dp"
-        android:paddingEnd="20dp"
-        android:paddingBottom="24dp"
-        app:layout_constraintTop_toBottomOf="@id/btnProfile"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        android:scrollbars="vertical">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:paddingHorizontal="20dp"
+            android:paddingBottom="60dp">
 
             <TextView
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="15dp"
                 android:text="@string/welcome_to_ikhaya"
-                android:textColor="#000000"
                 android:textSize="24sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                android:layout_marginTop="8dp" />
 
             <TextView
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:layout_marginBottom="25dp"
                 android:text="@string/find_accommodation_in_your_area"
-                android:textColor="#666666"
-                android:textSize="15sp" />
+                android:textSize="15sp"
+                android:textColor="#777777"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="20dp" />
 
             <EditText
                 android:id="@+id/searchAccommodation"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:background="@drawable/custom_input"
+                android:paddingHorizontal="16dp"
+                android:textColor="#0B0A0A"
+                android:textColorHint="#4A4A4A"
                 android:hint="@string/search_village_town_or_area"
-                android:inputType="text"
-                android:paddingStart="15dp"
-                android:paddingEnd="15dp"
-                android:singleLine="true" />
+                android:inputType="text" />
 
             <Button
                 android:id="@+id/btnSearch"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
+                android:background="@drawable/selector_regular_button"
+                app:backgroundTint="@null"
                 android:text="@string/search"
-                android:textAllCaps="false" />
+                android:textAllCaps="false"
+                android:layout_marginTop="10dp" />
 
             <TextView
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="30dp"
-                android:layout_marginBottom="10dp"
                 android:text="@string/popular_areas"
-                android:textColor="#000000"
-                android:textSize="19sp"
-                android:textStyle="bold" />
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="10dp" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -92,45 +108,43 @@
                 android:orientation="horizontal">
 
                 <Button
-                    android:id="@+id/btnMthatha"
+                    android:id="@+id/btnAreaMthatha"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:layout_marginEnd="6dp"
                     android:background="@drawable/selector_regular_button"
-                    android:backgroundTint="@null"
+                    app:backgroundTint="@null"
                     android:text="@string/mthatha"
                     android:textAllCaps="false" />
 
                 <Button
-                    android:id="@+id/btnGiyani"
+                    android:id="@+id/btnAreaGiyani"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:layout_marginStart="6dp"
                     android:background="@drawable/selector_regular_button"
-                    android:backgroundTint="@null"
+                    app:backgroundTint="@null"
                     android:text="@string/giyani"
-                    android:textAllCaps="false" />
+                    android:textAllCaps="false"
+                    android:layout_marginStart="8dp" />
             </LinearLayout>
 
             <TextView
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="25dp"
-                android:layout_marginBottom="10dp"
                 android:text="@string/accommodation_types"
-                android:textColor="#000000"
-                android:textSize="19sp"
-                android:textStyle="bold" />
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="10dp" />
 
             <Button
-                android:id="@+id/btnTypeRoom"
+                android:id="@+id/btnTypeRooms"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
                 android:background="@drawable/selector_regular_button"
-                android:backgroundTint="@null"
+                app:backgroundTint="@null"
                 android:text="@string/rooms"
                 android:textAllCaps="false" />
 
@@ -138,41 +152,41 @@
                 android:id="@+id/btnTypeShared"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
                 android:background="@drawable/selector_regular_button"
-                android:backgroundTint="@null"
+                app:backgroundTint="@null"
                 android:text="@string/shared_accommodation"
-                android:textAllCaps="false" />
+                android:textAllCaps="false"
+                android:layout_marginTop="8dp" />
 
             <Button
-                android:id="@+id/btnTypeHouse"
+                android:id="@+id/btnTypeHouses"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
                 android:background="@drawable/selector_regular_button"
-                android:backgroundTint="#FFA500"
+                app:backgroundTint="@null"
                 android:text="@string/houses"
-                android:textAllCaps="false" />
+                android:textAllCaps="false"
+                android:layout_marginTop="8dp" />
 
             <TextView
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="25dp"
-                android:layout_marginBottom="10dp"
                 android:text="@string/featured_accommodation"
-                android:textColor="#000000"
-                android:textSize="19sp"
-                android:textStyle="bold" />
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="10dp" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="15dp"
                 android:text="@string/affordable_room_10_mthatha_10_r950_month_10_available"
-                android:textColor="#000000"
-                android:textSize="16sp" />
+                android:textSize="15sp"
+                android:textColor="@color/black"
+                android:background="#F5F5F5"
+                android:padding="16dp" />
 
         </LinearLayout>
     </ScrollView>
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>

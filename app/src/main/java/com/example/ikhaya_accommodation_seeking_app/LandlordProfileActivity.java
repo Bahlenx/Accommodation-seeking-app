@@ -3,6 +3,7 @@ package com.example.ikhaya_accommodation_seeking_app;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -17,6 +18,7 @@ public class LandlordProfileActivity extends AppCompatActivity {
 
         Button btnBack = findViewById(R.id.btnBack);
         Button btnPersonalInfo = findViewById(R.id.btnPersonalInfo);
+        Button btnChangeLanguage = findViewById(R.id.btnChangeLanguage);
         Button btnMyListings = findViewById(R.id.btnMyListings);
         Button btnEnquiries = findViewById(R.id.btnEnquiries);
         Button btnPaymentsReceived = findViewById(R.id.btnPaymentsReceived);
@@ -26,83 +28,77 @@ public class LandlordProfileActivity extends AppCompatActivity {
         Button btnReportProblem = findViewById(R.id.btnReportProblem);
         Button btnLogout = findViewById(R.id.btnLogout);
 
-        btnBack.setOnClickListener(v -> finish());
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> finish());
+        }
 
-        btnPersonalInfo.setOnClickListener(v ->
-                startActivity(new Intent(
-                        LandlordProfileActivity.this,
-                        LandlordPersonalInformationActivity.class
-                ))
-        );
+        if (btnPersonalInfo != null) {
+            btnPersonalInfo.setOnClickListener(v ->
+                    startActivity(new Intent(LandlordProfileActivity.this, LandlordPersonalInformationActivity.class)));
+        }
 
-        btnMyListings.setOnClickListener(v ->
-                startActivity(new Intent(
-                        LandlordProfileActivity.this,
-                        MyListingsActivity.class
-                ))
-        );
+        // Multi-language settings navigation
+        if (btnChangeLanguage != null) {
+            btnChangeLanguage.setOnClickListener(v ->
+                    startActivity(new Intent(LandlordProfileActivity.this, LanguageSettingsActivity.class)));
+        }
 
-        btnEnquiries.setOnClickListener(v ->
-                startActivity(new Intent(
-                        LandlordProfileActivity.this,
-                        EnquiriesActivity.class
-                ))
-        );
+        if (btnMyListings != null) {
+            btnMyListings.setOnClickListener(v ->
+                    startActivity(new Intent(LandlordProfileActivity.this, MyListingsActivity.class)));
+        }
 
-        btnPaymentsReceived.setOnClickListener(v ->
-                startActivity(new Intent(
-                        LandlordProfileActivity.this,
-                        PaymentsReceivedActivity.class
-                ))
-        );
+        if (btnEnquiries != null) {
+            btnEnquiries.setOnClickListener(v ->
+                    startActivity(new Intent(LandlordProfileActivity.this, EnquiriesActivity.class)));
+        }
 
-        btnPaymentHistory.setOnClickListener(v ->
-                startActivity(new Intent(
-                        LandlordProfileActivity.this,
-                        PaymentHistoryActivity.class
-                ))
-        );
+        if (btnPaymentsReceived != null) {
+            btnPaymentsReceived.setOnClickListener(v ->
+                    startActivity(new Intent(LandlordProfileActivity.this, PaymentsReceivedActivity.class)));
+        }
 
-        btnNotifications.setOnClickListener(v ->
-                startActivity(new Intent(
-                        LandlordProfileActivity.this,
-                        NotificationsActivity.class
-                ))
-        );
+        if (btnPaymentHistory != null) {
+            btnPaymentHistory.setOnClickListener(v ->
+                    startActivity(new Intent(LandlordProfileActivity.this, PaymentHistoryActivity.class)));
+        }
 
-        btnChangePassword.setOnClickListener(v ->
-                startActivity(new Intent(
-                        LandlordProfileActivity.this,
-                        ChangePasswordActivity.class
-                ))
-        );
+        if (btnNotifications != null) {
+            btnNotifications.setOnClickListener(v ->
+                    startActivity(new Intent(LandlordProfileActivity.this, NotificationsActivity.class)));
+        }
 
-        btnReportProblem.setOnClickListener(v ->
-                startActivity(new Intent(
-                        LandlordProfileActivity.this,
-                        ReportProblemActivity.class
-                ))
-        );
+        if (btnChangePassword != null) {
+            btnChangePassword.setOnClickListener(v ->
+                    startActivity(new Intent(LandlordProfileActivity.this, ChangePasswordActivity.class)));
+        }
 
-        btnLogout.setOnClickListener(v -> logout());
+        if (btnReportProblem != null) {
+            btnReportProblem.setOnClickListener(v ->
+                    startActivity(new Intent(LandlordProfileActivity.this, ReportProblemActivity.class)));
+        }
+
+        if (btnLogout != null) {
+            btnLogout.setOnClickListener(v -> logout());
+        }
     }
 
     private void logout() {
+        // Clear Firebase session
+        try {
+            FirebaseAuth.getInstance().signOut();
+        } catch (Exception ignored) {}
 
-        FirebaseAuth.getInstance().signOut();
+        // Clear Supabase session
+        try {
+            SupabaseHelper.clearSession(this);
+        } catch (Exception ignored) {}
 
-        SupabaseHelper.clearSession(this);
+        Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show();
 
-        Intent intent = new Intent(
-                LandlordProfileActivity.this,
-                OuterMainActivity.class
-        );
-
-        intent.setFlags(
-                Intent.FLAG_ACTIVITY_NEW_TASK |
-                        Intent.FLAG_ACTIVITY_CLEAR_TASK
-        );
-
+        // Redirect to Greeting / OuterMainActivity and clear task stack
+        Intent intent = new Intent(LandlordProfileActivity.this, OuterMainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
     }

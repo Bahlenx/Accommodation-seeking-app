@@ -1,27 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- When ACTIVATED (The currently selected language) -->
-    <item android:state_activated="true">
-        <shape android:shape="rectangle">
-            <solid android:color="@color/colorSecondary" />
-            <corners android:radius="30dp" />
-        </shape>
-    </item>
-
-    <!-- When pressed -->
+    <!-- Pressed / Focused: Darker Terracotta -->
     <item android:state_pressed="true">
         <shape android:shape="rectangle">
-            <solid android:color="@color/colorSecondary" />
-            <corners android:radius="30dp" />
+            <solid android:color="#A04523" />
+            <corners android:radius="24dp" />
         </shape>
     </item>
 
-    <!-- Default state -->
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <solid android:color="#A04523" />
+            <corners android:radius="24dp" />
+        </shape>
+    </item>
+
+    <!-- Default State across the ENTIRE APP: Rich Terracotta Orange -->
     <item>
         <shape android:shape="rectangle">
-            <solid android:color="@color/colorPrimary" />
-            <corners android:radius="30dp" />
+            <solid android:color="@color/colorSecondary" />
+            <corners android:radius="24dp" />
         </shape>
     </item>
 
