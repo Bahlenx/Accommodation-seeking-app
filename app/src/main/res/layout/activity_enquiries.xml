@@ -1,50 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="24dp"
-    android:background="#F7F7F7">
+    android:background="#FFFFFF"
+    android:padding="20dp">
 
     <Button
         android:id="@+id/btnBack"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:background="@drawable/selector_regular_button"
+        app:backgroundTint="@null"
         android:text="@string/back"
-        android:textAllCaps="false"
-        android:background="@drawable/selector_regular_button"/>
+        android:textAllCaps="false" />
 
     <TextView
         android:id="@+id/txtEnquiriesTitle"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
         android:text="@string/enquiries"
+        android:textColor="@color/black"
         android:textSize="24sp"
-        android:textStyle="bold"
-        android:layout_marginTop="20dp"/>
+        android:textStyle="bold" />
 
     <TextView
         android:id="@+id/txtNoEnquiries"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/no_enquiries"
-        android:textSize="17sp"
+        android:padding="16dp"
         android:gravity="center"
-        android:padding="30dp"/>
+        android:text="@string/no_enquiries_yet"
+        android:textColor="#777777"
+        android:textSize="15sp" />
 
     <ScrollView
         android:id="@+id/enquiriesScroll"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:fillViewport="true">
 
         <LinearLayout
             android:id="@+id/enquiriesContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"/>
+            android:orientation="vertical" />
 
     </ScrollView>
 

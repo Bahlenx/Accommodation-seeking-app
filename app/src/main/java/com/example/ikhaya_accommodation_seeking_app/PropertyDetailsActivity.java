@@ -42,7 +42,6 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
@@ -72,82 +71,68 @@ public class PropertyDetailsActivity extends AppCompatActivity {
 
     private String listingId;
     private String landlordUid = "";
-    private String locationText = "Mthatha";
-    private double verifiedLatitude = -31.5889;
-    private double verifiedLongitude = 28.7844;
-    private String propertyName = "Mthatha Accommodation";
-    private String priceText = "R950/month";
+    private String locationText = "";
+    private double verifiedLatitude = Double.NaN;
+    private double verifiedLongitude = Double.NaN;
+    private String propertyName = "";
+    private String priceText = "";
 
-    private final ExecutorService executor = Executors.newFixedThreadPool(2);
+    private final ExecutorService executor =
+            Executors.newFixedThreadPool(2);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // 1. Configure OSM Tile Usage Policy User-Agent prior to layout inflation
-        Configuration.getInstance().load(getApplicationContext(),
-                PreferenceManager.getDefaultSharedPreferences(getApplicationContext()));
-        Configuration.getInstance().setUserAgentValue("iKhayaApp-EduvosCapstone-v1.0 (Student Project; contact@ikhaya.ac.za)");
+        Configuration.getInstance().load(
+                getApplicationContext(),
+                PreferenceManager.getDefaultSharedPreferences(
+                        getApplicationContext()
+                )
+        );
+
+        Configuration.getInstance().setUserAgentValue(
+                getPackageName()
+        );
 
         setContentView(R.layout.activity_property_details);
 
-        // 2. Extract Intent Extras
-        if (getIntent().hasExtra("LISTING_ID")) {
-            listingId = getIntent().getStringExtra("LISTING_ID");
-        } else if (getIntent().hasExtra("listingId")) {
+        listingId = getIntent().getStringExtra("LISTING_ID");
+
+        if (listingId == null) {
             listingId = getIntent().getStringExtra("listingId");
         }
 
-        if (getIntent().hasExtra("propertyName") && getIntent().getStringExtra("propertyName") != null) {
-            propertyName = getIntent().getStringExtra("propertyName");
-        }
-        if (getIntent().hasExtra("listingPrice") && getIntent().getStringExtra("listingPrice") != null) {
-            priceText = getIntent().getStringExtra("listingPrice");
-        }
-        if (getIntent().hasExtra("listingLocation") && getIntent().getStringExtra("listingLocation") != null) {
-            locationText = getIntent().getStringExtra("listingLocation");
-        }
-        if (getIntent().hasExtra("latitude") && getIntent().hasExtra("longitude")) {
-            verifiedLatitude = getIntent().getDoubleExtra("latitude", verifiedLatitude);
-            verifiedLongitude = getIntent().getDoubleExtra("longitude", verifiedLongitude);
+        if (getIntent().hasExtra("latitude")
+                && getIntent().hasExtra("longitude")) {
+
+            verifiedLatitude =
+                    getIntent().getDoubleExtra(
+                            "latitude",
+                            Double.NaN
+                    );
+
+            verifiedLongitude =
+                    getIntent().getDoubleExtra(
+                            "longitude",
+                            Double.NaN
+                    );
         }
 
-        // 3. Bind Views safely
         initializeViews();
-
-        // 4. Setup Map
         setupEmbeddedMap();
-
-        // 5. Setup Action Buttons & Translation
         setupButtons();
-
-        // 6. Populate Localized Chips & Description
         setupChipsAndDescription();
-
-        // 7. Role Handling (Landlord vs Tenant)
         setupRoleViews();
 
-        // 8. If Supabase listingId exists, load remote data in background
         if (listingId != null && !listingId.trim().isEmpty()) {
             loadListingFromSupabase();
         }
     }
 
     private void initializeViews() {
-        // Safe binding to prevent ClassCastException if an ID is used on a TextView
-        View imgView = findViewById(R.id.propertyImage);
-        if (imgView instanceof ImageView) {
-            propertyImage = (ImageView) imgView;
-        } else {
-            int altPhotoId = getResources().getIdentifier("propertyPhoto", "id", getPackageName());
-            if (altPhotoId != 0) {
-                View altView = findViewById(altPhotoId);
-                if (altView instanceof ImageView) {
-                    propertyImage = (ImageView) altView;
-                }
-            }
-        }
 
+        propertyImage = findViewById(R.id.propertyImage);
         txtPropertyName = findViewById(R.id.propertyName);
         txtPropertyPrice = findViewById(R.id.propertyPrice);
         txtPropertyLocation = findViewById(R.id.propertyLocation);
@@ -159,128 +144,223 @@ public class PropertyDetailsActivity extends AppCompatActivity {
         progressTranslate = findViewById(R.id.progressTranslate);
         btnTranslate = findViewById(R.id.btnTranslate);
 
-        if (txtPropertyName != null) txtPropertyName.setText(propertyName);
-        if (txtPropertyPrice != null) txtPropertyPrice.setText(priceText);
-        if (txtPropertyLocation != null) txtPropertyLocation.setText(locationText);
-
         Button btnBack = findViewById(R.id.btnBack);
-        if (btnBack != null) btnBack.setOnClickListener(v -> finish());
+
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> finish());
+        }
     }
 
     private void setupChipsAndDescription() {
+
         if (chipGroupAmenities != null) {
             chipGroupAmenities.removeAllViews();
-            List<Integer> amenityStrings = Arrays.asList(
-                    R.string.amenity_water,
-                    R.string.amenity_electricity,
-                    R.string.amenity_parking
-            );
-            for (int resId : amenityStrings) {
-                Chip chip = new Chip(this);
-                chip.setText(getString(resId));
-                chip.setClickable(false);
-                chip.setCheckable(false);
-                chipGroupAmenities.addView(chip);
-            }
         }
 
         if (chipGroupRules != null) {
             chipGroupRules.removeAllViews();
-            List<Integer> ruleStrings = Arrays.asList(
-                    R.string.rule_available_now,
-                    R.string.rule_deposit_req
-            );
-            for (int resId : ruleStrings) {
-                Chip chip = new Chip(this);
-                chip.setText(getString(resId));
-                chip.setClickable(false);
-                chip.setCheckable(false);
-                chipGroupRules.addView(chip);
-            }
         }
 
-        originalDescription = "Affordable accommodation located in a convenient area of Mthatha. Suitable for individuals looking for accessible and affordable housing.";
         if (propertyDescription != null) {
-            propertyDescription.setText(originalDescription);
+            propertyDescription.setText("");
         }
 
-        Locale currentLocale = getResources().getConfiguration().getLocales().get(0);
+        Locale currentLocale =
+                getResources().getConfiguration()
+                        .getLocales()
+                        .get(0);
+
         String currentLang = currentLocale.getLanguage();
 
         if (btnTranslate != null) {
-            if ("en".equals(currentLang)) {
-                btnTranslate.setVisibility(View.GONE);
-            } else {
-                btnTranslate.setVisibility(View.VISIBLE);
-                btnTranslate.setText("Translate to " + getLanguageDisplayName(currentLang));
-            }
+
+            btnTranslate.setVisibility(View.GONE);
 
             btnTranslate.setOnClickListener(v -> {
+
+                if (originalDescription.trim().isEmpty()) {
+                    Toast.makeText(
+                            this,
+                            getString(
+                                    R.string.description_not_available
+                            ),
+                            Toast.LENGTH_SHORT
+                    ).show();
+                    return;
+                }
+
                 if (isTranslated) {
-                    if (propertyDescription != null) propertyDescription.setText(originalDescription);
-                    btnTranslate.setText("Translate to " + getLanguageDisplayName(currentLang));
+
+                    propertyDescription.setText(
+                            originalDescription
+                    );
+
+                    btnTranslate.setText(
+                            getString(
+                                    R.string.translate_to_language,
+                                    getLanguageDisplayName(currentLang)
+                            )
+                    );
+
                     isTranslated = false;
                     return;
                 }
 
                 if (!cachedTranslatedDescription.isEmpty()) {
-                    if (propertyDescription != null) propertyDescription.setText(cachedTranslatedDescription);
-                    btnTranslate.setText("Show original");
+
+                    propertyDescription.setText(
+                            cachedTranslatedDescription
+                    );
+
+                    btnTranslate.setText(
+                            getString(R.string.show_original)
+                    );
+
                     isTranslated = true;
                     return;
                 }
 
-                if (progressTranslate != null) progressTranslate.setVisibility(View.VISIBLE);
+                if (progressTranslate != null) {
+                    progressTranslate.setVisibility(View.VISIBLE);
+                }
+
                 btnTranslate.setEnabled(false);
 
-                GeminiTranslator.translate(originalDescription, currentLang, new GeminiTranslator.TranslationCallback() {
-                    @Override
-                    public void onSuccess(String result) {
-                        if (progressTranslate != null) progressTranslate.setVisibility(View.GONE);
-                        btnTranslate.setEnabled(true);
-                        cachedTranslatedDescription = result;
-                        if (propertyDescription != null) propertyDescription.setText(cachedTranslatedDescription);
-                        btnTranslate.setText("Show original");
-                        isTranslated = true;
-                    }
+                GeminiTranslator.translate(
+                        originalDescription,
+                        currentLang,
+                        new GeminiTranslator.TranslationCallback() {
 
-                    @Override
-                    public void onError(String errorMessage) {
-                        if (progressTranslate != null) progressTranslate.setVisibility(View.GONE);
-                        btnTranslate.setEnabled(true);
-                        Toast.makeText(PropertyDetailsActivity.this, "Translation failed: " + errorMessage, Toast.LENGTH_SHORT).show();
-                    }
-                });
+                            @Override
+                            public void onSuccess(String result) {
+
+                                if (progressTranslate != null) {
+                                    progressTranslate.setVisibility(
+                                            View.GONE
+                                    );
+                                }
+
+                                btnTranslate.setEnabled(true);
+                                cachedTranslatedDescription = result;
+
+                                if (propertyDescription != null) {
+                                    propertyDescription.setText(result);
+                                }
+
+                                btnTranslate.setText(
+                                        getString(R.string.show_original)
+                                );
+
+                                isTranslated = true;
+                            }
+
+                            @Override
+                            public void onError(String errorMessage) {
+
+                                if (progressTranslate != null) {
+                                    progressTranslate.setVisibility(
+                                            View.GONE
+                                    );
+                                }
+
+                                btnTranslate.setEnabled(true);
+
+                                Toast.makeText(
+                                        PropertyDetailsActivity.this,
+                                        getString(
+                                                R.string.translation_failed,
+                                                errorMessage
+                                        ),
+                                        Toast.LENGTH_SHORT
+                                ).show();
+                            }
+                        }
+                );
             });
         }
     }
 
-    private void setupButtons() {
-        Button btnGetDirections = findViewById(R.id.btnGetDirections);
-        Button btnOpenFullMap = findViewById(R.id.btnOpenFullMap);
+    private void populateChipGroup(
+            ChipGroup group,
+            Object rawValues
+    ) {
 
-        int openMapResId = getResources().getIdentifier("btnOpenMap", "id", getPackageName());
-        View btnOpenMap = openMapResId != 0 ? findViewById(openMapResId) : null;
-
-        int saveResId = getResources().getIdentifier("btnSave", "id", getPackageName());
-        View btnSave = saveResId != 0 ? findViewById(saveResId) : null;
-
-        int contactResId = getResources().getIdentifier("btnContact", "id", getPackageName());
-        View btnContact = contactResId != 0 ? findViewById(contactResId) : null;
-        if (btnContact == null) {
-            btnContact = findViewById(R.id.btnContactLandlord);
+        if (group == null
+                || rawValues == null
+                || rawValues == JSONObject.NULL) {
+            return;
         }
 
+        group.removeAllViews();
+
+        if (rawValues instanceof JSONArray) {
+
+            JSONArray values = (JSONArray) rawValues;
+
+            for (int i = 0; i < values.length(); i++) {
+                addChip(group, values.optString(i, ""));
+            }
+
+        } else {
+
+            String raw = String.valueOf(rawValues).trim();
+
+            if (raw.isEmpty()
+                    || "null".equalsIgnoreCase(raw)) {
+                return;
+            }
+
+            for (String part : raw.split(",")) {
+                addChip(group, part);
+            }
+        }
+    }
+
+    private void addChip(
+            ChipGroup group,
+            String value
+    ) {
+
+        if (value == null || value.trim().isEmpty()) {
+            return;
+        }
+
+        Chip chip = new Chip(this);
+        chip.setText(value.trim());
+        chip.setClickable(false);
+        chip.setCheckable(false);
+
+        group.addView(chip);
+    }
+
+    private void setupButtons() {
+
+        Button btnGetDirections =
+                findViewById(R.id.btnGetDirections);
+
+        Button btnOpenFullMap =
+                findViewById(R.id.btnOpenFullMap);
+
+        View btnOpenMap = findViewById(R.id.btnOpenMap);
+        View btnSave = findViewById(R.id.btnSave);
+        View btnContact = findViewById(R.id.btnContactLandlord);
+
         if (btnGetDirections != null) {
-            btnGetDirections.setOnClickListener(v -> launchTurnByTurnNavigation());
+            btnGetDirections.setOnClickListener(
+                    v -> launchTurnByTurnNavigation()
+            );
         }
 
         if (btnOpenFullMap != null) {
-            btnOpenFullMap.setOnClickListener(v -> openLocationInMaps(false));
+            btnOpenFullMap.setOnClickListener(
+                    v -> openLocationInMaps(false)
+            );
         }
 
         if (btnOpenMap != null) {
-            btnOpenMap.setOnClickListener(v -> openLocationInMaps(false));
+            btnOpenMap.setOnClickListener(
+                    v -> openLocationInMaps(false)
+            );
         }
 
         if (btnSave != null) {
@@ -293,140 +373,300 @@ public class PropertyDetailsActivity extends AppCompatActivity {
     }
 
     private void setupRoleViews() {
-        boolean isLandlord = getIntent().getBooleanExtra("isLandlord", false);
-        Button btnContactLandlord = findViewById(R.id.btnContactLandlord);
-        Button btnEditListing = findViewById(R.id.btnEditListing);
-        btnApplyToRent = findViewById(R.id.btnApplyToRent);
+
+        boolean isLandlord =
+                getIntent().getBooleanExtra("isLandlord", false);
+
+        Button btnContactLandlord =
+                findViewById(R.id.btnContactLandlord);
+
+        Button btnEditListing =
+                findViewById(R.id.btnEditListing);
+
+        btnApplyToRent =
+                findViewById(R.id.btnApplyToRent);
 
         if (isLandlord) {
-            if (btnContactLandlord != null) btnContactLandlord.setVisibility(View.GONE);
-            if (btnApplyToRent != null) btnApplyToRent.setVisibility(View.GONE);
+
+            if (btnContactLandlord != null) {
+                btnContactLandlord.setVisibility(View.GONE);
+            }
+
+            if (btnApplyToRent != null) {
+                btnApplyToRent.setVisibility(View.GONE);
+            }
 
             if (btnEditListing != null) {
+
                 btnEditListing.setVisibility(View.VISIBLE);
+
                 btnEditListing.setOnClickListener(v -> {
-                    Intent editIntent = new Intent(this, AddListingActivity.class);
+
+                    Intent editIntent = new Intent(
+                            this,
+                            AddListingActivity.class
+                    );
+
                     editIntent.putExtra("isEditing", true);
                     editIntent.putExtra("listingId", listingId);
                     editIntent.putExtra("propertyName", propertyName);
+
                     startActivity(editIntent);
                 });
             }
+
         } else {
-            if (btnContactLandlord != null) btnContactLandlord.setVisibility(View.VISIBLE);
-            if (btnEditListing != null) btnEditListing.setVisibility(View.GONE);
+
+            if (btnContactLandlord != null) {
+                btnContactLandlord.setVisibility(View.VISIBLE);
+            }
+
+            if (btnEditListing != null) {
+                btnEditListing.setVisibility(View.GONE);
+            }
+
             if (btnApplyToRent != null) {
+
                 btnApplyToRent.setVisibility(View.VISIBLE);
-                btnApplyToRent.setText(getString(R.string.btn_apply_to_rent));
-                btnApplyToRent.setOnClickListener(v -> showApplicationBottomSheet());
+
+                btnApplyToRent.setText(
+                        getString(R.string.btn_apply_to_rent)
+                );
+
+                btnApplyToRent.setOnClickListener(
+                        v -> showApplicationBottomSheet()
+                );
             }
         }
     }
 
     private void showApplicationBottomSheet() {
-        BottomSheetDialog dialog = new BottomSheetDialog(this);
+
+        BottomSheetDialog dialog =
+                new BottomSheetDialog(this);
+
         dialog.setContentView(R.layout.dialog_apply_rental);
 
-        ImageButton btnCloseDialog = dialog.findViewById(R.id.btnCloseDialog);
-        TextView dialogTitle = dialog.findViewById(R.id.dialogPropertyTitle);
-        EditText etApplicantName = dialog.findViewById(R.id.etApplicantName);
-        EditText etIdNumber = dialog.findViewById(R.id.etIdNumber);
-        EditText etPhone = dialog.findViewById(R.id.etPhone);
-        EditText etEmergencyContact = dialog.findViewById(R.id.etEmergencyContact);
-        Spinner spinnerOccupation = dialog.findViewById(R.id.spinnerOccupation);
-        TextView tvSelectedMoveInDate = dialog.findViewById(R.id.tvSelectedMoveInDate);
-        Spinner spinnerLeaseDuration = dialog.findViewById(R.id.spinnerLeaseDuration);
-        Spinner spinnerOccupants = dialog.findViewById(R.id.spinnerOccupants);
-        EditText etTenantNote = dialog.findViewById(R.id.etTenantNote);
-        CheckBox cbAcceptTerms = dialog.findViewById(R.id.cbAcceptTerms);
-        Button btnSubmit = dialog.findViewById(R.id.btnSubmitApplication);
+        ImageButton btnCloseDialog =
+                dialog.findViewById(R.id.btnCloseDialog);
+
+        TextView dialogTitle =
+                dialog.findViewById(R.id.dialogPropertyTitle);
+
+        EditText etApplicantName =
+                dialog.findViewById(R.id.etApplicantName);
+
+        EditText etIdNumber =
+                dialog.findViewById(R.id.etIdNumber);
+
+        EditText etPhone =
+                dialog.findViewById(R.id.etPhone);
+
+        EditText etEmergencyContact =
+                dialog.findViewById(R.id.etEmergencyContact);
+
+        Spinner spinnerOccupation =
+                dialog.findViewById(R.id.spinnerOccupation);
+
+        TextView tvSelectedMoveInDate =
+                dialog.findViewById(R.id.tvSelectedMoveInDate);
+
+        Spinner spinnerLeaseDuration =
+                dialog.findViewById(R.id.spinnerLeaseDuration);
+
+        Spinner spinnerOccupants =
+                dialog.findViewById(R.id.spinnerOccupants);
+
+        EditText etTenantNote =
+                dialog.findViewById(R.id.etTenantNote);
+
+        CheckBox cbAcceptTerms =
+                dialog.findViewById(R.id.cbAcceptTerms);
+
+        Button btnSubmit =
+                dialog.findViewById(R.id.btnSubmitApplication);
 
         if (dialogTitle != null) {
-            dialogTitle.setText(propertyName + " • " + priceText);
+            dialogTitle.setText(
+                    getString(
+                            R.string.application_dialog_title,
+                            propertyName,
+                            priceText
+                    )
+            );
         }
 
         if (btnCloseDialog != null) {
+
             btnCloseDialog.setOnClickListener(v -> {
+
                 new AlertDialog.Builder(this)
-                        .setTitle(getString(R.string.dialog_discard_title))
-                        .setMessage(getString(R.string.dialog_discard_message))
-                        .setPositiveButton(getString(R.string.dialog_btn_discard), (d, which) -> dialog.dismiss())
-                        .setNegativeButton(getString(R.string.dialog_btn_continue), null)
+                        .setTitle(
+                                getString(R.string.dialog_discard_title)
+                        )
+                        .setMessage(
+                                getString(R.string.dialog_discard_message)
+                        )
+                        .setPositiveButton(
+                                getString(R.string.dialog_btn_discard),
+                                (d, which) -> dialog.dismiss()
+                        )
+                        .setNegativeButton(
+                                getString(R.string.dialog_btn_continue),
+                                null
+                        )
                         .show();
             });
         }
 
-        final String[] chosenDate = {"01/11/2026"};
+        Calendar calendar = Calendar.getInstance();
+
+        final String[] chosenDate = {
+                getString(R.string.default_move_in_date)
+        };
+
         if (tvSelectedMoveInDate != null) {
+
             tvSelectedMoveInDate.setOnClickListener(v -> {
+
                 Calendar cal = Calendar.getInstance();
-                new DatePickerDialog(this, (view, year, month, dayOfMonth) -> {
-                    chosenDate[0] = String.format(Locale.getDefault(), "%02d/%02d/%d", dayOfMonth, month + 1, year);
-                    tvSelectedMoveInDate.setText(chosenDate[0]);
-                }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show();
+
+                new DatePickerDialog(
+                        this,
+                        (view, year, month, dayOfMonth) -> {
+
+                            chosenDate[0] = String.format(
+                                    Locale.getDefault(),
+                                    "%02d/%02d/%d",
+                                    dayOfMonth,
+                                    month + 1,
+                                    year
+                            );
+
+                            tvSelectedMoveInDate.setText(
+                                    chosenDate[0]
+                            );
+                        },
+                        cal.get(Calendar.YEAR),
+                        cal.get(Calendar.MONTH),
+                        cal.get(Calendar.DAY_OF_MONTH)
+                ).show();
             });
         }
 
         if (btnSubmit != null) {
+
             btnSubmit.setOnClickListener(v -> {
-                String name = etApplicantName != null ? etApplicantName.getText().toString().trim() : "";
-                String idNum = etIdNumber != null ? etIdNumber.getText().toString().trim() : "";
-                String phone = etPhone != null ? etPhone.getText().toString().trim() : "";
-                String emergency = etEmergencyContact != null ? etEmergencyContact.getText().toString().trim() : "";
+
+                String name = etApplicantName != null
+                        ? etApplicantName.getText().toString().trim()
+                        : "";
+
+                String idNum = etIdNumber != null
+                        ? etIdNumber.getText().toString().trim()
+                        : "";
+
+                String phone = etPhone != null
+                        ? etPhone.getText().toString().trim()
+                        : "";
+
+                String emergency = etEmergencyContact != null
+                        ? etEmergencyContact.getText().toString().trim()
+                        : "";
 
                 if (name.isEmpty()) {
-                    Toast.makeText(this, getString(R.string.err_enter_name), Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                if (idNum.length() != 13) {
-                    Toast.makeText(this, getString(R.string.err_enter_id), Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                if (phone.length() != 10 || !phone.startsWith("0")) {
-                    Toast.makeText(this, getString(R.string.err_enter_phone), Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                if (emergency.length() != 10 || !emergency.startsWith("0")) {
-                    Toast.makeText(this, getString(R.string.err_enter_emergency), Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                if (cbAcceptTerms != null && !cbAcceptTerms.isChecked()) {
-                    Toast.makeText(this, getString(R.string.err_accept_terms), Toast.LENGTH_SHORT).show();
+                    showFormError(R.string.err_enter_name);
                     return;
                 }
 
-                String occupation = (spinnerOccupation != null && spinnerOccupation.getSelectedItem() != null)
-                        ? spinnerOccupation.getSelectedItem().toString() : "Student";
-                String duration = (spinnerLeaseDuration != null && spinnerLeaseDuration.getSelectedItem() != null)
-                        ? spinnerLeaseDuration.getSelectedItem().toString() : "12 Months";
-                String occupants = (spinnerOccupants != null && spinnerOccupants.getSelectedItem() != null)
-                        ? spinnerOccupants.getSelectedItem().toString() : "1 Person";
-                String note = (etTenantNote != null && !etTenantNote.getText().toString().trim().isEmpty())
-                        ? etTenantNote.getText().toString().trim() : "Responsible tenant seeking accommodation.";
+                if (idNum.length() != 13) {
+                    showFormError(R.string.err_enter_id);
+                    return;
+                }
+
+                if (phone.length() != 10 || !phone.startsWith("0")) {
+                    showFormError(R.string.err_enter_phone);
+                    return;
+                }
+
+                if (emergency.length() != 10
+                        || !emergency.startsWith("0")) {
+                    showFormError(R.string.err_enter_emergency);
+                    return;
+                }
+
+                if (cbAcceptTerms != null
+                        && !cbAcceptTerms.isChecked()) {
+                    showFormError(R.string.err_accept_terms);
+                    return;
+                }
+
+                String occupation =
+                        spinnerOccupation != null
+                                && spinnerOccupation.getSelectedItem() != null
+                                ? spinnerOccupation.getSelectedItem().toString()
+                                : getString(R.string.default_occupation);
+
+                String duration =
+                        spinnerLeaseDuration != null
+                                && spinnerLeaseDuration.getSelectedItem() != null
+                                ? spinnerLeaseDuration.getSelectedItem().toString()
+                                : getString(R.string.default_lease_duration);
+
+                String occupants =
+                        spinnerOccupants != null
+                                && spinnerOccupants.getSelectedItem() != null
+                                ? spinnerOccupants.getSelectedItem().toString()
+                                : getString(R.string.default_occupants);
+
+                String note =
+                        etTenantNote != null
+                                ? etTenantNote.getText().toString().trim()
+                                : "";
+
+                if (note.isEmpty()) {
+                    note = getString(R.string.default_tenant_note);
+                }
 
                 String appId = "APP-" + (System.currentTimeMillis() % 10000);
-                ApplicationManager.addApplication(PropertyDetailsActivity.this, new ApplicationManager.RentalApplication(
-                        appId,
-                        propertyName,
-                        name,
-                        phone,
-                        emergency,
-                        occupation + " (ID: " + idNum + ")",
-                        chosenDate[0],
-                        duration,
-                        occupants,
-                        priceText,
-                        note,
-                        "PENDING"
-                ));
+
+                ApplicationManager.addApplication(
+                        PropertyDetailsActivity.this,
+                        new ApplicationManager.RentalApplication(
+                                appId,
+                                propertyName,
+                                name,
+                                phone,
+                                emergency,
+                                occupation + " (ID: " + idNum + ")",
+                                chosenDate[0],
+                                duration,
+                                occupants,
+                                priceText,
+                                note,
+                                getString(R.string.application_status_pending)
+                        )
+                );
 
                 dialog.dismiss();
-                Toast.makeText(this, getString(R.string.msg_toast_applied), Toast.LENGTH_LONG).show();
+
+                Toast.makeText(
+                        this,
+                        getString(R.string.msg_toast_applied),
+                        Toast.LENGTH_LONG
+                ).show();
 
                 if (btnApplyToRent != null) {
-                    btnApplyToRent.setText(getString(R.string.btn_pending_review));
+
+                    btnApplyToRent.setText(
+                            getString(R.string.btn_pending_review)
+                    );
+
                     btnApplyToRent.setEnabled(false);
-                    btnApplyToRent.setBackgroundTintList(ColorStateList.valueOf(Color.GRAY));
+
+                    btnApplyToRent.setBackgroundTintList(
+                            ColorStateList.valueOf(Color.GRAY)
+                    );
                 }
             });
         }
@@ -434,258 +674,617 @@ public class PropertyDetailsActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    private void setupEmbeddedMap() {
-        mapView = findViewById(R.id.mapView);
-        if (mapView == null) return;
+    private void showFormError(int messageResource) {
 
-        XYTileSource deTileSource = new XYTileSource(
+        Toast.makeText(
+                this,
+                getString(messageResource),
+                Toast.LENGTH_SHORT
+        ).show();
+    }
+
+    private void setupEmbeddedMap() {
+
+        mapView = findViewById(R.id.mapView);
+
+        if (mapView == null) {
+            return;
+        }
+
+        XYTileSource tileSource = new XYTileSource(
                 "OpenStreetMapDE",
-                0, 19, 256, ".png",
-                new String[]{"https://tile.openstreetmap.de/"},
+                0,
+                19,
+                256,
+                ".png",
+                new String[]{
+                        "https://tile.openstreetmap.de/"
+                },
                 "© OpenStreetMap contributors"
         );
 
-        mapView.setTileSource(deTileSource);
+        mapView.setTileSource(tileSource);
         mapView.setMultiTouchControls(true);
         mapView.getController().setZoom(15.0);
 
-        GeoPoint propertyLocation = new GeoPoint(verifiedLatitude, verifiedLongitude);
-        mapView.getController().setCenter(propertyLocation);
+        if (Double.isNaN(verifiedLatitude)
+                || Double.isNaN(verifiedLongitude)
+                || Double.isInfinite(verifiedLatitude)
+                || Double.isInfinite(verifiedLongitude)) {
+            mapView.invalidate();
+            return;
+        }
+
+        GeoPoint point = new GeoPoint(
+                verifiedLatitude,
+                verifiedLongitude
+        );
+
+        mapView.getController().setCenter(point);
 
         Marker marker = new Marker(mapView);
-        marker.setPosition(propertyLocation);
-        marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-        marker.setTitle(propertyName);
-        marker.setSnippet("Verified Listing Stand");
-        mapView.getOverlays().add(marker);
 
+        marker.setPosition(point);
+        marker.setAnchor(
+                Marker.ANCHOR_CENTER,
+                Marker.ANCHOR_BOTTOM
+        );
+
+        marker.setTitle(propertyName);
+
+        mapView.getOverlays().add(marker);
         mapView.invalidate();
     }
 
     private void launchTurnByTurnNavigation() {
-        Uri navUri = Uri.parse("google.navigation:q=" + verifiedLatitude + "," + verifiedLongitude + "&mode=d");
-        Intent navIntent = new Intent(Intent.ACTION_VIEW, navUri);
-        navIntent.setPackage("com.google.android.apps.maps");
 
-        if (navIntent.resolveActivity(getPackageManager()) != null) {
-            startActivity(navIntent);
+        if (Double.isNaN(verifiedLatitude)
+                || Double.isNaN(verifiedLongitude)
+                || Double.isInfinite(verifiedLatitude)
+                || Double.isInfinite(verifiedLongitude)) {
+            openLocationInMaps(true);
+            return;
+        }
+
+        Uri navigationUri = Uri.parse(
+                "google.navigation:q="
+                        + verifiedLatitude
+                        + ","
+                        + verifiedLongitude
+                        + "&mode=d"
+        );
+
+        Intent navigationIntent = new Intent(
+                Intent.ACTION_VIEW,
+                navigationUri
+        );
+
+        navigationIntent.setPackage(
+                "com.google.android.apps.maps"
+        );
+
+        if (navigationIntent.resolveActivity(getPackageManager()) != null) {
+
+            startActivity(navigationIntent);
+
         } else {
-            Uri fallbackUri = Uri.parse(String.format(Locale.ENGLISH, "geo:%f,%f?q=%f,%f",
-                    verifiedLatitude, verifiedLongitude, verifiedLatitude, verifiedLongitude));
-            startActivity(new Intent(Intent.ACTION_VIEW, fallbackUri));
+
+            Uri fallbackUri = Uri.parse(
+                    String.format(
+                            Locale.ENGLISH,
+                            "geo:%f,%f?q=%f,%f",
+                            verifiedLatitude,
+                            verifiedLongitude,
+                            verifiedLatitude,
+                            verifiedLongitude
+                    )
+            );
+
+            startActivity(
+                    new Intent(Intent.ACTION_VIEW, fallbackUri)
+            );
         }
     }
 
     private void openLocationInMaps(boolean directions) {
+
         if (locationText == null || locationText.trim().isEmpty()) {
-            Toast.makeText(this, "Location is not available.", Toast.LENGTH_SHORT).show();
+
+            Toast.makeText(
+                    this,
+                    getString(R.string.location_not_available),
+                    Toast.LENGTH_SHORT
+            ).show();
+
             return;
         }
 
         String encodedLocation = Uri.encode(locationText);
-        Uri uri = directions
-                ? Uri.parse("https://www.google.com/maps/dir/?api=1&destination=" + encodedLocation)
-                : Uri.parse("https://www.google.com/maps/search/?api=1&query=" + encodedLocation);
 
-        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+        Uri uri = directions
+                ? Uri.parse(
+                "https://www.google.com/maps/dir/?api=1&destination="
+                        + encodedLocation
+        )
+                : Uri.parse(
+                "https://www.google.com/maps/search/?api=1&query="
+                        + encodedLocation
+        );
+
         try {
-            startActivity(intent);
+
+            startActivity(
+                    new Intent(Intent.ACTION_VIEW, uri)
+            );
+
         } catch (Exception e) {
-            Toast.makeText(this, "Could not open Maps.", Toast.LENGTH_SHORT).show();
+
+            Toast.makeText(
+                    this,
+                    getString(R.string.could_not_open_maps),
+                    Toast.LENGTH_SHORT
+            ).show();
         }
     }
 
     private void loadListingFromSupabase() {
-        String accessToken = SupabaseHelper.getAccessToken(this);
-        if (accessToken == null || accessToken.isEmpty()) return;
+
+        String accessToken =
+                SupabaseHelper.getAccessToken(this);
 
         executor.execute(() -> {
+
             HttpURLConnection connection = null;
+
             try {
-                String endpoint = "/rest/v1/listings?select=*&id=eq."
-                        + URLEncoder.encode(listingId, "UTF-8")
-                        + "&limit=1";
 
-                connection = SupabaseHelper.createConnection(endpoint, "GET", accessToken);
-                int code = connection.getResponseCode();
-                String response = SupabaseHelper.readResponse(connection);
+                String endpoint =
+                        "/rest/v1/listings?select=*&id=eq."
+                                + URLEncoder.encode(
+                                listingId,
+                                "UTF-8"
+                        ).replace("+", "%20")
+                                + "&limit=1";
 
-                if (code >= 200 && code < 300) {
-                    JSONArray listings = new JSONArray(response);
-                    if (listings.length() > 0) {
-                        JSONObject listing = listings.getJSONObject(0);
-                        String imageUrl = listing.optString("image_url", "");
-                        String name = listing.optString("property_name", propertyName);
-                        String price = listing.optString("price", priceText);
-                        String loc = listing.optString("location", locationText);
-                        String desc = listing.optString("description", originalDescription);
-                        landlordUid = listing.optString("landlord_uid", "");
+                connection = SupabaseHelper.createConnection(
+                        endpoint,
+                        "GET",
+                        accessToken
+                );
 
-                        propertyName = name;
-                        priceText = "R" + price + " per month";
-                        locationText = loc;
-                        originalDescription = desc;
+                int responseCode = connection.getResponseCode();
 
-                        runOnUiThread(() -> {
-                            if (txtPropertyName != null) txtPropertyName.setText(propertyName);
-                            if (txtPropertyPrice != null) txtPropertyPrice.setText(priceText);
-                            if (txtPropertyLocation != null) txtPropertyLocation.setText(locationText);
-                            if (propertyDescription != null) propertyDescription.setText(originalDescription);
-                        });
+                String response =
+                        SupabaseHelper.readResponse(connection);
 
-                        if (!imageUrl.trim().isEmpty() && !imageUrl.equalsIgnoreCase("null")) {
-                            loadPropertyImage(imageUrl);
-                        }
-                        updateMapCoordinatesFromLocation(loc);
-                    }
+                if (responseCode < 200 || responseCode >= 300) {
+
+                    Log.e(
+                            TAG,
+                            "Could not load listing. HTTP "
+                                    + responseCode
+                                    + ": "
+                                    + response
+                    );
+
+                    return;
                 }
+
+                JSONArray listings = new JSONArray(response);
+
+                if (listings.length() == 0) {
+                    return;
+                }
+
+                JSONObject listing = listings.getJSONObject(0);
+
+                String imageUrl = listing.optString("image_url", "");
+                String name = listing.optString("property_name", "");
+                String price = listing.optString("price", "");
+                String location = listing.optString("location", "");
+                String description = listing.optString("description", "");
+
+                landlordUid = listing.optString("landlord_uid", "");
+
+                propertyName = clean(name);
+                locationText = clean(location);
+                originalDescription = clean(description);
+
+                priceText = price == null || price.trim().isEmpty()
+                        || "null".equalsIgnoreCase(price.trim())
+                        ? ""
+                        : getString(R.string.price_per_month, price);
+
+                runOnUiThread(() -> {
+
+                    if (txtPropertyName != null) {
+                        txtPropertyName.setText(propertyName);
+                    }
+
+                    if (txtPropertyPrice != null) {
+                        txtPropertyPrice.setText(priceText);
+                    }
+
+                    if (txtPropertyLocation != null) {
+                        txtPropertyLocation.setText(locationText);
+                    }
+
+                    if (propertyDescription != null) {
+                        propertyDescription.setText(originalDescription);
+                    }
+
+                    populateChipGroup(
+                            chipGroupAmenities,
+                            listing.opt("amenities")
+                    );
+
+                    populateChipGroup(
+                            chipGroupRules,
+                            listing.opt("rules")
+                    );
+
+                    Locale locale = getResources()
+                            .getConfiguration()
+                            .getLocales()
+                            .get(0);
+
+                    if (btnTranslate != null
+                            && !"en".equals(locale.getLanguage())
+                            && !originalDescription.trim().isEmpty()) {
+
+                        btnTranslate.setVisibility(View.VISIBLE);
+
+                        btnTranslate.setText(
+                                getString(
+                                        R.string.translate_to_language,
+                                        getLanguageDisplayName(
+                                                locale.getLanguage()
+                                        )
+                                )
+                        );
+                    }
+                });
+
+                if (!clean(imageUrl).isEmpty()) {
+                    loadPropertyImage(imageUrl);
+                }
+
+                updateMapCoordinatesFromLocation(location);
+
             } catch (Exception e) {
-                Log.e(TAG, "Error loading Supabase listing", e);
+
+                Log.e(TAG, "Error loading listing details", e);
+
             } finally {
-                if (connection != null) connection.disconnect();
+
+                if (connection != null) {
+                    connection.disconnect();
+                }
             }
         });
     }
 
     private void loadPropertyImage(String imageUrl) {
+
+        if (imageUrl == null
+                || imageUrl.trim().isEmpty()
+                || "null".equalsIgnoreCase(imageUrl.trim())) {
+            return;
+        }
+
         executor.execute(() -> {
+
+            HttpURLConnection connection = null;
+
             try {
-                URL url = new URL(imageUrl);
-                InputStream input = url.openStream();
-                Bitmap bitmap = BitmapFactory.decodeStream(input);
-                if (bitmap != null && !isFinishing()) {
-                    runOnUiThread(() -> {
-                        if (propertyImage != null) {
-                            propertyImage.setImageBitmap(bitmap);
-                            propertyImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
+
+                connection = (HttpURLConnection)
+                        new URL(imageUrl.trim()).openConnection();
+
+                connection.setConnectTimeout(15000);
+                connection.setReadTimeout(20000);
+                connection.setRequestMethod("GET");
+                connection.connect();
+
+                int responseCode = connection.getResponseCode();
+
+                if (responseCode >= 200 && responseCode < 300) {
+
+                    try (InputStream input =
+                                 connection.getInputStream()) {
+
+                        Bitmap bitmap =
+                                BitmapFactory.decodeStream(input);
+
+                        if (bitmap != null
+                                && !isFinishing()
+                                && !isDestroyed()) {
+
+                            runOnUiThread(() -> {
+
+                                if (propertyImage != null) {
+                                    propertyImage.setImageBitmap(bitmap);
+
+                                    propertyImage.setScaleType(
+                                            ImageView.ScaleType.CENTER_CROP
+                                    );
+                                }
+                            });
                         }
-                    });
+                    }
                 }
+
             } catch (Exception e) {
+
                 Log.e(TAG, "Could not display property image", e);
+
+            } finally {
+
+                if (connection != null) {
+                    connection.disconnect();
+                }
             }
         });
     }
 
-    private void updateMapCoordinatesFromLocation(String loc) {
-        if (loc == null || loc.trim().isEmpty()) return;
+    private void updateMapCoordinatesFromLocation(String location) {
+
+        if (location == null || location.trim().isEmpty()) {
+            return;
+        }
+
         executor.execute(() -> {
+
             try {
-                Geocoder geocoder = new Geocoder(this, Locale.getDefault());
-                List<Address> addresses = geocoder.getFromLocationName(loc, 1);
+
+                Geocoder geocoder =
+                        new Geocoder(this, Locale.getDefault());
+
+                List<Address> addresses =
+                        geocoder.getFromLocationName(location, 1);
+
                 if (addresses != null && !addresses.isEmpty()) {
-                    Address addr = addresses.get(0);
-                    verifiedLatitude = addr.getLatitude();
-                    verifiedLongitude = addr.getLongitude();
+
+                    Address address = addresses.get(0);
+
+                    verifiedLatitude = address.getLatitude();
+                    verifiedLongitude = address.getLongitude();
+
                     runOnUiThread(() -> {
+
                         if (mapView != null) {
-                            GeoPoint point = new GeoPoint(verifiedLatitude, verifiedLongitude);
+
+                            GeoPoint point = new GeoPoint(
+                                    verifiedLatitude,
+                                    verifiedLongitude
+                            );
+
                             mapView.getController().setCenter(point);
                             mapView.invalidate();
                         }
                     });
                 }
-            } catch (Exception ignored) {}
+
+            } catch (Exception e) {
+                Log.w(TAG, "Could not geocode property location", e);
+            }
         });
     }
 
     private void saveListing() {
+
         String userId = SupabaseHelper.getUserId(this);
         String accessToken = SupabaseHelper.getAccessToken(this);
 
-        if (userId == null || userId.isEmpty() || accessToken == null || accessToken.isEmpty()) {
-            Toast.makeText(this, "Please log in to save.", Toast.LENGTH_SHORT).show();
+        if (userId == null || userId.isEmpty()
+                || accessToken == null || accessToken.isEmpty()) {
+
+            Toast.makeText(
+                    this,
+                    getString(R.string.please_log_in_to_save),
+                    Toast.LENGTH_SHORT
+            ).show();
+
             return;
         }
 
         executor.execute(() -> {
+
             HttpURLConnection connection = null;
+
             try {
-                connection = SupabaseHelper.createConnection("/rest/v1/saved_listings", "POST", accessToken);
+
+                connection = SupabaseHelper.createConnection(
+                        "/rest/v1/saved_listings",
+                        "POST",
+                        accessToken
+                );
+
                 JSONObject body = new JSONObject();
+
                 body.put("tenant_uid", userId);
                 body.put("listing_id", listingId);
+
                 SupabaseHelper.writeJson(connection, body);
 
-                int code = connection.getResponseCode();
+                int responseCode = connection.getResponseCode();
+
                 runOnUiThread(() -> {
-                    if (code >= 200 && code < 300) {
-                        Toast.makeText(this, "Accommodation saved.", Toast.LENGTH_SHORT).show();
-                    } else if (code == 409) {
-                        Toast.makeText(this, "Already saved.", Toast.LENGTH_SHORT).show();
+
+                    if (responseCode >= 200 && responseCode < 300) {
+
+                        Toast.makeText(
+                                this,
+                                getString(R.string.accommodation_saved),
+                                Toast.LENGTH_SHORT
+                        ).show();
+
+                    } else if (responseCode == 409) {
+
+                        Toast.makeText(
+                                this,
+                                getString(R.string.already_saved),
+                                Toast.LENGTH_SHORT
+                        ).show();
+
                     } else {
-                        Toast.makeText(this, "Could not save accommodation.", Toast.LENGTH_SHORT).show();
+
+                        Toast.makeText(
+                                this,
+                                getString(
+                                        R.string.could_not_save_accommodation
+                                ),
+                                Toast.LENGTH_SHORT
+                        ).show();
                     }
                 });
+
             } catch (Exception e) {
+
                 Log.e(TAG, "Save listing error", e);
+
             } finally {
-                if (connection != null) connection.disconnect();
+
+                if (connection != null) {
+                    connection.disconnect();
+                }
             }
         });
     }
 
     private void contactLandlord() {
+
         String userId = SupabaseHelper.getUserId(this);
         String accessToken = SupabaseHelper.getAccessToken(this);
 
-        if (userId == null || userId.isEmpty() || accessToken == null || accessToken.isEmpty()) {
-            Toast.makeText(this, "Please log in to contact landlord.", Toast.LENGTH_SHORT).show();
+        if (userId == null || userId.isEmpty()
+                || accessToken == null || accessToken.isEmpty()) {
+
+            Toast.makeText(
+                    this,
+                    getString(
+                            R.string.please_log_in_to_contact_landlord
+                    ),
+                    Toast.LENGTH_SHORT
+            ).show();
+
             return;
         }
 
         executor.execute(() -> {
+
             HttpURLConnection connection = null;
+
             try {
-                connection = SupabaseHelper.createConnection("/rest/v1/enquiries", "POST", accessToken);
+
+                connection = SupabaseHelper.createConnection(
+                        "/rest/v1/enquiries",
+                        "POST",
+                        accessToken
+                );
+
                 JSONObject body = new JSONObject();
+
                 body.put("tenant_uid", userId);
                 body.put("landlord_uid", landlordUid);
                 body.put("listing_id", listingId);
-                body.put("message", "I am interested in this accommodation.");
+                body.put(
+                        "message",
+                        getString(R.string.default_enquiry_message)
+                );
+
                 SupabaseHelper.writeJson(connection, body);
 
-                int code = connection.getResponseCode();
+                int responseCode = connection.getResponseCode();
+
                 runOnUiThread(() -> {
-                    if (code >= 200 && code < 300) {
-                        Toast.makeText(this, "Enquiry sent to landlord.", Toast.LENGTH_SHORT).show();
+
+                    if (responseCode >= 200 && responseCode < 300) {
+
+                        Toast.makeText(
+                                this,
+                                getString(R.string.enquiry_sent),
+                                Toast.LENGTH_SHORT
+                        ).show();
+
                     } else {
-                        Toast.makeText(this, "Could not send enquiry.", Toast.LENGTH_SHORT).show();
+
+                        Toast.makeText(
+                                this,
+                                getString(R.string.could_not_send_enquiry),
+                                Toast.LENGTH_SHORT
+                        ).show();
                     }
                 });
+
             } catch (Exception e) {
+
                 Log.e(TAG, "Contact landlord error", e);
+
             } finally {
-                if (connection != null) connection.disconnect();
+
+                if (connection != null) {
+                    connection.disconnect();
+                }
             }
         });
     }
 
+    private String clean(String value) {
+
+        if (value == null
+                || "null".equalsIgnoreCase(value.trim())) {
+            return "";
+        }
+
+        return value.trim();
+    }
+
     private String getLanguageDisplayName(String code) {
+
         switch (code) {
-            case "zu": return "isiZulu";
-            case "xh": return "isiXhosa";
-            case "st": return "Sesotho";
-            default: return "Local Language";
+            case "zu":
+                return getString(R.string.language_isizulu);
+
+            case "xh":
+                return getString(R.string.language_isixhosa);
+
+            case "st":
+                return getString(R.string.language_sesotho);
+
+            default:
+                return getString(R.string.language_local);
         }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if (mapView != null) mapView.onResume();
+
+        if (mapView != null) {
+            mapView.onResume();
+        }
     }
 
     @Override
     protected void onPause() {
-        if (mapView != null) mapView.onPause();
+
+        if (mapView != null) {
+            mapView.onPause();
+        }
+
         super.onPause();
     }
 
     @Override
     protected void onDestroy() {
-        if (mapView != null) mapView.onDetach();
+
+        if (mapView != null) {
+            mapView.onDetach();
+        }
+
         executor.shutdownNow();
+
         super.onDestroy();
     }
 }

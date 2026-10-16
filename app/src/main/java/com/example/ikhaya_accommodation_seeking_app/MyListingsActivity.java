@@ -10,17 +10,31 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class MyListingsActivity extends AppCompatActivity {
 
     private LinearLayout listingsContainer;
     private TextView txtNoListings;
+
+    private final ExecutorService executor =
+            Executors.newSingleThreadExecutor();
+
+    private final ActivityResultLauncher<Intent> editListingLauncher =
+            registerForActivityResult(
+                    new ActivityResultContracts.StartActivityForResult(),
+                    result -> loadMyListings()
+            );
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,7 +42,6 @@ public class MyListingsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_my_listings);
 
         Button btnBack = findViewById(R.id.btnBack);
-
         listingsContainer = findViewById(R.id.myListingsContainer);
         txtNoListings = findViewById(R.id.txtNoListings);
 
@@ -47,34 +60,31 @@ public class MyListingsActivity extends AppCompatActivity {
     }
 
     private void loadMyListings() {
-
         String userId = SupabaseHelper.getUserId(this);
         String accessToken = SupabaseHelper.getAccessToken(this);
 
-        if (userId == null || userId.isEmpty() ||
-                accessToken == null || accessToken.isEmpty()) {
-
+        if (userId == null || userId.isEmpty()
+                || accessToken == null || accessToken.isEmpty()) {
             Toast.makeText(
                     this,
                     "Please log in again.",
                     Toast.LENGTH_SHORT
             ).show();
-
             return;
         }
 
-        new Thread(() -> {
+        txtNoListings.setVisibility(View.GONE);
 
+        executor.execute(() -> {
             HttpURLConnection connection = null;
 
             try {
-
                 String endpoint =
-                        "/rest/v1/listings" +
-                                "?select=*" +
-                                "&landlord_uid=eq." +
-                                SupabaseHelper.encode(userId) +
-                                "&order=created_at.desc";
+                        "/rest/v1/listings"
+                                + "?select=*"
+                                + "&landlord_uid=eq."
+                                + SupabaseHelper.encode(userId)
+                                + "&order=created_at.desc";
 
                 connection = SupabaseHelper.createConnection(
                         endpoint,
@@ -82,28 +92,28 @@ public class MyListingsActivity extends AppCompatActivity {
                         accessToken
                 );
 
-                String response =
-                        SupabaseHelper.readResponse(connection);
+                int code = connection.getResponseCode();
+                String response = SupabaseHelper.readResponse(connection);
+
+                if (code < 200 || code >= 300) {
+                    showMessage("Could not load your listings.");
+                    return;
+                }
 
                 JSONArray listings = new JSONArray(response);
 
                 runOnUiThread(() -> {
-
                     listingsContainer.removeAllViews();
 
                     if (listings.length() == 0) {
-
                         txtNoListings.setVisibility(View.VISIBLE);
-
                         return;
                     }
 
                     txtNoListings.setVisibility(View.GONE);
 
                     for (int i = 0; i < listings.length(); i++) {
-
-                        JSONObject listing =
-                                listings.optJSONObject(i);
+                        JSONObject listing = listings.optJSONObject(i);
 
                         if (listing != null) {
                             addListingCard(listing);
@@ -112,121 +122,106 @@ public class MyListingsActivity extends AppCompatActivity {
                 });
 
             } catch (Exception e) {
-
-                runOnUiThread(() ->
-                        Toast.makeText(
-                                MyListingsActivity.this,
-                                "Could not load your listings.",
-                                Toast.LENGTH_SHORT
-                        ).show()
-                );
-
+                showMessage("Could not load your listings.");
             } finally {
-
                 if (connection != null) {
                     connection.disconnect();
                 }
             }
-
-        }).start();
+        });
     }
 
     private void addListingCard(JSONObject listing) {
+        View card = LayoutInflater.from(this).inflate(
+                R.layout.item_listing,
+                listingsContainer,
+                false
+        );
 
-        View card = LayoutInflater.from(this)
-                .inflate(
-                        R.layout.item_listing,
-                        listingsContainer,
-                        false
-                );
+        ImageView imgListing = card.findViewById(R.id.imgListing);
+        TextView txtListingName = card.findViewById(R.id.txtListingName);
+        TextView txtListingLocation = card.findViewById(R.id.txtListingLocation);
+        TextView txtListingPrice = card.findViewById(R.id.txtListingPrice);
+        TextView txtListingRooms = card.findViewById(R.id.txtListingRooms);
+        Button btnEditListing = card.findViewById(R.id.btnEditListing);
+        Button btnDeleteListing = card.findViewById(R.id.btnDeleteListing);
 
-        ImageView imgListing =
-                card.findViewById(R.id.imgListing);
-
-        TextView txtListingName =
-                card.findViewById(R.id.txtListingName);
-
-        TextView txtListingLocation =
-                card.findViewById(R.id.txtListingLocation);
-
-        TextView txtListingPrice =
-                card.findViewById(R.id.txtListingPrice);
-
-        TextView txtListingRooms =
-                card.findViewById(R.id.txtListingRooms);
-
-        Button btnEditListing =
-                card.findViewById(R.id.btnEditListing);
-
-        Button btnDeleteListing =
-                card.findViewById(R.id.btnDeleteListing);
-
-        String listingId =
-                listing.optString("id", "");
-
-        String propertyName =
-                listing.optString("property_name", "Property");
-
-        String location =
-                listing.optString("location", "Location not provided");
-
-        String price =
-                listing.optString("price", "0");
-
-        String rooms =
-                listing.optString("rooms", "0");
-
-        String imageUrl =
-                listing.optString("image_url", "");
+        String listingId = listing.optString("id", "");
+        String propertyName = listing.optString("property_name", "Property");
+        String location = listing.optString("location", "Location not provided");
+        String price = listing.optString("price", "0");
+        String rooms = listing.optString("rooms", "0");
 
         txtListingName.setText(propertyName);
         txtListingLocation.setText(location);
         txtListingPrice.setText("R" + price + " / month");
         txtListingRooms.setText(rooms + " rooms");
 
-        // The current database stores the image URL/path.
-        // Image loading can be added once the storage URL handling is finalized.
-        imgListing.setImageResource(
-                android.R.drawable.ic_menu_gallery
-        );
+        imgListing.setImageResource(android.R.drawable.ic_menu_gallery);
 
         btnEditListing.setOnClickListener(v -> {
+            if (listingId.isEmpty()) {
+                Toast.makeText(
+                        MyListingsActivity.this,
+                        "Listing ID is missing.",
+                        Toast.LENGTH_SHORT
+                ).show();
+                return;
+            }
 
-            Toast.makeText(
+            Intent intent = new Intent(
                     MyListingsActivity.this,
-                    "Edit listing will be added next.",
-                    Toast.LENGTH_SHORT
-            ).show();
+                    EditListingActivity.class
+            );
+
+            intent.putExtra("LISTING_ID", listingId);
+            intent.putExtra("listingId", listingId);
+            intent.putExtra("propertyName", propertyName);
+
+            editListingLauncher.launch(intent);
         });
 
         btnDeleteListing.setOnClickListener(v -> {
-
-            if (!listingId.isEmpty()) {
-                deleteListing(listingId);
+            if (listingId.isEmpty()) {
+                Toast.makeText(
+                        this,
+                        "Listing ID is missing.",
+                        Toast.LENGTH_SHORT
+                ).show();
+                return;
             }
+
+            new AlertDialog.Builder(this)
+                    .setTitle("Delete listing?")
+                    .setMessage(
+                            "Are you sure you want to delete \""
+                                    + propertyName
+                                    + "\"?"
+                    )
+                    .setNegativeButton("Cancel", null)
+                    .setPositiveButton("Delete", (dialog, which) ->
+                            deleteListing(listingId))
+                    .show();
         });
 
         listingsContainer.addView(card);
     }
 
     private void deleteListing(String listingId) {
-
-        String accessToken =
-                SupabaseHelper.getAccessToken(this);
+        String accessToken = SupabaseHelper.getAccessToken(this);
 
         if (accessToken == null || accessToken.isEmpty()) {
+            showMessage("Please log in again.");
             return;
         }
 
-        new Thread(() -> {
-
+        executor.execute(() -> {
             HttpURLConnection connection = null;
 
             try {
-
                 String endpoint =
-                        "/rest/v1/listings?id=eq." +
-                                SupabaseHelper.encode(listingId);
+                        "/rest/v1/listings?id=eq."
+                                + SupabaseHelper.encode(listingId);
 
                 connection = SupabaseHelper.createConnection(
                         endpoint,
@@ -234,13 +229,11 @@ public class MyListingsActivity extends AppCompatActivity {
                         accessToken
                 );
 
-                int responseCode =
-                        connection.getResponseCode();
+                int code = connection.getResponseCode();
+                String response = SupabaseHelper.readResponse(connection);
 
-                if (responseCode >= 200 && responseCode < 300) {
-
-                    runOnUiThread(() -> {
-
+                runOnUiThread(() -> {
+                    if (code >= 200 && code < 300) {
                         Toast.makeText(
                                 MyListingsActivity.this,
                                 "Listing deleted.",
@@ -248,36 +241,36 @@ public class MyListingsActivity extends AppCompatActivity {
                         ).show();
 
                         loadMyListings();
-                    });
-
-                } else {
-
-                    runOnUiThread(() ->
-                            Toast.makeText(
-                                    MyListingsActivity.this,
-                                    "Could not delete listing.",
-                                    Toast.LENGTH_SHORT
-                            ).show()
-                    );
-                }
-
-            } catch (Exception e) {
-
-                runOnUiThread(() ->
+                    } else {
                         Toast.makeText(
                                 MyListingsActivity.this,
                                 "Could not delete listing.",
-                                Toast.LENGTH_SHORT
-                        ).show()
-                );
+                                Toast.LENGTH_LONG
+                        ).show();
+                    }
+                });
 
+            } catch (Exception e) {
+                showMessage("Could not delete listing.");
             } finally {
-
                 if (connection != null) {
                     connection.disconnect();
                 }
             }
+        });
+    }
 
-        }).start();
+    private void showMessage(String message) {
+        runOnUiThread(() -> Toast.makeText(
+                MyListingsActivity.this,
+                message,
+                Toast.LENGTH_LONG
+        ).show());
+    }
+
+    @Override
+    protected void onDestroy() {
+        executor.shutdownNow();
+        super.onDestroy();
     }
 }

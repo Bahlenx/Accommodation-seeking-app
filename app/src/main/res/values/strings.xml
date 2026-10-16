@@ -1,4 +1,7 @@
-<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="MissingTranslation">
+
     <!-- System text -->
     <string name="app_name">iKhaya</string>
     <string name="app_description">iKhaya Accommodation Application</string>
@@ -113,7 +116,7 @@
     <string name="email_example_email_com">Email: example@email.com</string>
     <string name="phone_000_000_0000">Phone: 000 000 0000</string>
     <string name="log_out">Log Out</string>
-    <string name="back">← Back</string>
+    <string name="back">Back</string>
     <string name="desc_go_back">Go Back to previous screen</string>
 
     <!-- Navigation / General Actions -->
@@ -164,14 +167,14 @@
     <string name="_0">0</string>
 
     <!-- Map & Translation -->
-    <string name="get_directions">Get directions</string>
-    <string name="location_on_map">Location on map</string>
+    <string name="get_directions">Get Directions</string>
+    <string name="location_on_map">Location on Map</string>
     <string name="view_on_map">View on map</string>
     <string name="open_google_maps">Open Google Maps</string>
     <string name="description">Description</string>
     <string name="translate">Translate</string>
 
-    <!-- Extended Listing Sections (From Right) -->
+    <!-- Extended Listing Sections -->
     <string name="section_property_type">Property Type</string>
     <string name="section_amenities">Amenities</string>
     <string name="section_rules">Rules &amp; Availability</string>
@@ -182,7 +185,7 @@
     <string name="select_features_rules">Select Features &amp; Rules</string>
     <string name="btn_add_extra_features">+ Select Additional Features</string>
 
-    <!-- Chips / Rules (From Right) -->
+    <!-- Chips / Rules -->
     <string name="amenities_header">Amenities</string>
     <string name="rules_header">Rules &amp; Availability</string>
     <string name="amenity_water">Municipal / Tank Water</string>
@@ -195,7 +198,7 @@
     <string name="rule_no_pets">No Pets Allowed</string>
     <string name="rule_fenced">Fenced &amp; Gated</string>
 
-    <!-- Accommodation types: keep these values consistent with listings.property_type -->
+    <!-- Accommodation types -->
     <string-array name="accommodation_types">
         <item>Select accommodation type</item>
         <item>Room</item>
@@ -206,7 +209,7 @@
         <item>Cottage</item>
     </string-array>
 
-    <!-- South African Infrastructure Arrays (From Right) -->
+    <!-- South African Infrastructure Arrays -->
     <string-array name="sa_property_types">
         <item>Single Backroom (Mkhukhu / Brick)</item>
         <item>Self-Contained Flatlet / Cottage</item>
@@ -287,7 +290,7 @@
     <string name="error_phone">Enter a valid SA number (e.g., 082 123 4567)</string>
     <string name="error_email">Please enter a valid email address</string>
 
-    <!-- Rental Application Form Strings (From Right) -->
+    <!-- Rental Application Form -->
     <string name="apply_title">Tenant Rental Application</string>
     <string name="label_full_name">Full Name</string>
     <string name="label_id_number">RSA ID / Passport Number</string>
@@ -301,7 +304,7 @@
     <string name="label_agreement_checkbox">I confirm these details are accurate and agree to abide by the property guidelines upon approval.</string>
     <string name="btn_submit_application">Submit Application</string>
 
-    <!-- Dropdown Options for Application Form (From Right) -->
+    <!-- Dropdown Options for Application Form -->
     <string-array name="occupations_array">
         <item>Student</item>
         <item>Employed (Permanent / Contract)</item>
@@ -322,7 +325,7 @@
         <item>3+ People</item>
     </string-array>
 
-    <!-- Dialog Alerts & Validation Messages (From Right) -->
+    <!-- Dialog Alerts & Validation Messages -->
     <string name="dialog_discard_title">Discard Application?</string>
     <string name="dialog_discard_message">Exiting now will discard the details you have entered.</string>
     <string name="dialog_btn_discard">Discard</string>
@@ -334,7 +337,7 @@
     <string name="err_enter_emergency">Please enter a valid 10-digit emergency contact number</string>
     <string name="err_accept_terms">Please agree to the property lease guidelines to continue.</string>
 
-    <!-- Landlord Decision Actions & Status (From Right) -->
+    <!-- Landlord Decision Actions & Status -->
     <string name="btn_apply_to_rent">Apply to Rent</string>
     <string name="btn_pending_review">Application Pending Review</string>
     <string name="btn_approve_lease">Approve Lease</string>
@@ -361,6 +364,113 @@
     <string name="type_house">Full Freestanding House</string>
     <string name="type_single_room">Single Backroom (Mkhukhu / Brick)</string>
 
-    <!-- Search Results -->
+    <!-- Search / Listing Fields -->
     <string name="no_listings_found">No listings found</string>
+    <string name="electricity"></string>
+    <string name="sanitation"></string>
+    <string name="select_extra_amenities"></string>
+    <string name="upload_image"></string>
+    <string name="property_type"></string>
+    <string name="water_source"></string>
+    <string name="publish_listing">Publish Listing</string>
+    <string name="choose_property_photos">Choose Property Photos</string>
+    <string name="you_can_select_more_than_one_photo_the_first_photo_will_be_the_main_listing_photo">You can select more than one photo. The first photo will be the main listing photo.</string>
+    <string name="enter_property_name">Enter property name</string>
+    <string name="property_location">Property location</string>
+    <string name="street_suburb_town_or_municipality">Street, suburb, town or municipality</string>
+    <string name="verify_property_location">Verify Property Location</string>
+    <string name="location_has_not_been_verified_yet">Location has not been verified yet.</string>
+    <string name="monthly_rental_price_r">Monthly rental price (R)</string>
+    <string name="applications">Applications</string>
+    <string name="select_sanitation_type">Select sanitation type</string>
+    <string name="property_description">Property description</string>
+    <string name="describe_the_property_and_rental_conditions">Describe the property and rental conditions</string>
+    <string name="additional_features_and_rules">Additional features and rules</string>
+    <string name="select_features_such_as_wi_fi_parking_security_or_deposit_requirements">Select features such as Wi-Fi, parking, security or deposit requirements.</string>
+    <string name="select_features_and_rules">Select Features and Rules</string>
+    <string name="no_photos_selected">No photos selected</string>
+    <string name="preview_of_selected_property_photos">Preview of selected property photos</string>
+    <string name="edit_listing">Edit Listing</string>
+    <string name="no_accommodation_matches_your_search_and_filters">No accommodation matches your search and filters.</string>
+    <string name="apply_filters">Apply Filters</string>
+    <string name="any">Any</string>
+    <string name="min_rooms">Min rooms</string>
+    <string name="no_limit">No limit</string>
+    <string name="max_price_r">Max price (R)</string>
+    <string name="filter_results">Filter results</string>
+    <string name="search_by_property_name_or_location">Search by property name or location</string>
+    <string name="find_accommodation">Find Accommodation</string>
+    <string name="properties_you_save_will_appear_here">Properties you save will appear here.</string>
+    <string name="email_address">Email address</string>
+    <string name="no_payments_received_yet">No payments received yet.</string>
+    <string name="no_payments_to_display">No payments to display.</string>
+    <string name="show_password">Show password</string>
+    <string name="no_enquiries_yet">No enquiries yet.</string>
+    <string name="update_your_password_to_help_keep_your_account_secure">Update your password to help keep your account secure.</string>
+    <string name="describe_the_accommodation">Describe the accommodation</string>
+    <string name="save_changes">Save Changes</string>
+    <string name="e_g_room_apartment_house">e.g. Room, Apartment, House</string>
+    <string name="enter_number_of_rooms">Enter number of rooms</string>
+    <string name="enter_monthly_price">Enter monthly price</string>
+    <string name="monthly_price_r">Monthly price (R)</string>
+    <string name="enter_location">Enter location</string>
+    <string name="choose_the_water_source">Choose the water source</string>
+    <string name="select_water_source">Select water source</string>
+    <string name="choose_the_electricity_supply">Choose the electricity supply</string>
+    <string name="choose_sanitation_and_toilet_facilities">Choose sanitation and toilet facilities</string>
+    <string name="select_electricity_supply">Select electricity supply</string>
+    <string name="select_accommodation_type">Select accommodation type</string>
+    <string name="choose_type_of_accommodation">Choose type of accommodation</string>
+    <string name="number_of_available_rooms">Number of available rooms</string>
+
+    <!-- Property Details -->
+    <string name="contact_landlord">Contact landlord</string>
+    <string name="description_not_available">No description has been added for this accommodation.</string>
+    <string name="translate_to_language">Translate to %1$s</string>
+    <string name="show_original">Show original</string>
+    <string name="translation_failed">Translation failed: %1$s</string>
+    <string name="location_not_available">Location is not available.</string>
+    <string name="could_not_open_maps">Could not open Maps.</string>
+    <string name="please_log_in_to_save">Please log in to save.</string>
+    <string name="accommodation_saved">Accommodation saved.</string>
+    <string name="already_saved">Already saved.</string>
+    <string name="could_not_save_accommodation">Could not save accommodation.</string>
+    <string name="please_log_in_to_contact_landlord">Please log in to contact landlord.</string>
+    <string name="enquiry_sent">Enquiry sent to landlord.</string>
+    <string name="could_not_send_enquiry">Could not send enquiry.</string>
+    <string name="default_enquiry_message">I am interested in this accommodation.</string>
+
+    <!-- Application Defaults -->
+    <string name="language_isizulu">isiZulu</string>
+    <string name="language_isixhosa">isiXhosa</string>
+    <string name="language_sesotho">Sesotho</string>
+    <string name="language_local">Local language</string>
+    <string name="application_dialog_title">%1$s • %2$s</string>
+    <string name="default_move_in_date">01/11/2026</string>
+    <string name="default_occupation">Student</string>
+    <string name="default_lease_duration">12 Months</string>
+    <string name="default_occupants">1 Person</string>
+    <string name="default_tenant_note">Responsible tenant seeking accommodation.</string>
+    <string name="application_status_pending">PENDING</string>
+
+    <!-- Search Results -->
+    <string name="search_results_title">Accommodation results</string>
+    <string name="search_hint">Search by property name or location</string>
+    <string name="search_again">Search</string>
+    <string name="search_filters_title">Filters</string>
+    <string name="search_max_price_hint">Maximum monthly price (R)</string>
+    <string name="search_min_rooms_hint">Minimum number of rooms</string>
+    <string name="search_apply_filters">Apply filters</string>
+    <string name="search_no_results">No accommodations match your search and filters.</string>
+    <string name="search_view_details">View Details</string>
+    <string name="search_listing_unavailable">Listing unavailable.</string>
+    <string name="search_login_again">Please log in again.</string>
+    <string name="search_load_failed">Could not load accommodation.</string>
+    <string name="search_load_error">Error loading accommodation.</string>
+    <string name="search_unnamed_property">Accommodation</string>
+    <string name="search_price_per_month">R%1$s per month</string>
+    <string name="search_rooms_count">%1$s rooms</string>
+    <string name="search_any_type">Any property type</string>
+    <string name="save_accommodation" />
+
 </resources>
