@@ -57,6 +57,12 @@ public class LandlordDashboardActivity extends AppCompatActivity {
             btnAddListing.setOnClickListener(v -> startActivity(new Intent(this, AddListingActivity.class)));
         }
 
+        // Landlord Chat Entry
+        Button btnLandlordChat = findViewById(R.id.btnLandlordChat);
+        if (btnLandlordChat != null) {
+            btnLandlordChat.setOnClickListener(v -> startActivity(new Intent(this, UserSelectionActivity.class)));
+        }
+
         if (navAdd != null) {
             navAdd.setOnClickListener(v -> startActivity(new Intent(this, AddListingActivity.class)));
         }

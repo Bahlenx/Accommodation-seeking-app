@@ -654,6 +654,12 @@ public class PersonalActivity extends AppCompatActivity {
 
                     runOnUiThread(() -> {
 
+                        getSharedPreferences("iKhayaSession", MODE_PRIVATE)
+                                .edit()
+                                .putString("USER_NAME", fullName)
+                                .putString("USER_ROLE", role)
+                                .apply();
+
                         Toast.makeText(
                                 PersonalActivity.this,
                                 "Registration Successful!",

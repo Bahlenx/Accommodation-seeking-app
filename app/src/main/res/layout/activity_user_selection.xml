@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F8F9FA">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingBottom="24dp"
+        android:clipToPadding="false"
+        android:fillViewport="true"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <!-- Header with Role Badge -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="4dp">
+
+                <TextView
+                    android:id="@+id/txtHeader"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:text="Messages &amp; Community"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    android:textColor="#212529" />
+
+                <TextView
+                    android:id="@+id/txtRoleBadge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/txtHeader"
+                    android:layout_marginTop="4dp"
+                    android:background="@drawable/custom_input"
+                    android:backgroundTint="#E3F2FD"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp"
+                    android:text="MEMBER"
+                    android:textColor="#1976D2"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </RelativeLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Chat with the community or search users"
+                android:textSize="14sp"
+                android:textColor="#6C757D"
+                android:layout_marginBottom="16dp" />
+
+            <!-- View Alerts Button -->
+            <Button
+                android:id="@+id/btnViewAlerts"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                android:background="@drawable/selector_regular_button"
+                app:backgroundTint="@null"
+                android:text="View Chat Requests / Alerts"
+                android:textAllCaps="false" />
+
+            <!-- PINNED COMMUNITY CHAT CARD -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardCommunityChat"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="#FFF4E6"
+                android:layout_marginBottom="24dp"
+                android:clickable="true"
+                android:focusable="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="18dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="iKhaya Community Group"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textColor="#D9480F" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Public room for all tenants &amp; landlords • Tap to join"
+                        android:textSize="13sp"
+                        android:textColor="#495057"
+                        android:layout_marginTop="4dp" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- SEARCH SECTION -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Search Users"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#212529"
+                android:layout_marginBottom="8dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="16dp">
+
+                <EditText
+                    android:id="@+id/editSearchUser"
+                    android:layout_width="0dp"
+                    android:layout_height="50dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/custom_input"
+                    android:hint="Type name to search..."
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:inputType="textPersonName"
+                    android:textColor="#212529"
+                    android:textColorHint="#6C757D" />
+
+                <Button
+                    android:id="@+id/btnSearchUser"
+                    android:layout_width="wrap_content"
+                    android:layout_height="50dp"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/selector_regular_button"
+                    app:backgroundTint="@null"
+                    android:text="Search"
+                    android:textAllCaps="false" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/searchResultsContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="16dp" />
+
+            <!-- DIRECT MESSAGES SECTION -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Direct Messages"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#212529"
+                android:layout_marginBottom="12dp" />
+
+            <ProgressBar
+                android:id="@+id/progressUsers"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="20dp" />
+
+            <!-- Dynamic container for active direct chats -->
+            <LinearLayout
+                android:id="@+id/usersListContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+
+        </LinearLayout>
+    </ScrollView>
+
+</RelativeLayout>

@@ -92,6 +92,17 @@
                 android:textAllCaps="false"
                 android:layout_marginTop="10dp" />
 
+            <!-- NEW CHAT BUTTON -->
+            <Button
+                android:id="@+id/btnChat"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/selector_regular_button"
+                app:backgroundTint="@null"
+                android:text="Messages &amp; Community Chat"
+                android:textAllCaps="false"
+                android:layout_marginTop="10dp" />
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
