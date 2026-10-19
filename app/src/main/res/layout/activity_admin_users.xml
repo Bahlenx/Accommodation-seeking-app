@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#F8F9FA">
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#212529"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:gravity="center_vertical">
+
+        <!-- Circular Back Button -->
+        <ImageButton
+            android:id="@+id/btnBackToHub"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:background="@drawable/bg_circle_white"
+            android:contentDescription="@string/desc_back_button"
+            android:elevation="1dp"
+            android:padding="7dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/chevron_left"
+            app:tint="#1F1614" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="User Directory"
+            android:textColor="#FFFFFF"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- Search Bar -->
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="2dp">
+
+        <EditText
+            android:id="@+id/etSearchUsers"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="@android:color/transparent"
+            android:drawableStart="@android:drawable/ic_menu_search"
+            android:drawablePadding="12dp"
+            android:hint="Search by name..."
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:singleLine="true"
+            android:textColor="#32325D"
+            android:textSize="16sp" />
+    </androidx.cardview.widget.CardView>
+
+    <!-- Filters -->
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:layout_marginBottom="8dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnFilterAll"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="All"
+                android:backgroundTint="#5E72E4"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:layout_marginEnd="8dp"/>
+
+            <Button
+                android:id="@+id/btnFilterTenants"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="Tenants"
+                android:backgroundTint="#E9ECEF"
+                android:textColor="#32325D"
+                android:textSize="12sp"
+                android:layout_marginEnd="8dp"/>
+
+            <Button
+                android:id="@+id/btnFilterLandlords"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="Landlords"
+                android:backgroundTint="#E9ECEF"
+                android:textColor="#32325D"
+                android:textSize="12sp"
+                android:layout_marginEnd="8dp"/>
+
+            <Button
+                android:id="@+id/btnFilterSuspended"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="Suspended"
+                android:backgroundTint="#E9ECEF"
+                android:textColor="#32325D"
+                android:textSize="12sp" />
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <!-- User List -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvUserDirectory"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:padding="16dp" />
+
+</LinearLayout>

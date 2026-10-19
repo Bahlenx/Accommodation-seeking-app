@@ -17,14 +17,18 @@
         android:orientation="horizontal"
         android:padding="16dp">
 
-        <Button
+        <!-- Circular Back Button -->
+        <ImageButton
             android:id="@+id/btnBackChat"
-            android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            android:background="@drawable/selector_regular_button"
-            app:backgroundTint="@null"
-            android:text="Back"
-            android:textAllCaps="false" />
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:background="@drawable/bg_circle_white"
+            android:contentDescription="@string/desc_back_button"
+            android:elevation="1dp"
+            android:padding="7dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/chevron_left"
+            app:tint="#1F1614" />
 
         <LinearLayout
             android:layout_width="0dp"

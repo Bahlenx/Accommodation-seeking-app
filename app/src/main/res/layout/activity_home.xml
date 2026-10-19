@@ -1,203 +1,327 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/homeRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="#FFFFFF">
+    android:background="#FAF7F5"
+    android:fitsSystemWindows="false">
 
-    <!-- Pinned Top Header with Profile Button -->
-    <LinearLayout
+    <!-- Main Scrollable Content -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/homeScrollView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingHorizontal="20dp"
-        android:paddingTop="12dp"
-        android:paddingBottom="12dp"
-        android:background="#FFFFFF">
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/app_name"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            android:textColor="@color/black" />
-
-        <Button
-            android:id="@+id/btnProfile"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/selector_regular_button"
-            app:backgroundTint="@null"
-            android:text="@string/my_profile"
-            android:textSize="13sp"
-            android:textAllCaps="false" />
-    </LinearLayout>
-
-    <!-- Scrollable Body with layout_weight=1 -->
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
         android:fillViewport="true"
-        android:scrollbars="vertical">
+        android:paddingBottom="130dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingHorizontal="20dp"
-            android:paddingBottom="60dp">
+            android:paddingTop="16dp">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/welcome_to_ikhaya"
-                android:textSize="24sp"
-                android:textStyle="bold"
-                android:textColor="@color/black"
-                android:layout_marginTop="8dp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/find_accommodation_in_your_area"
-                android:textSize="15sp"
-                android:textColor="#777777"
-                android:layout_marginTop="4dp"
-                android:layout_marginBottom="20dp" />
-
-            <EditText
-                android:id="@+id/searchAccommodation"
+            <!-- 1. TOP BAR: Left Brand Identity + Right Profile -->
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:background="@drawable/custom_input"
-                android:paddingHorizontal="16dp"
-                android:textColor="#0B0A0A"
-                android:textColorHint="#4A4A4A"
-                android:hint="@string/search_village_town_or_area"
-                android:inputType="text" />
+                android:layout_height="48dp"
+                android:layout_marginBottom="24dp">
 
-            <Button
-                android:id="@+id/btnSearch"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/selector_regular_button"
-                app:backgroundTint="@null"
-                android:text="@string/search"
-                android:textAllCaps="false"
-                android:layout_marginTop="10dp" />
+                <!-- Left: Logo + Name Lockup -->
+                <LinearLayout
+                    android:id="@+id/layoutBrandLeft"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
 
-            <!-- NEW CHAT BUTTON -->
-            <Button
-                android:id="@+id/btnChat"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/selector_regular_button"
-                app:backgroundTint="@null"
-                android:text="Messages &amp; Community Chat"
-                android:textAllCaps="false"
-                android:layout_marginTop="10dp" />
+                    <ImageView
+                        android:id="@+id/ivHeaderLogo"
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        android:contentDescription="@string/desc_app_logo"
+                        android:src="@drawable/ic_ikhaya_logo" />
 
+                    <TextView
+                        android:id="@+id/tvBrandName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:text="@string/app_name"
+                        android:textColor="#1F1614"
+                        android:textSize="21sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <!-- Right: Profile Button Only -->
+                <ImageButton
+                    android:id="@+id/btnProfile"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:background="@drawable/bg_circle_white"
+                    android:contentDescription="@string/desc_my_profile"
+                    android:elevation="1dp"
+                    android:padding="10dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/user"
+                    app:tint="#1F1614" />
+            </RelativeLayout>
+
+            <!-- 2. PERSONALIZED GREETING -->
             <TextView
-                android:layout_width="wrap_content"
+                android:id="@+id/tvHomeGreeting"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/popular_areas"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:textColor="@color/black"
-                android:layout_marginTop="24dp"
-                android:layout_marginBottom="10dp" />
+                android:layout_marginBottom="20dp"
+                android:lineSpacingExtra="4dp"
+                android:text="@string/home_greeting_default"
+                android:textColor="#1F1614"
+                android:textSize="26sp"
+                android:textStyle="bold" />
 
+            <!-- 3. SEARCH PILL + FILTER BUTTON -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="28dp"
+                android:gravity="center_vertical"
                 android:orientation="horizontal">
 
-                <Button
-                    android:id="@+id/btnAreaMthatha"
+                <!-- Search Input Pill -->
+                <androidx.cardview.widget.CardView
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="54dp"
+                    android:layout_marginEnd="12dp"
                     android:layout_weight="1"
-                    android:background="@drawable/selector_regular_button"
-                    app:backgroundTint="@null"
-                    android:text="@string/mthatha"
-                    android:textAllCaps="false" />
+                    app:cardBackgroundColor="#FFFFFF"
+                    app:cardCornerRadius="27dp"
+                    app:cardElevation="2dp">
 
-                <Button
-                    android:id="@+id/btnAreaGiyani"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:background="@drawable/selector_regular_button"
-                    app:backgroundTint="@null"
-                    android:text="@string/giyani"
-                    android:textAllCaps="false"
-                    android:layout_marginStart="8dp" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="16dp">
+
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:contentDescription="@string/desc_search_icon"
+                            android:src="@drawable/search"
+                            app:tint="#8C7A70" />
+
+                        <EditText
+                            android:id="@+id/etSearchPlace"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_marginStart="10dp"
+                            android:autofillHints="postalAddress"
+                            android:background="@null"
+                            android:hint="@string/hint_search_places"
+                            android:imeOptions="actionSearch"
+                            android:inputType="textPostalAddress|textCapWords"
+                            android:singleLine="true"
+                            android:textColor="#1F1614"
+                            android:textColorHint="#9E8F87"
+                            android:textSize="14sp" />
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- Filter Bottom Sheet Trigger -->
+                <FrameLayout
+                    android:id="@+id/btnSearchSubmit"
+                    android:layout_width="54dp"
+                    android:layout_height="54dp"
+                    android:background="@drawable/bg_circle_white"
+                    android:clickable="true"
+                    android:elevation="2dp"
+                    android:focusable="true">
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_gravity="center"
+                        android:contentDescription="@string/desc_filter_options"
+                        android:src="@android:drawable/ic_menu_sort_by_size"
+                        app:tint="#1F1614" />
+                </FrameLayout>
             </LinearLayout>
 
+            <!-- 4. SECTION 1: MOST POPULAR PLACES -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/accommodation_types"
+                android:layout_marginBottom="14dp"
+                android:text="@string/title_most_popular"
+                android:textColor="#1F1614"
                 android:textSize="18sp"
-                android:textStyle="bold"
-                android:textColor="@color/black"
-                android:layout_marginTop="24dp"
-                android:layout_marginBottom="10dp" />
+                android:textStyle="bold" />
 
-            <Button
-                android:id="@+id/btnTypeRooms"
+            <!-- Horizontal Carousel 1 -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvPopularPlaces"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/selector_regular_button"
-                app:backgroundTint="@null"
-                android:text="@string/rooms"
-                android:textAllCaps="false" />
+                android:layout_marginBottom="28dp"
+                android:clipToPadding="false"
+                android:nestedScrollingEnabled="false"
+                android:orientation="horizontal" />
 
-            <Button
-                android:id="@+id/btnTypeShared"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/selector_regular_button"
-                app:backgroundTint="@null"
-                android:text="@string/shared_accommodation"
-                android:textAllCaps="false"
-                android:layout_marginTop="8dp" />
-
-            <Button
-                android:id="@+id/btnTypeHouses"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/selector_regular_button"
-                app:backgroundTint="@null"
-                android:text="@string/houses"
-                android:textAllCaps="false"
-                android:layout_marginTop="8dp" />
-
+            <!-- 5. SECTION 2: EXPLORE NEW AREA -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/featured_accommodation"
+                android:layout_marginBottom="14dp"
+                android:text="@string/title_explore_new_area"
+                android:textColor="#1F1614"
                 android:textSize="18sp"
-                android:textStyle="bold"
-                android:textColor="@color/black"
-                android:layout_marginTop="24dp"
-                android:layout_marginBottom="10dp" />
+                android:textStyle="bold" />
 
-            <TextView
+            <!-- Horizontal Carousel 2 -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvExploreNewArea"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/affordable_room_10_mthatha_10_r950_month_10_available"
-                android:textSize="15sp"
-                android:textColor="@color/black"
-                android:background="#F5F5F5"
-                android:padding="16dp" />
+                android:clipToPadding="false"
+                android:nestedScrollingEnabled="false"
+                android:orientation="horizontal" />
 
         </LinearLayout>
-    </ScrollView>
-</LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- 6. FLOATING BOTTOM NAVIGATION (Height Locked to 58dp) -->
+    <LinearLayout
+        android:id="@+id/floatingBottomNav"
+        android:layout_width="match_parent"
+        android:layout_height="58dp"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/bg_floating_nav_pill"
+        android:baselineAligned="false"
+        android:elevation="10dp"
+        android:fitsSystemWindows="false"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="0dp"
+        android:weightSum="4">
+
+        <!-- Tab 1: Discover -->
+        <LinearLayout
+            android:id="@+id/navHome"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:contentDescription="@string/nav_discover"
+                android:src="@drawable/earth"
+                app:tint="#FFFFFF" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:includeFontPadding="false"
+                android:text="@string/nav_discover"
+                android:textColor="#FFFFFF"
+                android:textSize="10.5sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Tab 2: Favorites -->
+        <LinearLayout
+            android:id="@+id/navFavorites"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:contentDescription="@string/nav_favorites"
+                android:src="@drawable/heart"
+                app:tint="#FFD8CC" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:includeFontPadding="false"
+                android:text="@string/nav_favorites"
+                android:textColor="#FFD8CC"
+                android:textSize="10.5sp" />
+        </LinearLayout>
+
+        <!-- Tab 3: Viewings -->
+        <LinearLayout
+            android:id="@+id/navViewings"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:contentDescription="@string/nav_viewings"
+                android:src="@drawable/ic_viewings"
+                app:tint="#FFD8CC" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:includeFontPadding="false"
+                android:text="@string/nav_viewings"
+                android:textColor="#FFD8CC"
+                android:textSize="10.5sp" />
+        </LinearLayout>
+
+        <!-- Tab 4: Messages -->
+        <LinearLayout
+            android:id="@+id/navMessages"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:contentDescription="@string/nav_messages"
+                android:src="@drawable/messages_circle"
+                app:tint="#FFD8CC" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:includeFontPadding="false"
+                android:text="@string/nav_messages"
+                android:textColor="#FFD8CC"
+                android:textSize="10.5sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

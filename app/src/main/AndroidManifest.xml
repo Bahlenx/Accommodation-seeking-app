@@ -61,6 +61,10 @@
         <activity android:name=".LanguageSettingsActivity" android:exported="false" />
         <activity android:name=".UserSelectionActivity" android:exported="false" />
         <activity android:name=".ChatActivity" android:exported="false" />
+        <activity android:name=".AdminUsersActivity" android:exported="false" />
+        <activity android:name=".AdminPendingQueueActivity" android:exported="false" />
+        <activity android:name=".AdminActiveListingsActivity" android:exported="false" />\
+        <activity android:name=".ViewingsActivity" android:exported="false" android:screenOrientation="portrait" />
 
     </application>
 

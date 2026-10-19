@@ -473,4 +473,116 @@
     <string name="search_any_type">Any property type</string>
     <string name="save_accommodation" />
 
+    <!-- App Branding -->
+    <string name="desc_app_logo">iKhaya Logo</string>
+
+    <!-- Top Bar & Profile -->
+    <string name="desc_location_icon">Location Icon</string>
+    <string name="default_location">Mthatha</string>
+    <string name="desc_my_profile">My Profile</string>
+
+    <!-- Home Greeting -->
+    <string name="home_greeting_default">Hey there!\nTell us where you want to stay</string>
+
+    <!-- Search Section -->
+    <string name="desc_search_icon">Search</string>
+    <string name="hint_search_places">Search Places</string>
+    <string name="desc_filter_options">Filter and Sort Options</string>
+
+    <!-- Feed Sections -->
+    <string name="title_most_popular">Most Popular Places</string>
+    <string name="title_explore_new_area">Explore New Area</string>
+
+    <!-- Navigation Bar -->
+
+    <string name="nav_discover">Discover</string>
+    <string name="nav_favorites">Favorites</string>
+    <string name="nav_viewings">Viewings</string>
+    <string name="nav_messages">Messages</string>
+
+    <!-- Saved / Favorites Screen -->
+    <string name="title_saved_listings">Saved Places</string>
+    <string name="desc_back_button">Navigate Back</string>
+    <string name="empty_saved_title">No saved places yet</string>
+    <string name="empty_saved_subtitle">Tap the heart icon on any room or house while exploring to save it here for later.</string>
+    <string name="btn_explore_now">Explore Accommodation</string>
+
+    <!-- Search & Results Screen -->
+    <string name="title_search">Search</string>
+    <string name="desc_close">Close Search</string>
+    <string name="desc_filter">Filter Options</string>
+    <string name="filter_chip_all">All Types</string>
+    <string name="filter_chip_rooms">Rooms</string>
+    <string name="filter_chip_shared">Shared</string>
+    <string name="filter_chip_houses">Houses</string>
+    <string name="search_screen_no_results">No accommodation found matching your search.</string>
+
+    <!-- Filter Bottom Sheet -->
+    <string name="filter_sheet_title">Filters</string>
+    <string name="filter_reset">Reset</string>
+    <string name="filter_price_range">Monthly Rent (ZAR)</string>
+    <string name="filter_price_under_1500">Under R1,500</string>
+    <string name="filter_price_1500_2500">R1,500 – R2,500</string>
+    <string name="filter_price_2500_4000">R2,500 – R4,000</string>
+    <string name="filter_price_above_4000">R4,000+</string>
+    <string name="filter_room_type">Room Arrangement</string>
+    <string name="filter_type_single">Single Room</string>
+    <string name="filter_type_shared">Sharing</string>
+    <string name="filter_type_bachelor">Bachelor / Cottage</string>
+    <string name="filter_type_house">Full House</string>
+    <string name="filter_utilities">Utilities &amp; Essentials</string>
+    <string name="filter_util_wifi">WiFi Included</string>
+    <string name="filter_util_water">Water Included</string>
+    <string name="filter_util_prepaid">Prepaid Meter</string>
+    <string name="filter_util_backup_power">Backup Power / Solar</string>
+    <string name="filter_util_jojo">JoJo / Backup Water</string>
+    <string name="filter_btn_apply">Apply Filters</string>
+
+    <!-- Viewings Screen -->
+    <string name="title_viewings">Scheduled Viewings</string>
+    <string name="empty_viewings_title">No viewings scheduled</string>
+    <string name="empty_viewings_subtitle">When you request to view a room or house in person, your appointment details and landlord contact will appear here.</string>
+    <string name="btn_schedule_viewing">Find a Place to View</string>
+    <string name="status_confirmed">Confirmed</string>
+    <string name="viewing_status_pending">Pending Host</string>
+    <string name="action_directions">Directions</string>
+    <string name="action_contact_landlord">Call / Chat</string>
+
+    <!-- Property Details Labels -->
+    <string name="property_rating_sample">★ 4.8</string>
+    <string name="property_verified_badge">• Verified Accommodation</string>
+    <string name="contact_host_caretaker">Contact Host / Caretaker</string>
+    <string name="what_this_place_offers_header">What this place offers</string>
+    <string name="about_property_header">About this accommodation</string>
+    <string name="rent_terms_subtitle">Per month • Standard deposit</string>
+    <string name="btn_schedule_viewing_action">Schedule Viewing</string>
+    <string name="get_directions_maps">Get Directions on Maps</string>
+    <string name="price_per_month_format">R %1$s</string>
+
+    <!-- Location Picker -->
+    <string name="title_select_location">Select Area / Town</string>
+    <string name="location_all_areas">All Locations</string>
+    <string name="default_city">Mthatha</string>
+    <string name="desc_location_picker">Select Current City</string>
+
+    <!-- Property Pricing & Offering Terms -->
+    <string name="price_per_month_value">R %1$s / mo</string>
+    <string name="price_for_sale_value">R %1$s</string>
+    <string name="terms_rent_subtitle">Per month • Standard deposit</string>
+    <string name="terms_sale_subtitle">Once-off purchase • Title deed</string>
+
+    <!-- CTAs and Labels -->
+
+    <string name="btn_book_site_visit">Book Site Inspection</string>
+
+    <string name="btn_make_offer">Make an Offer to Buy</string>
+    <string name="contact_caretaker">Contact Caretaker / Landlord</string>
+    <string name="contact_seller">Contact Seller / Agent</string>
+    <string name="verified_rental_badge">Verified Accommodation</string>
+    <string name="verified_property_badge">Verified Property / Deed</string>
+
+
+
+
+
 </resources>

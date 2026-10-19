@@ -6,18 +6,22 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <Button
+    <!-- Circular Back Button -->
+    <ImageButton
         android:id="@+id/btnBack"
-        android:layout_width="wrap_content"
-        android:layout_height="40dp"
-        android:text="@string/back"
-        android:textAllCaps="false"
-        android:background="@drawable/selector_regular_button"
-        app:backgroundTint="@null"
+        android:layout_width="38dp"
+        android:layout_height="38dp"
+        android:background="@drawable/bg_circle_white"
+        android:contentDescription="@string/desc_back_button"
+        android:elevation="1dp"
+        android:padding="7dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/chevron_left"
+        app:tint="#1F1614"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="8dp"/>
+        android:layout_marginTop="16dp"/>
 
     <TextView
         android:id="@+id/txtMyListingsTitle"

@@ -16,11 +16,16 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
+import java.util.HashSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -79,8 +84,68 @@ public class UserSelectionActivity extends AppCompatActivity {
         // 3. Search Users
         btnSearchUser.setOnClickListener(v -> searchUsers(editSearchUser.getText().toString().trim()));
 
-        // 4. Load Active Chat Requests
+        // 4. Setup Bottom Navigation
+        setupBottomNavigation();
+
+        // 5. Load Active Chat Requests
         loadActiveChats();
+    }
+
+    private void setupBottomNavigation() {
+        View userSelectionRoot = findViewById(R.id.userSelectionRoot);
+        View floatingBottomNav = findViewById(R.id.floatingBottomNav);
+
+        if (floatingBottomNav != null) {
+            floatingBottomNav.setPadding(0, 0, 0, 0);
+
+            if (userSelectionRoot != null) {
+                ViewCompat.setOnApplyWindowInsetsListener(userSelectionRoot, (v, insets) -> {
+                    Insets statusBar = insets.getInsets(WindowInsetsCompat.Type.statusBars());
+                    Insets navBar = insets.getInsets(WindowInsetsCompat.Type.navigationBars());
+
+                    v.setPadding(0, statusBar.top, 0, 0);
+
+                    if (floatingBottomNav.getLayoutParams() instanceof CoordinatorLayout.LayoutParams) {
+                        CoordinatorLayout.LayoutParams lp = (CoordinatorLayout.LayoutParams) floatingBottomNav.getLayoutParams();
+                        int baseMarginPx = (int) (16 * getResources().getDisplayMetrics().density);
+                        lp.bottomMargin = navBar.bottom + baseMarginPx;
+                        floatingBottomNav.setLayoutParams(lp);
+                        floatingBottomNav.setPadding(0, 0, 0, 0);
+                    }
+
+                    return WindowInsetsCompat.CONSUMED;
+                });
+            }
+
+            // Tab 1: Discover
+            View navHome = findViewById(R.id.navHome);
+            if (navHome != null) {
+                navHome.setOnClickListener(v -> {
+                    Intent intent = new Intent(UserSelectionActivity.this, HomeActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                    startActivity(intent);
+                    finish();
+                });
+            }
+
+            // Tab 2: Favorites
+            View navFavorites = findViewById(R.id.navFavorites);
+            if (navFavorites != null) {
+                navFavorites.setOnClickListener(v -> {
+                    startActivity(new Intent(UserSelectionActivity.this, SavedListingsActivity.class));
+                    finish();
+                });
+            }
+
+            // Tab 3: Viewings
+            View navViewings = findViewById(R.id.navViewings);
+            if (navViewings != null) {
+                navViewings.setOnClickListener(v -> {
+                    startActivity(new Intent(UserSelectionActivity.this, ViewingsActivity.class));
+                    finish();
+                });
+            }
+        }
     }
     
     @Override
@@ -198,7 +263,7 @@ public class UserSelectionActivity extends AppCompatActivity {
     private void renderDualSearchResults(JSONArray profilesArray, JSONArray usersArray, String queryLower) {
         try {
             boolean found = false;
-            java.util.HashSet<String> seenIds = new java.util.HashSet<>();
+            HashSet<String> seenIds = new HashSet<>();
 
             // 1. Process profiles table
             for (int i = 0; i < profilesArray.length(); i++) {

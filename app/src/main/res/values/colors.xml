@@ -8,4 +8,12 @@
     <color name="colorPrimary">#EADFD5</color>
     <color name="colorSecondary">#C85A32</color>
     <color name="light_gray">#B1AAAA</color>
+    <color name="terracotta_primary">#BA5536</color>
+    <color name="now_primary">#F96332</color> <!-- The signature Now UI Orange -->
+    <color name="now_bg">#F2F2F2</color> <!-- Soft gray background -->
+    <color name="now_text_dark">#2C2C2C</color>
+    <color name="now_text_muted">#888888</color>
+    <color name="now_info">#2CA8FF</color> <!-- Blue for secondary metrics -->
+    <color name="now_success">#18ce0f</color> <!-- Vibrant green -->
+
 </resources>

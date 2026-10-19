@@ -7,14 +7,18 @@
     android:background="#FFFFFF"
     android:padding="20dp">
 
-    <Button
+    <!-- Circular Back Button -->
+    <ImageButton
         android:id="@+id/btnBack"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@drawable/selector_regular_button"
-        app:backgroundTint="@null"
-        android:text="@string/back"
-        android:textAllCaps="false" />
+        android:layout_width="38dp"
+        android:layout_height="38dp"
+        android:background="@drawable/bg_circle_white"
+        android:contentDescription="@string/desc_back_button"
+        android:elevation="1dp"
+        android:padding="7dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/chevron_left"
+        app:tint="#1F1614" />
 
     <TextView
         android:layout_width="match_parent"

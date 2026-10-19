@@ -1,288 +1,407 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/propertyDetailsRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
-    android:background="@color/appBackground">
+    android:background="#FAF7F5"
+    android:fitsSystemWindows="false">
 
-    <LinearLayout
-        android:id="@+id/topBar"
+    <!-- Scrollable Property Content -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/detailsScrollView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingHorizontal="16dp"
-        android:paddingTop="12dp"
-        android:paddingBottom="8dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
-
-        <Button
-            android:id="@+id/btnBack"
-            android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            android:background="@drawable/selector_regular_button"
-            android:text="@string/back"
-            android:textColor="@color/white"
-            android:textSize="13sp"
-            android:textAllCaps="false" />
-
-    </LinearLayout>
-
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:fillViewport="true"
-        app:layout_constraintTop_toBottomOf="@id/topBar"
-        app:layout_constraintBottom_toBottomOf="parent">
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingHorizontal="20dp"
-            android:paddingBottom="40dp">
+            android:orientation="vertical">
 
-            <androidx.cardview.widget.CardView
+            <!-- 1. HERO IMAGE WITH FLOATING ACTION BUTTONS -->
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="220dp"
-                android:layout_marginTop="8dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="0dp">
+                android:layout_height="360dp">
 
-                <ImageView
-                    android:id="@+id/propertyImage"
+                <androidx.cardview.widget.CardView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:contentDescription="@string/property_photo"
-                    android:scaleType="centerCrop"
-                    android:background="#EFEBE4"
-                    android:src="@android:drawable/ic_menu_gallery" />
+                    app:cardCornerRadius="32dp"
+                    app:cardElevation="0dp">
 
-            </androidx.cardview.widget.CardView>
+                    <ImageView
+                        android:id="@+id/propertyImage"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="#EFEBE4"
+                        android:contentDescription="@string/property_photo"
+                        android:scaleType="centerCrop"
+                        android:src="@android:drawable/ic_menu_gallery" />
+                </androidx.cardview.widget.CardView>
 
-            <TextView
-                android:id="@+id/propertyName"
+                <!-- Floating Top Bar Controls -->
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="20dp"
+                    android:paddingTop="48dp">
+
+                    <ImageButton
+                        android:id="@+id/btnBack"
+                        android:layout_width="42dp"
+                        android:layout_height="42dp"
+                        android:layout_alignParentStart="true"
+                        android:background="@drawable/bg_circle_white"
+                        android:contentDescription="@string/desc_back_button"
+                        android:elevation="4dp"
+                        android:padding="9dp"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/chevron_left"
+                        app:tint="#1F1614" />
+
+                    <ImageButton
+                        android:id="@+id/btnSave"
+                        android:layout_width="42dp"
+                        android:layout_height="42dp"
+                        android:layout_alignParentEnd="true"
+                        android:background="@drawable/bg_circle_white"
+                        android:contentDescription="@string/nav_favorites"
+                        android:elevation="4dp"
+                        android:padding="11dp"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/heart"
+                        app:tint="#BA5536" />
+                </RelativeLayout>
+            </FrameLayout>
+
+            <!-- 2. DETAILS BODY -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:textColor="@color/black"
-                android:textSize="24sp"
-                android:textStyle="bold" />
+                android:orientation="vertical"
+                android:paddingHorizontal="22dp"
+                android:paddingTop="20dp">
+
+                <!-- Title -->
+                <TextView
+                    android:id="@+id/propertyName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="#1F1614"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    tools:text="Modern En-Suite Student Room" />
+
+                <!-- Verification Badge -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_location_pill"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="4dp">
+
+                    <ImageView
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:contentDescription="@string/property_verified_badge"
+                        android:src="@android:drawable/checkbox_on_background"
+                        app:tint="#007749" />
+
+                    <TextView
+                        android:id="@+id/tvVerifiedBadge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:text="@string/verified_rental_badge"
+                        android:textColor="#007749"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <!-- Location & Contact Info Cluster -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:orientation="vertical">
+
+                    <!-- Location Row -->
+                    <LinearLayout
+                        android:id="@+id/layoutLocationAction"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:contentDescription="@string/desc_location_icon"
+                            android:src="@drawable/map_pin"
+                            app:tint="#8C7A70" />
+
+                        <TextView
+                            android:id="@+id/propertyLocation"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:layout_weight="1"
+                            android:textColor="#8C7A70"
+                            android:textSize="14sp"
+                            tools:text="Hillcrest, Mthatha" />
+
+                        <TextView
+                            android:id="@+id/btnOpenMap"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/view_on_map"
+                            android:textColor="#BA5536"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <!-- Contact Host Row -->
+                    <LinearLayout
+                        android:id="@+id/btnContactLandlord"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:background="?attr/selectableItemBackground"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:contentDescription="@string/nav_messages"
+                            android:src="@drawable/messages_circle"
+                            app:tint="#BA5536" />
+
+                        <TextView
+                            android:id="@+id/tvContactLabel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="@string/contact_caretaker"
+                            android:textColor="#BA5536"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Divider -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginVertical="20dp"
+                    android:background="#EFEBE4" />
+
+                <!-- 3. AMENITIES SECTION -->
+                <TextView
+                    android:id="@+id/tvAmenitiesHeader"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:text="@string/amenities_header"
+                    android:textColor="#1F1614"
+                    android:textSize="17sp"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chipGroupAmenities"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:chipSpacingHorizontal="8dp"
+                    app:chipSpacingVertical="4dp" />
+
+                <!-- Divider -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginVertical="20dp"
+                    android:background="#EFEBE4" />
+
+                <!-- 4. ABOUT SECTION & TRANSLATION -->
+                <TextView
+                    android:id="@+id/descriptionHeader"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:text="@string/about_property_header"
+                    android:textColor="#1F1614"
+                    android:textSize="17sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/propertyDescription"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:lineSpacingExtra="4dp"
+                    android:textColor="#665B55"
+                    android:textSize="14.5sp"
+                    tools:text="Furnished en-suite bedroom inside a secure perimeter yard." />
+
+                <Button
+                    android:id="@+id/btnTranslate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:layout_marginTop="10dp"
+                    android:backgroundTint="#FAF7F5"
+                    android:text="@string/translate"
+                    android:textAllCaps="false"
+                    android:textColor="#BA5536"
+                    android:textSize="12sp"
+                    android:visibility="gone"
+                    app:cornerRadius="18dp"
+                    app:strokeColor="#BA5536"
+                    app:strokeWidth="1dp" />
+
+                <ProgressBar
+                    android:id="@+id/progressTranslate"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:visibility="gone" />
+
+                <!-- 5. LOCATION MAP CARD -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="10dp"
+                    android:text="@string/location_on_map"
+                    android:textColor="#1F1614"
+                    android:textSize="17sp"
+                    android:textStyle="bold" />
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="180dp"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="2dp">
+
+                    <org.osmdroid.views.MapView
+                        android:id="@+id/mapView"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent" />
+                </androidx.cardview.widget.CardView>
+
+                <!-- Clean Directions Button -->
+                <Button
+                    android:id="@+id/btnGetDirections"
+                    android:layout_width="match_parent"
+                    android:layout_height="46dp"
+                    android:layout_marginTop="12dp"
+                    android:backgroundTint="#FFFFFF"
+                    android:elevation="1dp"
+                    android:text="@string/get_directions_maps"
+                    android:textAllCaps="false"
+                    android:textColor="#1F1614"
+                    android:textSize="13sp"
+                    app:cornerRadius="23dp" />
+
+                <!-- Dedicated Bottom Clearance Spacer (Guarantees Nothing Gets Covered) -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="110dp" />
+
+                <!-- Hidden/Compatibility Views -->
+                <Button
+                    android:id="@+id/btnOpenFullMap"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:visibility="gone" />
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chipGroupRules"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone" />
+
+                <Button
+                    android:id="@+id/btnEditListing"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="12dp"
+                    android:backgroundTint="#BA5536"
+                    android:text="@string/edit_listing"
+                    android:textColor="#FFFFFF"
+                    android:visibility="gone"
+                    app:cornerRadius="24dp" />
+
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- 6. FLOATING BOTTOM BOOKING / BUYING PILL (Fixed Height, Centered Content) -->
+    <LinearLayout
+        android:id="@+id/floatingBookingBar"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/bg_floating_action_pill"
+        android:baselineAligned="false"
+        android:elevation="12dp"
+        android:fitsSystemWindows="false"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="18dp"
+        android:paddingVertical="0dp">
+
+        <!-- Left: Price & Terms -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:orientation="vertical">
 
             <TextView
                 android:id="@+id/propertyPrice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:textColor="@color/colorSecondary"
-                android:textSize="20sp"
-                android:textStyle="bold" />
-
-            <LinearLayout
-                android:id="@+id/layoutLocationAction"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
-
-                <TextView
-                    android:id="@+id/propertyLocation"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:textColor="#2A5C8A"
-                    android:textSize="15sp"
-                    android:textStyle="bold" />
-
-                <Button
-                    android:id="@+id/btnOpenMap"
-                    android:layout_width="wrap_content"
-                    android:layout_height="36dp"
-                    android:background="@drawable/selector_regular_button"
-                    android:text="@string/view_on_map"
-                    android:textColor="@color/white"
-                    android:textSize="12sp"
-                    android:textAllCaps="false"
-                    app:backgroundTint="@null" />
-
-            </LinearLayout>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:text="@string/amenities_header"
-                android:textColor="@color/black"
+                android:includeFontPadding="false"
+                android:textColor="#FFFFFF"
                 android:textSize="17sp"
-                android:textStyle="bold" />
-
-            <com.google.android.material.chip.ChipGroup
-                android:id="@+id/chipGroupAmenities"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                app:chipSpacingHorizontal="8dp"
-                app:chipSpacingVertical="4dp" />
+                android:textStyle="bold"
+                tools:text="R 2,400 / mo" />
 
             <TextView
+                android:id="@+id/tvTermsSubtitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:layout_marginBottom="8dp"
-                android:text="@string/location_on_map"
-                android:textColor="@color/black"
-                android:textSize="17sp"
-                android:textStyle="bold" />
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="220dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="2dp">
-
-                <org.osmdroid.views.MapView
-                    android:id="@+id/mapView"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
-
-            </androidx.cardview.widget.CardView>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:orientation="horizontal">
-
-                <Button
-                    android:id="@+id/btnGetDirections"
-                    android:layout_width="0dp"
-                    android:layout_height="48dp"
-                    android:layout_weight="1"
-                    android:background="@drawable/selector_regular_button"
-                    android:text="@string/get_directions"
-                    android:textColor="@color/white"
-                    android:textAllCaps="false"
-                    android:textSize="13sp"
-                    app:backgroundTint="@null" />
-
-                <Button
-                    android:id="@+id/btnOpenFullMap"
-                    android:layout_width="0dp"
-                    android:layout_height="48dp"
-                    android:layout_weight="1"
-                    android:layout_marginStart="8dp"
-                    android:background="@drawable/selector_regular_button"
-                    android:text="@string/open_google_maps"
-                    android:textColor="@color/white"
-                    android:textAllCaps="false"
-                    android:textSize="13sp"
-                    app:backgroundTint="@null" />
-
-            </LinearLayout>
-
-            <TextView
-                android:id="@+id/descriptionHeader"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:text="@string/description"
-                android:textColor="@color/black"
-                android:textSize="17sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/propertyDescription"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:textColor="@color/black"
-                android:textSize="15sp" />
-
-            <Button
-                android:id="@+id/btnTranslate"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:background="@drawable/selector_regular_button"
-                android:text="@string/translate"
-                android:textColor="@color/white"
-                android:textAllCaps="false"
-                android:visibility="gone"
-                app:backgroundTint="@null" />
-
-            <ProgressBar
-                android:id="@+id/progressTranslate"
-                style="?android:attr/progressBarStyleHorizontal"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:visibility="gone" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:text="@string/rules_header"
-                android:textColor="@color/black"
-                android:textSize="17sp"
-                android:textStyle="bold" />
-
-            <com.google.android.material.chip.ChipGroup
-                android:id="@+id/chipGroupRules"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                app:chipSpacingHorizontal="8dp"
-                app:chipSpacingVertical="4dp" />
-
-            <Button
-                android:id="@+id/btnSave"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginTop="20dp"
-                android:background="@drawable/selector_regular_button"
-                android:text="@string/saved_listings"
-                android:textColor="@color/white"
-                android:textAllCaps="false"
-                app:backgroundTint="@null" />
-
-            <Button
-                android:id="@+id/btnContactLandlord"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginTop="8dp"
-                android:background="@drawable/selector_regular_button"
-                android:text="@string/contact_landlord"
-                android:textColor="@color/white"
-                android:textAllCaps="false"
-                app:backgroundTint="@null" />
-
-            <Button
-                android:id="@+id/btnEditListing"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginTop="8dp"
-                android:background="@drawable/selector_regular_button"
-                android:text="@string/edit_listing"
-                android:textColor="@color/white"
-                android:textAllCaps="false"
-                android:visibility="gone"
-                app:backgroundTint="@null" />
-
-            <Button
-                android:id="@+id/btnApplyToRent"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginTop="8dp"
-                android:background="@drawable/selector_regular_button"
-                android:text="@string/btn_apply_to_rent"
-                android:textColor="@color/white"
-                android:textAllCaps="false"
-                app:backgroundTint="@null" />
-
+                android:layout_marginTop="2dp"
+                android:includeFontPadding="false"
+                android:text="@string/terms_rent_subtitle"
+                android:textColor="#FFD8CC"
+                android:textSize="11sp" />
         </LinearLayout>
-    </ScrollView>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <!-- Right: Primary CTA Action Button -->
+        <Button
+            android:id="@+id/btnApplyToRent"
+            android:layout_width="wrap_content"
+            android:layout_height="44dp"
+            android:backgroundTint="#FFFFFF"
+            android:includeFontPadding="false"
+            android:paddingHorizontal="18dp"
+            android:text="@string/btn_schedule_viewing_action"
+            android:textAllCaps="false"
+            android:textColor="#1F1614"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            app:cornerRadius="22dp" />
+
+    </LinearLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
