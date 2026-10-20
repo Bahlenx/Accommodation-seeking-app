@@ -67,6 +67,13 @@ public class UserSelectionActivity extends AppCompatActivity {
         currentUserRole = prefs.getString("USER_ROLE", "Member");
         
         txtRoleBadge.setText(currentUserRole.toUpperCase() + " \u25CF");
+        txtRoleBadge.setTextColor(SupabaseHelper.getRoleTextColor(currentUserRole));
+        txtRoleBadge.setBackgroundTintList(android.content.res.ColorStateList.valueOf(SupabaseHelper.getRoleBgColor(currentUserRole)));
+
+        Button btnBackHub = findViewById(R.id.btnBackHub);
+        if (btnBackHub != null) {
+            btnBackHub.setOnClickListener(v -> finish());
+        }
 
         // 1. Open Community Chat when clicked
         cardCommunityChat.setOnClickListener(v -> openChat("COMMUNITY", "🌍 iKhaya Community Group", true));
@@ -81,6 +88,7 @@ public class UserSelectionActivity extends AppCompatActivity {
 
         // 4. Load Active Chat Requests
         loadActiveChats();
+        loadPendingCount();
     }
     
     @Override
@@ -88,6 +96,40 @@ public class UserSelectionActivity extends AppCompatActivity {
         super.onResume();
         // Refresh active chats when returning from Notifications
         loadActiveChats();
+        loadPendingCount();
+    }
+
+    private void loadPendingCount() {
+        executor.execute(() -> {
+            HttpURLConnection conn = null;
+            try {
+                String encId = SupabaseHelper.encode(currentUserId);
+                String endpoint = "/rest/v1/chat_requests?receiver_id=eq." + encId + "&status=eq.pending";
+                conn = SupabaseHelper.createConnection(endpoint, "GET", accessToken);
+
+                int code = conn.getResponseCode();
+                String response = SupabaseHelper.readResponse(conn);
+
+                if (code >= 200 && code < 300) {
+                    JSONArray requestsArray = new JSONArray(response);
+                    int count = requestsArray.length();
+                    runOnUiThread(() -> {
+                        Button btnViewAlerts = findViewById(R.id.btnViewAlerts);
+                        if (btnViewAlerts != null) {
+                            if (count > 0) {
+                                btnViewAlerts.setText("\uD83D\uDD14 View Chat Requests / Alerts (" + count + " Pending)");
+                            } else {
+                                btnViewAlerts.setText("View Chat Requests / Alerts");
+                            }
+                        }
+                    });
+                }
+            } catch (Exception e) {
+                // Ignore
+            } finally {
+                if (conn != null) conn.disconnect();
+            }
+        });
     }
 
     private void loadActiveChats() {
@@ -273,9 +315,9 @@ public class UserSelectionActivity extends AppCompatActivity {
         txtName.setTextColor(Color.parseColor("#212529"));
 
         TextView txtRole = new TextView(this);
-        txtRole.setText(targetRole.toUpperCase() + " • " + actionText);
+        txtRole.setText(targetRole.toUpperCase() + " \u25CF " + actionText);
         txtRole.setTextSize(12f);
-        txtRole.setTextColor(Color.parseColor("#6C757D"));
+        txtRole.setTextColor(SupabaseHelper.getRoleTextColor(targetRole));
 
         innerLayout.addView(txtName);
         innerLayout.addView(txtRole);

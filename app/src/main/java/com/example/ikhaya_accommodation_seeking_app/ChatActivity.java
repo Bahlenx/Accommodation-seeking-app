@@ -72,7 +72,14 @@ public class ChatActivity extends AppCompatActivity {
         accessToken = SupabaseHelper.getAccessToken(this);
 
         txtTitle.setText(receiverName != null ? receiverName : "Chat");
-        txtSubtitle.setText(isCommunity ? "Public Community Room (All Users)" : "Direct Message");
+        if (isCommunity) {
+            txtSubtitle.setText("Public Community Room (All Users)");
+        } else {
+            String roleText = (getIntent().getStringExtra("RECEIVER_ROLE") != null) 
+                    ? getIntent().getStringExtra("RECEIVER_ROLE").toUpperCase() : "MEMBER";
+            txtSubtitle.setText("Direct Message • " + roleText + " \u25CF");
+            txtSubtitle.setTextColor(SupabaseHelper.getRoleTextColor(roleText));
+        }
 
         btnBack.setOnClickListener(v -> finish());
         btnSend.setOnClickListener(v -> sendMessage());
@@ -124,6 +131,18 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void renderMessages(JSONArray messages) {
+        if (messages.length() == 0) {
+            messagesContainer.removeAllViews();
+            TextView emptyText = new TextView(this);
+            emptyText.setText("No messages yet. Say hello! 👋");
+            emptyText.setTextColor(Color.parseColor("#6C757D"));
+            emptyText.setTextSize(14f);
+            emptyText.setGravity(Gravity.CENTER);
+            emptyText.setPadding(0, 100, 0, 0);
+            messagesContainer.addView(emptyText);
+            return;
+        }
+
         if (messages.length() == lastMessageCount) return; // Only redraw if new messages arrived
         lastMessageCount = messages.length();
         messagesContainer.removeAllViews();
@@ -135,9 +154,27 @@ public class ChatActivity extends AppCompatActivity {
                 String msgSenderName = msg.optString("sender_name", "User");
                 String msgSenderRole = msg.optString("sender_role", "Member");
                 String text = msg.optString("message_text", "");
+                String createdAt = msg.optString("created_at", "");
                 boolean isMe = msgSenderId.equals(senderId);
 
-                addMessageBubble(msgSenderName, msgSenderRole, text, isMe);
+                // Parse time
+                String timeStr = "00:00";
+                try {
+                    if (createdAt != null && !createdAt.isEmpty()) {
+                        // Supabase returns 2026-10-14T19:05:00+00:00 or similar
+                        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault());
+                        sdf.setTimeZone(java.util.TimeZone.getTimeZone("UTC"));
+                        java.util.Date date = sdf.parse(createdAt);
+                        
+                        java.text.SimpleDateFormat outSdf = new java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault());
+                        outSdf.setTimeZone(java.util.TimeZone.getDefault());
+                        timeStr = outSdf.format(date);
+                    }
+                } catch (Exception e) {
+                    // Ignored, keep default
+                }
+
+                addMessageBubble(msgSenderName, msgSenderRole, text, timeStr, isMe);
             }
             chatScrollView.post(() -> chatScrollView.fullScroll(View.FOCUS_DOWN));
         } catch (Exception e) {
@@ -145,7 +182,7 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
-    private void addMessageBubble(String authorName, String authorRole, String messageText, boolean isMe) {
+    private void addMessageBubble(String authorName, String authorRole, String messageText, String timeStr, boolean isMe) {
         LinearLayout wrapper = new LinearLayout(this);
         wrapper.setLayoutParams(new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
@@ -171,10 +208,10 @@ public class ChatActivity extends AppCompatActivity {
 
         if (!isMe && isCommunity) {
             TextView txtAuthor = new TextView(this);
-            txtAuthor.setText(authorName + " • " + authorRole.toUpperCase());
+            txtAuthor.setText(authorName + " • " + authorRole.toUpperCase() + " \u25CF");
             txtAuthor.setTextSize(12f);
             txtAuthor.setTypeface(null, Typeface.BOLD);
-            txtAuthor.setTextColor(Color.parseColor("#D9480F"));
+            txtAuthor.setTextColor(SupabaseHelper.getRoleTextColor(authorRole));
             content.addView(txtAuthor);
         }
 
@@ -183,6 +220,13 @@ public class ChatActivity extends AppCompatActivity {
         txtMsg.setTextSize(15f);
         txtMsg.setTextColor(Color.parseColor("#212529"));
         content.addView(txtMsg);
+
+        TextView txtTime = new TextView(this);
+        txtTime.setText(timeStr);
+        txtTime.setTextSize(11f);
+        txtTime.setTextColor(Color.parseColor("#6C757D"));
+        txtTime.setGravity(Gravity.END);
+        content.addView(txtTime);
 
         bubble.addView(content);
         wrapper.addView(bubble);

@@ -95,7 +95,6 @@ public class NotificationsActivity extends AppCompatActivity {
 
     private void renderRequestCard(JSONObject reqObj) {
         try {
-            String rowId = reqObj.optString("id");
             String senderId = reqObj.optString("sender_id");
             String senderName = reqObj.optString("sender_name", "User");
             String senderRole = reqObj.optString("sender_role", "Member");
@@ -116,10 +115,23 @@ public class NotificationsActivity extends AppCompatActivity {
             inner.setPadding(32, 24, 32, 24);
 
             TextView txtBody = new TextView(this);
-            txtBody.setText(senderName + " (" + senderRole + ") wants to start a chat with you.");
-            txtBody.setTextSize(15f);
-            txtBody.setTextColor(Color.BLACK);
-            inner.addView(txtBody);
+            txtBody.setText(senderName + " (");
+            
+            TextView txtRole = new TextView(this);
+            txtRole.setText(senderRole.toUpperCase() + " \u25CF");
+            txtRole.setTextColor(SupabaseHelper.getRoleTextColor(senderRole));
+            txtRole.setTypeface(null, Typeface.BOLD);
+            
+            TextView txtBody2 = new TextView(this);
+            txtBody2.setText(") wants to start a chat with you.");
+
+            LinearLayout textRow = new LinearLayout(this);
+            textRow.setOrientation(LinearLayout.HORIZONTAL);
+            textRow.addView(txtBody);
+            textRow.addView(txtRole);
+            textRow.addView(txtBody2);
+            
+            inner.addView(textRow);
 
             LinearLayout btnLayout = new LinearLayout(this);
             btnLayout.setOrientation(LinearLayout.HORIZONTAL);

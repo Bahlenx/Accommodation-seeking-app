@@ -384,4 +384,30 @@ public class SupabaseHelper {
             return value;
         }
     }
+
+    // =========================================================
+    // ROLE COLOR CODING
+    // =========================================================
+
+    public static int getRoleTextColor(String role) {
+        if (role == null) return android.graphics.Color.parseColor("#495057");
+        switch (role.toLowerCase()) {
+            case "landlord": return android.graphics.Color.parseColor("#2E7D32");
+            case "tenant":
+            case "resident": return android.graphics.Color.parseColor("#1565C0");
+            case "admin": return android.graphics.Color.parseColor("#C62828");
+            default: return android.graphics.Color.parseColor("#495057");
+        }
+    }
+
+    public static int getRoleBgColor(String role) {
+        if (role == null) return android.graphics.Color.parseColor("#E9ECEF");
+        switch (role.toLowerCase()) {
+            case "landlord": return android.graphics.Color.parseColor("#E8F5E9");
+            case "tenant":
+            case "resident": return android.graphics.Color.parseColor("#E3F2FD");
+            case "admin": return android.graphics.Color.parseColor("#FFEBEE");
+            default: return android.graphics.Color.parseColor("#E9ECEF");
+        }
+    }
 }
