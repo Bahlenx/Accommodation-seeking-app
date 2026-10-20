@@ -28,7 +28,9 @@ public class LanguageSettingsActivity extends AppCompatActivity {
         RadioButton rbEnglish = findViewById(R.id.rbEnglish);
         RadioButton rbZulu = findViewById(R.id.rbZulu);
         RadioButton rbXhosa = findViewById(R.id.rbXhosa);
+        RadioButton rbSepedi = findViewById(R.id.rbSepedi);
         RadioButton rbSesotho = findViewById(R.id.rbSesotho);
+        RadioButton rbAfrikaans = findViewById(R.id.rbAfrikaans);
 
         btnBack.setOnClickListener(v -> finish());
 
@@ -44,8 +46,14 @@ public class LanguageSettingsActivity extends AppCompatActivity {
             case "xh":
                 rbXhosa.setChecked(true);
                 break;
+            case "nso":
+                rbSepedi.setChecked(true);
+                break;
             case "st":
                 rbSesotho.setChecked(true);
+                break;
+            case "af":
+                rbAfrikaans.setChecked(true);
                 break;
             default:
                 rbEnglish.setChecked(true);
@@ -57,8 +65,12 @@ public class LanguageSettingsActivity extends AppCompatActivity {
                 selectedLanguageCode = "zu";
             } else if (checkedId == R.id.rbXhosa) {
                 selectedLanguageCode = "xh";
+            } else if (checkedId == R.id.rbSepedi) {
+                selectedLanguageCode = "nso";
             } else if (checkedId == R.id.rbSesotho) {
                 selectedLanguageCode = "st";
+            } else if (checkedId == R.id.rbAfrikaans) {
+                selectedLanguageCode = "af";
             } else {
                 selectedLanguageCode = "en";
             }

@@ -13,24 +13,21 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
 public class SupabaseHelper {
 
     private static final String SUPABASE_URL =
             "https://wdtazumjjurumrhklwgv.supabase.co";
 
-    /*
-     * IMPORTANT:
-     * Put your existing Supabase PUBLISHABLE key here.
-     *
-     * Do NOT use a service_role key inside the Android app.
-     */
     private static final String SUPABASE_KEY =
             "sb_publishable_SgXZRNFBL4tswVtapc3pFQ_qpD-DijB";
 
-
-    // =========================================================
-    // BASIC SUPABASE INFORMATION
-    // =========================================================
+    private static final OkHttpClient httpClient = new OkHttpClient();
 
     public static String getSupabaseUrl() {
         return SUPABASE_URL;
@@ -40,55 +37,56 @@ public class SupabaseHelper {
         return SUPABASE_KEY;
     }
 
-
-    // =========================================================
-    // SESSION
-    // =========================================================
-
     public static String getAccessToken(Context context) {
-
         return context
-                .getSharedPreferences(
-                        "iKhayaSession",
-                        Context.MODE_PRIVATE
-                )
-                .getString(
-                        "access_token",
-                        null
-                );
+                .getSharedPreferences("iKhayaSession", Context.MODE_PRIVATE)
+                .getString("access_token", null);
     }
-
 
     public static String getUserId(Context context) {
-
         return context
-                .getSharedPreferences(
-                        "iKhayaSession",
-                        Context.MODE_PRIVATE
-                )
-                .getString(
-                        "user_id",
-                        null
-                );
+                .getSharedPreferences("iKhayaSession", Context.MODE_PRIVATE)
+                .getString("user_id", null);
     }
 
-
     public static void clearSession(Context context) {
-
         context
-                .getSharedPreferences(
-                        "iKhayaSession",
-                        Context.MODE_PRIVATE
-                )
+                .getSharedPreferences("iKhayaSession", Context.MODE_PRIVATE)
                 .edit()
                 .clear()
                 .apply();
     }
 
+    /**
+     * Executes a true HTTP PATCH request using OkHttp.
+     * Safely handles developer bypass by omitting invalid Bearer headers when no user session exists.
+     */
+    public static void patch(String endpoint, JSONObject body, String accessToken) throws Exception {
+        String finalUrl = endpoint.startsWith("http")
+                ? endpoint
+                : SUPABASE_URL + (endpoint.startsWith("/") ? endpoint : "/" + endpoint);
 
-    // =========================================================
-    // NORMAL SUPABASE REST CONNECTION
-    // =========================================================
+        MediaType mediaType = MediaType.get("application/json; charset=utf-8");
+        RequestBody requestBody = RequestBody.create(body.toString(), mediaType);
+
+        Request.Builder builder = new Request.Builder()
+                .url(finalUrl)
+                .addHeader("apikey", SUPABASE_KEY)
+                .addHeader("Prefer", "return=minimal")
+                .patch(requestBody);
+
+        // Only send Authorization header if we have a real JWT session token (starts with 'ey')
+        if (accessToken != null && accessToken.startsWith("ey")) {
+            builder.addHeader("Authorization", "Bearer " + accessToken);
+        }
+
+        try (Response response = httpClient.newCall(builder.build()).execute()) {
+            if (!response.isSuccessful()) {
+                String err = response.body() != null ? response.body().string() : "";
+                throw new Exception("HTTP " + response.code() + ": " + err);
+            }
+        }
+    }
 
     public static HttpURLConnection createConnection(
             String endpoint,
@@ -96,85 +94,34 @@ public class SupabaseHelper {
             String accessToken
     ) throws Exception {
 
-        String finalUrl;
+        String finalUrl = endpoint.startsWith("http")
+                ? endpoint
+                : SUPABASE_URL + (endpoint.startsWith("/") ? endpoint : "/" + endpoint);
 
-        if (endpoint.startsWith("http://")
-                || endpoint.startsWith("https://")) {
-
-            finalUrl = endpoint;
-
-        } else {
-
-            if (endpoint.startsWith("/")) {
-
-                finalUrl =
-                        SUPABASE_URL
-                                + endpoint;
-
-            } else {
-
-                finalUrl =
-                        SUPABASE_URL
-                                + "/"
-                                + endpoint;
-            }
-        }
-
-        URL url =
-                new URL(finalUrl);
-
-        HttpURLConnection connection =
-                (HttpURLConnection) url.openConnection();
+        URL url = new URL(finalUrl);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
         connection.setRequestMethod(method);
+        connection.setRequestProperty("apikey", SUPABASE_KEY);
 
-        connection.setRequestProperty(
-                "apikey",
-                SUPABASE_KEY
-        );
-
-        if (accessToken != null
-                && !accessToken.isEmpty()) {
-
-            connection.setRequestProperty(
-                    "Authorization",
-                    "Bearer " + accessToken
-            );
+        if (accessToken != null && accessToken.startsWith("ey")) {
+            connection.setRequestProperty("Authorization", "Bearer " + accessToken);
         }
 
-        connection.setRequestProperty(
-                "Content-Type",
-                "application/json"
-        );
+        connection.setRequestProperty("Content-Type", "application/json");
+        connection.setRequestProperty("Accept", "application/json");
 
-        connection.setRequestProperty(
-                "Accept",
-                "application/json"
-        );
-
-        connection.setConnectTimeout(
-                15000
-        );
-
-        connection.setReadTimeout(
-                20000
-        );
+        connection.setConnectTimeout(15000);
+        connection.setReadTimeout(20000);
 
         if ("POST".equalsIgnoreCase(method)
-                || "PATCH".equalsIgnoreCase(method)
                 || "PUT".equalsIgnoreCase(method)
                 || "DELETE".equalsIgnoreCase(method)) {
-
             connection.setDoOutput(true);
         }
 
         return connection;
     }
-
-
-    // =========================================================
-    // SUPABASE STORAGE CONNECTION
-    // =========================================================
 
     public static HttpURLConnection createStorageConnection(
             String bucket,
@@ -183,204 +130,84 @@ public class SupabaseHelper {
             String accessToken
     ) throws Exception {
 
-        String safePath =
-                imagePath.replace(
-                        " ",
-                        "%20"
-                );
+        String safePath = imagePath.replace(" ", "%20");
+        String finalUrl = SUPABASE_URL + "/storage/v1/object/" + bucket + "/" + safePath;
 
-        String finalUrl =
-                SUPABASE_URL
-                        + "/storage/v1/object/"
-                        + bucket
-                        + "/"
-                        + safePath;
+        URL url = new URL(finalUrl);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
-        URL url =
-                new URL(finalUrl);
+        connection.setRequestMethod(method);
+        connection.setRequestProperty("apikey", SUPABASE_KEY);
 
-        HttpURLConnection connection =
-                (HttpURLConnection) url.openConnection();
-
-        connection.setRequestMethod(
-                method
-        );
-
-        connection.setRequestProperty(
-                "apikey",
-                SUPABASE_KEY
-        );
-
-        if (accessToken != null
-                && !accessToken.isEmpty()) {
-
-            connection.setRequestProperty(
-                    "Authorization",
-                    "Bearer " + accessToken
-            );
+        if (accessToken != null && accessToken.startsWith("ey")) {
+            connection.setRequestProperty("Authorization", "Bearer " + accessToken);
         }
 
-        connection.setRequestProperty(
-                "Accept",
-                "application/json"
-        );
+        connection.setRequestProperty("Accept", "application/json");
+        connection.setRequestProperty("Content-Type", "application/octet-stream");
 
-        connection.setRequestProperty(
-                "Content-Type",
-                "application/octet-stream"
-        );
-
-        connection.setConnectTimeout(
-                15000
-        );
-
-        connection.setReadTimeout(
-                30000
-        );
+        connection.setConnectTimeout(15000);
+        connection.setReadTimeout(30000);
 
         if ("POST".equalsIgnoreCase(method)
                 || "PUT".equalsIgnoreCase(method)
                 || "DELETE".equalsIgnoreCase(method)) {
-
             connection.setDoOutput(true);
         }
 
         return connection;
     }
 
-
-    // =========================================================
-    // PUBLIC STORAGE URL
-    // =========================================================
-
-    public static String getPublicStorageUrl(
-            String bucket,
-            String imagePath
-    ) {
-
-        String safePath =
-                imagePath.replace(
-                        " ",
-                        "%20"
-                );
-
-        return SUPABASE_URL
-                + "/storage/v1/object/public/"
-                + bucket
-                + "/"
-                + safePath;
+    public static String getPublicStorageUrl(String bucket, String imagePath) {
+        String safePath = imagePath.replace(" ", "%20");
+        return SUPABASE_URL + "/storage/v1/object/public/" + bucket + "/" + safePath;
     }
 
-
-    // =========================================================
-    // READ RESPONSE
-    // =========================================================
-
-    public static String readResponse(
-            HttpURLConnection connection
-    ) {
-
+    public static String readResponse(HttpURLConnection connection) {
         try {
-
             InputStream inputStream;
+            int responseCode = connection.getResponseCode();
 
-            int responseCode =
-                    connection.getResponseCode();
-
-            if (responseCode >= 200
-                    && responseCode < 400) {
-
-                inputStream =
-                        connection.getInputStream();
-
+            if (responseCode >= 200 && responseCode < 400) {
+                inputStream = connection.getInputStream();
             } else {
-
-                inputStream =
-                        connection.getErrorStream();
-
+                inputStream = connection.getErrorStream();
                 if (inputStream == null) {
-
-                    return "HTTP Error "
-                            + responseCode;
+                    return "HTTP Error " + responseCode;
                 }
             }
 
-            BufferedReader reader =
-                    new BufferedReader(
-                            new InputStreamReader(
-                                    inputStream,
-                                    StandardCharsets.UTF_8
-                            )
-                    );
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(inputStream, StandardCharsets.UTF_8)
+            );
 
-            StringBuilder response =
-                    new StringBuilder();
-
+            StringBuilder response = new StringBuilder();
             String line;
-
             while ((line = reader.readLine()) != null) {
-
                 response.append(line);
             }
-
             reader.close();
 
             return response.toString();
-
         } catch (Exception e) {
-
-            return "Connection error: "
-                    + e.getMessage();
+            return "Connection error: " + e.getMessage();
         }
     }
 
-
-    // =========================================================
-    // WRITE JSON
-    // =========================================================
-
-    public static void writeJson(
-            HttpURLConnection connection,
-            JSONObject json
-    ) throws Exception {
-
+    public static void writeJson(HttpURLConnection connection, JSONObject json) throws Exception {
         connection.setDoOutput(true);
+        byte[] data = json.toString().getBytes(StandardCharsets.UTF_8);
 
-        byte[] data =
-                json.toString()
-                        .getBytes(
-                                StandardCharsets.UTF_8
-                        );
-
-        try (OutputStream outputStream =
-                     connection.getOutputStream()) {
-
+        try (OutputStream outputStream = connection.getOutputStream()) {
             outputStream.write(data);
             outputStream.flush();
         }
     }
 
-
-    // =========================================================
-    // URL ENCODING
-    // =========================================================
-
-    public static String encode(
-            String value
-    ) {
-
+    public static String encode(String value) {
         try {
-
-            return URLEncoder.encode(
-                    value,
-                    "UTF-8"
-            ).replace(
-                    "+",
-                    "%20"
-            );
-
+            return URLEncoder.encode(value, "UTF-8").replace("+", "%20");
         } catch (Exception e) {
-
             return value;
         }
     }

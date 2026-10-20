@@ -8,6 +8,7 @@
     android:background="#FAF7F5"
     android:fitsSystemWindows="false">
 
+    <!-- Main Scrollable Content -->
     <androidx.core.widget.NestedScrollView
         android:id="@+id/homeScrollView"
         android:layout_width="match_parent"
@@ -23,11 +24,13 @@
             android:paddingHorizontal="20dp"
             android:paddingTop="16dp">
 
+            <!-- 1. TOP BAR: Brand + Notifications + Profile -->
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:layout_marginBottom="24dp">
 
+                <!-- Left: Logo + Name Lockup -->
                 <LinearLayout
                     android:id="@+id/layoutBrandLeft"
                     android:layout_width="wrap_content"
@@ -55,6 +58,7 @@
                         android:textStyle="bold" />
                 </LinearLayout>
 
+                <!-- Notifications Button with Badge Dot -->
                 <FrameLayout
                     android:id="@+id/btnNotificationsHome"
                     android:layout_width="40dp"
@@ -68,10 +72,10 @@
                     android:contentDescription="Notifications">
 
                     <ImageView
-                        android:layout_width="22dp"
-                        android:layout_height="22dp"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
                         android:layout_gravity="center"
-                        android:src="@android:drawable/ic_dialog_info"
+                        android:src="@android:drawable/ic_popup_reminder"
                         app:tint="#1F1614" />
 
                     <View
@@ -79,10 +83,13 @@
                         android:layout_width="9dp"
                         android:layout_height="9dp"
                         android:layout_gravity="top|end"
+                        android:layout_marginTop="2dp"
+                        android:layout_marginEnd="2dp"
                         android:background="@drawable/bg_notification_dot"
                         android:visibility="gone" />
                 </FrameLayout>
 
+                <!-- Right: Profile Button -->
                 <ImageButton
                     android:id="@+id/btnProfile"
                     android:layout_width="40dp"
@@ -98,6 +105,7 @@
                     app:tint="#1F1614" />
             </RelativeLayout>
 
+            <!-- 2. PERSONALIZED GREETING -->
             <TextView
                 android:id="@+id/tvHomeGreeting"
                 android:layout_width="match_parent"
@@ -109,6 +117,7 @@
                 android:textSize="26sp"
                 android:textStyle="bold" />
 
+            <!-- 3. SEARCH PILL + FILTER BUTTON -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -116,6 +125,7 @@
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
+                <!-- Search Input Pill -->
                 <androidx.cardview.widget.CardView
                     android:layout_width="0dp"
                     android:layout_height="54dp"
@@ -156,6 +166,7 @@
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
+                <!-- Filter Bottom Sheet Trigger -->
                 <FrameLayout
                     android:id="@+id/btnSearchSubmit"
                     android:layout_width="54dp"
@@ -175,6 +186,7 @@
                 </FrameLayout>
             </LinearLayout>
 
+            <!-- 4. SECTION 1: MOST POPULAR PLACES -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -184,6 +196,7 @@
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
+            <!-- Horizontal Carousel 1 -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvPopularPlaces"
                 android:layout_width="match_parent"
@@ -193,6 +206,7 @@
                 android:nestedScrollingEnabled="false"
                 android:orientation="horizontal" />
 
+            <!-- 5. SECTION 2: EXPLORE NEW AREA -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -202,6 +216,7 @@
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
+            <!-- Horizontal Carousel 2 -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvExploreNewArea"
                 android:layout_width="match_parent"
@@ -213,6 +228,7 @@
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
+    <!-- 6. FLOATING BOTTOM NAVIGATION -->
     <LinearLayout
         android:id="@+id/floatingBottomNav"
         android:layout_width="match_parent"
@@ -229,6 +245,7 @@
         android:padding="0dp"
         android:weightSum="4">
 
+        <!-- Tab 1: Discover -->
         <LinearLayout
             android:id="@+id/navHome"
             android:layout_width="0dp"
@@ -256,6 +273,7 @@
                 android:textStyle="bold" />
         </LinearLayout>
 
+        <!-- Tab 2: Favorites -->
         <LinearLayout
             android:id="@+id/navFavorites"
             android:layout_width="0dp"
@@ -282,6 +300,7 @@
                 android:textSize="10.5sp" />
         </LinearLayout>
 
+        <!-- Tab 3: Viewings -->
         <LinearLayout
             android:id="@+id/navViewings"
             android:layout_width="0dp"
@@ -308,6 +327,7 @@
                 android:textSize="10.5sp" />
         </LinearLayout>
 
+        <!-- Tab 4: Messages with Badge Dot -->
         <LinearLayout
             android:id="@+id/navMessages"
             android:layout_width="0dp"

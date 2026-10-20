@@ -1,6 +1,7 @@
 package com.example.ikhaya_accommodation_seeking_app;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.method.HideReturnsTransformationMethod;
 import android.text.method.PasswordTransformationMethod;
@@ -246,7 +247,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     /**
-     * Loads the user's role and full name from the profiles table.
+     * Loads the user's role and full name from the profiles table and verifies suspension status.
      */
     private void getUserRole(String accessToken, String userId) {
         executor.execute(() -> {
@@ -254,7 +255,7 @@ public class LoginActivity extends AppCompatActivity {
 
             try {
                 String encodedUserId = URLEncoder.encode(userId, "UTF-8");
-                String endpoint = "/rest/v1/profiles?select=role,full_name&firebase_uid=eq."
+                String endpoint = "/rest/v1/profiles?select=role,full_name,is_suspended&firebase_uid=eq."
                         + encodedUserId
                         + "&limit=1";
 
@@ -268,16 +269,24 @@ public class LoginActivity extends AppCompatActivity {
 
                     if (data.length() > 0) {
                         JSONObject profile = data.getJSONObject(0);
-                        String role = profile.optString("role", "tenant");
-                        String fullName = profile.optString("full_name", "User");
+
+                        // Block account access if flagged as suspended by an admin
+                        boolean isSuspended = profile.optBoolean("is_suspended", false);
+                        if (isSuspended) {
+                            showLoginError("Your account has been suspended by an administrator. Please contact support.");
+                            return;
+                        }
+
+                        final String finalRole = profile.optString("role", "tenant");
+                        final String finalFullName = profile.optString("full_name", "User");
 
                         getSharedPreferences("iKhayaSession", MODE_PRIVATE)
                                 .edit()
-                                .putString("USER_NAME", fullName)
-                                .putString("USER_ROLE", role)
+                                .putString("USER_NAME", finalFullName)
+                                .putString("USER_ROLE", finalRole)
                                 .apply();
 
-                        runOnUiThread(() -> routeUser(role));
+                        runOnUiThread(() -> routeUser(finalRole, finalFullName));
                     } else {
                         // Fallback check against the legacy Users table
                         fallbackToUsersTable(userId, accessToken);
@@ -302,7 +311,7 @@ public class LoginActivity extends AppCompatActivity {
     private void fallbackToUsersTable(String userId, String accessToken) {
         try {
             String encodedUserId = URLEncoder.encode(userId, "UTF-8");
-            String endpoint = "/rest/v1/Users?select=user_role,firstName,surname&id=eq." + encodedUserId + "&limit=1";
+            String endpoint = "/rest/v1/Users?select=user_role,firstName,surname,is_suspended&id=eq." + encodedUserId + "&limit=1";
 
             HttpURLConnection conn = SupabaseHelper.createConnection(endpoint, "GET", accessToken);
             int code = conn.getResponseCode();
@@ -312,21 +321,27 @@ public class LoginActivity extends AppCompatActivity {
                 JSONArray data = new JSONArray(response);
                 if (data.length() > 0) {
                     JSONObject userObj = data.getJSONObject(0);
-                    String role = userObj.optString("user_role", "tenant");
+
+                    boolean isSuspended = userObj.optBoolean("is_suspended", false);
+                    if (isSuspended) {
+                        showLoginError("Your account has been suspended by an administrator. Please contact support.");
+                        conn.disconnect();
+                        return;
+                    }
+
+                    final String finalRole = userObj.optString("user_role", "tenant");
                     String firstName = userObj.optString("firstName", "");
                     String surname = userObj.optString("surname", "");
-                    String fullName = (firstName + " " + surname).trim();
-                    if (fullName.isEmpty()) {
-                        fullName = "User";
-                    }
+                    String rawName = (firstName + " " + surname).trim();
+                    final String finalFullName = rawName.isEmpty() ? "User" : rawName;
 
                     getSharedPreferences("iKhayaSession", MODE_PRIVATE)
                             .edit()
-                            .putString("USER_NAME", fullName)
-                            .putString("USER_ROLE", role)
+                            .putString("USER_NAME", finalFullName)
+                            .putString("USER_ROLE", finalRole)
                             .apply();
 
-                    runOnUiThread(() -> routeUser(role));
+                    runOnUiThread(() -> routeUser(finalRole, finalFullName));
                 } else {
                     showLoginError("Your account profile was not found in either table.");
                 }
@@ -341,19 +356,23 @@ public class LoginActivity extends AppCompatActivity {
 
     /**
      * Routes the user to their respective dashboard based on their role.
+     * Passes the user's full name to AdminDashboardActivity so the header greets them personally.
      */
-    private void routeUser(String role) {
+    private void routeUser(String role, String fullName) {
         Intent intent;
 
         if ("landlord".equalsIgnoreCase(role)) {
             intent = new Intent(LoginActivity.this, LandlordDashboardActivity.class);
         } else if ("admin".equalsIgnoreCase(role)) {
             intent = new Intent(LoginActivity.this, AdminDashboardActivity.class);
+            intent.putExtra("USER_ROLE", "ADMIN");
+            intent.putExtra("USER_NAME", fullName);
         } else {
             intent = new Intent(LoginActivity.this, HomeActivity.class);
         }
 
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        AnalyticsHelper.logLogin(this, role);
         startActivity(intent);
         finish();
     }

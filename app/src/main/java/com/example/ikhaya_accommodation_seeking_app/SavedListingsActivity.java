@@ -1,22 +1,28 @@
-
 package com.example.ikhaya_accommodation_seeking_app;
 
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -32,47 +38,104 @@ import java.util.concurrent.Executors;
 public class SavedListingsActivity extends AppCompatActivity {
 
     private LinearLayout savedListingsContainer;
-    private TextView txtNoSavedListings;
+    private View txtNoSavedListings;
 
-    private final ExecutorService executor =
-            Executors.newFixedThreadPool(4);
+    private final ExecutorService executor = Executors.newFixedThreadPool(4);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_saved_listings);
 
-        savedListingsContainer =
-                findViewById(R.id.savedListingsContainer);
-        txtNoSavedListings =
-                findViewById(R.id.txtNoSavedListings);
+        savedListingsContainer = findViewById(R.id.savedListingsContainer);
+        txtNoSavedListings = findViewById(R.id.txtNoSavedListings);
 
-        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
+        View btnBack = findViewById(R.id.btnBack);
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> finish());
+        }
 
+        View btnEmptyExplore = findViewById(R.id.btnEmptyExplore);
+        if (btnEmptyExplore != null) {
+            btnEmptyExplore.setOnClickListener(v -> finish());
+        }
+
+        setupBottomNavigation();
         loadSavedListings();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if (savedListingsContainer != null) loadSavedListings();
+        if (savedListingsContainer != null) {
+            loadSavedListings();
+        }
+    }
+
+    private void setupBottomNavigation() {
+        View savedRoot = findViewById(R.id.savedRoot);
+        View floatingBottomNav = findViewById(R.id.floatingBottomNav);
+
+        if (floatingBottomNav != null) {
+            floatingBottomNav.setPadding(0, 0, 0, 0);
+
+            if (savedRoot != null) {
+                ViewCompat.setOnApplyWindowInsetsListener(savedRoot, (v, insets) -> {
+                    Insets statusBar = insets.getInsets(WindowInsetsCompat.Type.statusBars());
+                    Insets navBar = insets.getInsets(WindowInsetsCompat.Type.navigationBars());
+
+                    v.setPadding(0, statusBar.top, 0, 0);
+
+                    if (floatingBottomNav.getLayoutParams() instanceof CoordinatorLayout.LayoutParams) {
+                        CoordinatorLayout.LayoutParams lp = (CoordinatorLayout.LayoutParams) floatingBottomNav.getLayoutParams();
+                        int baseMarginPx = dpToPx(16);
+                        lp.bottomMargin = navBar.bottom + baseMarginPx;
+                        floatingBottomNav.setLayoutParams(lp);
+                        floatingBottomNav.setPadding(0, 0, 0, 0);
+                    }
+
+                    return WindowInsetsCompat.CONSUMED;
+                });
+            }
+
+            // Tab 1: Discover
+            View navHome = findViewById(R.id.navHome);
+            if (navHome != null) {
+                navHome.setOnClickListener(v -> {
+                    Intent intent = new Intent(SavedListingsActivity.this, HomeActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                    startActivity(intent);
+                    finish();
+                });
+            }
+
+            // Tab 3: Viewings
+            View navViewings = findViewById(R.id.navViewings);
+            if (navViewings != null) {
+                navViewings.setOnClickListener(v -> {
+                    startActivity(new Intent(SavedListingsActivity.this, ViewingsActivity.class));
+                    finish();
+                });
+            }
+
+            // Tab 4: Messages
+            View navMessages = findViewById(R.id.navMessages);
+            if (navMessages != null) {
+                navMessages.setOnClickListener(v ->
+                        startActivity(new Intent(SavedListingsActivity.this, UserSelectionActivity.class))
+                );
+            }
+        }
     }
 
     private void loadSavedListings() {
         String userId = SupabaseHelper.getUserId(this);
         String token = SupabaseHelper.getAccessToken(this);
 
-        if (userId == null || userId.isEmpty()
-                || token == null || token.isEmpty()) {
+        if (userId == null || userId.isEmpty() || token == null || token.isEmpty()) {
             showMessage("Please log in again.");
             return;
         }
-
-        runOnUiThread(() -> {
-            txtNoSavedListings.setText("Loading your favorites...");
-            txtNoSavedListings.setVisibility(View.VISIBLE);
-            savedListingsContainer.removeAllViews();
-        });
 
         executor.execute(() -> {
             HttpURLConnection connection = null;
@@ -84,14 +147,12 @@ public class SavedListingsActivity extends AppCompatActivity {
                         + SupabaseHelper.encode(userId)
                         + "&order=created_at.desc";
 
-                connection = SupabaseHelper.createConnection(
-                        endpoint, "GET", token);
-
+                connection = SupabaseHelper.createConnection(endpoint, "GET", token);
                 int code = connection.getResponseCode();
                 String response = SupabaseHelper.readResponse(connection);
 
                 if (code < 200 || code >= 300) {
-                    showMessage("Could not load favorites. Supabase error: " + code);
+                    showMessage("Could not load favorites.");
                     return;
                 }
 
@@ -102,16 +163,12 @@ public class SavedListingsActivity extends AppCompatActivity {
                     JSONObject saved = savedRows.optJSONObject(i);
                     if (saved == null) continue;
 
-                    String listingId = firstValue(
-                            saved, "listing_id", "property_id");
-
+                    String listingId = firstValue(saved, "listing_id", "property_id");
                     if (listingId.isEmpty()) continue;
 
                     JSONObject property = fetchListing(listingId, token);
-
                     if (property != null) {
-                        property.put("_saved_listing_id",
-                                saved.optString("id", ""));
+                        property.put("_saved_listing_id", saved.optString("id", ""));
                         property.put("_saved_listing_listing_id", listingId);
                         result.add(property);
                     }
@@ -121,13 +178,15 @@ public class SavedListingsActivity extends AppCompatActivity {
                     savedListingsContainer.removeAllViews();
 
                     if (result.isEmpty()) {
-                        txtNoSavedListings.setText(
-                                "You haven't saved any properties yet.");
-                        txtNoSavedListings.setVisibility(View.VISIBLE);
+                        if (txtNoSavedListings != null) {
+                            txtNoSavedListings.setVisibility(View.VISIBLE);
+                        }
                         return;
                     }
 
-                    txtNoSavedListings.setVisibility(View.GONE);
+                    if (txtNoSavedListings != null) {
+                        txtNoSavedListings.setVisibility(View.GONE);
+                    }
 
                     for (JSONObject property : result) {
                         addListingCard(property, userId);
@@ -152,9 +211,7 @@ public class SavedListingsActivity extends AppCompatActivity {
                     + SupabaseHelper.encode(listingId)
                     + "&limit=1";
 
-            connection = SupabaseHelper.createConnection(
-                    endpoint, "GET", token);
-
+            connection = SupabaseHelper.createConnection(endpoint, "GET", token);
             int code = connection.getResponseCode();
             String response = SupabaseHelper.readResponse(connection);
 
@@ -171,113 +228,148 @@ public class SavedListingsActivity extends AppCompatActivity {
     }
 
     private void addListingCard(JSONObject property, String userId) {
-        String listingId = firstValue(
-                property, "_saved_listing_listing_id", "id");
+        String listingId = firstValue(property, "_saved_listing_listing_id", "id");
         String savedRowId = firstValue(property, "_saved_listing_id");
 
-        String name = firstValue(
-                property, "property_name", "title", "name");
-        String location = firstValue(
-                property, "location", "address", "area");
-        String price = firstValue(
-                property, "price", "rental_price", "monthly_price");
-        String rooms = firstValue(
-                property, "rooms", "bedrooms", "room_count");
+        String name = firstValue(property, "property_name", "title", "name");
+        String location = firstValue(property, "location", "address", "area");
+        String price = firstValue(property, "price", "rental_price", "monthly_price");
+        String rooms = firstValue(property, "rooms", "bedrooms", "room_count");
         String imageUrl = firstValue(
                 property, "image_url", "image", "image_path",
                 "photo_url", "property_image", "imageUrl",
-                "cover_image", "photo");
+                "cover_image", "photo"
+        );
 
         if (name.isEmpty()) name = "Accommodation";
         if (location.isEmpty()) location = "Location not available";
         if (price.isEmpty()) price = "Price not available";
 
-        LinearLayout card = new LinearLayout(this);
-        card.setOrientation(LinearLayout.VERTICAL);
-        card.setPadding(dp(12), dp(12), dp(12), dp(14));
-        card.setBackground(roundedBackground(Color.WHITE, "#E9E3DE", 20));
-        card.setElevation(dp(3));
-
+        CardView card = new CardView(this);
         LinearLayout.LayoutParams cardParams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT);
-        cardParams.bottomMargin = dp(18);
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        cardParams.setMargins(0, 0, 0, dpToPx(16));
         card.setLayoutParams(cardParams);
+        card.setCardElevation(dpToPx(2));
+        card.setRadius(dpToPx(18));
+        card.setCardBackgroundColor(Color.WHITE);
 
+        LinearLayout content = new LinearLayout(this);
+        content.setOrientation(LinearLayout.VERTICAL);
+        int pad = dpToPx(14);
+        content.setPadding(pad, pad, pad, pad);
+
+        // Property Thumbnail
         ImageView image = new ImageView(this);
-        image.setLayoutParams(new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, dp(190)));
+        LinearLayout.LayoutParams imgParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, dpToPx(160)
+        );
+        image.setLayoutParams(imgParams);
         image.setScaleType(ImageView.ScaleType.CENTER_CROP);
-        image.setBackgroundColor(Color.rgb(235, 229, 224));
-        image.setContentDescription("Saved property photo");
+        image.setBackgroundColor(Color.parseColor("#EFEBE4"));
         image.setImageResource(android.R.drawable.ic_menu_gallery);
-        card.addView(image);
+        content.addView(image);
 
-        if (!imageUrl.isEmpty()) loadImage(imageUrl, image);
-
-        TextView nameView = makeText(name, 19, true, "#241A18");
-        nameView.setPadding(0, dp(12), 0, 0);
-
-        TextView locationView = makeText(
-                "📍 " + location, 14, false, "#81736D");
-        locationView.setPadding(0, dp(5), 0, 0);
-
-        TextView priceView = makeText(
-                price.startsWith("R") ? price : "R" + price,
-                17, true, "#B95737");
-        priceView.setPadding(0, dp(8), 0, 0);
-
-        card.addView(nameView);
-        card.addView(locationView);
-        card.addView(priceView);
-
-        if (!rooms.isEmpty()) {
-            TextView roomsView = makeText(
-                    rooms + " rooms", 14, false, "#756A65");
-            roomsView.setPadding(0, dp(6), 0, 0);
-            card.addView(roomsView);
+        if (!imageUrl.isEmpty()) {
+            loadImage(imageUrl, image);
         }
 
+        // Title
+        TextView tvName = new TextView(this);
+        tvName.setText(name);
+        tvName.setTextSize(17);
+        tvName.setTextColor(Color.parseColor("#1F1614"));
+        tvName.setTypeface(null, Typeface.BOLD);
+        tvName.setPadding(0, dpToPx(10), 0, 0);
+        content.addView(tvName);
+
+        // Location
+        LinearLayout locRow = new LinearLayout(this);
+        locRow.setOrientation(LinearLayout.HORIZONTAL);
+        locRow.setGravity(Gravity.CENTER_VERTICAL);
+        LinearLayout.LayoutParams locParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        locParams.setMargins(0, dpToPx(4), 0, dpToPx(8));
+        locRow.setLayoutParams(locParams);
+
+        TextView tvLocation = new TextView(this);
+        tvLocation.setText("📍 " + location);
+        tvLocation.setTextSize(13);
+        tvLocation.setTextColor(Color.parseColor("#8C7A70"));
+        locRow.addView(tvLocation);
+        content.addView(locRow);
+
+        // Price & Rooms Row
+        LinearLayout priceRow = new LinearLayout(this);
+        priceRow.setOrientation(LinearLayout.HORIZONTAL);
+        priceRow.setGravity(Gravity.CENTER_VERTICAL);
+        priceRow.setLayoutParams(new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        ));
+
+        TextView tvPrice = new TextView(this);
+        tvPrice.setText(price.startsWith("R") ? price : "R " + price + " / month");
+        tvPrice.setTextSize(15);
+        tvPrice.setTextColor(Color.parseColor("#BA5536"));
+        tvPrice.setTypeface(null, Typeface.BOLD);
+        LinearLayout.LayoutParams priceParams = new LinearLayout.LayoutParams(
+                0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f
+        );
+        tvPrice.setLayoutParams(priceParams);
+        priceRow.addView(tvPrice);
+
+        if (!rooms.isEmpty()) {
+            TextView tvRooms = new TextView(this);
+            tvRooms.setText(rooms + " rooms");
+            tvRooms.setTextSize(12);
+            tvRooms.setTextColor(Color.parseColor("#1F1614"));
+            tvRooms.setBackgroundColor(Color.parseColor("#F5EFEB"));
+            tvRooms.setPadding(dpToPx(8), dpToPx(3), dpToPx(8), dpToPx(3));
+            priceRow.addView(tvRooms);
+        }
+        content.addView(priceRow);
+
+        // Actions Row: View Property & Remove Favorite
         LinearLayout actions = new LinearLayout(this);
         actions.setOrientation(LinearLayout.HORIZONTAL);
         actions.setGravity(Gravity.CENTER_VERTICAL);
-        actions.setPadding(0, dp(12), 0, 0);
+        actions.setPadding(0, dpToPx(12), 0, 0);
 
         Button viewButton = new Button(this);
         viewButton.setText("View property");
         viewButton.setAllCaps(false);
         viewButton.setTextColor(Color.WHITE);
-        viewButton.setBackgroundTintList(
-                android.content.res.ColorStateList.valueOf(
-                        Color.rgb(185, 87, 55)));
+        viewButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#BA5536")));
 
         Button removeButton = new Button(this);
-        removeButton.setText("Remove favorite");
+        removeButton.setText("Remove");
         removeButton.setAllCaps(false);
-        removeButton.setTextColor(Color.rgb(158, 56, 40));
-        removeButton.setBackgroundTintList(
-                android.content.res.ColorStateList.valueOf(
-                        Color.rgb(240, 228, 223)));
+        removeButton.setTextColor(Color.parseColor("#BA5536"));
+        removeButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#F4ECE9")));
 
-        LinearLayout.LayoutParams actionParams =
-                new LinearLayout.LayoutParams(0,
-                        LinearLayout.LayoutParams.WRAP_CONTENT, 1);
-        actionParams.setMargins(dp(3), 0, dp(3), 0);
+        LinearLayout.LayoutParams actionParams = new LinearLayout.LayoutParams(
+                0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f
+        );
+        actionParams.setMargins(dpToPx(3), 0, dpToPx(3), 0);
 
         actions.addView(viewButton, actionParams);
         actions.addView(removeButton, actionParams);
-        card.addView(actions);
+        content.addView(actions);
+
+        card.addView(content);
 
         String finalName = name;
         String finalLocation = location;
         String finalPrice = price;
 
         viewButton.setOnClickListener(v -> {
-            Intent intent = new Intent(
-                    SavedListingsActivity.this,
-                    PropertyDetailsActivity.class);
+            Intent intent = new Intent(SavedListingsActivity.this, PropertyDetailsActivity.class);
             intent.putExtra("LISTING_ID", listingId);
-            intent.putExtra("listingId", listingId);
             intent.putExtra("propertyName", finalName);
             intent.putExtra("listingLocation", finalLocation);
             intent.putExtra("listingPrice", finalPrice);
@@ -285,22 +377,20 @@ public class SavedListingsActivity extends AppCompatActivity {
         });
 
         removeButton.setOnClickListener(v ->
-                new androidx.appcompat.app.AlertDialog.Builder(this)
+                new AlertDialog.Builder(this)
                         .setTitle("Remove favorite?")
-                        .setMessage("Remove \"" + finalName
-                                + "\" from your saved listings?")
+                        .setMessage("Remove \"" + finalName + "\" from your saved listings?")
                         .setNegativeButton("Cancel", null)
-                        .setPositiveButton("Remove",
-                                (dialog, which) ->
-                                        removeFavorite(
-                                                listingId, savedRowId, userId))
-                        .show());
+                        .setPositiveButton("Remove", (dialog, which) ->
+                                removeFavorite(listingId, savedRowId, userId)
+                        )
+                        .show()
+        );
 
         savedListingsContainer.addView(card);
     }
 
-    private void removeFavorite(
-            String listingId, String savedRowId, String userId) {
+    private void removeFavorite(String listingId, String savedRowId, String userId) {
         String token = SupabaseHelper.getAccessToken(this);
 
         if (token == null || token.isEmpty()) {
@@ -312,30 +402,22 @@ public class SavedListingsActivity extends AppCompatActivity {
             HttpURLConnection connection = null;
 
             try {
-                String endpoint = "/rest/v1/saved_listings"
-                        + "?tenant_uid=eq."
-                        + SupabaseHelper.encode(userId);
+                String endpoint = "/rest/v1/saved_listings?tenant_uid=eq." + SupabaseHelper.encode(userId);
 
                 if (!savedRowId.isEmpty()) {
-                    endpoint += "&id=eq."
-                            + SupabaseHelper.encode(savedRowId);
+                    endpoint += "&id=eq." + SupabaseHelper.encode(savedRowId);
                 } else {
-                    endpoint += "&listing_id=eq."
-                            + SupabaseHelper.encode(listingId);
+                    endpoint += "&listing_id=eq." + SupabaseHelper.encode(listingId);
                 }
 
-                connection = SupabaseHelper.createConnection(
-                        endpoint, "DELETE", token);
-
+                connection = SupabaseHelper.createConnection(endpoint, "DELETE", token);
                 int code = connection.getResponseCode();
-                String response = SupabaseHelper.readResponse(connection);
 
                 if (code >= 200 && code < 300) {
                     showMessage("Favorite removed.");
                     loadSavedListings();
                 } else {
-                    showMessage("Could not remove favorite. Supabase error: "
-                            + code);
+                    showMessage("Could not remove favorite. Supabase error: " + code);
                 }
 
             } catch (Exception e) {
@@ -351,17 +433,14 @@ public class SavedListingsActivity extends AppCompatActivity {
             HttpURLConnection connection = null;
 
             try {
-                if (!imageUrl.startsWith("https://")
-                        && !imageUrl.startsWith("http://")) return;
+                if (!imageUrl.startsWith("https://") && !imageUrl.startsWith("http://")) return;
 
-                connection = (HttpURLConnection)
-                        new URL(imageUrl).openConnection();
+                connection = (HttpURLConnection) new URL(imageUrl).openConnection();
                 connection.setConnectTimeout(10000);
                 connection.setReadTimeout(15000);
                 connection.connect();
 
-                if (connection.getResponseCode() < 200
-                        || connection.getResponseCode() >= 300) return;
+                if (connection.getResponseCode() < 200 || connection.getResponseCode() >= 300) return;
 
                 try (InputStream input = connection.getInputStream()) {
                     Bitmap bitmap = BitmapFactory.decodeStream(input);
@@ -374,7 +453,6 @@ public class SavedListingsActivity extends AppCompatActivity {
                     }
                 }
             } catch (Exception ignored) {
-                // Keep the placeholder if the image is inaccessible.
             } finally {
                 if (connection != null) connection.disconnect();
             }
@@ -394,33 +472,15 @@ public class SavedListingsActivity extends AppCompatActivity {
         return "";
     }
 
-    private TextView makeText(
-            String value, int size, boolean bold, String color) {
-        TextView text = new TextView(this);
-        text.setText(value);
-        text.setTextSize(size);
-        text.setTextColor(Color.parseColor(color));
-        if (bold) text.setTypeface(null, Typeface.BOLD);
-        return text;
-    }
-
-    private GradientDrawable roundedBackground(
-            int fill, String stroke, int radius) {
-        GradientDrawable drawable = new GradientDrawable();
-        drawable.setColor(fill);
-        drawable.setCornerRadius(dp(radius));
-        drawable.setStroke(dp(1), Color.parseColor(stroke));
-        return drawable;
-    }
-
-    private int dp(int value) {
-        return (int) (value * getResources().getDisplayMetrics().density + 0.5f);
+    private int dpToPx(int dp) {
+        float density = getResources().getDisplayMetrics().density;
+        return Math.round(dp * density);
     }
 
     private void showMessage(String message) {
-        runOnUiThread(() -> Toast.makeText(
-                SavedListingsActivity.this, message,
-                Toast.LENGTH_LONG).show());
+        runOnUiThread(() ->
+                Toast.makeText(SavedListingsActivity.this, message, Toast.LENGTH_SHORT).show()
+        );
     }
 
     @Override

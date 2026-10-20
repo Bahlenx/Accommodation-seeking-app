@@ -29,13 +29,17 @@
 
             <ImageButton
                 android:id="@+id/btnCloseDialog"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
                 android:layout_alignParentEnd="true"
-                android:background="?attr/selectableItemBackgroundBorderless"
+                android:layout_centerVertical="true"
+                android:background="@drawable/bg_circle_white"
+                android:contentDescription="@string/desc_close"
+                android:elevation="1dp"
+                android:padding="11dp"
+                android:scaleType="fitCenter"
                 android:src="@android:drawable/ic_menu_close_clear_cancel"
-                android:contentDescription="Close"
-                app:tint="@color/black" />
+                app:tint="#1F1614" />
         </RelativeLayout>
 
         <TextView
