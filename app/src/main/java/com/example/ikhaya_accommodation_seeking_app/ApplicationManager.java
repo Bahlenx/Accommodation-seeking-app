@@ -1,3 +1,4 @@
+
 package com.example.ikhaya_accommodation_seeking_app;
 
 import android.content.Context;
@@ -7,14 +8,19 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class ApplicationManager {
 
     private static final String PREF_NAME = "ikhaya_applications_pref";
     private static final String KEY_APPS = "applications_json_list";
+    private static final String KEY_SEEN_APPROVED =
+            "seen_approved_application_ids";
 
     public static class RentalApplication {
+
         public String id;
         public String propertyTitle;
         public String applicantName;
@@ -26,12 +32,22 @@ public class ApplicationManager {
         public String occupants;
         public String rentalPrice;
         public String note;
-        public String status; // "PENDING", "APPROVED", "DECLINED"
+        public String status;
 
-        public RentalApplication(String id, String propertyTitle, String applicantName,
-                                 String phone, String emergencyContact, String occupation,
-                                 String moveInDate, String leaseDuration, String occupants,
-                                 String rentalPrice, String note, String status) {
+        public RentalApplication(
+                String id,
+                String propertyTitle,
+                String applicantName,
+                String phone,
+                String emergencyContact,
+                String occupation,
+                String moveInDate,
+                String leaseDuration,
+                String occupants,
+                String rentalPrice,
+                String note,
+                String status) {
+
             this.id = id;
             this.propertyTitle = propertyTitle;
             this.applicantName = applicantName;
@@ -47,8 +63,9 @@ public class ApplicationManager {
         }
 
         public JSONObject toJson() {
+            JSONObject obj = new JSONObject();
+
             try {
-                JSONObject obj = new JSONObject();
                 obj.put("id", id);
                 obj.put("propertyTitle", propertyTitle);
                 obj.put("applicantName", applicantName);
@@ -61,10 +78,10 @@ public class ApplicationManager {
                 obj.put("rentalPrice", rentalPrice);
                 obj.put("note", note);
                 obj.put("status", status);
-                return obj;
-            } catch (Exception e) {
-                return new JSONObject();
+            } catch (Exception ignored) {
             }
+
+            return obj;
         }
 
         public static RentalApplication fromJson(JSONObject obj) {
@@ -85,50 +102,186 @@ public class ApplicationManager {
         }
     }
 
+    /**
+     * Returns all rental applications saved on this device.
+     */
     public static List<RentalApplication> getApplications(Context context) {
-        List<RentalApplication> list = new ArrayList<>();
-        SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        List<RentalApplication> applications = new ArrayList<>();
+
+        SharedPreferences prefs = context.getSharedPreferences(
+                PREF_NAME,
+                Context.MODE_PRIVATE
+        );
+
         String raw = prefs.getString(KEY_APPS, "[]");
+
         try {
-            JSONArray arr = new JSONArray(raw);
-            for (int i = 0; i < arr.length(); i++) {
-                list.add(RentalApplication.fromJson(arr.getJSONObject(i)));
+            JSONArray array = new JSONArray(raw);
+
+            for (int i = 0; i < array.length(); i++) {
+                JSONObject obj = array.optJSONObject(i);
+
+                if (obj != null) {
+                    applications.add(RentalApplication.fromJson(obj));
+                }
             }
-        } catch (Exception ignored) {}
-        return list;
+        } catch (Exception ignored) {
+        }
+
+        return applications;
     }
 
-    public static void addApplication(Context context, RentalApplication app) {
-        List<RentalApplication> current = getApplications(context);
-        current.add(0, app);
-        saveList(context, current);
+    /**
+     * Saves a new rental application at the beginning of the list.
+     */
+    public static void addApplication(
+            Context context,
+            RentalApplication application) {
+
+        if (application == null) {
+            return;
+        }
+
+        List<RentalApplication> applications =
+                getApplications(context);
+
+        applications.add(0, application);
+        saveList(context, applications);
     }
 
-    public static void updateStatus(Context context, String id, String newStatus) {
-        List<RentalApplication> current = getApplications(context);
-        for (RentalApplication a : current) {
-            if (a.id.equals(id)) {
-                a.status = newStatus;
+    /**
+     * Updates an application's status without removing its other details.
+     * Example statuses: PENDING, APPROVED, DECLINED.
+     */
+    public static void updateStatus(
+            Context context,
+            String id,
+            String newStatus) {
+
+        if (id == null || newStatus == null) {
+            return;
+        }
+
+        List<RentalApplication> applications =
+                getApplications(context);
+
+        for (RentalApplication application : applications) {
+            if (application.id != null
+                    && application.id.equals(id)) {
+
+                application.status = newStatus.trim().toUpperCase();
                 break;
             }
         }
-        saveList(context, current);
+
+        saveList(context, applications);
     }
 
+    /**
+     * Counts applications that are still waiting for the landlord's decision.
+     */
     public static int getPendingCount(Context context) {
         int count = 0;
-        for (RentalApplication a : getApplications(context)) {
-            if ("PENDING".equalsIgnoreCase(a.status)) count++;
+
+        for (RentalApplication application : getApplications(context)) {
+            if ("PENDING".equalsIgnoreCase(application.status)) {
+                count++;
+            }
         }
+
         return count;
     }
 
-    private static void saveList(Context context, List<RentalApplication> list) {
-        SharedPreferences.Editor editor = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE).edit();
-        JSONArray arr = new JSONArray();
-        for (RentalApplication app : list) {
-            arr.put(app.toJson());
+    /**
+     * Counts approved applications that the resident has not yet viewed
+     * on this device.
+     */
+    public static int getUnseenApprovedCount(Context context) {
+        Set<String> seenIds = getSeenApprovedIds(context);
+        int count = 0;
+
+        for (RentalApplication application : getApplications(context)) {
+            if ("APPROVED".equalsIgnoreCase(application.status)
+                    && hasValidId(application.id)
+                    && !seenIds.contains(application.id)) {
+                count++;
+            }
         }
-        editor.putString(KEY_APPS, arr.toString()).commit();
+
+        return count;
+    }
+
+    /**
+     * Marks all currently approved applications as seen.
+     */
+    public static void markApprovedApplicationsSeen(Context context) {
+        Set<String> seenIds = getSeenApprovedIds(context);
+
+        for (RentalApplication application : getApplications(context)) {
+            if ("APPROVED".equalsIgnoreCase(application.status)
+                    && hasValidId(application.id)) {
+                seenIds.add(application.id);
+            }
+        }
+
+        context.getSharedPreferences(
+                        PREF_NAME,
+                        Context.MODE_PRIVATE
+                )
+                .edit()
+                .putStringSet(KEY_SEEN_APPROVED, seenIds)
+                .apply();
+    }
+
+    /**
+     * Clears the approved-application viewed state.
+     * Use only if the app intentionally needs to reset these notifications.
+     */
+    public static void clearSeenApprovedApplications(Context context) {
+        context.getSharedPreferences(
+                        PREF_NAME,
+                        Context.MODE_PRIVATE
+                )
+                .edit()
+                .remove(KEY_SEEN_APPROVED)
+                .apply();
+    }
+
+    private static Set<String> getSeenApprovedIds(Context context) {
+        Set<String> saved = context.getSharedPreferences(
+                        PREF_NAME,
+                        Context.MODE_PRIVATE
+                )
+                .getStringSet(KEY_SEEN_APPROVED, null);
+
+        if (saved == null) {
+            return new HashSet<>();
+        }
+
+        // Copy the saved set before changing it.
+        return new HashSet<>(saved);
+    }
+
+    private static boolean hasValidId(String id) {
+        return id != null && !id.trim().isEmpty();
+    }
+
+    private static void saveList(
+            Context context,
+            List<RentalApplication> applications) {
+
+        JSONArray array = new JSONArray();
+
+        for (RentalApplication application : applications) {
+            array.put(application.toJson());
+        }
+
+        context.getSharedPreferences(
+                        PREF_NAME,
+                        Context.MODE_PRIVATE
+                )
+                .edit()
+                .putString(KEY_APPS, array.toString())
+                .apply();
     }
 }

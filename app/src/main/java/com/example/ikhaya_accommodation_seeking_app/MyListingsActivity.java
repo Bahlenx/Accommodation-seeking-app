@@ -1,6 +1,11 @@
+
 package com.example.ikhaya_accommodation_seeking_app;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,7 +23,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -26,9 +33,8 @@ public class MyListingsActivity extends AppCompatActivity {
 
     private LinearLayout listingsContainer;
     private TextView txtNoListings;
-
     private final ExecutorService executor =
-            Executors.newSingleThreadExecutor();
+            Executors.newFixedThreadPool(3);
 
     private final ActivityResultLauncher<Intent> editListingLauncher =
             registerForActivityResult(
@@ -41,10 +47,10 @@ public class MyListingsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my_listings);
 
-        Button btnBack = findViewById(R.id.btnBack);
         listingsContainer = findViewById(R.id.myListingsContainer);
         txtNoListings = findViewById(R.id.txtNoListings);
 
+        Button btnBack = findViewById(R.id.btnBack);
         btnBack.setOnClickListener(v -> finish());
 
         loadMyListings();
@@ -61,42 +67,36 @@ public class MyListingsActivity extends AppCompatActivity {
 
     private void loadMyListings() {
         String userId = SupabaseHelper.getUserId(this);
-        String accessToken = SupabaseHelper.getAccessToken(this);
+        String token = SupabaseHelper.getAccessToken(this);
 
         if (userId == null || userId.isEmpty()
-                || accessToken == null || accessToken.isEmpty()) {
-            Toast.makeText(
-                    this,
-                    "Please log in again.",
-                    Toast.LENGTH_SHORT
-            ).show();
+                || token == null || token.isEmpty()) {
+            showMessage("Please log in again.");
             return;
         }
 
-        txtNoListings.setVisibility(View.GONE);
+        txtNoListings.setText("Loading your listings...");
+        txtNoListings.setVisibility(View.VISIBLE);
 
         executor.execute(() -> {
             HttpURLConnection connection = null;
 
             try {
-                String endpoint =
-                        "/rest/v1/listings"
-                                + "?select=*"
-                                + "&landlord_uid=eq."
-                                + SupabaseHelper.encode(userId)
-                                + "&order=created_at.desc";
+                String endpoint = "/rest/v1/listings"
+                        + "?select=*"
+                        + "&landlord_uid=eq."
+                        + SupabaseHelper.encode(userId)
+                        + "&order=created_at.desc";
 
                 connection = SupabaseHelper.createConnection(
-                        endpoint,
-                        "GET",
-                        accessToken
+                        endpoint, "GET", token
                 );
 
                 int code = connection.getResponseCode();
                 String response = SupabaseHelper.readResponse(connection);
 
                 if (code < 200 || code >= 300) {
-                    showMessage("Could not load your listings.");
+                    showMessage("Could not load listings. Supabase error: " + code);
                     return;
                 }
 
@@ -106,6 +106,7 @@ public class MyListingsActivity extends AppCompatActivity {
                     listingsContainer.removeAllViews();
 
                     if (listings.length() == 0) {
+                        txtNoListings.setText("You haven't added any listings yet.");
                         txtNoListings.setVisibility(View.VISIBLE);
                         return;
                     }
@@ -114,7 +115,6 @@ public class MyListingsActivity extends AppCompatActivity {
 
                     for (int i = 0; i < listings.length(); i++) {
                         JSONObject listing = listings.optJSONObject(i);
-
                         if (listing != null) {
                             addListingCard(listing);
                         }
@@ -122,7 +122,7 @@ public class MyListingsActivity extends AppCompatActivity {
                 });
 
             } catch (Exception e) {
-                showMessage("Could not load your listings.");
+                showMessage("Could not load listings. Please try again.");
             } finally {
                 if (connection != null) {
                     connection.disconnect();
@@ -147,10 +147,32 @@ public class MyListingsActivity extends AppCompatActivity {
         Button btnDeleteListing = card.findViewById(R.id.btnDeleteListing);
 
         String listingId = listing.optString("id", "");
-        String propertyName = listing.optString("property_name", "Property");
-        String location = listing.optString("location", "Location not provided");
-        String price = listing.optString("price", "0");
-        String rooms = listing.optString("rooms", "0");
+        String propertyName = firstValue(
+                listing, "property_name", "title", "name"
+        );
+        String location = firstValue(
+                listing, "location", "address", "area"
+        );
+        String price = firstValue(listing, "price", "monthly_price");
+        String rooms = firstValue(
+                listing, "rooms", "bedrooms", "room_count"
+        );
+        String imageUrl = firstValue(
+                listing,
+                "image_url",
+                "image",
+                "image_path",
+                "photo_url",
+                "property_image",
+                "imageUrl",
+                "cover_image",
+                "photo"
+        );
+
+        if (propertyName.isEmpty()) propertyName = "Property";
+        if (location.isEmpty()) location = "Location not provided";
+        if (price.isEmpty()) price = "0";
+        if (rooms.isEmpty()) rooms = "Not specified";
 
         txtListingName.setText(propertyName);
         txtListingLocation.setText(location);
@@ -158,14 +180,17 @@ public class MyListingsActivity extends AppCompatActivity {
         txtListingRooms.setText(rooms + " rooms");
 
         imgListing.setImageResource(android.R.drawable.ic_menu_gallery);
+        imgListing.setScaleType(ImageView.ScaleType.CENTER_CROP);
+
+        if (!imageUrl.isEmpty()) {
+            loadListingImage(imageUrl, imgListing);
+        }
+
+        String finalPropertyName = propertyName;
 
         btnEditListing.setOnClickListener(v -> {
             if (listingId.isEmpty()) {
-                Toast.makeText(
-                        MyListingsActivity.this,
-                        "Listing ID is missing.",
-                        Toast.LENGTH_SHORT
-                ).show();
+                showMessage("Listing ID is missing.");
                 return;
             }
 
@@ -176,28 +201,20 @@ public class MyListingsActivity extends AppCompatActivity {
 
             intent.putExtra("LISTING_ID", listingId);
             intent.putExtra("listingId", listingId);
-            intent.putExtra("propertyName", propertyName);
+            intent.putExtra("propertyName", finalPropertyName);
 
             editListingLauncher.launch(intent);
         });
 
         btnDeleteListing.setOnClickListener(v -> {
             if (listingId.isEmpty()) {
-                Toast.makeText(
-                        this,
-                        "Listing ID is missing.",
-                        Toast.LENGTH_SHORT
-                ).show();
+                showMessage("Listing ID is missing.");
                 return;
             }
 
             new AlertDialog.Builder(this)
                     .setTitle("Delete listing?")
-                    .setMessage(
-                            "Are you sure you want to delete \""
-                                    + propertyName
-                                    + "\"?"
-                    )
+                    .setMessage("Delete \"" + finalPropertyName + "\"?")
                     .setNegativeButton("Cancel", null)
                     .setPositiveButton("Delete", (dialog, which) ->
                             deleteListing(listingId))
@@ -207,10 +224,74 @@ public class MyListingsActivity extends AppCompatActivity {
         listingsContainer.addView(card);
     }
 
-    private void deleteListing(String listingId) {
-        String accessToken = SupabaseHelper.getAccessToken(this);
+    private String firstValue(JSONObject object, String... keys) {
+        for (String key : keys) {
+            Object value = object.opt(key);
 
-        if (accessToken == null || accessToken.isEmpty()) {
+            if (value != null && value != JSONObject.NULL) {
+                String result = String.valueOf(value).trim();
+
+                if (!result.isEmpty()
+                        && !result.equalsIgnoreCase("null")) {
+                    return result;
+                }
+            }
+        }
+
+        return "";
+    }
+
+    private void loadListingImage(String imageUrl, ImageView imageView) {
+        executor.execute(() -> {
+            HttpURLConnection connection = null;
+
+            try {
+                if (!imageUrl.startsWith("https://")
+                        && !imageUrl.startsWith("http://")) {
+                    return;
+                }
+
+                connection = (HttpURLConnection)
+                        new URL(imageUrl).openConnection();
+
+                connection.setConnectTimeout(10000);
+                connection.setReadTimeout(15000);
+                connection.setInstanceFollowRedirects(true);
+                connection.connect();
+
+                if (connection.getResponseCode() < 200
+                        || connection.getResponseCode() >= 300) {
+                    return;
+                }
+
+                try (InputStream input = connection.getInputStream()) {
+                    Bitmap bitmap = BitmapFactory.decodeStream(input);
+
+                    if (bitmap != null && !isFinishing()) {
+                        runOnUiThread(() -> {
+                            if (!isFinishing() && !isDestroyed()) {
+                                imageView.setImageBitmap(bitmap);
+                            }
+                        });
+                    }
+                }
+
+            } catch (Exception ignored) {
+                // Keep the placeholder if the image URL cannot be loaded.
+            } finally {
+                if (connection != null) {
+                    connection.disconnect();
+                }
+            }
+        });
+    }
+
+    private void deleteListing(String listingId) {
+        String userId = SupabaseHelper.getUserId(this);
+        String token = SupabaseHelper.getAccessToken(this);
+
+        if (userId == null || userId.isEmpty()
+                || token == null || token.isEmpty()) {
             showMessage("Please log in again.");
             return;
         }
@@ -219,39 +300,26 @@ public class MyListingsActivity extends AppCompatActivity {
             HttpURLConnection connection = null;
 
             try {
-                String endpoint =
-                        "/rest/v1/listings?id=eq."
-                                + SupabaseHelper.encode(listingId);
+                String endpoint = "/rest/v1/listings"
+                        + "?id=eq." + SupabaseHelper.encode(listingId)
+                        + "&landlord_uid=eq." + SupabaseHelper.encode(userId);
 
                 connection = SupabaseHelper.createConnection(
-                        endpoint,
-                        "DELETE",
-                        accessToken
+                        endpoint, "DELETE", token
                 );
 
                 int code = connection.getResponseCode();
-                String response = SupabaseHelper.readResponse(connection);
+                SupabaseHelper.readResponse(connection);
 
-                runOnUiThread(() -> {
-                    if (code >= 200 && code < 300) {
-                        Toast.makeText(
-                                MyListingsActivity.this,
-                                "Listing deleted.",
-                                Toast.LENGTH_SHORT
-                        ).show();
-
-                        loadMyListings();
-                    } else {
-                        Toast.makeText(
-                                MyListingsActivity.this,
-                                "Could not delete listing.",
-                                Toast.LENGTH_LONG
-                        ).show();
-                    }
-                });
+                if (code >= 200 && code < 300) {
+                    showMessage("Listing deleted.");
+                    loadMyListings();
+                } else {
+                    showMessage("Could not delete listing. Supabase error: " + code);
+                }
 
             } catch (Exception e) {
-                showMessage("Could not delete listing.");
+                showMessage("Could not delete listing. Please try again.");
             } finally {
                 if (connection != null) {
                     connection.disconnect();
@@ -261,11 +329,13 @@ public class MyListingsActivity extends AppCompatActivity {
     }
 
     private void showMessage(String message) {
-        runOnUiThread(() -> Toast.makeText(
-                MyListingsActivity.this,
-                message,
-                Toast.LENGTH_LONG
-        ).show());
+        runOnUiThread(() ->
+                Toast.makeText(
+                        MyListingsActivity.this,
+                        message,
+                        Toast.LENGTH_LONG
+                ).show()
+        );
     }
 
     @Override

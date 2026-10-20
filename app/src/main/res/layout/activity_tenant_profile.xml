@@ -40,7 +40,7 @@
         app:layout_constraintTop_toBottomOf="@id/topBar"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginStart="20dp"
-        android:layout_marginTop="8dp"/>
+        android:layout_marginTop="8dp" />
 
     <ScrollView
         android:id="@+id/profileScroll"
@@ -62,10 +62,10 @@
                 android:id="@+id/txtUserName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/tenant_name"
+                android:text="Loading..."
                 android:textSize="22sp"
                 android:textStyle="bold"
-                android:padding="8dp"/>
+                android:padding="8dp" />
 
             <TextView
                 android:id="@+id/txtUserType"
@@ -73,7 +73,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/tenant"
                 android:textSize="16sp"
-                android:padding="8dp"/>
+                android:padding="8dp" />
 
             <Button
                 android:id="@+id/btnPersonalInfo"
@@ -85,7 +85,7 @@
                 android:textColor="@color/white"
                 android:textAllCaps="false"
                 android:layout_marginTop="12dp"
-                android:layout_marginBottom="10dp"/>
+                android:layout_marginBottom="10dp" />
 
             <Button
                 android:id="@+id/btnChangeLanguage"
@@ -96,7 +96,7 @@
                 android:text="@string/change_language"
                 android:textColor="@color/white"
                 android:textAllCaps="false"
-                android:layout_marginBottom="10dp"/>
+                android:layout_marginBottom="10dp" />
 
             <Button
                 android:id="@+id/btnSavedListings"
@@ -107,7 +107,7 @@
                 android:text="@string/favourite_saved_listings"
                 android:textColor="@color/white"
                 android:textAllCaps="false"
-                android:layout_marginBottom="10dp"/>
+                android:layout_marginBottom="10dp" />
 
             <Button
                 android:id="@+id/btnApplications"
@@ -118,7 +118,7 @@
                 android:text="@string/my_applications"
                 android:textColor="@color/white"
                 android:textAllCaps="false"
-                android:layout_marginBottom="10dp"/>
+                android:layout_marginBottom="10dp" />
 
             <Button
                 android:id="@+id/btnPaymentHistory"
@@ -129,7 +129,7 @@
                 android:text="@string/payment_history"
                 android:textColor="@color/white"
                 android:textAllCaps="false"
-                android:layout_marginBottom="10dp"/>
+                android:layout_marginBottom="10dp" />
 
             <Button
                 android:id="@+id/btnNotifications"
@@ -140,7 +140,7 @@
                 android:text="@string/notifications"
                 android:textColor="@color/white"
                 android:textAllCaps="false"
-                android:layout_marginBottom="10dp"/>
+                android:layout_marginBottom="10dp" />
 
             <Button
                 android:id="@+id/btnChangePassword"
@@ -151,7 +151,7 @@
                 android:text="@string/change_password"
                 android:textColor="@color/white"
                 android:textAllCaps="false"
-                android:layout_marginBottom="10dp"/>
+                android:layout_marginBottom="10dp" />
 
             <Button
                 android:id="@+id/btnReportProblem"
@@ -162,7 +162,7 @@
                 android:text="@string/report_a_problem"
                 android:textColor="@color/white"
                 android:textAllCaps="false"
-                android:layout_marginBottom="10dp"/>
+                android:layout_marginBottom="10dp" />
 
             <Button
                 android:id="@+id/btnLogout"
@@ -173,8 +173,9 @@
                 android:text="@string/log_out"
                 android:textColor="@color/white"
                 android:textAllCaps="false"
-                android:layout_marginTop="16dp"/>
+                android:layout_marginTop="16dp" />
 
         </LinearLayout>
     </ScrollView>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

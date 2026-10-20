@@ -5,63 +5,130 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F7F7F7">
+    android:background="#FAF7F5">
 
-    <!-- 1. Pinned Top Header: Profile Button is always visible & clickable -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingHorizontal="24dp"
-        android:paddingTop="16dp"
-        android:paddingBottom="12dp"
-        android:background="#F7F7F7">
-
-        <TextView
-            android:id="@+id/txtDashboardTitle"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/landlord_dashboard"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            android:textColor="#222222" />
+        android:orientation="vertical"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="16dp">
 
         <Button
-            android:id="@+id/btnProfile"
+            android:id="@+id/btnBack"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="44dp"
             android:background="@drawable/selector_regular_button"
             app:backgroundTint="@null"
-            android:text="@string/profile"
+            android:text="@string/back"
             android:textAllCaps="false"
-            android:textSize="13sp" />
+            android:textColor="#7A2525" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/imgDashboardLogo"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_ikhaya_logo"
+                android:scaleType="fitCenter"
+                android:contentDescription="@string/app_name" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:paddingStart="12dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/txtDashboardTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/landlord_dashboard"
+                    android:textColor="#1F1614"
+                    android:textSize="23sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/manage_your_accommodation_listings"
+                    android:textColor="#756763"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+            <FrameLayout
+                android:id="@+id/btnNotificationsLandlord"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="10dp"
+                android:background="@drawable/bg_circle_white"
+                android:clickable="true"
+                android:focusable="true"
+                android:contentDescription="Notifications">
+
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:layout_gravity="center"
+                    android:src="@android:drawable/ic_dialog_info"
+                    app:tint="#1F1614" />
+
+                <View
+                    android:id="@+id/txtNotificationBadge"
+                    android:layout_width="9dp"
+                    android:layout_height="9dp"
+                    android:layout_gravity="top|end"
+                    android:background="@drawable/bg_notification_dot"
+                    android:visibility="gone" />
+            </FrameLayout>
+
+            <ImageButton
+                android:id="@+id/btnProfile"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="@drawable/bg_circle_white"
+                android:src="@drawable/user"
+                app:tint="#1F1614"
+                android:padding="10dp"
+                android:scaleType="centerInside"
+                android:contentDescription="Open your profile" />
+        </LinearLayout>
     </LinearLayout>
 
-    <!-- 2. Scrollable Dashboard Body -->
     <ScrollView
+        android:id="@+id/dashboardScroll"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
+        android:clipToPadding="false"
         android:fillViewport="true"
-        android:scrollbars="vertical">
+        android:overScrollMode="never"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingHorizontal="24dp"
-            android:paddingBottom="24dp">
+            android:paddingBottom="20dp">
 
             <TextView
                 android:id="@+id/txtWelcome"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/manage_your_accommodation_listings"
-                android:textSize="14sp"
-                android:textColor="#666666"
-                android:layout_marginTop="2dp" />
+                android:layout_marginBottom="16dp"
+                android:textColor="#1F1614"
+                android:textSize="19sp"
+                android:textStyle="bold" />
 
             <Button
                 android:id="@+id/btnAddListing"
@@ -70,205 +137,376 @@
                 android:background="@drawable/selector_regular_button"
                 app:backgroundTint="@null"
                 android:text="@string/add_accommodation"
-                android:textSize="16sp"
                 android:textAllCaps="false"
-                android:layout_marginTop="16dp" />
+                android:textColor="#FFFFFF"
+                android:textSize="16sp" />
 
-            <!-- NEW CHAT BUTTON FOR LANDLORDS -->
-            <Button
-                android:id="@+id/btnLandlordChat"
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="54dp"
-                android:background="@drawable/selector_regular_button"
-                app:backgroundTint="@null"
-                android:text="Messages &amp; Community Chat"
-                android:textSize="16sp"
-                android:textAllCaps="false"
-                android:layout_marginTop="12dp" />
+                android:layout_height="50dp"
+                android:layout_marginTop="10dp">
+
+                <Button
+                    android:id="@+id/btnLandlordChat"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/selector_regular_button"
+                    app:backgroundTint="@null"
+                    android:text="@string/messages"
+                    android:textAllCaps="false"
+                    android:textColor="#FFFFFF"
+                    android:textSize="15sp" />
+
+                <View
+                    android:id="@+id/landlordMessageDot"
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:layout_gravity="top|end"
+                    android:layout_marginTop="6dp"
+                    android:layout_marginEnd="12dp"
+                    android:background="@drawable/bg_notification_dot"
+                    android:visibility="gone" />
+            </FrameLayout>
 
             <TextView
                 android:id="@+id/txtStatistics"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="12dp"
                 android:text="@string/listing_overview"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:textColor="#222222"
-                android:layout_marginTop="24dp" />
+                android:textColor="#1F1614"
+                android:textSize="19sp"
+                android:textStyle="bold" />
 
-            <!-- Statistics Cards -->
             <LinearLayout
-                android:id="@+id/statisticsContainer"
                 android:layout_width="match_parent"
-                android:layout_height="100dp"
-                android:orientation="horizontal"
-                android:weightSum="3"
-                android:layout_marginTop="12dp">
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
 
-                <!-- Total Listings Card -->
                 <LinearLayout
                     android:layout_width="0dp"
-                    android:layout_height="match_parent"
+                    android:layout_height="96dp"
                     android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center"
                     android:layout_marginEnd="6dp"
-                    android:background="@drawable/selector_regular_button"
-                    android:backgroundTint="#FFFFFF">
-
-                    <TextView
-                        android:id="@+id/txtTotalListings"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/_0"
-                        android:textSize="22sp"
-                        android:textStyle="bold"
-                        android:textColor="#222222" />
+                    android:background="@drawable/bg_circle_white"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="10dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/total"
-                        android:textSize="12sp"
-                        android:textColor="#777777" />
-                </LinearLayout>
-
-                <!-- Available Listings Card -->
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:layout_marginHorizontal="3dp"
-                    android:background="@drawable/selector_regular_button"
-                    android:backgroundTint="#FFFFFF">
+                        android:textColor="#756763"
+                        android:textSize="13sp" />
 
                     <TextView
-                        android:id="@+id/txtAvailableListings"
+                        android:id="@+id/txtTotalListings"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/_0"
-                        android:textSize="22sp"
-                        android:textStyle="bold"
-                        android:textColor="#222222" />
+                        android:text="@string/count_zero"
+                        android:textColor="#7A2525"
+                        android:textSize="25sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="96dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="3dp"
+                    android:layout_marginEnd="3dp"
+                    android:background="@drawable/bg_circle_white"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="10dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/available"
-                        android:textSize="12sp"
-                        android:textColor="#777777" />
-                </LinearLayout>
-
-                <!-- Clickable Pending Applications Card -->
-                <LinearLayout
-                    android:id="@+id/cardPendingApplications"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:layout_marginStart="6dp"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:foreground="?attr/selectableItemBackground"
-                    android:background="@drawable/selector_regular_button"
-                    android:backgroundTint="#FFFFFF">
+                        android:textColor="#756763"
+                        android:textSize="13sp" />
 
                     <TextView
-                        android:id="@+id/txtPendingListings"
+                        android:id="@+id/txtAvailableListings"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/_0"
-                        android:textSize="22sp"
-                        android:textStyle="bold"
-                        android:textColor="#C85A32" />
+                        android:text="@string/count_zero"
+                        android:textColor="#34734A"
+                        android:textSize="25sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="96dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    android:background="@drawable/bg_circle_white"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="10dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/pending"
-                        android:textSize="12sp"
-                        android:textColor="#777777" />
+                        android:textColor="#756763"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:id="@+id/txtPendingListings"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/count_zero"
+                        android:textColor="#A56B17"
+                        android:textSize="25sp"
+                        android:textStyle="bold" />
                 </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/cardPendingApplications"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/bg_circle_white"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:minHeight="64dp"
+                android:orientation="horizontal"
+                android:padding="16dp">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_viewings"
+                    app:tint="#7A2525"
+                    android:contentDescription="@string/enquiries" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_weight="1"
+                    android:text="@string/enquiries"
+                    android:textColor="#1F1614"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <View
+                    android:id="@+id/enquiriesCardDot"
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:layout_marginEnd="12dp"
+                    android:background="@drawable/bg_notification_dot"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/arrow_right"
+                    android:textColor="#7A2525"
+                    android:textSize="28sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/cardRentalApplications"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_circle_white"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:minHeight="64dp"
+                android:orientation="horizontal"
+                android:padding="16dp">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_viewings"
+                    app:tint="#7A2525"
+                    android:contentDescription="@string/rental_applications" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_weight="1"
+                    android:text="@string/rental_applications"
+                    android:textColor="#1F1614"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <View
+                    android:id="@+id/rentalApplicationsCardDot"
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:layout_marginEnd="12dp"
+                    android:background="@drawable/bg_notification_dot"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/arrow_right"
+                    android:textColor="#7A2525"
+                    android:textSize="28sp" />
             </LinearLayout>
 
             <TextView
                 android:id="@+id/txtMyListings"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="12dp"
                 android:text="@string/my_listings"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:textColor="#222222"
-                android:layout_marginTop="24dp" />
+                android:textColor="#1F1614"
+                android:textSize="19sp"
+                android:textStyle="bold" />
 
-            <!-- Container for dynamically populated listing items -->
+            <TextView
+                android:id="@+id/txtNoListings"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_circle_white"
+                android:gravity="center"
+                android:padding="24dp"
+                android:text="@string/no_listings_yet"
+                android:textColor="#756763"
+                android:textSize="14sp"
+                android:visibility="gone" />
+
             <LinearLayout
                 android:id="@+id/listingsContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginTop="12dp">
-            </LinearLayout>
-
+                android:orientation="vertical" />
         </LinearLayout>
     </ScrollView>
 
-    <!-- 3. Bottom Navigation Bar -->
     <LinearLayout
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:orientation="horizontal"
+        android:layout_height="64dp"
+        android:background="@drawable/bg_floating_nav_pill"
+        android:elevation="8dp"
         android:gravity="center"
-        android:background="#FFFFFF"
-        android:elevation="8dp">
+        android:orientation="horizontal"
+        android:paddingStart="6dp"
+        android:paddingEnd="6dp">
 
-        <Button
+        <LinearLayout
             android:id="@+id/navHome"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="@drawable/selector_regular_button"
-            app:backgroundTint="@null"
-            android:text="@string/home"
-            android:textAllCaps="false"
-            android:textSize="12sp" />
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="4dp">
 
-        <Button
+            <ImageView
+                android:layout_width="23dp"
+                android:layout_height="23dp"
+                android:src="@drawable/earth"
+                app:tint="#FFFFFF"
+                android:contentDescription="@string/home" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/home"
+                android:textColor="#FFFFFF"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <LinearLayout
             android:id="@+id/navListings"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="@drawable/selector_regular_button"
-            app:backgroundTint="@null"
-            android:text="@string/listings"
-            android:textAllCaps="false"
-            android:textSize="12sp" />
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="4dp">
 
-        <Button
+            <ImageView
+                android:layout_width="23dp"
+                android:layout_height="23dp"
+                android:src="@drawable/heart"
+                app:tint="#FFD8CC"
+                android:contentDescription="@string/my_listings" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/listings"
+                android:textColor="#FFD8CC"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <LinearLayout
             android:id="@+id/navAdd"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="@drawable/selector_regular_button"
-            app:backgroundTint="@null"
-            android:text="@string/add"
-            android:textAllCaps="false"
-            android:textSize="12sp" />
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="4dp">
 
-        <Button
+            <TextView
+                android:layout_width="32dp"
+                android:layout_height="28dp"
+                android:gravity="center"
+                android:text="+"
+                android:textColor="#FFD8CC"
+                android:textSize="28sp"
+                android:textStyle="bold"
+                android:includeFontPadding="false"
+                android:contentDescription="@string/add" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/add"
+                android:textColor="#FFD8CC"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <LinearLayout
             android:id="@+id/navProfile"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="@drawable/selector_regular_button"
-            app:backgroundTint="@null"
-            android:text="@string/profile"
-            android:textAllCaps="false"
-            android:textSize="12sp" />
-    </LinearLayout>
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="4dp">
 
+            <ImageView
+                android:layout_width="23dp"
+                android:layout_height="23dp"
+                android:src="@drawable/user"
+                app:tint="#FFD8CC"
+                android:contentDescription="@string/profile" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/profile"
+                android:textColor="#FFD8CC"
+                android:textSize="11sp" />
+        </LinearLayout>
+    </LinearLayout>
 </LinearLayout>

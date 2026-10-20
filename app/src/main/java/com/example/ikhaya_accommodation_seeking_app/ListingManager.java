@@ -1,3 +1,4 @@
+
 package com.example.ikhaya_accommodation_seeking_app;
 
 import android.content.Context;
@@ -19,9 +20,10 @@ public class ListingManager {
         public String title;
         public String location;
         public String price;
-        public String status; // "Available", "Occupied"
+        public String status;
 
-        public Listing(String id, String title, String location, String price, String status) {
+        public Listing(String id, String title, String location,
+                       String price, String status) {
             this.id = id;
             this.title = title;
             this.location = location;
@@ -30,63 +32,101 @@ public class ListingManager {
         }
 
         public JSONObject toJson() {
+            JSONObject obj = new JSONObject();
             try {
-                JSONObject obj = new JSONObject();
                 obj.put("id", id);
                 obj.put("title", title);
                 obj.put("location", location);
                 obj.put("price", price);
                 obj.put("status", status);
-                return obj;
-            } catch (Exception e) {
-                return new JSONObject();
+            } catch (Exception ignored) {
             }
+            return obj;
         }
 
         public static Listing fromJson(JSONObject obj) {
             return new Listing(
                     obj.optString("id", ""),
                     obj.optString("title", "Room Listing"),
-                    obj.optString("location", "Mthatha"),
-                    obj.optString("price", "R950/month"),
+                    obj.optString("location", "Location not specified"),
+                    obj.optString("price", "Price not specified"),
                     obj.optString("status", "Available")
             );
         }
     }
 
     public static List<Listing> getListings(Context context) {
-        List<Listing> list = new ArrayList<>();
-        SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-        String raw = prefs.getString(KEY_LISTINGS, null);
+        List<Listing> listings = new ArrayList<>();
 
-        // Pre-populate with default Mthatha listing if empty
-        if (raw == null || raw.equals("[]")) {
-            list.add(new Listing("LIST-101", "Mthatha Student Accommodation", "Mthatha Central", "R950/month", "Available"));
-            saveList(context, list);
-            return list;
-        }
+        SharedPreferences prefs = context.getSharedPreferences(
+                PREF_NAME, Context.MODE_PRIVATE);
+
+        String raw = prefs.getString(KEY_LISTINGS, "[]");
 
         try {
-            JSONArray arr = new JSONArray(raw);
-            for (int i = 0; i < arr.length(); i++) {
-                list.add(Listing.fromJson(arr.getJSONObject(i)));
+            JSONArray array = new JSONArray(raw);
+
+            for (int i = 0; i < array.length(); i++) {
+                JSONObject object = array.optJSONObject(i);
+                if (object != null) {
+                    listings.add(Listing.fromJson(object));
+                }
             }
-        } catch (Exception ignored) {}
-        return list;
+        } catch (Exception ignored) {
+        }
+
+        return listings;
     }
 
     public static void addListing(Context context, Listing listing) {
+        if (listing == null) return;
+
         List<Listing> current = getListings(context);
         current.add(0, listing);
         saveList(context, current);
     }
 
-    private static void saveList(Context context, List<Listing> list) {
-        SharedPreferences.Editor editor = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE).edit();
-        JSONArray arr = new JSONArray();
-        for (Listing item : list) {
-            arr.put(item.toJson());
+    public static void updateListing(Context context, Listing updatedListing) {
+        if (updatedListing == null) return;
+
+        List<Listing> current = getListings(context);
+
+        for (int i = 0; i < current.size(); i++) {
+            if (current.get(i).id != null
+                    && current.get(i).id.equals(updatedListing.id)) {
+                current.set(i, updatedListing);
+                saveList(context, current);
+                return;
+            }
         }
-        editor.putString(KEY_LISTINGS, arr.toString()).commit();
+
+        current.add(0, updatedListing);
+        saveList(context, current);
+    }
+
+    public static void deleteListing(Context context, String listingId) {
+        List<Listing> current = getListings(context);
+
+        for (int i = current.size() - 1; i >= 0; i--) {
+            Listing item = current.get(i);
+            if (item.id != null && item.id.equals(listingId)) {
+                current.remove(i);
+            }
+        }
+
+        saveList(context, current);
+    }
+
+    private static void saveList(Context context, List<Listing> listings) {
+        JSONArray array = new JSONArray();
+
+        for (Listing listing : listings) {
+            array.put(listing.toJson());
+        }
+
+        context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+                .edit()
+                .putString(KEY_LISTINGS, array.toString())
+                .apply();
     }
 }

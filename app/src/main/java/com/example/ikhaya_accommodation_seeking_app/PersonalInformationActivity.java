@@ -1,3 +1,4 @@
+
 package com.example.ikhaya_accommodation_seeking_app;
 
 import android.os.Bundle;
@@ -5,9 +6,6 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
-
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 
 public class PersonalInformationActivity extends AppCompatActivity {
 
@@ -26,36 +24,56 @@ public class PersonalInformationActivity extends AppCompatActivity {
         txtEmail = findViewById(R.id.txtEmail);
         txtPhone = findViewById(R.id.txtPhone);
 
-        btnBack.setOnClickListener(v -> finish());
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> finish());
+        }
 
+        showLoading();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
         loadInformation();
     }
 
+    private void showLoading() {
+        if (txtName != null) {
+            txtName.setText("Loading...");
+        }
+
+        if (txtEmail != null) {
+            txtEmail.setText("Loading...");
+        }
+
+        if (txtPhone != null) {
+            txtPhone.setText("Loading...");
+        }
+    }
+
     private void loadInformation() {
+        UserProfileLoader.load(this, (name, email, phone) -> {
+            if (isFinishing() || isDestroyed()) {
+                return;
+            }
 
-        FirebaseUser user =
-                FirebaseAuth.getInstance().getCurrentUser();
+            if (txtName != null) {
+                txtName.setText(
+                        name.isEmpty() ? "Not provided" : name
+                );
+            }
 
-        if (user == null) {
-            return;
-        }
+            if (txtEmail != null) {
+                txtEmail.setText(
+                        email.isEmpty() ? "Not provided" : email
+                );
+            }
 
-        String email = user.getEmail();
-
-        if (email != null && !email.isEmpty()) {
-            txtEmail.setText("Email: " + email);
-        }
-
-        String displayName = user.getDisplayName();
-
-        if (displayName != null && !displayName.isEmpty()) {
-            txtName.setText("Name: " + displayName);
-        }
-
-        String phone = user.getPhoneNumber();
-
-        if (phone != null && !phone.isEmpty()) {
-            txtPhone.setText("Phone: " + phone);
-        }
+            if (txtPhone != null) {
+                txtPhone.setText(
+                        phone.isEmpty() ? "Not provided" : phone
+                );
+            }
+        });
     }
 }

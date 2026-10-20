@@ -3,6 +3,7 @@ package com.example.ikhaya_accommodation_seeking_app;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,89 +17,126 @@ public class LandlordProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_landlord_profile);
 
-        Button btnBack = findViewById(R.id.btnBack);
-        Button btnPersonalInfo = findViewById(R.id.btnPersonalInfo);
-        Button btnChangeLanguage = findViewById(R.id.btnChangeLanguage);
-        Button btnMyListings = findViewById(R.id.btnMyListings);
-        Button btnEnquiries = findViewById(R.id.btnEnquiries);
-        Button btnPaymentsReceived = findViewById(R.id.btnPaymentsReceived);
-        Button btnPaymentHistory = findViewById(R.id.btnPaymentHistory);
-        Button btnNotifications = findViewById(R.id.btnNotifications);
-        Button btnChangePassword = findViewById(R.id.btnChangePassword);
-        Button btnReportProblem = findViewById(R.id.btnReportProblem);
-        Button btnLogout = findViewById(R.id.btnLogout);
+        Button back = findViewById(R.id.btnBack);
 
-        if (btnBack != null) {
-            btnBack.setOnClickListener(v -> finish());
+        if (back != null) {
+            back.setOnClickListener(v -> finish());
         }
 
-        if (btnPersonalInfo != null) {
-            btnPersonalInfo.setOnClickListener(v ->
-                    startActivity(new Intent(LandlordProfileActivity.this, LandlordPersonalInformationActivity.class)));
+        TextView name = findViewById(R.id.txtLandlordName);
+        TextView type = findViewById(R.id.txtLandlordType);
+
+        if (type != null) {
+            type.setText(R.string.landlord);
         }
 
-        // Multi-language settings navigation
-        if (btnChangeLanguage != null) {
-            btnChangeLanguage.setOnClickListener(v ->
-                    startActivity(new Intent(LandlordProfileActivity.this, LanguageSettingsActivity.class)));
+        if (name != null) {
+            String saved = getSharedPreferences(
+                    "iKhayaSession",
+                    MODE_PRIVATE
+            ).getString("USER_NAME", "");
+
+            name.setText(
+                    saved == null || saved.trim().isEmpty()
+                            ? getString(R.string.landlord_name)
+                            : saved.trim()
+            );
         }
 
-        if (btnMyListings != null) {
-            btnMyListings.setOnClickListener(v ->
-                    startActivity(new Intent(LandlordProfileActivity.this, MyListingsActivity.class)));
-        }
+        open(
+                R.id.btnPersonalInfo,
+                LandlordPersonalInformationActivity.class
+        );
 
-        if (btnEnquiries != null) {
-            btnEnquiries.setOnClickListener(v ->
-                    startActivity(new Intent(LandlordProfileActivity.this, EnquiriesActivity.class)));
-        }
+        open(
+                R.id.btnChangeLanguage,
+                LanguageSettingsActivity.class
+        );
 
-        if (btnPaymentsReceived != null) {
-            btnPaymentsReceived.setOnClickListener(v ->
-                    startActivity(new Intent(LandlordProfileActivity.this, PaymentsReceivedActivity.class)));
-        }
+        open(
+                R.id.btnMyListings,
+                MyListingsActivity.class
+        );
 
-        if (btnPaymentHistory != null) {
-            btnPaymentHistory.setOnClickListener(v ->
-                    startActivity(new Intent(LandlordProfileActivity.this, PaymentHistoryActivity.class)));
-        }
+        open(
+                R.id.btnEnquiries,
+                EnquiriesActivity.class
+        );
 
-        if (btnNotifications != null) {
-            btnNotifications.setOnClickListener(v ->
-                    startActivity(new Intent(LandlordProfileActivity.this, NotificationsActivity.class)));
-        }
+        open(
+                R.id.btnNotifications,
+                NotificationsActivity.class
+        );
 
-        if (btnChangePassword != null) {
-            btnChangePassword.setOnClickListener(v ->
-                    startActivity(new Intent(LandlordProfileActivity.this, ChangePasswordActivity.class)));
-        }
+        open(
+                R.id.btnChangePassword,
+                ChangePasswordActivity.class
+        );
 
-        if (btnReportProblem != null) {
-            btnReportProblem.setOnClickListener(v ->
-                    startActivity(new Intent(LandlordProfileActivity.this, ReportProblemActivity.class)));
-        }
+        open(
+                R.id.btnReportProblem,
+                ReportProblemActivity.class
+        );
 
-        if (btnLogout != null) {
-            btnLogout.setOnClickListener(v -> logout());
+        Button logout = findViewById(R.id.btnLogout);
+
+        if (logout != null) {
+            logout.setOnClickListener(v -> logout());
+        }
+    }
+
+    private void open(int id, Class<?> destination) {
+        Button button = findViewById(id);
+
+        if (button != null) {
+            button.setOnClickListener(v ->
+                    startActivity(new Intent(this, destination))
+            );
         }
     }
 
     private void logout() {
-        // Clear Firebase session
         try {
             FirebaseAuth.getInstance().signOut();
-        } catch (Exception ignored) {}
+        } catch (Exception e) {
+            android.util.Log.e(
+                    "LandlordProfile",
+                    "Firebase sign-out failed",
+                    e
+            );
+        }
 
-        // Clear Supabase session
         try {
             SupabaseHelper.clearSession(this);
-        } catch (Exception ignored) {}
+        } catch (Exception e) {
+            android.util.Log.e(
+                    "LandlordProfile",
+                    "Supabase sign-out failed",
+                    e
+            );
+        }
 
-        Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show();
+        getSharedPreferences(
+                "iKhayaSession",
+                MODE_PRIVATE
+        ).edit().clear().apply();
 
-        // Redirect to Greeting / OuterMainActivity and clear task stack
-        Intent intent = new Intent(LandlordProfileActivity.this, OuterMainActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        Toast.makeText(
+                this,
+                R.string.logged_out_successfully,
+                Toast.LENGTH_SHORT
+        ).show();
+
+        Intent intent = new Intent(
+                this,
+                OuterMainActivity.class
+        );
+
+        intent.setFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK
+                        | Intent.FLAG_ACTIVITY_CLEAR_TASK
+        );
+
         startActivity(intent);
         finish();
     }
