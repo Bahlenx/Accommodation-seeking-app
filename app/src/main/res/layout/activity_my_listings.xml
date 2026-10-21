@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     android:background="#FAF7F5">
 
-    <!-- Circular Chevron Back Button -->
     <ImageButton
         android:id="@+id/btnBack"
         android:layout_width="38dp"
@@ -23,7 +22,6 @@
         app:layout_constraintTop_toTopOf="parent"
         app:tint="#1F1614" />
 
-    <!-- Screen Title -->
     <TextView
         android:id="@+id/txtMyListingsTitle"
         android:layout_width="0dp"
@@ -39,7 +37,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/btnBack" />
 
-    <!-- Empty State -->
     <TextView
         android:id="@+id/txtNoListings"
         android:layout_width="0dp"
@@ -55,7 +52,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/txtMyListingsTitle" />
 
-    <!-- Scrollable Listings Container -->
     <ScrollView
         android:id="@+id/myListingsScroll"
         android:layout_width="0dp"

@@ -4,12 +4,10 @@ package com.example.ikhaya_accommodation_seeking_app;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -31,8 +29,11 @@ import java.util.concurrent.Executors;
 
 public class MyListingsActivity extends AppCompatActivity {
 
+    private static final String TAG = "MyListingsActivity";
+
     private LinearLayout listingsContainer;
     private TextView txtNoListings;
+
     private final ExecutorService executor =
             Executors.newFixedThreadPool(3);
 
@@ -47,20 +48,35 @@ public class MyListingsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my_listings);
 
-        listingsContainer = findViewById(R.id.myListingsContainer);
-        txtNoListings = findViewById(R.id.txtNoListings);
+        listingsContainer =
+                findViewById(R.id.myListingsContainer);
 
-        Button btnBack = findViewById(R.id.btnBack);
-        btnBack.setOnClickListener(v -> finish());
+        txtNoListings =
+                findViewById(R.id.txtNoListings);
 
-        loadMyListings();
+        View btnBack = findViewById(R.id.btnBack);
+
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> finish());
+        }
+
+        if (listingsContainer == null || txtNoListings == null) {
+            Toast.makeText(
+                    this,
+                    "Could not initialize My Listings.",
+                    Toast.LENGTH_LONG
+            ).show();
+
+            finish();
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
 
-        if (listingsContainer != null) {
+        if (listingsContainer != null
+                && txtNoListings != null) {
             loadMyListings();
         }
     }
@@ -89,24 +105,39 @@ public class MyListingsActivity extends AppCompatActivity {
                         + "&order=created_at.desc";
 
                 connection = SupabaseHelper.createConnection(
-                        endpoint, "GET", token
+                        endpoint,
+                        "GET",
+                        token
                 );
 
                 int code = connection.getResponseCode();
-                String response = SupabaseHelper.readResponse(connection);
+
+                String response =
+                        SupabaseHelper.readResponse(connection);
 
                 if (code < 200 || code >= 300) {
-                    showMessage("Could not load listings. Supabase error: " + code);
+                    Log.e(TAG, "Supabase error: " + response);
+
+                    showMessage(
+                            "Could not load listings. Error: " + code
+                    );
                     return;
                 }
 
                 JSONArray listings = new JSONArray(response);
 
                 runOnUiThread(() -> {
+                    if (isFinishing() || isDestroyed()) {
+                        return;
+                    }
+
                     listingsContainer.removeAllViews();
 
                     if (listings.length() == 0) {
-                        txtNoListings.setText("You haven't added any listings yet.");
+                        txtNoListings.setText(
+                                "You haven't added any listings yet."
+                        );
+
                         txtNoListings.setVisibility(View.VISIBLE);
                         return;
                     }
@@ -114,7 +145,9 @@ public class MyListingsActivity extends AppCompatActivity {
                     txtNoListings.setVisibility(View.GONE);
 
                     for (int i = 0; i < listings.length(); i++) {
-                        JSONObject listing = listings.optJSONObject(i);
+                        JSONObject listing =
+                                listings.optJSONObject(i);
+
                         if (listing != null) {
                             addListingCard(listing);
                         }
@@ -122,7 +155,12 @@ public class MyListingsActivity extends AppCompatActivity {
                 });
 
             } catch (Exception e) {
-                showMessage("Could not load listings. Please try again.");
+                Log.e(TAG, "Could not load listings", e);
+
+                showMessage(
+                        "Could not load listings. Please try again."
+                );
+
             } finally {
                 if (connection != null) {
                     connection.disconnect();
@@ -132,31 +170,66 @@ public class MyListingsActivity extends AppCompatActivity {
     }
 
     private void addListingCard(JSONObject listing) {
+        if (listingsContainer == null) {
+            return;
+        }
+
         View card = LayoutInflater.from(this).inflate(
                 R.layout.item_listing,
                 listingsContainer,
                 false
         );
 
-        ImageView imgListing = card.findViewById(R.id.imgListing);
-        TextView txtListingName = card.findViewById(R.id.txtListingName);
-        TextView txtListingLocation = card.findViewById(R.id.txtListingLocation);
-        TextView txtListingPrice = card.findViewById(R.id.txtListingPrice);
-        TextView txtListingRooms = card.findViewById(R.id.txtListingRooms);
-        Button btnEditListing = card.findViewById(R.id.btnEditListing);
-        Button btnDeleteListing = card.findViewById(R.id.btnDeleteListing);
+        ImageView imgListing =
+                card.findViewById(R.id.imgListing);
+
+        TextView txtListingName =
+                card.findViewById(R.id.txtListingName);
+
+        TextView txtListingLocation =
+                card.findViewById(R.id.txtListingLocation);
+
+        TextView txtListingPrice =
+                card.findViewById(R.id.txtListingPrice);
+
+        TextView txtListingRooms =
+                card.findViewById(R.id.txtListingRooms);
+
+        View btnEditListing =
+                card.findViewById(R.id.btnEditListing);
+
+        View btnDeleteListing =
+                card.findViewById(R.id.btnDeleteListing);
 
         String listingId = listing.optString("id", "");
+
         String propertyName = firstValue(
-                listing, "property_name", "title", "name"
+                listing,
+                "property_name",
+                "title",
+                "name"
         );
+
         String location = firstValue(
-                listing, "location", "address", "area"
+                listing,
+                "location",
+                "address",
+                "area"
         );
-        String price = firstValue(listing, "price", "monthly_price");
+
+        String price = firstValue(
+                listing,
+                "price",
+                "monthly_price"
+        );
+
         String rooms = firstValue(
-                listing, "rooms", "bedrooms", "room_count"
+                listing,
+                "rooms",
+                "bedrooms",
+                "room_count"
         );
+
         String imageUrl = firstValue(
                 listing,
                 "image_url",
@@ -169,62 +242,107 @@ public class MyListingsActivity extends AppCompatActivity {
                 "photo"
         );
 
-        if (propertyName.isEmpty()) propertyName = "Property";
-        if (location.isEmpty()) location = "Location not provided";
-        if (price.isEmpty()) price = "0";
-        if (rooms.isEmpty()) rooms = "Not specified";
+        if (propertyName.isEmpty()) {
+            propertyName = "Property";
+        }
 
-        txtListingName.setText(propertyName);
-        txtListingLocation.setText(location);
-        txtListingPrice.setText("R" + price + " / month");
-        txtListingRooms.setText(rooms + " rooms");
+        if (location.isEmpty()) {
+            location = "Location not provided";
+        }
 
-        imgListing.setImageResource(android.R.drawable.ic_menu_gallery);
-        imgListing.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        if (price.isEmpty()) {
+            price = "0";
+        }
 
-        if (!imageUrl.isEmpty()) {
-            loadListingImage(imageUrl, imgListing);
+        if (rooms.isEmpty()) {
+            rooms = "Not specified";
+        }
+
+        if (txtListingName != null) {
+            txtListingName.setText(propertyName);
+        }
+
+        if (txtListingLocation != null) {
+            txtListingLocation.setText(location);
+        }
+
+        if (txtListingPrice != null) {
+            txtListingPrice.setText("R" + price + " / month");
+        }
+
+        if (txtListingRooms != null) {
+            txtListingRooms.setText(rooms + " rooms");
+        }
+
+        if (imgListing != null) {
+            imgListing.setImageResource(
+                    android.R.drawable.ic_menu_gallery
+            );
+
+            imgListing.setScaleType(
+                    ImageView.ScaleType.CENTER_CROP
+            );
+
+            if (!imageUrl.isEmpty()) {
+                loadListingImage(imageUrl, imgListing);
+            }
         }
 
         String finalPropertyName = propertyName;
 
-        btnEditListing.setOnClickListener(v -> {
-            if (listingId.isEmpty()) {
-                showMessage("Listing ID is missing.");
-                return;
-            }
+        if (btnEditListing != null) {
+            btnEditListing.setOnClickListener(v -> {
+                if (listingId.isEmpty()) {
+                    showMessage("Listing ID is missing.");
+                    return;
+                }
 
-            Intent intent = new Intent(
-                    MyListingsActivity.this,
-                    EditListingActivity.class
-            );
+                Intent intent = new Intent(
+                        MyListingsActivity.this,
+                        EditListingActivity.class
+                );
 
-            intent.putExtra("LISTING_ID", listingId);
-            intent.putExtra("listingId", listingId);
-            intent.putExtra("propertyName", finalPropertyName);
+                intent.putExtra("LISTING_ID", listingId);
+                intent.putExtra("listingId", listingId);
 
-            editListingLauncher.launch(intent);
-        });
+                intent.putExtra(
+                        "propertyName",
+                        finalPropertyName
+                );
 
-        btnDeleteListing.setOnClickListener(v -> {
-            if (listingId.isEmpty()) {
-                showMessage("Listing ID is missing.");
-                return;
-            }
+                editListingLauncher.launch(intent);
+            });
+        }
 
-            new AlertDialog.Builder(this)
-                    .setTitle("Delete listing?")
-                    .setMessage("Delete \"" + finalPropertyName + "\"?")
-                    .setNegativeButton("Cancel", null)
-                    .setPositiveButton("Delete", (dialog, which) ->
-                            deleteListing(listingId))
-                    .show();
-        });
+        if (btnDeleteListing != null) {
+            btnDeleteListing.setOnClickListener(v -> {
+                if (listingId.isEmpty()) {
+                    showMessage("Listing ID is missing.");
+                    return;
+                }
+
+                new AlertDialog.Builder(this)
+                        .setTitle("Delete listing?")
+                        .setMessage(
+                                "Delete \"" + finalPropertyName + "\"?"
+                        )
+                        .setNegativeButton("Cancel", null)
+                        .setPositiveButton(
+                                "Delete",
+                                (dialog, which) ->
+                                        deleteListing(listingId)
+                        )
+                        .show();
+            });
+        }
 
         listingsContainer.addView(card);
     }
 
-    private String firstValue(JSONObject object, String... keys) {
+    private String firstValue(
+            JSONObject object,
+            String... keys
+    ) {
         for (String key : keys) {
             Object value = object.opt(key);
 
@@ -241,7 +359,10 @@ public class MyListingsActivity extends AppCompatActivity {
         return "";
     }
 
-    private void loadListingImage(String imageUrl, ImageView imageView) {
+    private void loadListingImage(
+            String imageUrl,
+            ImageView imageView
+    ) {
         executor.execute(() -> {
             HttpURLConnection connection = null;
 
@@ -259,15 +380,19 @@ public class MyListingsActivity extends AppCompatActivity {
                 connection.setInstanceFollowRedirects(true);
                 connection.connect();
 
-                if (connection.getResponseCode() < 200
-                        || connection.getResponseCode() >= 300) {
+                int responseCode = connection.getResponseCode();
+
+                if (responseCode < 200 || responseCode >= 300) {
                     return;
                 }
 
-                try (InputStream input = connection.getInputStream()) {
-                    Bitmap bitmap = BitmapFactory.decodeStream(input);
+                try (InputStream input =
+                             connection.getInputStream()) {
 
-                    if (bitmap != null && !isFinishing()) {
+                    Bitmap bitmap =
+                            BitmapFactory.decodeStream(input);
+
+                    if (bitmap != null) {
                         runOnUiThread(() -> {
                             if (!isFinishing() && !isDestroyed()) {
                                 imageView.setImageBitmap(bitmap);
@@ -276,8 +401,9 @@ public class MyListingsActivity extends AppCompatActivity {
                     }
                 }
 
-            } catch (Exception ignored) {
-                // Keep the placeholder if the image URL cannot be loaded.
+            } catch (Exception e) {
+                Log.e(TAG, "Could not load listing image", e);
+
             } finally {
                 if (connection != null) {
                     connection.disconnect();
@@ -301,25 +427,42 @@ public class MyListingsActivity extends AppCompatActivity {
 
             try {
                 String endpoint = "/rest/v1/listings"
-                        + "?id=eq." + SupabaseHelper.encode(listingId)
-                        + "&landlord_uid=eq." + SupabaseHelper.encode(userId);
+                        + "?id=eq."
+                        + SupabaseHelper.encode(listingId)
+                        + "&landlord_uid=eq."
+                        + SupabaseHelper.encode(userId);
 
                 connection = SupabaseHelper.createConnection(
-                        endpoint, "DELETE", token
+                        endpoint,
+                        "DELETE",
+                        token
                 );
 
                 int code = connection.getResponseCode();
-                SupabaseHelper.readResponse(connection);
+
+                String response =
+                        SupabaseHelper.readResponse(connection);
 
                 if (code >= 200 && code < 300) {
                     showMessage("Listing deleted.");
+
                     loadMyListings();
+
                 } else {
-                    showMessage("Could not delete listing. Supabase error: " + code);
+                    Log.e(TAG, "Delete error: " + response);
+
+                    showMessage(
+                            "Could not delete listing. Error: " + code
+                    );
                 }
 
             } catch (Exception e) {
-                showMessage("Could not delete listing. Please try again.");
+                Log.e(TAG, "Could not delete listing", e);
+
+                showMessage(
+                        "Could not delete listing. Please try again."
+                );
+
             } finally {
                 if (connection != null) {
                     connection.disconnect();
@@ -329,13 +472,15 @@ public class MyListingsActivity extends AppCompatActivity {
     }
 
     private void showMessage(String message) {
-        runOnUiThread(() ->
+        runOnUiThread(() -> {
+            if (!isFinishing() && !isDestroyed()) {
                 Toast.makeText(
                         MyListingsActivity.this,
                         message,
                         Toast.LENGTH_LONG
-                ).show()
-        );
+                ).show();
+            }
+        });
     }
 
     @Override

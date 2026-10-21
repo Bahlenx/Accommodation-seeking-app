@@ -1,6 +1,6 @@
+
 package com.example.ikhaya_accommodation_seeking_app;
 
-import android.content.ContentResolver;
 import android.location.Address;
 import android.location.Geocoder;
 import android.net.Uri;
@@ -39,6 +39,8 @@ import java.util.concurrent.Executors;
 
 public class AddListingActivity extends AppCompatActivity {
 
+    private static final String TAG = "iKhayaListing";
+
     private EditText propertyNameInput;
     private EditText locationInput;
     private EditText priceInput;
@@ -60,34 +62,29 @@ public class AddListingActivity extends AppCompatActivity {
 
     private final ArrayList<Uri> selectedImageUris = new ArrayList<>();
     private final ArrayList<String> selectedAmenities = new ArrayList<>();
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     private boolean isLocationVerified = false;
     private double verifiedLatitude;
     private double verifiedLongitude;
 
-    private final ExecutorService executor =
-            Executors.newSingleThreadExecutor();
-
     private final ActivityResultLauncher<String> imagePicker =
             registerForActivityResult(
                     new ActivityResultContracts.GetMultipleContents(),
                     uris -> {
-                        if (uris == null || uris.isEmpty()) {
-                            return;
-                        }
+                        if (uris == null || uris.isEmpty()) return;
+                        if (imagePreview == null || imageCountText == null
+                                || uploadImageButton == null) return;
 
                         selectedImageUris.clear();
                         selectedImageUris.addAll(uris);
 
                         imagePreview.setImageURI(selectedImageUris.get(0));
-
                         imageCountText.setText(
                                 selectedImageUris.size()
                                         + (selectedImageUris.size() == 1
-                                        ? " photo selected"
-                                        : " photos selected")
+                                        ? " photo selected" : " photos selected")
                         );
-
                         uploadImageButton.setText("Change Selected Photos");
 
                         Toast.makeText(
@@ -122,36 +119,39 @@ public class AddListingActivity extends AppCompatActivity {
         submitButton = findViewById(R.id.btnSubmitListing);
         amenitiesGroup = findViewById(R.id.cgSelectedAmenities);
 
-        Button backButton = findViewById(R.id.btnBackAddListing);
-        backButton.setOnClickListener(v -> finish());
+        View backButton = findViewById(R.id.btnBackAddListing);
+        if (backButton != null) {
+            backButton.setOnClickListener(v -> finish());
+        }
 
-        setupDropdown(
-                propertyTypeInput,
-                R.array.sa_property_types
-        );
+        if (propertyNameInput == null || locationInput == null
+                || priceInput == null || roomsInput == null
+                || descriptionInput == null || propertyTypeInput == null
+                || waterSourceInput == null || electricityInput == null
+                || sanitationInput == null || imagePreview == null
+                || locationStatus == null || imageCountText == null
+                || verifyLocationButton == null || uploadImageButton == null
+                || submitButton == null || amenitiesGroup == null) {
+            Log.e(TAG, "Required Add Listing layout view is missing");
+            Toast.makeText(
+                    this,
+                    "Could not open Add Listing. Check the XML layout.",
+                    Toast.LENGTH_LONG
+            ).show();
+            finish();
+            return;
+        }
 
-        setupDropdown(
-                waterSourceInput,
-                R.array.sa_water_sources
-        );
-
-        setupDropdown(
-                electricityInput,
-                R.array.sa_electricity_types
-        );
-
-        setupDropdown(
-                sanitationInput,
-                R.array.sa_sanitation_types
-        );
+        setupDropdown(propertyTypeInput, R.array.sa_property_types);
+        setupDropdown(waterSourceInput, R.array.sa_water_sources);
+        setupDropdown(electricityInput, R.array.sa_electricity_types);
+        setupDropdown(sanitationInput, R.array.sa_sanitation_types);
 
         uploadImageButton.setOnClickListener(
                 v -> imagePicker.launch("image/*")
         );
 
-        verifyLocationButton.setOnClickListener(
-                v -> verifyAddress()
-        );
+        verifyLocationButton.setOnClickListener(v -> verifyAddress());
 
         locationInput.addTextChangedListener(new TextWatcher() {
             @Override
@@ -173,8 +173,14 @@ public class AddListingActivity extends AppCompatActivity {
             public void afterTextChanged(Editable s) {}
         });
 
-        findViewById(R.id.btnSelectExtraAmenities)
-                .setOnClickListener(v -> showAmenitiesPickerDialog());
+        View amenitiesButton =
+                findViewById(R.id.btnSelectExtraAmenities);
+
+        if (amenitiesButton != null) {
+            amenitiesButton.setOnClickListener(
+                    v -> showAmenitiesPickerDialog()
+            );
+        }
 
         submitButton.setOnClickListener(v -> addListing());
     }
@@ -193,13 +199,9 @@ public class AddListingActivity extends AppCompatActivity {
 
         dropdown.setAdapter(adapter);
         dropdown.setKeyListener(null);
-
         dropdown.setOnClickListener(v -> dropdown.showDropDown());
-
-        dropdown.setOnFocusChangeListener((v, hasFocus) -> {
-            if (hasFocus) {
-                dropdown.showDropDown();
-            }
+        dropdown.setOnFocusChangeListener((v, focused) -> {
+            if (focused) dropdown.showDropDown();
         });
     }
 
@@ -229,26 +231,31 @@ public class AddListingActivity extends AppCompatActivity {
                         options,
                         checked,
                         (dialog, which, isChecked) -> {
+                            String amenity = options[which];
                             if (isChecked) {
-                                if (!selectedAmenities.contains(options[which])) {
-                                    selectedAmenities.add(options[which]);
+                                if (!selectedAmenities.contains(amenity)) {
+                                    selectedAmenities.add(amenity);
                                 }
                             } else {
-                                selectedAmenities.remove(options[which]);
+                                selectedAmenities.remove(amenity);
                             }
                         }
                 )
                 .setPositiveButton("Done", (dialog, which) -> {
                     amenitiesGroup.removeAllViews();
 
-                    for (String amenity : selectedAmenities) {
+                    for (String amenity :
+                            new ArrayList<>(selectedAmenities)) {
+
                         Chip chip = new Chip(this);
                         chip.setText(amenity);
                         chip.setCloseIconVisible(true);
+
                         chip.setOnCloseIconClickListener(v -> {
                             selectedAmenities.remove(amenity);
                             amenitiesGroup.removeView(chip);
                         });
+
                         amenitiesGroup.addView(chip);
                     }
                 })
@@ -258,11 +265,12 @@ public class AddListingActivity extends AppCompatActivity {
 
     private void verifyAddress() {
         String addressText = locationInput.getText()
-                .toString()
-                .trim();
+                .toString().trim();
 
         if (addressText.isEmpty()) {
-            locationInput.setError("Enter the property location first.");
+            locationInput.setError(
+                    "Enter the property location first."
+            );
             return;
         }
 
@@ -281,11 +289,12 @@ public class AddListingActivity extends AppCompatActivity {
 
                 if (addresses != null && !addresses.isEmpty()) {
                     Address address = addresses.get(0);
-
                     double latitude = address.getLatitude();
                     double longitude = address.getLongitude();
 
                     runOnUiThread(() -> {
+                        if (isFinishing() || isDestroyed()) return;
+
                         verifiedLatitude = latitude;
                         verifiedLongitude = longitude;
                         isLocationVerified = true;
@@ -293,11 +302,12 @@ public class AddListingActivity extends AppCompatActivity {
                         locationStatus.setText(
                                 "Location verified successfully."
                         );
-
                         verifyLocationButton.setEnabled(true);
                     });
                 } else {
                     runOnUiThread(() -> {
+                        if (isFinishing() || isDestroyed()) return;
+
                         isLocationVerified = false;
                         locationStatus.setText(
                                 "Location not found. Check the address and try again."
@@ -306,7 +316,11 @@ public class AddListingActivity extends AppCompatActivity {
                     });
                 }
             } catch (Exception e) {
+                Log.e(TAG, "Location verification failed", e);
+
                 runOnUiThread(() -> {
+                    if (isFinishing() || isDestroyed()) return;
+
                     isLocationVerified = false;
                     locationStatus.setText(
                             "Could not verify location. Check your connection and try again."
@@ -318,25 +332,30 @@ public class AddListingActivity extends AppCompatActivity {
     }
 
     private void addListing() {
-        String propertyName = propertyNameInput.getText().toString().trim();
-        String location = locationInput.getText().toString().trim();
-        String priceText = priceInput.getText().toString().trim();
-        String roomsText = roomsInput.getText().toString().trim();
-        String description = descriptionInput.getText().toString().trim();
+        String propertyName =
+                propertyNameInput.getText().toString().trim();
+        String location =
+                locationInput.getText().toString().trim();
+        String priceText =
+                priceInput.getText().toString().trim();
+        String roomsText =
+                roomsInput.getText().toString().trim();
+        String description =
+                descriptionInput.getText().toString().trim();
 
-        String propertyType = propertyTypeInput.getText().toString().trim();
-        String waterSource = waterSourceInput.getText().toString().trim();
-        String electricity = electricityInput.getText().toString().trim();
-        String sanitation = sanitationInput.getText().toString().trim();
+        String propertyType =
+                propertyTypeInput.getText().toString().trim();
+        String waterSource =
+                waterSourceInput.getText().toString().trim();
+        String electricity =
+                electricityInput.getText().toString().trim();
+        String sanitation =
+                sanitationInput.getText().toString().trim();
 
-        if (propertyName.isEmpty()
-                || location.isEmpty()
-                || priceText.isEmpty()
-                || roomsText.isEmpty()
-                || description.isEmpty()
-                || propertyType.isEmpty()
-                || waterSource.isEmpty()
-                || electricity.isEmpty()
+        if (propertyName.isEmpty() || location.isEmpty()
+                || priceText.isEmpty() || roomsText.isEmpty()
+                || description.isEmpty() || propertyType.isEmpty()
+                || waterSource.isEmpty() || electricity.isEmpty()
                 || sanitation.isEmpty()) {
 
             Toast.makeText(
@@ -407,13 +426,14 @@ public class AddListingActivity extends AppCompatActivity {
         verifyLocationButton.setEnabled(false);
 
         executor.execute(() -> {
+            HttpURLConnection connection = null;
+
             try {
-                HttpURLConnection connection =
-                        SupabaseHelper.createConnection(
-                                "/rest/v1/listings",
-                                "POST",
-                                accessToken
-                        );
+                connection = SupabaseHelper.createConnection(
+                        "/rest/v1/listings",
+                        "POST",
+                        accessToken
+                );
 
                 connection.setRequestProperty(
                         "Prefer",
@@ -433,19 +453,23 @@ public class AddListingActivity extends AppCompatActivity {
                 SupabaseHelper.writeJson(connection, listing);
 
                 int responseCode = connection.getResponseCode();
-                String response = SupabaseHelper.readResponse(connection);
-                connection.disconnect();
+                String response =
+                        SupabaseHelper.readResponse(connection);
 
                 if (responseCode < 200 || responseCode >= 300) {
-                    Log.e("iKhayaListing", response);
-                    showError("Could not create listing. Check your Supabase table permissions.");
+                    Log.e(TAG, "Create listing: " + response);
+                    showError(
+                            "Could not create listing. Check Supabase permissions."
+                    );
                     return;
                 }
 
                 JSONArray returned = new JSONArray(response);
 
                 if (returned.length() == 0) {
-                    showError("The listing was not returned by Supabase.");
+                    showError(
+                            "The listing was not returned by Supabase."
+                    );
                     return;
                 }
 
@@ -456,13 +480,10 @@ public class AddListingActivity extends AppCompatActivity {
 
                 for (int i = 0; i < selectedImageUris.size(); i++) {
                     String imagePath = userId
-                            + "/"
-                            + listingId
+                            + "/" + listingId
                             + "/property_"
                             + System.currentTimeMillis()
-                            + "_"
-                            + i
-                            + ".jpg";
+                            + "_" + i + ".jpg";
 
                     boolean uploaded = uploadImage(
                             accessToken,
@@ -472,16 +493,17 @@ public class AddListingActivity extends AppCompatActivity {
 
                     if (!uploaded) {
                         Log.e(
-                                "iKhayaImage",
+                                TAG,
                                 "Failed to upload image " + i
                         );
                         continue;
                     }
 
-                    String publicUrl = SupabaseHelper.getPublicStorageUrl(
-                            "property-images",
-                            imagePath
-                    );
+                    String publicUrl =
+                            SupabaseHelper.getPublicStorageUrl(
+                                    "property-images",
+                                    imagePath
+                            );
 
                     uploadedUrls.add(publicUrl);
 
@@ -494,7 +516,7 @@ public class AddListingActivity extends AppCompatActivity {
 
                 if (uploadedUrls.isEmpty()) {
                     showError(
-                            "The listing was created, but no photos uploaded successfully."
+                            "Listing created, but no photos uploaded successfully."
                     );
                     return;
                 }
@@ -506,19 +528,28 @@ public class AddListingActivity extends AppCompatActivity {
                 );
 
                 runOnUiThread(() -> {
+                    if (isFinishing() || isDestroyed()) return;
+
                     Toast.makeText(
-                            AddListingActivity.this,
+                            this,
                             "Listing published with "
                                     + uploadedUrls.size()
                                     + " photo(s).",
                             Toast.LENGTH_LONG
                     ).show();
+
                     finish();
                 });
 
             } catch (Exception e) {
-                Log.e("iKhayaListing", "Add listing failed", e);
-                showError("Error adding listing. Please try again.");
+                Log.e(TAG, "Add listing failed", e);
+                showError(
+                        "Error adding listing. Please try again."
+                );
+            } finally {
+                if (connection != null) {
+                    connection.disconnect();
+                }
             }
         });
     }
@@ -531,53 +562,60 @@ public class AddListingActivity extends AppCompatActivity {
         HttpURLConnection connection = null;
 
         try {
-            connection = SupabaseHelper.createStorageConnection(
-                    "property-images",
-                    imagePath,
-                    "POST",
-                    accessToken
-            );
+            connection =
+                    SupabaseHelper.createStorageConnection(
+                            "property-images",
+                            imagePath,
+                            "POST",
+                            accessToken
+                    );
 
-            String mimeType = getContentResolver().getType(imageUri);
+            String mimeType =
+                    getContentResolver().getType(imageUri);
+
             if (mimeType == null) {
                 mimeType = "image/jpeg";
             }
 
-            connection.setRequestProperty("Content-Type", mimeType);
+            connection.setRequestProperty(
+                    "Content-Type",
+                    mimeType
+            );
             connection.setRequestProperty("x-upsert", "true");
             connection.setDoOutput(true);
 
-            try (InputStream inputStream =
+            try (InputStream input =
                          getContentResolver().openInputStream(imageUri);
-                 OutputStream outputStream = connection.getOutputStream()) {
+                 OutputStream output =
+                         connection.getOutputStream()) {
 
-                if (inputStream == null) {
-                    return false;
-                }
+                if (input == null) return false;
 
                 byte[] buffer = new byte[8192];
                 int bytesRead;
 
-                while ((bytesRead = inputStream.read(buffer)) != -1) {
-                    outputStream.write(buffer, 0, bytesRead);
+                while ((bytesRead = input.read(buffer)) != -1) {
+                    output.write(buffer, 0, bytesRead);
                 }
 
-                outputStream.flush();
+                output.flush();
             }
 
             int code = connection.getResponseCode();
-            String response = SupabaseHelper.readResponse(connection);
+            String response =
+                    SupabaseHelper.readResponse(connection);
 
             Log.d(
-                    "iKhayaImage",
-                    "Upload response: " + code + " " + response
+                    TAG,
+                    "Image upload: " + code + " " + response
             );
 
             return code >= 200 && code < 300;
 
         } catch (Exception e) {
-            Log.e("iKhayaImage", "Image upload failed", e);
+            Log.e(TAG, "Image upload failed", e);
             return false;
+
         } finally {
             if (connection != null) {
                 connection.disconnect();
@@ -606,14 +644,19 @@ public class AddListingActivity extends AppCompatActivity {
             SupabaseHelper.writeJson(connection, record);
 
             int code = connection.getResponseCode();
-            String response = SupabaseHelper.readResponse(connection);
+            String response =
+                    SupabaseHelper.readResponse(connection);
 
             if (code < 200 || code >= 300) {
-                Log.e("iKhayaImage", "Could not save image record: " + response);
+                Log.e(
+                        TAG,
+                        "Could not save image record: " + response
+                );
             }
 
         } catch (Exception e) {
-            Log.e("iKhayaImage", "Could not save image record", e);
+            Log.e(TAG, "Could not save image record", e);
+
         } finally {
             if (connection != null) {
                 connection.disconnect();
@@ -642,14 +685,19 @@ public class AddListingActivity extends AppCompatActivity {
             SupabaseHelper.writeJson(connection, body);
 
             int code = connection.getResponseCode();
-            String response = SupabaseHelper.readResponse(connection);
+            String response =
+                    SupabaseHelper.readResponse(connection);
 
             if (code < 200 || code >= 300) {
-                Log.e("iKhayaListing", "Image URL update failed: " + response);
+                Log.e(
+                        TAG,
+                        "Image URL update failed: " + response
+                );
             }
 
         } catch (Exception e) {
-            Log.e("iKhayaListing", "Could not update image URL", e);
+            Log.e(TAG, "Could not update image URL", e);
+
         } finally {
             if (connection != null) {
                 connection.disconnect();
@@ -659,12 +707,14 @@ public class AddListingActivity extends AppCompatActivity {
 
     private void showError(String message) {
         runOnUiThread(() -> {
+            if (isFinishing() || isDestroyed()) return;
+
             submitButton.setEnabled(true);
             uploadImageButton.setEnabled(true);
             verifyLocationButton.setEnabled(true);
 
             Toast.makeText(
-                    AddListingActivity.this,
+                    this,
                     message,
                     Toast.LENGTH_LONG
             ).show();
