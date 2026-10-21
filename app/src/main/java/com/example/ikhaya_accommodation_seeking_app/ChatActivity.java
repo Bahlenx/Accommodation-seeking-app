@@ -473,9 +473,9 @@ public class ChatActivity extends AppCompatActivity {
         }
 
         String messageText =
-                editMessage.getText().toString().trim();
+                editMessage.getText().toString(); // remove the trim here since trailing newlines might be intentional during composing, but generally trim is okay
 
-        if (messageText.isEmpty()) {
+        if (messageText.trim().isEmpty()) {
             return;
         }
 
@@ -534,7 +534,7 @@ public class ChatActivity extends AppCompatActivity {
                 body.put("sender_name", senderName);
                 body.put("sender_role", senderRole);
                 body.put("receiver_id", receiverId);
-                body.put("message_text", messageText);
+                body.put("message_text", messageText.trim());
 
                 SupabaseHelper.writeJson(connection, body);
 

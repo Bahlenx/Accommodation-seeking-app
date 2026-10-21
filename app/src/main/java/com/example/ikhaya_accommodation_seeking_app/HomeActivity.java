@@ -158,7 +158,7 @@ public class HomeActivity extends AppCompatActivity {
                             );
                         }
 
-                        return WindowInsetsCompat.CONSUMED;
+                        return insets;
                     }
             );
         }
