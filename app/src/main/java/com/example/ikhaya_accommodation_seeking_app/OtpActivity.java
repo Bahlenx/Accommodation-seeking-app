@@ -25,7 +25,8 @@ public class OtpActivity extends AppCompatActivity {
     private RadioGroup rgOtpMethod;
     private RadioButton rbEmailOtp, rbSmsOtp;
 
-    private String username, surname, phone, email, role;
+    private String username, surname, phone, email, role, password;
+    private boolean signupCalled = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +57,7 @@ public class OtpActivity extends AppCompatActivity {
         phone = incomingIntent.getStringExtra("USER_PHONE");
         email = incomingIntent.getStringExtra("USER_EMAIL");
         role = incomingIntent.getStringExtra("USER_ROLE");
+        password = incomingIntent.getStringExtra("USER_PASSWORD");
 
         rbEmailOtp.setText("Email OTP (" + email + ")");
         rbSmsOtp.setText("SMS OTP (" + phone + ")");
@@ -75,13 +77,29 @@ public class OtpActivity extends AppCompatActivity {
         btnSendOtp.setEnabled(false);
         new Thread(() -> {
             try {
-                HttpURLConnection connection = SupabaseHelper.createConnection("/auth/v1/otp", "POST", null);
+                HttpURLConnection connection;
                 JSONObject body = new JSONObject();
-                body.put("create_user", true);
                 
                 if (rbEmailOtp.isChecked()) {
-                    body.put("email", email);
+                    if (!signupCalled) {
+                        connection = SupabaseHelper.createConnection("/auth/v1/signup", "POST", null);
+                        body.put("email", email);
+                        body.put("password", password);
+                        
+                        JSONObject metadata = new JSONObject();
+                        metadata.put("first_name", username);
+                        metadata.put("surname", surname);
+                        metadata.put("phone", phone);
+                        metadata.put("role", role);
+                        body.put("data", metadata);
+                    } else {
+                        connection = SupabaseHelper.createConnection("/auth/v1/resend", "POST", null);
+                        body.put("type", "signup");
+                        body.put("email", email);
+                    }
                 } else {
+                    connection = SupabaseHelper.createConnection("/auth/v1/otp", "POST", null);
+                    body.put("create_user", true);
                     String formattedPhone = formatPhone(phone);
                     body.put("phone", formattedPhone);
                 }
@@ -91,13 +109,34 @@ public class OtpActivity extends AppCompatActivity {
                 String response = SupabaseHelper.readResponse(connection);
                 connection.disconnect();
 
-                runOnUiThread(() -> {
+                if (rbEmailOtp.isChecked()) {
                     if (code >= 200 && code < 300) {
+                        signupCalled = true;
+                    } else if (code == 400 || code == 422) { // Already registered but possibly unverified
+                        signupCalled = true;
+                        
+                        // Try resend
+                        connection = SupabaseHelper.createConnection("/auth/v1/resend", "POST", null);
+                        JSONObject resendBody = new JSONObject();
+                        resendBody.put("type", "signup");
+                        resendBody.put("email", email);
+                        SupabaseHelper.writeJson(connection, resendBody);
+                        code = connection.getResponseCode();
+                        response = SupabaseHelper.readResponse(connection);
+                        connection.disconnect();
+                    }
+                }
+
+                final int finalCode = code;
+                final String finalResponse = response;
+
+                runOnUiThread(() -> {
+                    if (finalCode >= 200 && finalCode < 300) {
                         Toast.makeText(this, "OTP Sent!", Toast.LENGTH_SHORT).show();
                         btnSendOtp.postDelayed(() -> btnSendOtp.setEnabled(true), 60000);
                     } else {
                         btnSendOtp.setEnabled(true);
-                        Toast.makeText(this, "Failed to send OTP: " + response, Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, "Failed to send OTP: " + finalResponse, Toast.LENGTH_LONG).show();
                     }
                 });
             } catch (Exception e) {
@@ -130,7 +169,7 @@ public class OtpActivity extends AppCompatActivity {
                 body.put("token", enteredCode);
                 
                 if (rbEmailOtp.isChecked()) {
-                    body.put("type", "email");
+                    body.put("type", "signup");
                     body.put("email", email);
                 } else {
                     body.put("type", "sms");
@@ -143,9 +182,9 @@ public class OtpActivity extends AppCompatActivity {
                 connection.disconnect();
 
                 if (code >= 400 && rbEmailOtp.isChecked()) {
-                    // Fallback to signup type for newly created users via OTP
+                    // Fallback to email type
                     connection = SupabaseHelper.createConnection("/auth/v1/verify", "POST", null);
-                    body.put("type", "signup");
+                    body.put("type", "email");
                     SupabaseHelper.writeJson(connection, body);
                     code = connection.getResponseCode();
                     response = SupabaseHelper.readResponse(connection);
@@ -165,16 +204,31 @@ public class OtpActivity extends AppCompatActivity {
                             JSONObject user = data.optJSONObject("user");
                             String userId = user != null ? user.optString("id", "") : "";
 
-                            SupabaseHelper.saveSession(this, accessToken, refreshToken, userId, null, null);
+                            SupabaseHelper.saveSession(this, accessToken, refreshToken, userId, (username + " " + surname).trim(), role);
 
                             Toast.makeText(this, "Verified successfully!", Toast.LENGTH_SHORT).show();
                             
-                            Intent intent = new Intent(OtpActivity.this, CreatePasswordActivity.class);
+                            if (rbSmsOtp.isChecked() && !accessToken.isEmpty() && password != null && !password.isEmpty()) {
+                                new Thread(() -> {
+                                    try {
+                                        HttpURLConnection putConn = SupabaseHelper.createConnection("/auth/v1/user", "PUT", accessToken);
+                                        JSONObject putBody = new JSONObject();
+                                        putBody.put("password", password);
+                                        SupabaseHelper.writeJson(putConn, putBody);
+                                        putConn.getResponseCode();
+                                        putConn.disconnect();
+                                    } catch (Exception ignored) {}
+                                }).start();
+                            }
+                            
+                            Intent intent = new Intent(OtpActivity.this, PersonalActivity.class);
                             intent.putExtra("USER_NAME", username);
                             intent.putExtra("USER_SURNAME", surname);
                             intent.putExtra("USER_PHONE", phone);
                             intent.putExtra("USER_EMAIL", email);
                             intent.putExtra("USER_ROLE", role);
+                            intent.putExtra("USER_PASSWORD", password);
+                            intent.putExtra("OTP_VERIFIED", true);
                             startActivity(intent);
                             
                         } catch (Exception e) {

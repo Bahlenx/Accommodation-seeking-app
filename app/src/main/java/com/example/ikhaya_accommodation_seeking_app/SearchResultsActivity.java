@@ -4,22 +4,24 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
-import androidx.core.content.ContextCompat;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -28,6 +30,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
@@ -38,195 +41,313 @@ public class SearchResultsActivity extends AppCompatActivity {
     private static final String TAG = "SearchResults";
 
     private LinearLayout searchResultsContainer;
+    private LinearLayout filtersPanel;
+
     private TextView txtNoResults;
+    private TextView txtResultsCount;
+
     private EditText searchBox;
+    private EditText filterMaxPrice;
+    private EditText filterMinRooms;
 
-    // Active in-memory filters
-    private String activePropertyType = "";
-    private double activeMaxPrice = Double.POSITIVE_INFINITY;
-    private boolean activeFilterWifi = false;
-    private boolean activeFilterWater = false;
-    private boolean activeFilterBackupPower = false;
+    private Spinner filterPropertyType;
+    private ProgressBar progressSearch;
 
-    // Quick filter chip references for active state highlighting
-    private Button chipAllTypes;
-    private Button chipRooms;
-    private Button chipShared;
-    private Button chipHouses;
+    private final ExecutorService executor =
+            Executors.newFixedThreadPool(4);
 
-    private final ExecutorService imageExecutor = Executors.newFixedThreadPool(3);
     private JSONArray allListings = new JSONArray();
+
+    private boolean loading = false;
+    private int requestVersion = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search_results);
 
-        searchResultsContainer = findViewById(R.id.searchResultsContainer);
-        txtNoResults = findViewById(R.id.txtNoResults);
-        searchBox = findViewById(R.id.searchBox);
+        searchResultsContainer =
+                findViewById(R.id.searchResultsContainer);
 
-        ImageButton btnBack = findViewById(R.id.btnBack);
-        ImageButton btnSearchAgain = findViewById(R.id.btnSearchAgain);
-        ImageButton btnFilterOptions = findViewById(R.id.btnFilterOptions);
+        filtersPanel =
+                findViewById(R.id.filtersPanel);
 
-        chipAllTypes = findViewById(R.id.chipAllTypes);
-        chipRooms = findViewById(R.id.chipRooms);
-        chipShared = findViewById(R.id.chipShared);
-        chipHouses = findViewById(R.id.chipHouses);
+        txtNoResults =
+                findViewById(R.id.txtNoResults);
 
-        // Pre-fill query or category intent extras
-        String query = getIntent().getStringExtra("SEARCH_QUERY");
-        if (query != null) {
-            searchBox.setText(query.trim());
+        txtResultsCount =
+                findViewById(R.id.txtResultsCount);
+
+        searchBox =
+                findViewById(R.id.searchBox);
+
+        filterMaxPrice =
+                findViewById(R.id.filterMaxPrice);
+
+        filterMinRooms =
+                findViewById(R.id.filterMinRooms);
+
+        filterPropertyType =
+                findViewById(R.id.filterPropertyType);
+
+        progressSearch =
+                findViewById(R.id.progressSearch);
+
+        Button btnBack =
+                findViewById(R.id.btnBack);
+
+        Button btnSearchAgain =
+                findViewById(R.id.btnSearchAgain);
+
+        Button btnApplyFilters =
+                findViewById(R.id.btnApplyFilters);
+
+        View btnFilterToggle =
+                findViewById(R.id.btnFilterToggle);
+
+        String query =
+                getIntent().getStringExtra("SEARCH_QUERY");
+
+        if (query == null || query.trim().isEmpty()) {
+            query = getIntent().getStringExtra("QUERY");
         }
 
-        String initialType = getIntent().getStringExtra("PROPERTY_TYPE");
-        if (initialType != null && !initialType.isEmpty()) {
-            activePropertyType = initialType;
+        if (query == null || query.trim().isEmpty()) {
+            query = getIntent().getStringExtra("SEARCH_TEXT");
         }
 
-        updateChipVisualStates();
+        if (query == null) {
+            query = "";
+        }
 
-        // 1. Navigation & Search Actions
+        searchBox.setText(query.trim());
+        searchBox.setSelection(searchBox.length());
+
+        setupPropertyTypeSpinner(new JSONArray());
+
         if (btnBack != null) {
             btnBack.setOnClickListener(v -> finish());
         }
 
         if (btnSearchAgain != null) {
-            btnSearchAgain.setOnClickListener(v -> displayFilteredListings());
+            btnSearchAgain.setOnClickListener(v ->
+                    loadListingsFromSupabase()
+            );
         }
 
-        if (searchBox != null) {
-            searchBox.setOnEditorActionListener((v, actionId, event) -> {
-                if (actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_DONE) {
-                    displayFilteredListings();
-                    return true;
-                }
-                return false;
+        if (btnApplyFilters != null) {
+            btnApplyFilters.setOnClickListener(v ->
+                    displayFilteredListings()
+            );
+        }
+
+        if (btnFilterToggle != null) {
+            btnFilterToggle.setOnClickListener(v -> {
+                boolean show =
+                        filtersPanel.getVisibility() != View.VISIBLE;
+
+                filtersPanel.setVisibility(
+                        show ? View.VISIBLE : View.GONE
+                );
             });
         }
 
-        // 2. Quick Category Chips
-        if (chipAllTypes != null) {
-            chipAllTypes.setOnClickListener(v -> {
-                activePropertyType = "";
-                updateChipVisualStates();
-                displayFilteredListings();
-            });
-        }
-
-        if (chipRooms != null) {
-            chipRooms.setOnClickListener(v -> {
-                activePropertyType = "Room";
-                updateChipVisualStates();
-                displayFilteredListings();
-            });
-        }
-
-        if (chipShared != null) {
-            chipShared.setOnClickListener(v -> {
-                activePropertyType = "Shared";
-                updateChipVisualStates();
-                displayFilteredListings();
-            });
-        }
-
-        if (chipHouses != null) {
-            chipHouses.setOnClickListener(v -> {
-                activePropertyType = "House";
-                updateChipVisualStates();
-                displayFilteredListings();
-            });
-        }
-
-        // 3. Bottom Sheet Filter Dialog
-        if (btnFilterOptions != null) {
-            btnFilterOptions.setOnClickListener(v -> {
-                FilterBottomSheetDialog dialog = new FilterBottomSheetDialog();
-                dialog.setFilterListener((maxPrice, roomType, wifi, water, backupPower) -> {
-                    activeMaxPrice = parseNumber(maxPrice, Double.POSITIVE_INFINITY);
-                    if (roomType != null && !roomType.isEmpty()) {
-                        activePropertyType = roomType;
-                        updateChipVisualStates();
+        searchBox.setOnEditorActionListener(
+                (textView, actionId, event) -> {
+                    if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                        loadListingsFromSupabase();
+                        return true;
                     }
-                    activeFilterWifi = wifi;
-                    activeFilterWater = water;
-                    activeFilterBackupPower = backupPower;
 
-                    displayFilteredListings();
-                });
-                dialog.show(getSupportFragmentManager(), "FilterBottomSheet");
-            });
-        }
+                    return false;
+                }
+        );
 
         loadListingsFromSupabase();
     }
 
-    private void updateChipVisualStates() {
-        setChipStyle(chipAllTypes, activePropertyType.isEmpty());
-        setChipStyle(chipRooms, activePropertyType.equalsIgnoreCase("Room"));
-        setChipStyle(chipShared, activePropertyType.equalsIgnoreCase("Shared"));
-        setChipStyle(chipHouses, activePropertyType.equalsIgnoreCase("House"));
-    }
+    private void setupPropertyTypeSpinner(JSONArray listings) {
+        String previousSelection = "";
 
-    private void setChipStyle(Button chip, boolean isSelected) {
-        if (chip == null) return;
-        if (isSelected) {
-            chip.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.terracotta_primary));
-            chip.setTextColor(Color.WHITE);
-        } else {
-            chip.setBackgroundTintList(ContextCompat.getColorStateList(this, android.R.color.white));
-            chip.setTextColor(Color.parseColor("#1F1614"));
+        if (filterPropertyType.getSelectedItem() != null) {
+            previousSelection =
+                    filterPropertyType.getSelectedItem().toString();
+        }
+
+        String initialIntentType = getIntent().getStringExtra("PROPERTY_TYPE");
+        if (previousSelection.isEmpty() && initialIntentType != null && !initialIntentType.trim().isEmpty()) {
+            previousSelection = initialIntentType.trim();
+        }
+
+        List<String> types = new ArrayList<>();
+        types.add(getString(R.string.search_any_type));
+
+        for (int i = 0; i < listings.length(); i++) {
+            JSONObject listing = listings.optJSONObject(i);
+
+            if (listing == null) {
+                continue;
+            }
+
+            String type = firstValue(
+                    listing,
+                    "property_type",
+                    "type",
+                    "accommodation_type"
+            );
+
+            if (type.isEmpty()) {
+                continue;
+            }
+
+            boolean exists = false;
+
+            for (String existing : types) {
+                if (existing.equalsIgnoreCase(type)) {
+                    exists = true;
+                    break;
+                }
+            }
+
+            if (!exists) {
+                types.add(type);
+            }
+        }
+
+        if (types.size() > 2) {
+            List<String> sorted =
+                    new ArrayList<>(types.subList(1, types.size()));
+
+            Collections.sort(
+                    sorted,
+                    String.CASE_INSENSITIVE_ORDER
+            );
+
+            types.clear();
+            types.add(getString(R.string.search_any_type));
+            types.addAll(sorted);
+        }
+
+        ArrayAdapter<String> adapter =
+                new ArrayAdapter<>(
+                        this,
+                        android.R.layout.simple_spinner_item,
+                        types
+                );
+
+        adapter.setDropDownViewResource(
+                android.R.layout.simple_spinner_dropdown_item
+        );
+
+        filterPropertyType.setAdapter(adapter);
+
+        for (int i = 0; i < types.size(); i++) {
+            if (types.get(i).equalsIgnoreCase(previousSelection)) {
+                filterPropertyType.setSelection(i);
+                break;
+            }
         }
     }
 
     private void loadListingsFromSupabase() {
-        String accessToken = SupabaseHelper.getAccessToken(this);
-
-        if (accessToken == null || accessToken.trim().isEmpty()) {
-            Toast.makeText(this, "Please log in again.", Toast.LENGTH_SHORT).show();
+        if (loading || executor.isShutdown()) {
             return;
         }
 
+        String accessToken =
+                SupabaseHelper.getAccessToken(this);
+
+        if (accessToken == null || accessToken.trim().isEmpty()) {
+            showMessage(getString(R.string.search_login_again));
+            showStatus("Please sign in to search properties.");
+            return;
+        }
+
+        loading = true;
+        final int currentRequest = ++requestVersion;
+
+        progressSearch.setVisibility(View.VISIBLE);
         txtNoResults.setVisibility(View.GONE);
+        txtResultsCount.setText("Searching properties...");
         searchResultsContainer.removeAllViews();
 
-        new Thread(() -> {
+        executor.execute(() -> {
             HttpURLConnection connection = null;
+
             try {
-                String endpoint = "/rest/v1/listings?select=*&order=created_at.desc&limit=100";
-                connection = SupabaseHelper.createConnection(endpoint, "GET", accessToken);
+                String endpoint =
+                        "/rest/v1/listings?select=*"
+                                + "&order=created_at.desc"
+                                + "&limit=1000";
+
+                connection = SupabaseHelper.createConnection(
+                        endpoint,
+                        "GET",
+                        accessToken
+                );
 
                 int responseCode = connection.getResponseCode();
-                String response = SupabaseHelper.readResponse(connection);
+
+                String response =
+                        SupabaseHelper.readResponse(connection);
 
                 if (responseCode < 200 || responseCode >= 300) {
-                    Log.e(TAG, "Supabase returned HTTP " + responseCode + ": " + response);
-                    showMessage("Could not load listings.");
-                    return;
+                    throw new java.io.IOException(
+                            "HTTP " + responseCode + ": " + response
+                    );
                 }
 
                 JSONArray results = new JSONArray(response);
 
                 runOnUiThread(() -> {
+                    if (isFinishing()
+                            || isDestroyed()
+                            || currentRequest != requestVersion) {
+                        return;
+                    }
+
+                    loading = false;
+                    progressSearch.setVisibility(View.GONE);
+
                     allListings = results;
+
+                    setupPropertyTypeSpinner(allListings);
                     displayFilteredListings();
                 });
 
             } catch (Exception e) {
-                Log.e(TAG, "Error loading listings", e);
-                showMessage("Error loading listings.");
+                Log.e(TAG, "Could not load listings", e);
+
+                runOnUiThread(() -> {
+                    if (isFinishing()
+                            || isDestroyed()
+                            || currentRequest != requestVersion) {
+                        return;
+                    }
+
+                    loading = false;
+                    progressSearch.setVisibility(View.GONE);
+
+                    txtResultsCount.setText("Search unavailable");
+
+                    showStatus(
+                            "Could not load properties. "
+                                    + "Please check your connection and try again."
+                    );
+
+                    showMessage(getString(R.string.search_load_failed));
+                });
+
             } finally {
                 if (connection != null) {
                     connection.disconnect();
                 }
             }
-        }).start();
+        });
     }
 
     private void displayFilteredListings() {
-        if (searchResultsContainer == null) {
+        if (loading) {
             return;
         }
 
@@ -235,47 +356,144 @@ public class SearchResultsActivity extends AppCompatActivity {
                 .trim()
                 .toLowerCase(Locale.ROOT);
 
+        String maxPriceText = filterMaxPrice.getText()
+                .toString()
+                .trim();
+
+        String minRoomsText = filterMinRooms.getText()
+                .toString()
+                .trim();
+
+        String selectedType =
+                filterPropertyType.getSelectedItem() == null
+                        ? ""
+                        : filterPropertyType.getSelectedItem()
+                        .toString()
+                        .trim();
+
+        double maxPrice = parseNumber(
+                maxPriceText,
+                Double.POSITIVE_INFINITY
+        );
+
+        int minRooms = (int) parseNumber(
+                minRoomsText,
+                0
+        );
+
         List<JSONObject> matches = new ArrayList<>();
 
         for (int i = 0; i < allListings.length(); i++) {
             JSONObject listing = allListings.optJSONObject(i);
-            if (listing == null) continue;
 
-            String name = clean(listing.optString("property_name", ""));
-            String location = clean(listing.optString("location", ""));
-            String type = clean(listing.optString("property_type", ""));
-            double price = parseNumber(listing.optString("price", ""), Double.NaN);
-
-            // Inclusions / Utilities
-            boolean hasWifi = listing.optBoolean("wifi_included", false);
-            boolean hasWater = listing.optBoolean("water_included", false);
-            boolean hasBackupPower = listing.optBoolean("backup_power", false);
-
-            boolean matchesQuery = query.isEmpty()
-                    || name.toLowerCase(Locale.ROOT).contains(query)
-                    || location.toLowerCase(Locale.ROOT).contains(query);
-
-            if (!matchesQuery) continue;
-
-            if (Double.isFinite(activeMaxPrice) && (!Double.isFinite(price) || price > activeMaxPrice)) {
+            if (listing == null) {
                 continue;
             }
 
-            if (!activePropertyType.isEmpty() && !type.equalsIgnoreCase(activePropertyType)) {
+            String name = firstValue(
+                    listing,
+                    "property_name",
+                    "title",
+                    "name"
+            );
+
+            String location = firstValue(
+                    listing,
+                    "location",
+                    "address",
+                    "area"
+            );
+
+            String type = firstValue(
+                    listing,
+                    "property_type",
+                    "type",
+                    "accommodation_type"
+            );
+
+            String description = firstValue(
+                    listing,
+                    "description"
+            );
+
+            String priceText = firstValue(
+                    listing,
+                    "price",
+                    "monthly_price"
+            );
+
+            String roomsText = firstValue(
+                    listing,
+                    "rooms",
+                    "bedrooms",
+                    "room_count"
+            );
+
+            double price = parseNumber(
+                    priceText,
+                    Double.NaN
+            );
+
+            int rooms = (int) parseNumber(
+                    roomsText,
+                    -1
+            );
+
+            String searchable =
+                    (name + " "
+                            + location + " "
+                            + type + " "
+                            + description)
+                            .toLowerCase(Locale.ROOT);
+
+            String[] queryWords = query.split("\\s+");
+
+            boolean matchesQuery = true;
+
+            for (String word : queryWords) {
+                if (!word.isEmpty() && !searchable.contains(word)) {
+                    matchesQuery = false;
+                    break;
+                }
+            }
+
+            if (!matchesQuery) {
                 continue;
             }
 
-            if (activeFilterWifi && !hasWifi) continue;
-            if (activeFilterWater && !hasWater) continue;
-            if (activeFilterBackupPower && !hasBackupPower) continue;
+            if (!maxPriceText.isEmpty()
+                    && (!Double.isFinite(price)
+                    || price > maxPrice)) {
+                continue;
+            }
+
+            if (minRooms > 0 && rooms < minRooms) {
+                continue;
+            }
+
+            if (!isAnyType(selectedType)
+                    && !type.equalsIgnoreCase(selectedType)) {
+                continue;
+            }
 
             matches.add(listing);
         }
 
         searchResultsContainer.removeAllViews();
 
+        txtResultsCount.setText(
+                matches.size() == 1
+                        ? "1 property found"
+                        : matches.size() + " properties found"
+        );
+
         if (matches.isEmpty()) {
-            txtNoResults.setVisibility(View.VISIBLE);
+            showStatus(
+                    allListings.length() == 0
+                            ? "No properties are available right now."
+                            : "No properties match your search. "
+                            + "Try another location or adjust your filters."
+            );
             return;
         }
 
@@ -286,14 +504,60 @@ public class SearchResultsActivity extends AppCompatActivity {
         }
     }
 
+    private boolean isAnyType(String type) {
+        return type == null
+                || type.isEmpty()
+                || type.equalsIgnoreCase(
+                getString(R.string.search_any_type)
+        );
+    }
+
     private void addListingCard(JSONObject listing) {
-        String listingId = clean(listing.optString("id", ""));
-        String propertyName = clean(listing.optString("property_name", ""));
-        String location = clean(listing.optString("location", ""));
-        String price = clean(listing.optString("price", ""));
-        String rooms = clean(listing.optString("rooms", ""));
-        String propertyType = clean(listing.optString("property_type", ""));
-        String imageUrl = clean(listing.optString("image_url", ""));
+        String listingId = firstValue(
+                listing,
+                "id"
+        );
+
+        String propertyName = firstValue(
+                listing,
+                "property_name",
+                "title",
+                "name"
+        );
+
+        String location = firstValue(
+                listing,
+                "location",
+                "address",
+                "area"
+        );
+
+        String price = firstValue(
+                listing,
+                "price",
+                "monthly_price"
+        );
+
+        String rooms = firstValue(
+                listing,
+                "rooms",
+                "bedrooms",
+                "room_count"
+        );
+
+        String propertyType = firstValue(
+                listing,
+                "property_type",
+                "type",
+                "accommodation_type"
+        );
+
+        String imageUrl = firstValue(
+                listing,
+                "image_url",
+                "photo_url",
+                "cover_image"
+        );
 
         CardView card = new CardView(this);
         card.setRadius(dp(16));
@@ -301,130 +565,217 @@ public class SearchResultsActivity extends AppCompatActivity {
         card.setUseCompatPadding(true);
         card.setCardBackgroundColor(Color.WHITE);
 
-        LinearLayout.LayoutParams cardParams = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-        );
+        LinearLayout.LayoutParams cardParams =
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                );
+
         cardParams.setMargins(0, 0, 0, dp(14));
         card.setLayoutParams(cardParams);
 
         LinearLayout content = new LinearLayout(this);
         content.setOrientation(LinearLayout.VERTICAL);
-        content.setPadding(dp(12), dp(12), dp(12), dp(14));
+        content.setPadding(
+                dp(14),
+                dp(14),
+                dp(14),
+                dp(14)
+        );
+
         card.addView(content);
 
-        // Property Preview Image
         ImageView image = new ImageView(this);
-        image.setLayoutParams(new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                dp(180)
-        ));
+
+        image.setLayoutParams(
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        dp(190)
+                )
+        );
+
         image.setScaleType(ImageView.ScaleType.CENTER_CROP);
-        image.setBackgroundColor(Color.parseColor("#FAF7F5"));
-        image.setImageResource(android.R.drawable.ic_menu_gallery);
+        image.setContentDescription(
+                getString(R.string.property_photo)
+        );
+
+        image.setBackgroundColor(
+                Color.parseColor("#FAF7F5")
+        );
+
+        image.setImageResource(
+                android.R.drawable.ic_menu_gallery
+        );
+
         content.addView(image);
 
         if (!imageUrl.isEmpty()) {
             loadImageIntoView(imageUrl, image);
         }
 
-        // Title
         TextView title = new TextView(this);
-        title.setText(propertyName.isEmpty() ? "Accommodation" : propertyName);
-        title.setTextSize(18);
-        title.setTextColor(Color.parseColor("#1F1614"));
-        title.setTypeface(null, android.graphics.Typeface.BOLD);
 
-        LinearLayout.LayoutParams titleParams = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
+        title.setText(
+                propertyName.isEmpty()
+                        ? getString(R.string.search_unnamed_property)
+                        : propertyName
         );
-        titleParams.topMargin = dp(10);
+
+        title.setTextSize(19);
+        title.setTextColor(Color.parseColor("#1F1614"));
+        title.setTypeface(null, Typeface.BOLD);
+
+        LinearLayout.LayoutParams titleParams =
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                );
+
+        titleParams.topMargin = dp(12);
         title.setLayoutParams(titleParams);
         content.addView(title);
 
-        // Location Row
-        TextView tvLocation = new TextView(this);
-        tvLocation.setText("📍 " + (location.isEmpty() ? "Location available on request" : location));
-        tvLocation.setTextSize(13);
-        tvLocation.setTextColor(Color.parseColor("#8C7A70"));
-        LinearLayout.LayoutParams locParams = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-        );
-        locParams.topMargin = dp(4);
-        tvLocation.setLayoutParams(locParams);
-        content.addView(tvLocation);
+        TextView details = new TextView(this);
 
-        // Price & Rooms Row
-        LinearLayout metaRow = new LinearLayout(this);
-        metaRow.setOrientation(LinearLayout.HORIZONTAL);
-        metaRow.setGravity(android.view.Gravity.CENTER_VERTICAL);
-        LinearLayout.LayoutParams metaParams = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-        );
-        metaParams.topMargin = dp(10);
-        metaRow.setLayoutParams(metaParams);
+        StringBuilder detailsText = new StringBuilder();
 
-        TextView tvPrice = new TextView(this);
-        tvPrice.setText("R " + price + " / month");
-        tvPrice.setTextSize(16);
-        tvPrice.setTextColor(Color.parseColor("#BA5536"));
-        tvPrice.setTypeface(null, android.graphics.Typeface.BOLD);
-        tvPrice.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f));
-        metaRow.addView(tvPrice);
-
-        if (!rooms.isEmpty()) {
-            TextView tvRooms = new TextView(this);
-            tvRooms.setText(rooms + " rooms");
-            tvRooms.setTextSize(12);
-            tvRooms.setTextColor(Color.parseColor("#1F1614"));
-            tvRooms.setBackgroundColor(Color.parseColor("#F5EFEB"));
-            tvRooms.setPadding(dp(8), dp(4), dp(8), dp(4));
-            metaRow.addView(tvRooms);
+        if (!location.isEmpty()) {
+            detailsText.append(location);
         }
 
-        content.addView(metaRow);
+        if (!price.isEmpty()) {
+            if (detailsText.length() > 0) {
+                detailsText.append("\n");
+            }
 
-        card.setOnClickListener(v -> {
+            detailsText.append(
+                    getString(
+                            R.string.search_price_per_month,
+                            price
+                    )
+            );
+        }
+
+        if (!rooms.isEmpty()) {
+            if (detailsText.length() > 0) {
+                detailsText.append("\n");
+            }
+
+            detailsText.append(
+                    getString(
+                            R.string.search_rooms_count,
+                            rooms
+                    )
+            );
+        }
+
+        if (!propertyType.isEmpty()) {
+            if (detailsText.length() > 0) {
+                detailsText.append("\n");
+            }
+
+            detailsText.append(propertyType);
+        }
+
+        details.setText(detailsText.toString());
+        details.setTextSize(15);
+        details.setTextColor(Color.parseColor("#756763"));
+
+        LinearLayout.LayoutParams detailsParams =
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                );
+
+        detailsParams.topMargin = dp(8);
+        detailsParams.bottomMargin = dp(12);
+
+        details.setLayoutParams(detailsParams);
+        content.addView(details);
+
+        Button viewButton = new Button(this);
+
+        viewButton.setText(
+                getString(R.string.search_view_details)
+        );
+
+        viewButton.setAllCaps(false);
+        viewButton.setBackgroundResource(
+                R.drawable.selector_regular_button
+        );
+
+        viewButton.setTextColor(Color.WHITE);
+
+        View.OnClickListener openDetailsListener = v -> {
             if (listingId.isEmpty()) {
-                Toast.makeText(SearchResultsActivity.this, "Listing details currently unavailable.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(
+                        this,
+                        getString(R.string.search_listing_unavailable),
+                        Toast.LENGTH_SHORT
+                ).show();
+
                 return;
             }
 
-            Intent intent = new Intent(SearchResultsActivity.this, PropertyDetailsActivity.class);
-            intent.putExtra("LISTING_ID", listingId);
-            startActivity(intent);
-        });
+            Intent intent = new Intent(
+                    SearchResultsActivity.this,
+                    PropertyDetailsActivity.class
+            );
 
+            intent.putExtra("LISTING_ID", listingId);
+
+            startActivity(intent);
+        };
+
+        viewButton.setOnClickListener(openDetailsListener);
+        card.setOnClickListener(openDetailsListener);
+
+        content.addView(viewButton);
         searchResultsContainer.addView(card);
     }
 
-    private void loadImageIntoView(String imageUrl, ImageView imageView) {
-        imageExecutor.execute(() -> {
+    private void loadImageIntoView(
+            String imageUrl,
+            ImageView imageView
+    ) {
+        if (executor.isShutdown()) {
+            return;
+        }
+
+        executor.execute(() -> {
             HttpURLConnection connection = null;
+
             try {
-                connection = (HttpURLConnection) new URL(imageUrl).openConnection();
+                connection = (HttpURLConnection)
+                        new URL(imageUrl).openConnection();
+
                 connection.setConnectTimeout(15000);
                 connection.setReadTimeout(20000);
                 connection.setRequestMethod("GET");
-                connection.connect();
 
-                int responseCode = connection.getResponseCode();
+                int responseCode =
+                        connection.getResponseCode();
+
                 if (responseCode >= 200 && responseCode < 300) {
-                    try (InputStream input = connection.getInputStream()) {
-                        Bitmap bitmap = BitmapFactory.decodeStream(input);
-                        if (bitmap != null && !isFinishing() && !isDestroyed()) {
+                    try (InputStream input =
+                                 connection.getInputStream()) {
+
+                        Bitmap bitmap =
+                                BitmapFactory.decodeStream(input);
+
+                        if (bitmap != null) {
                             runOnUiThread(() -> {
-                                imageView.setImageBitmap(bitmap);
-                                imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                                if (!isFinishing() && !isDestroyed()) {
+                                    imageView.setImageBitmap(bitmap);
+                                }
                             });
                         }
                     }
                 }
+
             } catch (Exception e) {
-                Log.e(TAG, "Could not load listing image", e);
+                Log.w(TAG, "Could not load image", e);
+
             } finally {
                 if (connection != null) {
                     connection.disconnect();
@@ -433,41 +784,83 @@ public class SearchResultsActivity extends AppCompatActivity {
         });
     }
 
+    private String firstValue(
+            JSONObject object,
+            String... keys
+    ) {
+        for (String key : keys) {
+            String value = clean(
+                    object.optString(key, "")
+            );
+
+            if (!value.isEmpty()) {
+                return value;
+            }
+        }
+
+        return "";
+    }
+
     private String clean(String value) {
-        if (value == null || "null".equalsIgnoreCase(value.trim())) {
+        if (value == null
+                || "null".equalsIgnoreCase(value.trim())) {
             return "";
         }
+
         return value.trim();
     }
 
-    private double parseNumber(String value, double fallback) {
+    private double parseNumber(
+            String value,
+            double fallback
+    ) {
         if (value == null || value.trim().isEmpty()) {
             return fallback;
         }
+
         try {
             return Double.parseDouble(
                     value.replace("R", "")
+                            .replace("r", "")
                             .replace(",", "")
+                            .replaceAll("[^0-9.\\-]", "")
                             .trim()
             );
+
         } catch (NumberFormatException e) {
             return fallback;
         }
     }
 
-    private int dp(float value) {
-        return Math.round(value * getResources().getDisplayMetrics().density);
+    private void showStatus(String message) {
+        txtNoResults.setText(message);
+        txtNoResults.setVisibility(View.VISIBLE);
     }
 
     private void showMessage(String message) {
-        runOnUiThread(() ->
-                Toast.makeText(SearchResultsActivity.this, message, Toast.LENGTH_SHORT).show()
+        runOnUiThread(() -> {
+            if (!isFinishing() && !isDestroyed()) {
+                Toast.makeText(
+                        this,
+                        message,
+                        Toast.LENGTH_SHORT
+                ).show();
+            }
+        });
+    }
+
+    private int dp(float value) {
+        return Math.round(
+                value * getResources()
+                        .getDisplayMetrics()
+                        .density
         );
     }
 
     @Override
     protected void onDestroy() {
-        imageExecutor.shutdownNow();
+        requestVersion++;
+        executor.shutdownNow();
         super.onDestroy();
     }
 }

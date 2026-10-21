@@ -180,7 +180,7 @@ public class CreatePasswordActivity extends AppCompatActivity {
         }
 
         Intent nextIntent =
-                new Intent(CreatePasswordActivity.this, PersonalActivity.class);
+                new Intent(CreatePasswordActivity.this, OtpActivity.class);
 
         nextIntent.putExtra("USER_NAME", username);
         nextIntent.putExtra("USER_SURNAME", surname);

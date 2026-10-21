@@ -22,7 +22,7 @@ public class TenantProfileActivity extends AppCompatActivity {
 
         txtUserName = findViewById(R.id.txtUserName);
 
-        Button btnBack = findViewById(R.id.btnBack);
+        android.view.View btnBack = findViewById(R.id.btnBack);
         Button btnPersonalInfo = findViewById(R.id.btnPersonalInfo);
         Button btnChangeLanguage = findViewById(R.id.btnChangeLanguage);
         Button btnSavedListings = findViewById(R.id.btnSavedListings);

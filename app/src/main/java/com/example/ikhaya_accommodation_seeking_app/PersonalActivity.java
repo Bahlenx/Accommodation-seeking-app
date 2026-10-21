@@ -337,17 +337,25 @@ public class PersonalActivity extends AppCompatActivity {
                         ? "landlord"
                         : "tenant";
 
-        createSupabaseAccount(
-                email,
-                password,
-                firstName,
-                surname,
-                phone,
-                finalRole,
-                province,
-                city,
-                suburb
-        );
+        String existingToken = SupabaseHelper.getAccessToken(this);
+        String existingUserId = SupabaseHelper.getUserId(this);
+        boolean isOtpVerified = getIntent().getBooleanExtra("OTP_VERIFIED", false);
+
+        if (isOtpVerified && existingToken != null && !existingToken.isEmpty() && existingUserId != null && !existingUserId.isEmpty()) {
+            saveProfile(existingToken, existingUserId, finalRole, firstName, surname, phone);
+        } else {
+            createSupabaseAccount(
+                    email,
+                    password,
+                    firstName,
+                    surname,
+                    phone,
+                    finalRole,
+                    province,
+                    city,
+                    suburb
+            );
+        }
     }
 
     private void createSupabaseAccount(
@@ -581,14 +589,14 @@ public class PersonalActivity extends AppCompatActivity {
 
                 connection =
                         SupabaseHelper.createConnection(
-                                "/rest/v1/profiles",
+                                "/rest/v1/profiles?on_conflict=firebase_uid",
                                 "POST",
                                 accessToken
                         );
 
                 connection.setRequestProperty(
                         "Prefer",
-                        "return=minimal"
+                        "resolution=merge-duplicates,return=minimal"
                 );
 
                 connection.setDoOutput(true);

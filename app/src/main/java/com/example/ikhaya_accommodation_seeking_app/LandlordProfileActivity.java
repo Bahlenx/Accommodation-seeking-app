@@ -17,7 +17,7 @@ public class LandlordProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_landlord_profile);
 
-        Button back = findViewById(R.id.btnBack);
+        android.view.View back = findViewById(R.id.btnBack);
 
         if (back != null) {
             back.setOnClickListener(v -> finish());
@@ -86,7 +86,7 @@ public class LandlordProfileActivity extends AppCompatActivity {
     }
 
     private void open(int id, Class<?> destination) {
-        Button button = findViewById(id);
+        android.view.View button = findViewById(id);
 
         if (button != null) {
             button.setOnClickListener(v ->

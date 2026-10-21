@@ -296,6 +296,8 @@ public class RegistrationActivity extends AppCompatActivity {
 
         otpButton.setOnClickListener(v -> {
 
+            SupabaseHelper.clearSession(this);
+
             String firstName =
                     editFirstName.getText()
                             .toString()
@@ -327,7 +329,7 @@ public class RegistrationActivity extends AppCompatActivity {
             Intent intent =
                     new Intent(
                             RegistrationActivity.this,
-                            OtpActivity.class
+                            CreatePasswordActivity.class
                     );
 
             intent.putExtra(

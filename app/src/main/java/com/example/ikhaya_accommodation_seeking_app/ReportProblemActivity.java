@@ -21,7 +21,7 @@ public class ReportProblemActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_report_problem);
 
-        Button btnBack = findViewById(R.id.btnBack);
+        android.view.View btnBack = findViewById(R.id.btnBack);
         Button btnSubmitProblem =
                 findViewById(R.id.btnSubmitProblem);
 
@@ -30,11 +30,14 @@ public class ReportProblemActivity extends AppCompatActivity {
         btnBack.setOnClickListener(v -> finish());
 
         btnSubmitProblem.setOnClickListener(
-                v -> submitReport()
+                v -> {
+                    v.setEnabled(false);
+                    submitReport(v);
+                }
         );
     }
 
-    private void submitReport() {
+    private void submitReport(android.view.View submitButton) {
 
         String description =
                 edtProblem.getText()
@@ -48,7 +51,8 @@ public class ReportProblemActivity extends AppCompatActivity {
                     "Please describe the problem.",
                     Toast.LENGTH_SHORT
             ).show();
-
+            
+            submitButton.setEnabled(true);
             return;
         }
 
@@ -65,7 +69,8 @@ public class ReportProblemActivity extends AppCompatActivity {
                     "Please log in again.",
                     Toast.LENGTH_SHORT
             ).show();
-
+            
+            submitButton.setEnabled(true);
             return;
         }
 
@@ -129,24 +134,26 @@ public class ReportProblemActivity extends AppCompatActivity {
 
                 } else {
 
-                    runOnUiThread(() ->
+                    runOnUiThread(() -> {
+                            submitButton.setEnabled(true);
                             Toast.makeText(
                                     ReportProblemActivity.this,
                                     "Could not submit report.",
                                     Toast.LENGTH_SHORT
-                            ).show()
-                    );
+                            ).show();
+                    });
                 }
 
             } catch (Exception e) {
 
-                runOnUiThread(() ->
+                runOnUiThread(() -> {
+                        submitButton.setEnabled(true);
                         Toast.makeText(
                                 ReportProblemActivity.this,
                                 "Could not submit report.",
                                 Toast.LENGTH_SHORT
-                        ).show()
-                );
+                        ).show();
+                });
 
             } finally {
 
