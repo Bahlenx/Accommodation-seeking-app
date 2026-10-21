@@ -1,11 +1,18 @@
 
 package com.example.ikhaya_accommodation_seeking_app;
 
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.Locale;
+
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
@@ -30,7 +37,7 @@ public class ChatActivity extends AppCompatActivity {
     private LinearLayout messagesContainer;
     private ScrollView chatScrollView;
     private EditText editMessage;
-    private Button btnSend;
+    private android.view.View btnSend;
 
     private String senderId;
     private String senderName;
@@ -68,7 +75,7 @@ public class ChatActivity extends AppCompatActivity {
         editMessage = findViewById(R.id.editMessage);
         btnSend = findViewById(R.id.btnSendMessage);
 
-        Button btnBack = findViewById(R.id.btnBackChat);
+        android.view.View btnBack = findViewById(R.id.btnBackChat);
         TextView txtTitle = findViewById(R.id.txtChatTitle);
         TextView txtSubtitle = findViewById(R.id.txtChatSubtitle);
 
@@ -234,6 +241,7 @@ public class ChatActivity extends AppCompatActivity {
                                             + code + "): " + response,
                                     Toast.LENGTH_LONG
                             ).show();
+                            Log.e("ChatActivity", "Fetch messages HTTP " + code + ": " + response);
                         }
                     });
                 }
@@ -255,6 +263,7 @@ public class ChatActivity extends AppCompatActivity {
         }
 
         messagesContainer.removeAllViews();
+        String lastDateLabel = "";
 
         for (int i = 0; i < messages.length(); i++) {
             JSONObject message = messages.optJSONObject(i);
@@ -274,6 +283,38 @@ public class ChatActivity extends AppCompatActivity {
 
             String messageText =
                     message.optString("message_text", "");
+                    
+            String createdAt = 
+                    message.optString("created_at", "");
+
+            String timeFormatted = "";
+            String dateLabel = "";
+
+            if (!createdAt.isEmpty()) {
+                try {
+                    OffsetDateTime odt = OffsetDateTime.parse(createdAt);
+                    ZonedDateTime localZdt = odt.atZoneSameInstant(ZoneId.systemDefault());
+                    ZonedDateTime now = ZonedDateTime.now(ZoneId.systemDefault());
+
+                    timeFormatted = localZdt.format(DateTimeFormatter.ofPattern("HH:mm"));
+
+                    if (localZdt.toLocalDate().equals(now.toLocalDate())) {
+                        dateLabel = "Today";
+                    } else if (localZdt.toLocalDate().equals(now.toLocalDate().minusDays(1))) {
+                        dateLabel = "Yesterday";
+                    } else {
+                        dateLabel = localZdt.format(DateTimeFormatter.ofPattern("EEE, dd MMM yyyy", Locale.getDefault()));
+                    }
+                } catch (Exception e) {
+                    timeFormatted = "";
+                    dateLabel = "";
+                }
+            }
+
+            if (!dateLabel.isEmpty() && !dateLabel.equals(lastDateLabel)) {
+                addDatePill(dateLabel);
+                lastDateLabel = dateLabel;
+            }
 
             boolean isMe = messageSenderId.equals(senderId);
 
@@ -281,6 +322,7 @@ public class ChatActivity extends AppCompatActivity {
                     messageSenderName,
                     messageSenderRole,
                     messageText,
+                    timeFormatted,
                     isMe
             );
         }
@@ -292,10 +334,37 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
+    private void addDatePill(String dateText) {
+        LinearLayout wrapper = new LinearLayout(this);
+        wrapper.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        ));
+        wrapper.setGravity(Gravity.CENTER);
+        wrapper.setPadding(0, dpToPx(8), 0, dpToPx(8));
+
+        CardView pill = new CardView(this);
+        pill.setCardBackgroundColor(Color.parseColor("#E9ECEF"));
+        pill.setRadius(dpToPx(12));
+        pill.setCardElevation(0f);
+
+        TextView text = new TextView(this);
+        text.setText(dateText);
+        text.setTextColor(Color.parseColor("#495057"));
+        text.setTextSize(11f);
+        text.setTypeface(null, Typeface.BOLD);
+        text.setPadding(dpToPx(12), dpToPx(4), dpToPx(12), dpToPx(4));
+
+        pill.addView(text);
+        wrapper.addView(pill);
+        messagesContainer.addView(wrapper);
+    }
+
     private void addMessageBubble(
             String authorName,
             String authorRole,
             String messageText,
+            String timeFormatted,
             boolean isMe
     ) {
         LinearLayout wrapper = new LinearLayout(this);
@@ -375,6 +444,24 @@ public class ChatActivity extends AppCompatActivity {
         );
 
         content.addView(txtMessage);
+        
+        if (!timeFormatted.isEmpty()) {
+            TextView txtTime = new TextView(this);
+            txtTime.setText(timeFormatted);
+            txtTime.setTextSize(11f);
+            txtTime.setTextColor(Color.parseColor(isMe ? "#5C5F66" : "#868E96"));
+            
+            LinearLayout.LayoutParams timeParams = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+            );
+            timeParams.gravity = Gravity.END;
+            timeParams.topMargin = dpToPx(4);
+            txtTime.setLayoutParams(timeParams);
+            
+            content.addView(txtTime);
+        }
+        
         bubble.addView(content);
         wrapper.addView(bubble);
         messagesContainer.addView(wrapper);
@@ -390,6 +477,18 @@ public class ChatActivity extends AppCompatActivity {
 
         if (messageText.isEmpty()) {
             return;
+        }
+
+        if (senderId == null || senderId.trim().isEmpty()) {
+            senderId = SupabaseHelper.getUserId(this);
+        }
+
+        if (senderName == null || senderName.trim().isEmpty() || "iKhaya User".equals(senderName)) {
+            senderName = getSharedPreferences("iKhayaSession", MODE_PRIVATE).getString("USER_NAME", "User");
+        }
+
+        if (senderRole == null || senderRole.trim().isEmpty() || "Member".equals(senderRole)) {
+            senderRole = getSharedPreferences("iKhayaSession", MODE_PRIVATE).getString("USER_ROLE", "tenant");
         }
 
         if (senderId == null || senderId.isEmpty()
@@ -449,11 +548,13 @@ public class ChatActivity extends AppCompatActivity {
                 if (!success) {
                     error = "Send failed (HTTP "
                             + code + "): " + response;
+                    Log.e("ChatActivity", error);
                 }
 
             } catch (Exception e) {
                 error = "Error sending message: "
                         + e.getMessage();
+                Log.e("ChatActivity", error);
 
             } finally {
                 if (connection != null) {

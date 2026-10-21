@@ -15,7 +15,7 @@ public class AdminInspectionActivity extends AppCompatActivity {
         TextView tvTitle = findViewById(R.id.tvInspectTitle);
         TextView tvDetails = findViewById(R.id.tvInspectDetails);
         TextView tvLandlord = findViewById(R.id.tvInspectLandlord);
-        Button btnBack = findViewById(R.id.btnBackInspection);
+        android.view.View btnBack = findViewById(R.id.btnBackInspection);
 
         tvTitle.setText(getIntent().getStringExtra("LISTING_TITLE"));
         tvDetails.setText(getIntent().getStringExtra("LISTING_DETAILS"));

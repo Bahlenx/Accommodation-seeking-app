@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.os.Handler;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -52,17 +53,36 @@ public class NotificationsActivity extends AppCompatActivity {
         accessToken = SupabaseHelper.getAccessToken(this);
     }
 
+    private final Handler pollHandler = new Handler(android.os.Looper.getMainLooper());
+    private boolean activityVisible = false;
+
+    private final Runnable pollRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (!activityVisible) return;
+            
+            if (userId != null && !userId.isEmpty() && accessToken != null && !accessToken.isEmpty()) {
+                loadPendingChatRequests();
+                loadNotifications();
+                loadUnseenEnquiries();
+            }
+            pollHandler.postDelayed(this, 10000);
+        }
+    };
+
     @Override
     protected void onResume() {
         super.onResume();
+        activityVisible = true;
+        pollHandler.removeCallbacks(pollRunnable);
+        pollHandler.post(pollRunnable);
+    }
 
-        if (userId != null && !userId.isEmpty()
-                && accessToken != null && !accessToken.isEmpty()) {
-
-            loadPendingChatRequests();
-            loadNotifications();
-            loadUnseenEnquiries();
-        }
+    @Override
+    protected void onPause() {
+        activityVisible = false;
+        pollHandler.removeCallbacks(pollRunnable);
+        super.onPause();
     }
 
     private void loadUnseenEnquiries() {

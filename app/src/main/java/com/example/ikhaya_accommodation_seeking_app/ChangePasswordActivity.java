@@ -20,7 +20,7 @@ public class ChangePasswordActivity extends AppCompatActivity {
     private EditText edtNewPassword;
     private EditText edtConfirmPassword;
 
-    private Button btnBack;
+    private android.view.View btnBack;
     private Button btnChangePassword;
 
     private final ExecutorService executor =

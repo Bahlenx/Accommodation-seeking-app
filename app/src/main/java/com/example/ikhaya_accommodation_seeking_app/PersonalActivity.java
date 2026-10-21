@@ -333,7 +333,7 @@ public class PersonalActivity extends AppCompatActivity {
         registerBtn.setEnabled(false);
 
         final String finalRole =
-                "Landlord".equalsIgnoreCase(role)
+                "landlord".equalsIgnoreCase(role)
                         ? "landlord"
                         : "tenant";
 

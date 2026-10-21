@@ -323,8 +323,8 @@ public class RegistrationActivity extends AppCompatActivity {
 
             String role =
                     checkedId == R.id.radioLandlord
-                            ? "Landlord"
-                            : "Resident";
+                            ? "landlord"
+                            : "tenant";
 
             Intent intent =
                     new Intent(

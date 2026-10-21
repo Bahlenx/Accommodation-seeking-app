@@ -18,7 +18,7 @@ public class PersonalInformationActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_personal_information);
 
-        Button btnBack = findViewById(R.id.btnBack);
+        android.view.View btnBack = findViewById(R.id.btnBack);
 
         txtName = findViewById(R.id.txtName);
         txtEmail = findViewById(R.id.txtEmail);

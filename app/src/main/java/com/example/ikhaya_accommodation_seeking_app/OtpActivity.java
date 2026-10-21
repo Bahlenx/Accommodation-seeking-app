@@ -26,7 +26,7 @@ public class OtpActivity extends AppCompatActivity {
     private RadioButton rbEmailOtp, rbSmsOtp;
 
     private String username, surname, phone, email, role, password;
-    private boolean signupCalled = false;
+    private android.os.CountDownTimer resendTimer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +47,8 @@ public class OtpActivity extends AppCompatActivity {
         
         verifyBtn = findViewById(R.id.button);
         btnSendOtp = findViewById(R.id.btnSendOtp);
+        btnSendOtp.setText("Send / Resend OTP Code");
+        
         rgOtpMethod = findViewById(R.id.rgOtpMethod);
         rbEmailOtp = findViewById(R.id.rbEmailOtp);
         rbSmsOtp = findViewById(R.id.rbSmsOtp);
@@ -56,7 +58,7 @@ public class OtpActivity extends AppCompatActivity {
         surname = incomingIntent.getStringExtra("USER_SURNAME");
         phone = incomingIntent.getStringExtra("USER_PHONE");
         email = incomingIntent.getStringExtra("USER_EMAIL");
-        role = incomingIntent.getStringExtra("USER_ROLE");
+        role = "landlord".equalsIgnoreCase(incomingIntent.getStringExtra("USER_ROLE")) ? "landlord" : "tenant";
         password = incomingIntent.getStringExtra("USER_PASSWORD");
 
         rbEmailOtp.setText("Email OTP (" + email + ")");
@@ -71,51 +73,56 @@ public class OtpActivity extends AppCompatActivity {
 
         btnSendOtp.setOnClickListener(v -> sendOtp());
         verifyBtn.setOnClickListener(v -> verifyOtp());
+        
+        if (incomingIntent.getBooleanExtra("INITIAL_OTP_SENT", false)) {
+            Toast.makeText(this, "6-digit OTP sent to " + email + " (check Spam folder too)", Toast.LENGTH_LONG).show();
+            // Don't auto start cooldown on intent, let user do it if needed
+        }
+    }
+    
+    private void startResendCooldown() {
+        btnSendOtp.setEnabled(false);
+        if (resendTimer != null) {
+            resendTimer.cancel();
+        }
+        resendTimer = new android.os.CountDownTimer(60000, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                btnSendOtp.setText("Resend OTP in " + (millisUntilFinished / 1000) + "s");
+            }
+
+            @Override
+            public void onFinish() {
+                btnSendOtp.setEnabled(true);
+                btnSendOtp.setText("Resend OTP Code");
+            }
+        }.start();
     }
 
     private void sendOtp() {
-        btnSendOtp.setEnabled(false);
         new Thread(() -> {
             try {
                 HttpURLConnection connection;
                 JSONObject body = new JSONObject();
                 
                 if (rbEmailOtp.isChecked()) {
-                    if (!signupCalled) {
-                        connection = SupabaseHelper.createConnection("/auth/v1/signup", "POST", null);
-                        body.put("email", email);
-                        body.put("password", password);
-                        
-                        JSONObject metadata = new JSONObject();
-                        metadata.put("first_name", username);
-                        metadata.put("surname", surname);
-                        metadata.put("phone", phone);
-                        metadata.put("role", role);
-                        body.put("data", metadata);
-                    } else {
-                        connection = SupabaseHelper.createConnection("/auth/v1/resend", "POST", null);
-                        body.put("type", "signup");
-                        body.put("email", email);
-                    }
-                } else {
                     connection = SupabaseHelper.createConnection("/auth/v1/otp", "POST", null);
+                    body.put("email", email);
                     body.put("create_user", true);
-                    String formattedPhone = formatPhone(phone);
-                    body.put("phone", formattedPhone);
-                }
-
-                SupabaseHelper.writeJson(connection, body);
-                int code = connection.getResponseCode();
-                String response = SupabaseHelper.readResponse(connection);
-                connection.disconnect();
-
-                if (rbEmailOtp.isChecked()) {
-                    if (code >= 200 && code < 300) {
-                        signupCalled = true;
-                    } else if (code == 400 || code == 422) { // Already registered but possibly unverified
-                        signupCalled = true;
-                        
-                        // Try resend
+                    
+                    JSONObject metadata = new JSONObject();
+                    metadata.put("first_name", username);
+                    metadata.put("surname", surname);
+                    metadata.put("phone", phone);
+                    metadata.put("role", role);
+                    body.put("data", metadata);
+                    
+                    SupabaseHelper.writeJson(connection, body);
+                    int code = connection.getResponseCode();
+                    String response = SupabaseHelper.readResponse(connection);
+                    connection.disconnect();
+                    
+                    if (code >= 400) {
                         connection = SupabaseHelper.createConnection("/auth/v1/resend", "POST", null);
                         JSONObject resendBody = new JSONObject();
                         resendBody.put("type", "signup");
@@ -125,23 +132,50 @@ public class OtpActivity extends AppCompatActivity {
                         response = SupabaseHelper.readResponse(connection);
                         connection.disconnect();
                     }
+                    
+                    final int finalCode = code;
+                    final String finalResponse = response;
+                    
+                    runOnUiThread(() -> {
+                        if (finalCode >= 200 && finalCode < 300) {
+                            Toast.makeText(this, "6-digit OTP sent to " + email, Toast.LENGTH_SHORT).show();
+                            startResendCooldown();
+                        } else {
+                            btnSendOtp.setEnabled(true);
+                            btnSendOtp.setText("Send / Resend OTP Code");
+                            Toast.makeText(this, "Failed to send OTP: " + finalResponse, Toast.LENGTH_LONG).show();
+                        }
+                    });
+                } else {
+                    connection = SupabaseHelper.createConnection("/auth/v1/otp", "POST", null);
+                    body.put("create_user", true);
+                    String formattedPhone = formatPhone(phone);
+                    body.put("phone", formattedPhone);
+                    
+                    SupabaseHelper.writeJson(connection, body);
+                    int code = connection.getResponseCode();
+                    String response = SupabaseHelper.readResponse(connection);
+                    connection.disconnect();
+                    
+                    final int finalCode = code;
+                    final String finalResponse = response;
+                    
+                    runOnUiThread(() -> {
+                        if (finalCode >= 200 && finalCode < 300) {
+                            Toast.makeText(this, "OTP Sent!", Toast.LENGTH_SHORT).show();
+                            startResendCooldown();
+                        } else {
+                            btnSendOtp.setEnabled(true);
+                            btnSendOtp.setText("Send / Resend OTP Code");
+                            Toast.makeText(this, "Failed to send OTP: " + finalResponse, Toast.LENGTH_LONG).show();
+                        }
+                    });
                 }
 
-                final int finalCode = code;
-                final String finalResponse = response;
-
-                runOnUiThread(() -> {
-                    if (finalCode >= 200 && finalCode < 300) {
-                        Toast.makeText(this, "OTP Sent!", Toast.LENGTH_SHORT).show();
-                        btnSendOtp.postDelayed(() -> btnSendOtp.setEnabled(true), 60000);
-                    } else {
-                        btnSendOtp.setEnabled(true);
-                        Toast.makeText(this, "Failed to send OTP: " + finalResponse, Toast.LENGTH_LONG).show();
-                    }
-                });
             } catch (Exception e) {
                 runOnUiThread(() -> {
                     btnSendOtp.setEnabled(true);
+                    btnSendOtp.setText("Send / Resend OTP Code");
                     Toast.makeText(this, "Error sending OTP: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 });
             }
@@ -149,12 +183,12 @@ public class OtpActivity extends AppCompatActivity {
     }
 
     private void verifyOtp() {
-        String enteredCode = otp1.getText().toString() +
-                otp2.getText().toString() +
-                otp3.getText().toString() +
-                otp4.getText().toString() +
-                otp5.getText().toString() +
-                otp6.getText().toString();
+        String enteredCode = otp1.getText().toString().trim() +
+                otp2.getText().toString().trim() +
+                otp3.getText().toString().trim() +
+                otp4.getText().toString().trim() +
+                otp5.getText().toString().trim() +
+                otp6.getText().toString().trim();
 
         if (enteredCode.length() < 6) {
             Toast.makeText(this, "Please enter all 6 digits", Toast.LENGTH_SHORT).show();
@@ -169,7 +203,7 @@ public class OtpActivity extends AppCompatActivity {
                 body.put("token", enteredCode);
                 
                 if (rbEmailOtp.isChecked()) {
-                    body.put("type", "signup");
+                    body.put("type", "email");
                     body.put("email", email);
                 } else {
                     body.put("type", "sms");
@@ -182,13 +216,23 @@ public class OtpActivity extends AppCompatActivity {
                 connection.disconnect();
 
                 if (code >= 400 && rbEmailOtp.isChecked()) {
-                    // Fallback to email type
+                    // Fallback to magiclink
                     connection = SupabaseHelper.createConnection("/auth/v1/verify", "POST", null);
-                    body.put("type", "email");
+                    body.put("type", "magiclink");
                     SupabaseHelper.writeJson(connection, body);
                     code = connection.getResponseCode();
                     response = SupabaseHelper.readResponse(connection);
                     connection.disconnect();
+                    
+                    if (code >= 400) {
+                        // Fallback to signup type for newly created users via OTP
+                        connection = SupabaseHelper.createConnection("/auth/v1/verify", "POST", null);
+                        body.put("type", "signup");
+                        SupabaseHelper.writeJson(connection, body);
+                        code = connection.getResponseCode();
+                        response = SupabaseHelper.readResponse(connection);
+                        connection.disconnect();
+                    }
                 }
 
                 final int finalCode = code;
@@ -208,12 +252,20 @@ public class OtpActivity extends AppCompatActivity {
 
                             Toast.makeText(this, "Verified successfully!", Toast.LENGTH_SHORT).show();
                             
-                            if (rbSmsOtp.isChecked() && !accessToken.isEmpty() && password != null && !password.isEmpty()) {
+                            if (!accessToken.isEmpty() && password != null && !password.isEmpty()) {
                                 new Thread(() -> {
                                     try {
                                         HttpURLConnection putConn = SupabaseHelper.createConnection("/auth/v1/user", "PUT", accessToken);
                                         JSONObject putBody = new JSONObject();
                                         putBody.put("password", password);
+                                        
+                                        JSONObject metadata = new JSONObject();
+                                        metadata.put("first_name", username);
+                                        metadata.put("surname", surname);
+                                        metadata.put("phone", phone);
+                                        metadata.put("role", role);
+                                        putBody.put("data", metadata);
+                                        
                                         SupabaseHelper.writeJson(putConn, putBody);
                                         putConn.getResponseCode();
                                         putConn.disconnect();
@@ -269,7 +321,7 @@ public class OtpActivity extends AppCompatActivity {
                         nextBox.requestFocus();
                     } else {
                         currentBox.clearFocus();
-                        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                        android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                         if (imm != null) {
                             imm.hideSoftInputFromWindow(currentBox.getWindowToken(), 0);
                         }
@@ -277,5 +329,13 @@ public class OtpActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (resendTimer != null) {
+            resendTimer.cancel();
+        }
     }
 }

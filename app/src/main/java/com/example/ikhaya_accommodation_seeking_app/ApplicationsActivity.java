@@ -45,7 +45,7 @@ public class ApplicationsActivity extends AppCompatActivity {
         txtNoApplications =
                 findViewById(R.id.txtNoApplications);
 
-        Button back = findViewById(R.id.btnBack);
+        android.view.View back = findViewById(R.id.btnBack);
 
         if (back != null) {
             back.setOnClickListener(v -> finish());

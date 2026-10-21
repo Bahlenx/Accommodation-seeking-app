@@ -21,7 +21,7 @@ public class LanguageSettingsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_language_settings);
 
-        Button btnBack = findViewById(R.id.btnBack);
+        android.view.View btnBack = findViewById(R.id.btnBack);
         Button btnApply = findViewById(R.id.btnApplyLanguage);
         RadioGroup radioGroup = findViewById(R.id.radioGroupLanguages);
 
