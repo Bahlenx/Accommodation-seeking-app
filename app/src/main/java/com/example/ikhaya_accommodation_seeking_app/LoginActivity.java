@@ -149,12 +149,7 @@ public class LoginActivity extends AppCompatActivity {
                     }
 
                     // Save session tokens to SharedPreferences
-                    getSharedPreferences("iKhayaSession", MODE_PRIVATE)
-                            .edit()
-                            .putString("access_token", accessToken)
-                            .putString("refresh_token", refreshToken)
-                            .putString("user_id", userId)
-                            .apply();
+                    SupabaseHelper.saveSession(LoginActivity.this, accessToken, refreshToken, userId, null, null);
 
                     // Query profile and determine routing
                     getUserRole(accessToken, userId);
@@ -280,11 +275,7 @@ public class LoginActivity extends AppCompatActivity {
                         final String finalRole = profile.optString("role", "tenant");
                         final String finalFullName = profile.optString("full_name", "User");
 
-                        getSharedPreferences("iKhayaSession", MODE_PRIVATE)
-                                .edit()
-                                .putString("USER_NAME", finalFullName)
-                                .putString("USER_ROLE", finalRole)
-                                .apply();
+                        SupabaseHelper.saveSession(LoginActivity.this, null, null, null, finalFullName, finalRole);
 
                         runOnUiThread(() -> routeUser(finalRole, finalFullName));
                     } else {
@@ -335,11 +326,7 @@ public class LoginActivity extends AppCompatActivity {
                     String rawName = (firstName + " " + surname).trim();
                     final String finalFullName = rawName.isEmpty() ? "User" : rawName;
 
-                    getSharedPreferences("iKhayaSession", MODE_PRIVATE)
-                            .edit()
-                            .putString("USER_NAME", finalFullName)
-                            .putString("USER_ROLE", finalRole)
-                            .apply();
+                    SupabaseHelper.saveSession(LoginActivity.this, null, null, null, finalFullName, finalRole);
 
                     runOnUiThread(() -> routeUser(finalRole, finalFullName));
                 } else {

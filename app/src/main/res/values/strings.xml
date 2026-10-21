@@ -623,4 +623,7 @@
     <string name="_2_rooms_10_water_available_10_electricity_available_10_parking_available_10_available_now">2 Rooms\nWater available\nElectricity available\nParking available\nAvailable now</string>
     <string name="affordable_accommodation_located_in_a_convenient_area_of_mthatha_suitable_for_individuals_looking_for_accessible_and_affordable_housing">Affordable accommodation located in a convenient area of Mthatha. Suitable for individuals looking for accessible and affordable housing.</string>
 
+    <string name="property_type" translatable="false">Property Type</string>
+    <string name="rental_applications" translatable="false">Rental Applications</string>
+
 </resources>

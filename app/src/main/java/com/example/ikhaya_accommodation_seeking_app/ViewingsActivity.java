@@ -272,7 +272,8 @@ public class ViewingsActivity extends AppCompatActivity {
                     Intent callIntent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + landlordPhone));
                     startActivity(callIntent);
                 } else {
-                    Toast.makeText(this, "Connecting to host in messages...", Toast.LENGTH_SHORT).show();
+                    Intent chatIntent = new Intent(ViewingsActivity.this, UserSelectionActivity.class);
+                    startActivity(chatIntent);
                 }
             });
             actions.addView(btnContact);

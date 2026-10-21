@@ -24,6 +24,34 @@ public class OuterMainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (SupabaseHelper.isSessionWithinThirtyDays(this) && SupabaseHelper.getUserId(this) != null) {
+            new Thread(() -> {
+                SupabaseHelper.refreshAccessToken(this);
+                String role = getSharedPreferences("iKhayaSession", MODE_PRIVATE).getString("USER_ROLE", "");
+                
+                // If role is missing, we could fetch from Supabase, but for now we fallback to tenant if missing
+                Intent intent;
+                if ("landlord".equalsIgnoreCase(role)) {
+                    intent = new Intent(OuterMainActivity.this, LandlordDashboardActivity.class);
+                } else if ("admin".equalsIgnoreCase(role)) {
+                    intent = new Intent(OuterMainActivity.this, AdminDashboardActivity.class);
+                    String fullName = getSharedPreferences("iKhayaSession", MODE_PRIVATE).getString("USER_NAME", "Admin");
+                    intent.putExtra("USER_ROLE", "ADMIN");
+                    intent.putExtra("USER_NAME", fullName);
+                } else {
+                    intent = new Intent(OuterMainActivity.this, HomeActivity.class);
+                }
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                
+                runOnUiThread(() -> {
+                    startActivity(intent);
+                    finish();
+                });
+            }).start();
+            return;
+        }
+
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_greetingpage);

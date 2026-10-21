@@ -126,8 +126,30 @@ public class LandlordDashboardActivity extends AppCompatActivity {
         View navProfile = findViewById(R.id.navProfile);
 
         if (btnBack != null) {
-            btnBack.setOnClickListener(v -> finish());
+            if (isTaskRoot()) {
+                btnBack.setVisibility(View.GONE);
+            } else {
+                btnBack.setOnClickListener(v -> finish());
+            }
         }
+
+        getOnBackPressedDispatcher().addCallback(this, new androidx.activity.OnBackPressedCallback(true) {
+            private long backPressedTime = 0;
+            @Override
+            public void handleOnBackPressed() {
+                if (isTaskRoot()) {
+                    long currentTime = System.currentTimeMillis();
+                    if (currentTime - backPressedTime > 2000) {
+                        Toast.makeText(LandlordDashboardActivity.this, "Press back again to exit iKhaya", Toast.LENGTH_SHORT).show();
+                        backPressedTime = currentTime;
+                    } else {
+                        moveTaskToBack(true);
+                    }
+                } else {
+                    finish();
+                }
+            }
+        });
 
         if (btnProfile != null) {
             btnProfile.setOnClickListener(v ->

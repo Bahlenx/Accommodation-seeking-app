@@ -368,12 +368,12 @@ public class PersonalActivity extends AppCompatActivity {
 
             try {
 
-                connection =
-                        SupabaseHelper.createConnection(
-                                "/auth/v1/signup",
-                                "POST",
-                                null
-                        );
+                String existingToken = SupabaseHelper.getAccessToken(PersonalActivity.this);
+                if (existingToken != null && !existingToken.isEmpty()) {
+                    connection = SupabaseHelper.createConnection("/auth/v1/user", "PUT", existingToken);
+                } else {
+                    connection = SupabaseHelper.createConnection("/auth/v1/signup", "POST", null);
+                }
 
                 connection.setDoOutput(true);
 
@@ -521,24 +521,7 @@ public class PersonalActivity extends AppCompatActivity {
                         return;
                     }
 
-                    getSharedPreferences(
-                            "iKhayaSession",
-                            MODE_PRIVATE
-                    )
-                            .edit()
-                            .putString(
-                                    "access_token",
-                                    accessToken
-                            )
-                            .putString(
-                                    "refresh_token",
-                                    refreshToken
-                            )
-                            .putString(
-                                    "user_id",
-                                    userId
-                            )
-                            .apply();
+                    SupabaseHelper.saveSession(PersonalActivity.this, accessToken, refreshToken, userId, null, null);
 
                     saveProfile(
                             accessToken,
@@ -654,11 +637,7 @@ public class PersonalActivity extends AppCompatActivity {
 
                     runOnUiThread(() -> {
 
-                        getSharedPreferences("iKhayaSession", MODE_PRIVATE)
-                                .edit()
-                                .putString("USER_NAME", fullName)
-                                .putString("USER_ROLE", role)
-                                .apply();
+                        SupabaseHelper.saveSession(PersonalActivity.this, null, null, null, fullName, role);
 
                         Toast.makeText(
                                 PersonalActivity.this,

@@ -99,6 +99,24 @@ public class HomeActivity extends AppCompatActivity {
         rvPopularPlaces = findViewById(R.id.rvPopularPlaces);
         rvExploreNewArea = findViewById(R.id.rvExploreNewArea);
 
+        getOnBackPressedDispatcher().addCallback(this, new androidx.activity.OnBackPressedCallback(true) {
+            private long backPressedTime = 0;
+            @Override
+            public void handleOnBackPressed() {
+                if (isTaskRoot()) {
+                    long currentTime = System.currentTimeMillis();
+                    if (currentTime - backPressedTime > 2000) {
+                        android.widget.Toast.makeText(HomeActivity.this, "Press back again to exit iKhaya", android.widget.Toast.LENGTH_SHORT).show();
+                        backPressedTime = currentTime;
+                    } else {
+                        moveTaskToBack(true);
+                    }
+                } else {
+                    finish();
+                }
+            }
+        });
+
         if (rvPopularPlaces != null) {
             rvPopularPlaces.setLayoutManager(
                     new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
