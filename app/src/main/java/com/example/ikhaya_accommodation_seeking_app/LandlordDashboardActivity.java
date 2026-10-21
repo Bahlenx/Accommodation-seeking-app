@@ -11,7 +11,6 @@ import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -45,6 +44,7 @@ public class LandlordDashboardActivity extends AppCompatActivity {
     private View landlordMessageDot;
     private View enquiriesCardDot;
     private View rentalApplicationsCardDot;
+    private View viewingRequestsCardDot;
 
     private LinearLayout listingsContainer;
 
@@ -72,13 +72,23 @@ public class LandlordDashboardActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_landlord_dashboard);
 
-        txtTotalListings = findViewById(R.id.txtTotalListings);
-        txtAvailableListings = findViewById(R.id.txtAvailableListings);
-        txtPendingListings = findViewById(R.id.txtPendingListings);
-        txtNoListings = findViewById(R.id.txtNoListings);
-        txtWelcome = findViewById(R.id.txtWelcome);
+        txtTotalListings =
+                findViewById(R.id.txtTotalListings);
+
+        txtAvailableListings =
+                findViewById(R.id.txtAvailableListings);
+
+        txtPendingListings =
+                findViewById(R.id.txtPendingListings);
+
+        txtNoListings =
+                findViewById(R.id.txtNoListings);
+
+        txtWelcome =
+                findViewById(R.id.txtWelcome);
 
         txtNotificationBadge =
                 findViewById(R.id.txtNotificationBadge);
@@ -92,25 +102,42 @@ public class LandlordDashboardActivity extends AppCompatActivity {
         rentalApplicationsCardDot =
                 findViewById(R.id.rentalApplicationsCardDot);
 
+        viewingRequestsCardDot =
+                findViewById(R.id.viewingRequestsCardDot);
+
         listingsContainer =
                 findViewById(R.id.listingsContainer);
 
         SharedPreferences prefs =
-                getSharedPreferences("iKhayaSession", MODE_PRIVATE);
+                getSharedPreferences(
+                        "iKhayaSession",
+                        MODE_PRIVATE
+                );
 
-        String userName = prefs.getString(
-                "USER_NAME",
-                "Landlord"
-        );
+        String userName =
+                prefs.getString("USER_NAME", "Landlord");
 
         if (txtWelcome != null) {
             txtWelcome.setText("Welcome, " + userName);
         }
 
-        View btnBack = findViewById(R.id.btnBack);
-        View btnProfile = findViewById(R.id.btnProfile);
-        View btnAddListing = findViewById(R.id.btnAddListing);
-        View btnLandlordChat = findViewById(R.id.btnLandlordChat);
+        setupNavigation();
+    }
+
+    private void setupNavigation() {
+
+        View btnBack =
+                findViewById(R.id.btnBack);
+
+        View btnProfile =
+                findViewById(R.id.btnProfile);
+
+        View btnAddListing =
+                findViewById(R.id.btnAddListing);
+
+        View btnLandlordChat =
+                findViewById(R.id.btnLandlordChat);
+
         View btnNotificationsLandlord =
                 findViewById(R.id.btnNotificationsLandlord);
 
@@ -120,10 +147,20 @@ public class LandlordDashboardActivity extends AppCompatActivity {
         View cardRentalApplications =
                 findViewById(R.id.cardRentalApplications);
 
-        View navHome = findViewById(R.id.navHome);
-        View navListings = findViewById(R.id.navListings);
-        View navAdd = findViewById(R.id.navAdd);
-        View navProfile = findViewById(R.id.navProfile);
+        View cardViewingRequests =
+                findViewById(R.id.cardViewingRequests);
+
+        View navHome =
+                findViewById(R.id.navHome);
+
+        View navListings =
+                findViewById(R.id.navListings);
+
+        View navAdd =
+                findViewById(R.id.navAdd);
+
+        View navProfile =
+                findViewById(R.id.navProfile);
 
         if (btnBack != null) {
             if (isTaskRoot()) {
@@ -133,117 +170,167 @@ public class LandlordDashboardActivity extends AppCompatActivity {
             }
         }
 
-        getOnBackPressedDispatcher().addCallback(this, new androidx.activity.OnBackPressedCallback(true) {
-            private long backPressedTime = 0;
-            @Override
-            public void handleOnBackPressed() {
-                if (isTaskRoot()) {
-                    long currentTime = System.currentTimeMillis();
-                    if (currentTime - backPressedTime > 2000) {
-                        Toast.makeText(LandlordDashboardActivity.this, "Press back again to exit iKhaya", Toast.LENGTH_SHORT).show();
-                        backPressedTime = currentTime;
-                    } else {
-                        moveTaskToBack(true);
+        getOnBackPressedDispatcher().addCallback(
+                this,
+                new androidx.activity.OnBackPressedCallback(true) {
+
+                    private long backPressedTime = 0;
+
+                    @Override
+                    public void handleOnBackPressed() {
+
+                        if (isTaskRoot()) {
+                            long currentTime =
+                                    System.currentTimeMillis();
+
+                            if (currentTime - backPressedTime > 2000) {
+
+                                Toast.makeText(
+                                        LandlordDashboardActivity.this,
+                                        "Press back again to exit iKhaya",
+                                        Toast.LENGTH_SHORT
+                                ).show();
+
+                                backPressedTime = currentTime;
+
+                            } else {
+                                moveTaskToBack(true);
+                            }
+
+                        } else {
+                            finish();
+                        }
                     }
-                } else {
-                    finish();
                 }
-            }
-        });
+        );
 
         if (btnProfile != null) {
             btnProfile.setOnClickListener(v ->
-                    startActivity(new Intent(
-                            this,
-                            LandlordProfileActivity.class
-                    ))
+                    startActivity(
+                            new Intent(
+                                    this,
+                                    LandlordProfileActivity.class
+                            )
+                    )
             );
         }
 
         if (btnAddListing != null) {
             btnAddListing.setOnClickListener(v ->
-                    startActivity(new Intent(
-                            this,
-                            AddListingActivity.class
-                    ))
+                    startActivity(
+                            new Intent(
+                                    this,
+                                    AddListingActivity.class
+                            )
+                    )
             );
         }
 
         if (btnLandlordChat != null) {
             btnLandlordChat.setOnClickListener(v ->
-                    startActivity(new Intent(
-                            this,
-                            UserSelectionActivity.class
-                    ))
+                    startActivity(
+                            new Intent(
+                                    this,
+                                    UserSelectionActivity.class
+                            )
+                    )
             );
         }
 
         if (btnNotificationsLandlord != null) {
-            btnNotificationsLandlord.setOnClickListener(v ->
-                    showLandlordNotifications()
+            btnNotificationsLandlord.setOnClickListener(
+                    v -> showLandlordNotifications()
             );
         }
 
         if (cardPendingApplications != null) {
             cardPendingApplications.setOnClickListener(v -> {
+
                 Intent intent = new Intent(
                         this,
                         EnquiriesActivity.class
                 );
 
                 intent.putExtra("isLandlord", true);
+
                 startActivity(intent);
             });
         }
 
         if (cardRentalApplications != null) {
             cardRentalApplications.setOnClickListener(v -> {
+
                 Intent intent = new Intent(
                         this,
                         ApplicationsActivity.class
                 );
 
                 intent.putExtra("isLandlord", true);
+
+                startActivity(intent);
+            });
+        }
+
+        // NEW: VIEWING REQUESTS
+        if (cardViewingRequests != null) {
+            cardViewingRequests.setOnClickListener(v -> {
+
+                Intent intent = new Intent(
+                        this,
+                        LandlordViewingsActivity.class
+                );
+
+                intent.putExtra("isLandlord", true);
+
                 startActivity(intent);
             });
         }
 
         if (navHome != null) {
             navHome.setOnClickListener(v -> {
-                View scroll = findViewById(R.id.dashboardScroll);
+
+                View scroll =
+                        findViewById(R.id.dashboardScroll);
 
                 if (scroll != null) {
                     scroll.scrollTo(0, 0);
                 }
 
                 refreshDashboardData();
+                refreshEnquiryBadge();
             });
         }
 
         if (navListings != null) {
             navListings.setOnClickListener(v ->
-                    startActivity(new Intent(
-                            this,
-                            MyListingsActivity.class
-                    ))
+                    startActivity(
+                            new Intent(
+                                    this,
+                                    MyListingsActivity.class
+                            )
+                    )
             );
         }
 
         if (navAdd != null) {
             navAdd.setOnClickListener(v ->
-                    startActivity(new Intent(
-                            this,
-                            AddListingActivity.class
-                    ))
+                    startActivity(
+                            new Intent(
+                                    this,
+                                    AddListingActivity.class
+                            )
+                    )
             );
         }
 
         if (navProfile != null) {
             navProfile.setOnClickListener(v ->
-                    startActivity(new Intent(
-                            this,
-                            LandlordProfileActivity.class
-                    ))
+                    startActivity(
+                            new Intent(
+                                    this,
+                                    LandlordProfileActivity.class
+                            )
+                    )
             );
         }
     }
@@ -253,6 +340,7 @@ public class LandlordDashboardActivity extends AppCompatActivity {
         super.onResume();
 
         dashboardVisible = true;
+
         refreshDashboardData();
 
         badgeHandler.removeCallbacks(badgePoll);
@@ -262,27 +350,38 @@ public class LandlordDashboardActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         dashboardVisible = false;
+
         badgeHandler.removeCallbacks(badgePoll);
+
         super.onPause();
     }
 
     private void refreshDashboardData() {
-        String userId = SupabaseHelper.getUserId(this);
-        String token = SupabaseHelper.getAccessToken(this);
+
+        String userId =
+                SupabaseHelper.getUserId(this);
+
+        String token =
+                SupabaseHelper.getAccessToken(this);
 
         if (userId == null || userId.isEmpty()
                 || token == null || token.isEmpty()) {
+
             showMessage("Please sign in again.");
             return;
         }
 
         if (txtNoListings != null) {
-            txtNoListings.setText("Loading your listings...");
+            txtNoListings.setText(
+                    "Loading your listings..."
+            );
+
             txtNoListings.setVisibility(View.VISIBLE);
         }
 
         executor.execute(() -> {
             try {
+
                 JSONArray listings = fetchRows(
                         "/rest/v1/listings?select=*"
                                 + "&landlord_uid=eq."
@@ -296,25 +395,35 @@ public class LandlordDashboardActivity extends AppCompatActivity {
                 int pending = 0;
 
                 for (int i = 0; i < listings.length(); i++) {
-                    JSONObject listing = listings.optJSONObject(i);
+
+                    JSONObject listing =
+                            listings.optJSONObject(i);
 
                     if (listing == null) {
                         continue;
                     }
 
                     String availability =
-                            listing.optString("availability", "");
+                            listing.optString(
+                                    "availability",
+                                    ""
+                            );
 
                     String status =
-                            listing.optString("status", "");
+                            listing.optString(
+                                    "status",
+                                    ""
+                            );
 
                     if ("available".equalsIgnoreCase(availability)
                             || "available".equalsIgnoreCase(status)) {
+
                         available++;
                     }
 
                     if ("pending".equalsIgnoreCase(availability)
                             || "pending".equalsIgnoreCase(status)) {
+
                         pending++;
                     }
                 }
@@ -324,6 +433,7 @@ public class LandlordDashboardActivity extends AppCompatActivity {
                 final int pendingCount = pending;
 
                 runOnUiThread(() -> {
+
                     if (isFinishing() || isDestroyed()) {
                         return;
                     }
@@ -353,10 +463,17 @@ public class LandlordDashboardActivity extends AppCompatActivity {
                     listingsContainer.removeAllViews();
 
                     if (totalCount == 0) {
+
                         if (txtNoListings != null) {
-                            txtNoListings.setText("No listings yet.");
-                            txtNoListings.setVisibility(View.VISIBLE);
+                            txtNoListings.setText(
+                                    "No listings yet."
+                            );
+
+                            txtNoListings.setVisibility(
+                                    View.VISIBLE
+                            );
                         }
+
                         return;
                     }
 
@@ -365,6 +482,7 @@ public class LandlordDashboardActivity extends AppCompatActivity {
                     }
 
                     for (int i = 0; i < listings.length(); i++) {
+
                         JSONObject listing =
                                 listings.optJSONObject(i);
 
@@ -375,8 +493,16 @@ public class LandlordDashboardActivity extends AppCompatActivity {
                 });
 
             } catch (Exception e) {
-                Log.e(TAG, "Could not load listings", e);
-                showMessage("Could not load your listings.");
+
+                Log.e(
+                        TAG,
+                        "Could not load listings",
+                        e
+                );
+
+                showMessage(
+                        "Could not load your listings."
+                );
             }
         });
     }
@@ -385,6 +511,7 @@ public class LandlordDashboardActivity extends AppCompatActivity {
             JSONObject listing,
             String token
     ) {
+
         if (listingsContainer == null) {
             return;
         }
@@ -410,13 +537,14 @@ public class LandlordDashboardActivity extends AppCompatActivity {
         TextView rooms =
                 card.findViewById(R.id.txtListingRooms);
 
-        Button editButton =
+        View editButton =
                 card.findViewById(R.id.btnEditListing);
 
-        Button deleteButton =
+        View deleteButton =
                 card.findViewById(R.id.btnDeleteListing);
 
-        String listingId = listing.optString("id", "");
+        String listingId =
+                listing.optString("id", "");
 
         String propertyName = firstValue(
                 listing,
@@ -478,6 +606,7 @@ public class LandlordDashboardActivity extends AppCompatActivity {
         }
 
         if (image != null) {
+
             image.setImageResource(
                     android.R.drawable.ic_menu_gallery
             );
@@ -496,17 +625,29 @@ public class LandlordDashboardActivity extends AppCompatActivity {
         }
 
         if (!listingId.isEmpty() && image != null) {
-            loadListingImage(listingId, token, image);
+            loadListingImage(
+                    listingId,
+                    token,
+                    image
+            );
         }
 
         card.setOnClickListener(v -> {
+
             Intent intent = new Intent(
                     this,
                     MyListingsActivity.class
             );
 
-            intent.putExtra("LISTING_ID", listingId);
-            intent.putExtra("listingId", listingId);
+            intent.putExtra(
+                    "LISTING_ID",
+                    listingId
+            );
+
+            intent.putExtra(
+                    "listingId",
+                    listingId
+            );
 
             startActivity(intent);
         });
@@ -519,21 +660,27 @@ public class LandlordDashboardActivity extends AppCompatActivity {
             String token,
             ImageView imageView
     ) {
+
         executor.execute(() -> {
+
             HttpURLConnection connection = null;
             HttpURLConnection imageConnection = null;
 
             try {
-                connection = SupabaseHelper.createConnection(
-                        "/rest/v1/listing_images?select=image_url"
-                                + "&listing_id=eq."
-                                + SupabaseHelper.encode(listingId)
-                                + "&limit=1",
-                        "GET",
-                        token
-                );
 
-                int code = connection.getResponseCode();
+                connection =
+                        SupabaseHelper.createConnection(
+                                "/rest/v1/listing_images?select=image_url"
+                                        + "&listing_id=eq."
+                                        + SupabaseHelper.encode(listingId)
+                                        + "&limit=1",
+                                "GET",
+                                token
+                        );
+
+                int code =
+                        connection.getResponseCode();
+
                 String response =
                         SupabaseHelper.readResponse(connection);
 
@@ -541,14 +688,16 @@ public class LandlordDashboardActivity extends AppCompatActivity {
                     return;
                 }
 
-                JSONArray images = new JSONArray(response);
+                JSONArray images =
+                        new JSONArray(response);
 
                 if (images.length() == 0) {
                     return;
                 }
 
-                String imageUrl = images.getJSONObject(0)
-                        .optString("image_url", "");
+                String imageUrl =
+                        images.getJSONObject(0)
+                                .optString("image_url", "");
 
                 if (imageUrl.isEmpty()) {
                     return;
@@ -568,7 +717,9 @@ public class LandlordDashboardActivity extends AppCompatActivity {
                             BitmapFactory.decodeStream(stream);
 
                     if (bitmap != null) {
+
                         runOnUiThread(() -> {
+
                             if (!isFinishing() && !isDestroyed()) {
                                 imageView.setImageBitmap(bitmap);
                             }
@@ -577,9 +728,15 @@ public class LandlordDashboardActivity extends AppCompatActivity {
                 }
 
             } catch (Exception e) {
-                Log.e(TAG, "Could not load listing image", e);
+
+                Log.e(
+                        TAG,
+                        "Could not load listing image",
+                        e
+                );
 
             } finally {
+
                 if (connection != null) {
                     connection.disconnect();
                 }
@@ -592,8 +749,12 @@ public class LandlordDashboardActivity extends AppCompatActivity {
     }
 
     private void showLandlordNotifications() {
-        String landlordId = SupabaseHelper.getUserId(this);
-        String token = SupabaseHelper.getAccessToken(this);
+
+        String landlordId =
+                SupabaseHelper.getUserId(this);
+
+        String token =
+                SupabaseHelper.getAccessToken(this);
 
         if (landlordId == null || landlordId.isEmpty()
                 || token == null || token.isEmpty()) {
@@ -608,10 +769,13 @@ public class LandlordDashboardActivity extends AppCompatActivity {
         }
 
         executor.execute(() -> {
+
             try {
+
                 JSONArray messages = fetchRows(
                         "/rest/v1/messages"
-                                + "?select=id,sender_id,sender_name,sender_role,message_text"
+                                + "?select=id,sender_id,sender_name,"
+                                + "sender_role,message_text"
                                 + "&receiver_id=eq."
                                 + SupabaseHelper.encode(landlordId)
                                 + "&order=created_at.desc"
@@ -625,14 +789,17 @@ public class LandlordDashboardActivity extends AppCompatActivity {
                                 MODE_PRIVATE
                         );
 
-                String seenIds = seenPrefs.getString(
-                        "seen_ids_" + landlordId,
-                        ""
-                );
+                String seenIds =
+                        seenPrefs.getString(
+                                "seen_ids_" + landlordId,
+                                ""
+                        );
 
-                Set<String> knownIds = new HashSet<>();
+                Set<String> knownIds =
+                        new HashSet<>();
 
                 for (String id : seenIds.split("\\|")) {
+
                     if (!id.isEmpty()) {
                         knownIds.add(id);
                     }
@@ -642,6 +809,7 @@ public class LandlordDashboardActivity extends AppCompatActivity {
                 int unreadCount = 0;
 
                 for (int i = 0; i < messages.length(); i++) {
+
                     JSONObject message =
                             messages.optJSONObject(i);
 
@@ -649,9 +817,11 @@ public class LandlordDashboardActivity extends AppCompatActivity {
                         continue;
                     }
 
-                    String id = message.optString("id", "");
+                    String id =
+                            message.optString("id", "");
 
-                    if (id.isEmpty() || knownIds.contains(id)) {
+                    if (id.isEmpty()
+                            || knownIds.contains(id)) {
                         continue;
                     }
 
@@ -666,6 +836,7 @@ public class LandlordDashboardActivity extends AppCompatActivity {
                 int count = unreadCount;
 
                 runOnUiThread(() -> {
+
                     if (isFinishing() || isDestroyed()) {
                         return;
                     }
@@ -673,21 +844,28 @@ public class LandlordDashboardActivity extends AppCompatActivity {
                     AlertDialog.Builder dialog =
                             new AlertDialog.Builder(this)
                                     .setTitle("Notifications")
-                                    .setNegativeButton("Close", null)
+                                    .setNegativeButton(
+                                            "Close",
+                                            null
+                                    )
                                     .setNeutralButton(
                                             "View all notifications",
                                             (d, w) ->
-                                                    startActivity(new Intent(
-                                                            this,
-                                                            NotificationsActivity.class
-                                                    ))
+                                                    startActivity(
+                                                            new Intent(
+                                                                    this,
+                                                                    NotificationsActivity.class
+                                                            )
+                                                    )
                                     );
 
                     if (latest != null) {
-                        String senderName = latest.optString(
-                                "sender_name",
-                                "Resident"
-                        ).trim();
+
+                        String senderName =
+                                latest.optString(
+                                        "sender_name",
+                                        "Resident"
+                                ).trim();
 
                         if (senderName.isEmpty()) {
                             senderName = "Resident";
@@ -695,12 +873,15 @@ public class LandlordDashboardActivity extends AppCompatActivity {
 
                         String message =
                                 "You have a new message from resident "
-                                        + senderName + ".";
+                                        + senderName
+                                        + ".";
 
                         if (count > 1) {
-                            message += "\n\nYou have "
-                                    + count
-                                    + " new messages in total.";
+
+                            message +=
+                                    "\n\nYou have "
+                                            + count
+                                            + " new messages in total.";
                         }
 
                         dialog.setMessage(message);
@@ -708,13 +889,16 @@ public class LandlordDashboardActivity extends AppCompatActivity {
                         dialog.setPositiveButton(
                                 "Open Messages",
                                 (d, w) ->
-                                        startActivity(new Intent(
-                                                this,
-                                                UserSelectionActivity.class
-                                        ))
+                                        startActivity(
+                                                new Intent(
+                                                        this,
+                                                        UserSelectionActivity.class
+                                                )
+                                        )
                         );
 
                     } else {
+
                         dialog.setMessage(
                                 "You have no new direct messages."
                         );
@@ -724,6 +908,7 @@ public class LandlordDashboardActivity extends AppCompatActivity {
                 });
 
             } catch (Exception e) {
+
                 Log.e(
                         TAG,
                         "Could not load message notifications",
@@ -731,7 +916,9 @@ public class LandlordDashboardActivity extends AppCompatActivity {
                 );
 
                 runOnUiThread(() -> {
+
                     if (!isFinishing() && !isDestroyed()) {
+
                         Toast.makeText(
                                 this,
                                 "Could not load message notifications.",
@@ -744,12 +931,16 @@ public class LandlordDashboardActivity extends AppCompatActivity {
     }
 
     private void refreshEnquiryBadge() {
+
         if (badgeLoading || executor.isShutdown()) {
             return;
         }
 
-        String userId = SupabaseHelper.getUserId(this);
-        String token = SupabaseHelper.getAccessToken(this);
+        String userId =
+                SupabaseHelper.getUserId(this);
+
+        String token =
+                SupabaseHelper.getAccessToken(this);
 
         if (userId == null || userId.isEmpty()
                 || token == null || token.isEmpty()) {
@@ -758,21 +949,29 @@ public class LandlordDashboardActivity extends AppCompatActivity {
             setDot(landlordMessageDot, false);
             setDot(enquiriesCardDot, false);
             setDot(rentalApplicationsCardDot, false);
+            setDot(viewingRequestsCardDot, false);
+
             return;
         }
 
         badgeLoading = true;
 
         executor.execute(() -> {
+
             boolean unseenEnquiries = false;
             boolean unseenChatRequests = false;
             boolean unseenNotifications = false;
             boolean unseenRentalApplications = false;
             boolean unseenMessages = false;
 
-            String encodedId = SupabaseHelper.encode(userId);
+            // NEW: pending viewing requests
+            boolean unseenViewingRequests = false;
+
+            String encodedId =
+                    SupabaseHelper.encode(userId);
 
             try {
+
                 JSONArray rows = fetchRows(
                         "/rest/v1/enquiries?select=id"
                                 + "&landlord_uid=eq."
@@ -789,10 +988,16 @@ public class LandlordDashboardActivity extends AppCompatActivity {
                         );
 
             } catch (Exception e) {
-                Log.w(TAG, "Enquiries check failed", e);
+
+                Log.w(
+                        TAG,
+                        "Enquiries check failed",
+                        e
+                );
             }
 
             try {
+
                 JSONArray rows = fetchRows(
                         "/rest/v1/chat_requests?select=id"
                                 + "&receiver_id=eq."
@@ -810,10 +1015,16 @@ public class LandlordDashboardActivity extends AppCompatActivity {
                         );
 
             } catch (Exception e) {
-                Log.w(TAG, "Chat request check failed", e);
+
+                Log.w(
+                        TAG,
+                        "Chat request check failed",
+                        e
+                );
             }
 
             try {
+
                 JSONArray rows = fetchRows(
                         "/rest/v1/notifications?select=id"
                                 + "&user_uid=eq."
@@ -830,10 +1041,16 @@ public class LandlordDashboardActivity extends AppCompatActivity {
                         );
 
             } catch (Exception e) {
-                Log.w(TAG, "Notifications check failed", e);
+
+                Log.w(
+                        TAG,
+                        "Notifications check failed",
+                        e
+                );
             }
 
             try {
+
                 JSONArray rows = fetchRows(
                         "/rest/v1/rental_applications?select=id"
                                 + "&landlord_uid=eq."
@@ -851,10 +1068,46 @@ public class LandlordDashboardActivity extends AppCompatActivity {
                         );
 
             } catch (Exception e) {
-                Log.w(TAG, "Applications check failed", e);
+
+                Log.w(
+                        TAG,
+                        "Applications check failed",
+                        e
+                );
+            }
+
+            // NEW: check pending viewing requests
+            try {
+
+                JSONArray rows = fetchRows(
+                        "/rest/v1/viewings?select=id"
+                                + "&landlord_uid=eq."
+                                + encodedId
+                                + "&status=eq."
+                                + SupabaseHelper.encode("Pending Host"),
+                        token
+                );
+
+                unseenViewingRequests =
+                        rows.length() > 0;
+
+                Log.d(
+                        TAG,
+                        "Pending viewing requests: "
+                                + rows.length()
+                );
+
+            } catch (Exception e) {
+
+                Log.e(
+                        TAG,
+                        "Viewing requests check failed",
+                        e
+                );
             }
 
             try {
+
                 JSONArray rows = fetchRows(
                         "/rest/v1/messages?select=id"
                                 + "&receiver_id=eq."
@@ -874,30 +1127,47 @@ public class LandlordDashboardActivity extends AppCompatActivity {
 
                 Log.d(
                         TAG,
-                        "Incoming messages found: " + rows.length()
+                        "Incoming messages found: "
+                                + rows.length()
                 );
 
             } catch (Exception e) {
-                Log.e(TAG, "Messages check failed", e);
+
+                Log.e(
+                        TAG,
+                        "Messages check failed",
+                        e
+                );
             }
 
-            boolean showEnquiries = unseenEnquiries;
-            boolean showRentals = unseenRentalApplications;
-            boolean showMessages = unseenMessages;
+            boolean showEnquiries =
+                    unseenEnquiries;
+
+            boolean showRentals =
+                    unseenRentalApplications;
+
+            boolean showMessages =
+                    unseenMessages;
+
+            boolean showViewings =
+                    unseenViewingRequests;
 
             boolean showMainNotification =
                     unseenEnquiries
                             || unseenChatRequests
                             || unseenNotifications
                             || unseenRentalApplications
-                            || unseenMessages;
+                            || unseenMessages
+                            || unseenViewingRequests;
 
             badgeLoading = false;
 
             runOnUiThread(() -> {
+
                 if (!dashboardVisible
                         || isFinishing()
                         || isDestroyed()) {
+
                     return;
                 }
 
@@ -920,14 +1190,27 @@ public class LandlordDashboardActivity extends AppCompatActivity {
                         rentalApplicationsCardDot,
                         showRentals
                 );
+
+                // NEW: viewing request notification dot
+                setDot(
+                        viewingRequestsCardDot,
+                        showViewings
+                );
             });
         });
     }
 
-    private void setDot(View dot, boolean visible) {
+    private void setDot(
+            View dot,
+            boolean visible
+    ) {
+
         if (dot != null) {
+
             dot.setVisibility(
-                    visible ? View.VISIBLE : View.GONE
+                    visible
+                            ? View.VISIBLE
+                            : View.GONE
             );
         }
     }
@@ -936,29 +1219,38 @@ public class LandlordDashboardActivity extends AppCompatActivity {
             String endpoint,
             String token
     ) throws Exception {
+
         HttpURLConnection connection = null;
 
         try {
-            connection = SupabaseHelper.createConnection(
-                    endpoint,
-                    "GET",
-                    token
-            );
 
-            int code = connection.getResponseCode();
+            connection =
+                    SupabaseHelper.createConnection(
+                            endpoint,
+                            "GET",
+                            token
+                    );
+
+            int code =
+                    connection.getResponseCode();
 
             String response =
                     SupabaseHelper.readResponse(connection);
 
             if (code < 200 || code >= 300) {
+
                 throw new java.io.IOException(
-                        "HTTP " + code + ": " + response
+                        "HTTP "
+                                + code
+                                + ": "
+                                + response
                 );
             }
 
             return new JSONArray(response);
 
         } finally {
+
             if (connection != null) {
                 connection.disconnect();
             }
@@ -969,11 +1261,17 @@ public class LandlordDashboardActivity extends AppCompatActivity {
             JSONObject object,
             String... keys
     ) {
+
         for (String key : keys) {
-            String value = object.optString(key, "");
+
+            String value =
+                    object.optString(key, "");
 
             if (!value.trim().isEmpty()
-                    && !"null".equalsIgnoreCase(value.trim())) {
+                    && !"null".equalsIgnoreCase(
+                    value.trim()
+            )) {
+
                 return value.trim();
             }
         }
@@ -982,8 +1280,11 @@ public class LandlordDashboardActivity extends AppCompatActivity {
     }
 
     private void showMessage(String message) {
+
         runOnUiThread(() -> {
+
             if (!isFinishing() && !isDestroyed()) {
+
                 Toast.makeText(
                         this,
                         message,
@@ -995,9 +1296,13 @@ public class LandlordDashboardActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+
         dashboardVisible = false;
+
         badgeHandler.removeCallbacks(badgePoll);
+
         executor.shutdownNow();
+
         super.onDestroy();
     }
 }

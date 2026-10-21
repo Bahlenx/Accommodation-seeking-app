@@ -3,19 +3,15 @@ package com.example.ikhaya_accommodation_seeking_app;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.Typeface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -30,7 +26,6 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
@@ -41,25 +36,16 @@ public class SearchResultsActivity extends AppCompatActivity {
     private static final String TAG = "SearchResults";
 
     private LinearLayout searchResultsContainer;
-    private LinearLayout filtersPanel;
-
     private TextView txtNoResults;
-    private TextView txtResultsCount;
-
     private EditText searchBox;
     private EditText filterMaxPrice;
     private EditText filterMinRooms;
-
     private Spinner filterPropertyType;
-    private ProgressBar progressSearch;
 
-    private final ExecutorService executor =
-            Executors.newFixedThreadPool(4);
+    private final ExecutorService imageExecutor =
+            Executors.newFixedThreadPool(3);
 
     private JSONArray allListings = new JSONArray();
-
-    private boolean loading = false;
-    private int requestVersion = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,32 +55,11 @@ public class SearchResultsActivity extends AppCompatActivity {
         searchResultsContainer =
                 findViewById(R.id.searchResultsContainer);
 
-        filtersPanel =
-                findViewById(R.id.filtersPanel);
-
-        txtNoResults =
-                findViewById(R.id.txtNoResults);
-
-        txtResultsCount =
-                findViewById(R.id.txtResultsCount);
-
-        searchBox =
-                findViewById(R.id.searchBox);
-
-        filterMaxPrice =
-                findViewById(R.id.filterMaxPrice);
-
-        filterMinRooms =
-                findViewById(R.id.filterMinRooms);
-
-        filterPropertyType =
-                findViewById(R.id.filterPropertyType);
-
-        progressSearch =
-                findViewById(R.id.progressSearch);
-
-        Button btnBack =
-                findViewById(R.id.btnBack);
+        txtNoResults = findViewById(R.id.txtNoResults);
+        searchBox = findViewById(R.id.searchBox);
+        filterMaxPrice = findViewById(R.id.filterMaxPrice);
+        filterMinRooms = findViewById(R.id.filterMinRooms);
+        filterPropertyType = findViewById(R.id.filterPropertyType);
 
         Button btnSearchAgain =
                 findViewById(R.id.btnSearchAgain);
@@ -102,183 +67,59 @@ public class SearchResultsActivity extends AppCompatActivity {
         Button btnApplyFilters =
                 findViewById(R.id.btnApplyFilters);
 
-        View btnFilterToggle =
-                findViewById(R.id.btnFilterToggle);
+        Button btnBack = findViewById(R.id.btnBack);
 
-        String query =
-                getIntent().getStringExtra("SEARCH_QUERY");
-
-        if (query == null || query.trim().isEmpty()) {
-            query = getIntent().getStringExtra("QUERY");
-        }
-
-        if (query == null || query.trim().isEmpty()) {
-            query = getIntent().getStringExtra("SEARCH_TEXT");
-        }
+        String query = getIntent().getStringExtra("SEARCH_QUERY");
 
         if (query == null) {
             query = "";
         }
 
         searchBox.setText(query.trim());
-        searchBox.setSelection(searchBox.length());
 
-        setupPropertyTypeSpinner(new JSONArray());
+        btnSearchAgain.setOnClickListener(v ->
+                loadListingsFromSupabase()
+        );
+
+        btnApplyFilters.setOnClickListener(v ->
+                displayFilteredListings()
+        );
 
         if (btnBack != null) {
             btnBack.setOnClickListener(v -> finish());
         }
 
-        if (btnSearchAgain != null) {
-            btnSearchAgain.setOnClickListener(v ->
-                    loadListingsFromSupabase()
-            );
-        }
-
-        if (btnApplyFilters != null) {
-            btnApplyFilters.setOnClickListener(v ->
-                    displayFilteredListings()
-            );
-        }
-
-        if (btnFilterToggle != null) {
-            btnFilterToggle.setOnClickListener(v -> {
-                boolean show =
-                        filtersPanel.getVisibility() != View.VISIBLE;
-
-                filtersPanel.setVisibility(
-                        show ? View.VISIBLE : View.GONE
-                );
-            });
-        }
-
-        searchBox.setOnEditorActionListener(
-                (textView, actionId, event) -> {
-                    if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                        loadListingsFromSupabase();
-                        return true;
-                    }
-
-                    return false;
-                }
-        );
-
         loadListingsFromSupabase();
     }
 
-    private void setupPropertyTypeSpinner(JSONArray listings) {
-        String previousSelection = "";
-
-        if (filterPropertyType.getSelectedItem() != null) {
-            previousSelection =
-                    filterPropertyType.getSelectedItem().toString();
-        }
-
-        String initialIntentType = getIntent().getStringExtra("PROPERTY_TYPE");
-        if (previousSelection.isEmpty() && initialIntentType != null && !initialIntentType.trim().isEmpty()) {
-            previousSelection = initialIntentType.trim();
-        }
-
-        List<String> types = new ArrayList<>();
-        types.add(getString(R.string.search_any_type));
-
-        for (int i = 0; i < listings.length(); i++) {
-            JSONObject listing = listings.optJSONObject(i);
-
-            if (listing == null) {
-                continue;
-            }
-
-            String type = firstValue(
-                    listing,
-                    "property_type",
-                    "type",
-                    "accommodation_type"
-            );
-
-            if (type.isEmpty()) {
-                continue;
-            }
-
-            boolean exists = false;
-
-            for (String existing : types) {
-                if (existing.equalsIgnoreCase(type)) {
-                    exists = true;
-                    break;
-                }
-            }
-
-            if (!exists) {
-                types.add(type);
-            }
-        }
-
-        if (types.size() > 2) {
-            List<String> sorted =
-                    new ArrayList<>(types.subList(1, types.size()));
-
-            Collections.sort(
-                    sorted,
-                    String.CASE_INSENSITIVE_ORDER
-            );
-
-            types.clear();
-            types.add(getString(R.string.search_any_type));
-            types.addAll(sorted);
-        }
-
-        ArrayAdapter<String> adapter =
-                new ArrayAdapter<>(
-                        this,
-                        android.R.layout.simple_spinner_item,
-                        types
-                );
-
-        adapter.setDropDownViewResource(
-                android.R.layout.simple_spinner_dropdown_item
-        );
-
-        filterPropertyType.setAdapter(adapter);
-
-        for (int i = 0; i < types.size(); i++) {
-            if (types.get(i).equalsIgnoreCase(previousSelection)) {
-                filterPropertyType.setSelection(i);
-                break;
-            }
-        }
-    }
-
     private void loadListingsFromSupabase() {
-        if (loading || executor.isShutdown()) {
-            return;
-        }
 
         String accessToken =
                 SupabaseHelper.getAccessToken(this);
 
         if (accessToken == null || accessToken.trim().isEmpty()) {
-            showMessage(getString(R.string.search_login_again));
-            showStatus("Please sign in to search properties.");
+            Toast.makeText(
+                    this,
+                    getString(R.string.search_login_again),
+                    Toast.LENGTH_SHORT
+            ).show();
             return;
         }
 
-        loading = true;
-        final int currentRequest = ++requestVersion;
-
-        progressSearch.setVisibility(View.VISIBLE);
         txtNoResults.setVisibility(View.GONE);
-        txtResultsCount.setText("Searching properties...");
         searchResultsContainer.removeAllViews();
 
-        executor.execute(() -> {
+        new Thread(() -> {
+
             HttpURLConnection connection = null;
 
             try {
+
                 String endpoint =
-                        "/rest/v1/listings?select=*"
+                        "/rest/v1/listings"
+                                + "?select=*"
                                 + "&order=created_at.desc"
-                                + "&limit=1000";
+                                + "&limit=100";
 
                 connection = SupabaseHelper.createConnection(
                         endpoint,
@@ -292,62 +133,49 @@ public class SearchResultsActivity extends AppCompatActivity {
                         SupabaseHelper.readResponse(connection);
 
                 if (responseCode < 200 || responseCode >= 300) {
-                    throw new java.io.IOException(
-                            "HTTP " + responseCode + ": " + response
+
+                    Log.e(
+                            TAG,
+                            "Supabase returned HTTP "
+                                    + responseCode
+                                    + ": "
+                                    + response
                     );
+
+                    showMessage(
+                            getString(R.string.search_load_failed)
+                    );
+                    return;
                 }
 
                 JSONArray results = new JSONArray(response);
 
                 runOnUiThread(() -> {
-                    if (isFinishing()
-                            || isDestroyed()
-                            || currentRequest != requestVersion) {
-                        return;
-                    }
-
-                    loading = false;
-                    progressSearch.setVisibility(View.GONE);
-
                     allListings = results;
-
-                    setupPropertyTypeSpinner(allListings);
                     displayFilteredListings();
                 });
 
             } catch (Exception e) {
-                Log.e(TAG, "Could not load listings", e);
 
-                runOnUiThread(() -> {
-                    if (isFinishing()
-                            || isDestroyed()
-                            || currentRequest != requestVersion) {
-                        return;
-                    }
+                Log.e(TAG, "Error loading listings", e);
 
-                    loading = false;
-                    progressSearch.setVisibility(View.GONE);
-
-                    txtResultsCount.setText("Search unavailable");
-
-                    showStatus(
-                            "Could not load properties. "
-                                    + "Please check your connection and try again."
-                    );
-
-                    showMessage(getString(R.string.search_load_failed));
-                });
+                showMessage(
+                        getString(R.string.search_load_error)
+                );
 
             } finally {
+
                 if (connection != null) {
                     connection.disconnect();
                 }
             }
-        });
+
+        }).start();
     }
 
     private void displayFilteredListings() {
-        if (loading) {
+
+        if (searchResultsContainer == null) {
             return;
         }
 
@@ -384,86 +212,48 @@ public class SearchResultsActivity extends AppCompatActivity {
         List<JSONObject> matches = new ArrayList<>();
 
         for (int i = 0; i < allListings.length(); i++) {
+
             JSONObject listing = allListings.optJSONObject(i);
 
             if (listing == null) {
                 continue;
             }
 
-            String name = firstValue(
-                    listing,
-                    "property_name",
-                    "title",
-                    "name"
+            String name = clean(
+                    listing.optString("property_name", "")
             );
 
-            String location = firstValue(
-                    listing,
-                    "location",
-                    "address",
-                    "area"
+            String location = clean(
+                    listing.optString("location", "")
             );
 
-            String type = firstValue(
-                    listing,
-                    "property_type",
-                    "type",
-                    "accommodation_type"
-            );
-
-            String description = firstValue(
-                    listing,
-                    "description"
-            );
-
-            String priceText = firstValue(
-                    listing,
-                    "price",
-                    "monthly_price"
-            );
-
-            String roomsText = firstValue(
-                    listing,
-                    "rooms",
-                    "bedrooms",
-                    "room_count"
+            String type = clean(
+                    listing.optString("property_type", "")
             );
 
             double price = parseNumber(
-                    priceText,
+                    listing.optString("price", ""),
                     Double.NaN
             );
 
             int rooms = (int) parseNumber(
-                    roomsText,
+                    listing.optString("rooms", ""),
                     -1
             );
 
-            String searchable =
-                    (name + " "
-                            + location + " "
-                            + type + " "
-                            + description)
-                            .toLowerCase(Locale.ROOT);
-
-            String[] queryWords = query.split("\\s+");
-
-            boolean matchesQuery = true;
-
-            for (String word : queryWords) {
-                if (!word.isEmpty() && !searchable.contains(word)) {
-                    matchesQuery = false;
-                    break;
-                }
-            }
+            boolean matchesQuery =
+                    query.isEmpty()
+                            || name.toLowerCase(Locale.ROOT)
+                            .contains(query)
+                            || location.toLowerCase(Locale.ROOT)
+                            .contains(query);
 
             if (!matchesQuery) {
                 continue;
             }
 
-            if (!maxPriceText.isEmpty()
-                    && (!Double.isFinite(price)
-                    || price > maxPrice)) {
+            if (Double.isFinite(maxPrice)
+                    && (!Double.isFinite(price) || price > maxPrice)) {
                 continue;
             }
 
@@ -481,19 +271,8 @@ public class SearchResultsActivity extends AppCompatActivity {
 
         searchResultsContainer.removeAllViews();
 
-        txtResultsCount.setText(
-                matches.size() == 1
-                        ? "1 property found"
-                        : matches.size() + " properties found"
-        );
-
         if (matches.isEmpty()) {
-            showStatus(
-                    allListings.length() == 0
-                            ? "No properties are available right now."
-                            : "No properties match your search. "
-                            + "Try another location or adjust your filters."
-            );
+            txtNoResults.setVisibility(View.VISIBLE);
             return;
         }
 
@@ -505,6 +284,7 @@ public class SearchResultsActivity extends AppCompatActivity {
     }
 
     private boolean isAnyType(String type) {
+
         return type == null
                 || type.isEmpty()
                 || type.equalsIgnoreCase(
@@ -513,57 +293,43 @@ public class SearchResultsActivity extends AppCompatActivity {
     }
 
     private void addListingCard(JSONObject listing) {
-        String listingId = firstValue(
-                listing,
-                "id"
+
+        String listingId = clean(
+                listing.optString("id", "")
         );
 
-        String propertyName = firstValue(
-                listing,
-                "property_name",
-                "title",
-                "name"
+        String propertyName = clean(
+                listing.optString("property_name", "")
         );
 
-        String location = firstValue(
-                listing,
-                "location",
-                "address",
-                "area"
+        String location = clean(
+                listing.optString("location", "")
         );
 
-        String price = firstValue(
-                listing,
-                "price",
-                "monthly_price"
+        String price = clean(
+                listing.optString("price", "")
         );
 
-        String rooms = firstValue(
-                listing,
-                "rooms",
-                "bedrooms",
-                "room_count"
+        String rooms = clean(
+                listing.optString("rooms", "")
         );
 
-        String propertyType = firstValue(
-                listing,
-                "property_type",
-                "type",
-                "accommodation_type"
+        String propertyType = clean(
+                listing.optString("property_type", "")
         );
 
-        String imageUrl = firstValue(
-                listing,
-                "image_url",
-                "photo_url",
-                "cover_image"
+        String imageUrl = clean(
+                listing.optString("image_url", "")
         );
 
         CardView card = new CardView(this);
-        card.setRadius(dp(16));
-        card.setCardElevation(dp(2));
+
+        card.setRadius(dp(14));
+        card.setCardElevation(dp(3));
         card.setUseCompatPadding(true);
-        card.setCardBackgroundColor(Color.WHITE);
+        card.setCardBackgroundColor(
+                getColor(R.color.white)
+        );
 
         LinearLayout.LayoutParams cardParams =
                 new LinearLayout.LayoutParams(
@@ -571,20 +337,17 @@ public class SearchResultsActivity extends AppCompatActivity {
                         ViewGroup.LayoutParams.WRAP_CONTENT
                 );
 
-        cardParams.setMargins(0, 0, 0, dp(14));
+        cardParams.setMargins(0, 0, 0, dp(16));
         card.setLayoutParams(cardParams);
 
         LinearLayout content = new LinearLayout(this);
+
         content.setOrientation(LinearLayout.VERTICAL);
-        content.setPadding(
-                dp(14),
-                dp(14),
-                dp(14),
-                dp(14)
-        );
+        content.setPadding(dp(12), dp(12), dp(12), dp(12));
 
         card.addView(content);
 
+        // Accommodation image appears before the details button.
         ImageView image = new ImageView(this);
 
         image.setLayoutParams(
@@ -600,7 +363,7 @@ public class SearchResultsActivity extends AppCompatActivity {
         );
 
         image.setBackgroundColor(
-                Color.parseColor("#FAF7F5")
+                getColor(R.color.appBackground)
         );
 
         image.setImageResource(
@@ -621,9 +384,12 @@ public class SearchResultsActivity extends AppCompatActivity {
                         : propertyName
         );
 
-        title.setTextSize(19);
-        title.setTextColor(Color.parseColor("#1F1614"));
-        title.setTypeface(null, Typeface.BOLD);
+        title.setTextSize(20);
+        title.setTextColor(getColor(R.color.black));
+        title.setTypeface(
+                null,
+                android.graphics.Typeface.BOLD
+        );
 
         LinearLayout.LayoutParams titleParams =
                 new LinearLayout.LayoutParams(
@@ -631,8 +397,9 @@ public class SearchResultsActivity extends AppCompatActivity {
                         ViewGroup.LayoutParams.WRAP_CONTENT
                 );
 
-        titleParams.topMargin = dp(12);
+        titleParams.topMargin = dp(10);
         title.setLayoutParams(titleParams);
+
         content.addView(title);
 
         TextView details = new TextView(this);
@@ -679,7 +446,7 @@ public class SearchResultsActivity extends AppCompatActivity {
 
         details.setText(detailsText.toString());
         details.setTextSize(15);
-        details.setTextColor(Color.parseColor("#756763"));
+        details.setTextColor(getColor(R.color.black));
 
         LinearLayout.LayoutParams detailsParams =
                 new LinearLayout.LayoutParams(
@@ -687,10 +454,10 @@ public class SearchResultsActivity extends AppCompatActivity {
                         ViewGroup.LayoutParams.WRAP_CONTENT
                 );
 
-        detailsParams.topMargin = dp(8);
-        detailsParams.bottomMargin = dp(12);
-
+        detailsParams.topMargin = dp(6);
+        detailsParams.bottomMargin = dp(8);
         details.setLayoutParams(detailsParams);
+
         content.addView(details);
 
         Button viewButton = new Button(this);
@@ -700,17 +467,24 @@ public class SearchResultsActivity extends AppCompatActivity {
         );
 
         viewButton.setAllCaps(false);
+
         viewButton.setBackgroundResource(
                 R.drawable.selector_regular_button
         );
 
-        viewButton.setTextColor(Color.WHITE);
+        viewButton.setTextColor(
+                getColor(R.color.white)
+        );
 
-        View.OnClickListener openDetailsListener = v -> {
+        viewButton.setOnClickListener(v -> {
+
             if (listingId.isEmpty()) {
+
                 Toast.makeText(
-                        this,
-                        getString(R.string.search_listing_unavailable),
+                        SearchResultsActivity.this,
+                        getString(
+                                R.string.search_listing_unavailable
+                        ),
                         Toast.LENGTH_SHORT
                 ).show();
 
@@ -725,10 +499,7 @@ public class SearchResultsActivity extends AppCompatActivity {
             intent.putExtra("LISTING_ID", listingId);
 
             startActivity(intent);
-        };
-
-        viewButton.setOnClickListener(openDetailsListener);
-        card.setOnClickListener(openDetailsListener);
+        });
 
         content.addView(viewButton);
         searchResultsContainer.addView(card);
@@ -738,45 +509,50 @@ public class SearchResultsActivity extends AppCompatActivity {
             String imageUrl,
             ImageView imageView
     ) {
-        if (executor.isShutdown()) {
-            return;
-        }
 
-        executor.execute(() -> {
+        imageExecutor.execute(() -> {
+
             HttpURLConnection connection = null;
 
             try {
+
                 connection = (HttpURLConnection)
                         new URL(imageUrl).openConnection();
 
                 connection.setConnectTimeout(15000);
                 connection.setReadTimeout(20000);
                 connection.setRequestMethod("GET");
+                connection.connect();
 
-                int responseCode =
-                        connection.getResponseCode();
+                int responseCode = connection.getResponseCode();
 
                 if (responseCode >= 200 && responseCode < 300) {
+
                     try (InputStream input =
                                  connection.getInputStream()) {
 
                         Bitmap bitmap =
                                 BitmapFactory.decodeStream(input);
 
-                        if (bitmap != null) {
+                        if (bitmap != null && !isFinishing()
+                                && !isDestroyed()) {
+
                             runOnUiThread(() -> {
-                                if (!isFinishing() && !isDestroyed()) {
-                                    imageView.setImageBitmap(bitmap);
-                                }
+                                imageView.setImageBitmap(bitmap);
+                                imageView.setScaleType(
+                                        ImageView.ScaleType.CENTER_CROP
+                                );
                             });
                         }
                     }
                 }
 
             } catch (Exception e) {
-                Log.w(TAG, "Could not load image", e);
+
+                Log.e(TAG, "Could not load listing image", e);
 
             } finally {
+
                 if (connection != null) {
                     connection.disconnect();
                 }
@@ -784,24 +560,8 @@ public class SearchResultsActivity extends AppCompatActivity {
         });
     }
 
-    private String firstValue(
-            JSONObject object,
-            String... keys
-    ) {
-        for (String key : keys) {
-            String value = clean(
-                    object.optString(key, "")
-            );
-
-            if (!value.isEmpty()) {
-                return value;
-            }
-        }
-
-        return "";
-    }
-
     private String clean(String value) {
+
         if (value == null
                 || "null".equalsIgnoreCase(value.trim())) {
             return "";
@@ -814,6 +574,7 @@ public class SearchResultsActivity extends AppCompatActivity {
             String value,
             double fallback
     ) {
+
         if (value == null || value.trim().isEmpty()) {
             return fallback;
         }
@@ -821,46 +582,37 @@ public class SearchResultsActivity extends AppCompatActivity {
         try {
             return Double.parseDouble(
                     value.replace("R", "")
-                            .replace("r", "")
                             .replace(",", "")
-                            .replaceAll("[^0-9.\\-]", "")
                             .trim()
             );
-
         } catch (NumberFormatException e) {
             return fallback;
         }
     }
 
-    private void showStatus(String message) {
-        txtNoResults.setText(message);
-        txtNoResults.setVisibility(View.VISIBLE);
-    }
-
-    private void showMessage(String message) {
-        runOnUiThread(() -> {
-            if (!isFinishing() && !isDestroyed()) {
-                Toast.makeText(
-                        this,
-                        message,
-                        Toast.LENGTH_SHORT
-                ).show();
-            }
-        });
-    }
-
     private int dp(float value) {
-        return Math.round(
+
+        return (int) (
                 value * getResources()
                         .getDisplayMetrics()
                         .density
         );
     }
 
+    private void showMessage(String message) {
+
+        runOnUiThread(() ->
+                Toast.makeText(
+                        SearchResultsActivity.this,
+                        message,
+                        Toast.LENGTH_SHORT
+                ).show()
+        );
+    }
+
     @Override
     protected void onDestroy() {
-        requestVersion++;
-        executor.shutdownNow();
+        imageExecutor.shutdownNow();
         super.onDestroy();
     }
 }

@@ -4,85 +4,166 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FAF7F5">
+    android:background="@color/appBackground">
 
-    <LinearLayout android:gravity="center_vertical" android:id="@+id/searchResultsHeader" android:layout_height="wrap_content" android:layout_width="0dp" android:orientation="horizontal" android:paddingBottom="16dp" android:paddingHorizontal="20dp" android:paddingTop="16dp" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent">
+    <LinearLayout
+        android:id="@+id/searchResultsHeader"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="16dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
-        <Button android:background="@drawable/selector_regular_button" android:id="@+id/btnBack" android:layout_height="44dp" android:layout_width="wrap_content" android:text="@string/back" android:textAllCaps="false" android:textColor="#7A2525" app:backgroundTint="@null"/>
+        <Button
+            android:id="@+id/btnBack"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:background="@drawable/selector_regular_button"
+            android:text="@string/back"
+            android:textColor="@color/white"
+            android:textAllCaps="false" />
 
-        <TextView android:id="@+id/txtSearchResultsTitle" android:layout_height="wrap_content" android:layout_marginStart="16dp" android:layout_weight="1" android:layout_width="0dp" android:text="@string/search_results_title" android:textColor="#1F1614" android:textSize="22sp" android:textStyle="bold"/>
+        <TextView
+            android:id="@+id/txtSearchResultsTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="12dp"
+            android:text="@string/search_results_title"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            android:textStyle="bold" />
 
     </LinearLayout>
 
-    <androidx.core.widget.NestedScrollView
+    <ScrollView
         android:id="@+id/searchResultsScroll"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:clipToPadding="false"
         android:fillViewport="true"
         app:layout_constraintTop_toBottomOf="@id/searchResultsHeader"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <LinearLayout android:layout_height="wrap_content" android:layout_width="match_parent" android:orientation="vertical" android:paddingBottom="32dp" android:paddingHorizontal="20dp">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="16dp"
+            android:paddingBottom="24dp">
 
-            <LinearLayout android:gravity="center_vertical" android:layout_height="wrap_content" android:layout_width="match_parent" android:orientation="horizontal">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
-                <androidx.cardview.widget.CardView
+                <EditText
+                    android:id="@+id/searchBox"
                     android:layout_width="0dp"
-                    android:layout_height="54dp"
+                    android:layout_height="52dp"
                     android:layout_weight="1"
-                    android:layout_marginEnd="12dp"
-                    app:cardBackgroundColor="#FFFFFF"
-                    app:cardCornerRadius="27dp"
-                    app:cardElevation="2dp">
+                    android:background="@drawable/custom_input"
+                    android:inputType="textCapSentences"
+                    android:paddingHorizontal="12dp"
+                    android:textColor="@color/black"
+                    android:textColorHint="#777777" />
 
-                    <LinearLayout android:gravity="center_vertical" android:layout_height="match_parent" android:layout_width="match_parent" android:orientation="horizontal" android:paddingHorizontal="16dp">
-
-                        <ImageView android:contentDescription="Search" android:layout_height="18dp" android:layout_width="18dp" android:src="@drawable/search" app:tint="#8C7A70"/>
-
-                        <EditText android:background="@null" android:hint="Search places or properties" android:id="@+id/searchBox" android:imeOptions="actionSearch" android:inputType="textCapWords" android:layout_height="match_parent" android:layout_marginStart="10dp" android:layout_weight="1" android:layout_width="0dp" android:singleLine="true" android:textColor="#1F1614" android:textColorHint="#9E8F87" android:textSize="14sp"/>
-
-                    </LinearLayout>
-                </androidx.cardview.widget.CardView>
-
-                <FrameLayout android:background="@drawable/bg_circle_white" android:clickable="true" android:contentDescription="Show or hide filters" android:elevation="2dp" android:focusable="true" android:id="@+id/btnFilterToggle" android:layout_height="54dp" android:layout_width="54dp">
-
-                    <ImageView android:layout_gravity="center" android:layout_height="20dp" android:layout_width="20dp" android:src="@android:drawable/ic_menu_sort_by_size" app:tint="#1F1614"/>
-
-                </FrameLayout>
-            </LinearLayout>
-
-            <Button android:background="@drawable/selector_regular_button" android:id="@+id/btnSearchAgain" android:layout_height="48dp" android:layout_marginTop="12dp" android:layout_width="match_parent" android:text="@string/search_again" android:textAllCaps="false" android:textColor="#FFFFFF" android:textSize="15sp" app:backgroundTint="@null"/>
-
-            <LinearLayout android:background="@drawable/bg_circle_white" android:id="@+id/filtersPanel" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:layout_width="match_parent" android:orientation="vertical" android:padding="16dp" android:visibility="gone">
-
-                <TextView android:id="@+id/txtFiltersTitle" android:layout_height="wrap_content" android:layout_width="match_parent" android:text="@string/search_filters_title" android:textColor="#1F1614" android:textSize="18sp" android:textStyle="bold"/>
-
-                <LinearLayout android:id="@+id/filterRow" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:layout_width="match_parent" android:orientation="vertical">
-
-                    <EditText android:background="@drawable/custom_input" android:hint="@string/search_max_price_hint" android:id="@+id/filterMaxPrice" android:inputType="numberDecimal" android:layout_height="50dp" android:layout_marginBottom="10dp" android:layout_width="match_parent" android:paddingHorizontal="12dp" android:textColor="#1F1614" android:textColorHint="#9E8F87"/>
-
-                    <EditText android:background="@drawable/custom_input" android:hint="@string/search_min_rooms_hint" android:id="@+id/filterMinRooms" android:inputType="number" android:layout_height="50dp" android:layout_marginBottom="10dp" android:layout_width="match_parent" android:paddingHorizontal="12dp" android:textColor="#1F1614" android:textColorHint="#9E8F87"/>
-
-                    <Spinner android:background="@drawable/custom_input" android:id="@+id/filterPropertyType" android:layout_height="50dp" android:layout_width="match_parent" android:paddingHorizontal="8dp"/>
-
-                </LinearLayout>
-
-                <Button android:background="@drawable/selector_regular_button" android:id="@+id/btnApplyFilters" android:layout_height="48dp" android:layout_marginTop="14dp" android:layout_width="match_parent" android:text="@string/search_apply_filters" android:textAllCaps="false" android:textColor="#FFFFFF" app:backgroundTint="@null"/>
+                <Button
+                    android:id="@+id/btnSearchAgain"
+                    android:layout_width="wrap_content"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/selector_regular_button"
+                    android:text="@string/search_again"
+                    android:textColor="@color/white"
+                    android:textAllCaps="false" />
 
             </LinearLayout>
 
-            <TextView android:id="@+id/txtResultsCount" android:layout_height="wrap_content" android:layout_marginTop="22dp" android:layout_width="match_parent" android:textColor="#756763" android:textSize="14sp"/>
+            <TextView
+                android:id="@+id/txtFiltersTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:text="@string/search_filters_title"
+                android:textColor="@color/black"
+                android:textSize="17sp"
+                android:textStyle="bold" />
 
-            <ProgressBar android:id="@+id/progressSearch" android:layout_gravity="center_horizontal" android:layout_height="40dp" android:layout_marginTop="24dp" android:layout_width="40dp" android:visibility="gone" style="?android:attr/progressBarStyle"/>
+            <LinearLayout
+                android:id="@+id/filterRow"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="8dp">
 
-            <TextView android:gravity="center" android:id="@+id/txtNoResults" android:layout_height="wrap_content" android:layout_marginTop="20dp" android:layout_width="match_parent" android:padding="20dp" android:text="@string/search_no_results" android:textColor="#756763" android:textSize="15sp" android:visibility="gone"/>
+                <EditText
+                    android:id="@+id/filterMaxPrice"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_marginBottom="8dp"
+                    android:background="@drawable/custom_input"
+                    android:hint="@string/search_max_price_hint"
+                    android:inputType="numberDecimal"
+                    android:paddingHorizontal="12dp"
+                    android:textColor="@color/black"
+                    android:textColorHint="#777777" />
 
-            <LinearLayout android:id="@+id/searchResultsContainer" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:layout_width="match_parent" android:orientation="vertical"/>
+                <EditText
+                    android:id="@+id/filterMinRooms"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_marginBottom="8dp"
+                    android:background="@drawable/custom_input"
+                    android:hint="@string/search_min_rooms_hint"
+                    android:inputType="number"
+                    android:paddingHorizontal="12dp"
+                    android:textColor="@color/black"
+                    android:textColorHint="#777777" />
+
+                <Spinner
+                    android:id="@+id/filterPropertyType"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:background="@drawable/custom_input"
+                    android:paddingHorizontal="8dp" />
+
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btnApplyFilters"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/selector_regular_button"
+                android:text="@string/search_apply_filters"
+                android:textColor="@color/white"
+                android:textAllCaps="false" />
+
+            <TextView
+                android:id="@+id/txtNoResults"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:gravity="center"
+                android:text="@string/search_no_results"
+                android:textColor="@color/black"
+                android:textSize="16sp"
+                android:visibility="gone" />
+
+            <LinearLayout
+                android:id="@+id/searchResultsContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="16dp" />
 
         </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
+    </ScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

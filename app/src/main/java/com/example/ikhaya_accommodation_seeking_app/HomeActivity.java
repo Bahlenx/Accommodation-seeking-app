@@ -1,3 +1,4 @@
+
 package com.example.ikhaya_accommodation_seeking_app;
 
 import android.content.Intent;
@@ -8,8 +9,6 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
@@ -17,10 +16,9 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
@@ -43,12 +41,8 @@ import java.util.concurrent.Executors;
 
 public class HomeActivity extends AppCompatActivity {
 
-    private static final String TAG = "HomeActivity";
-
     private RecyclerView rvPopularPlaces;
     private RecyclerView rvExploreNewArea;
-
-    private EditText searchAccommodation;
 
     private View notificationDot;
     private View messageDot;
@@ -67,10 +61,16 @@ public class HomeActivity extends AppCompatActivity {
     private JSONArray latestMessages;
     private JSONArray latestApplications;
     private JSONArray latestChatRequests;
+    private JSONArray latestViewings;
+    private JSONArray latestViewingNotificationKeys;
 
     private String notificationUserId;
 
+    private boolean hasUnreadLandlordMessages = false;
+    private boolean hasUnreadViewingDecisions = false;
     private boolean homeVisible = false;
+
+    private JSONObject newestLandlordMessage;
 
     private final Runnable notificationPoll = new Runnable() {
         @Override
@@ -94,37 +94,6 @@ public class HomeActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_home);
 
-        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
-            private long backPressedTime = 0;
-
-            @Override
-            public void handleOnBackPressed() {
-                if (isTaskRoot()) {
-                    long currentTime = System.currentTimeMillis();
-                    if (currentTime - backPressedTime > 2000) {
-                        Toast.makeText(HomeActivity.this, "Press back again to exit iKhaya", Toast.LENGTH_SHORT).show();
-                        backPressedTime = currentTime;
-                    } else {
-                        moveTaskToBack(true);
-                    }
-                } else {
-                    finish();
-                }
-            }
-        });
-
-        setupWindowInsets();
-        setupRecyclerViews();
-        setupNotificationViews();
-        setupPersonalizedGreeting();
-        setupHeaderButtons();
-        setupSearch();
-        setupBottomNavigation();
-
-        loadHomeFeedFromSupabase();
-    }
-
-    private void setupWindowInsets() {
         View homeRoot =
                 findViewById(R.id.homeRoot);
 
@@ -132,60 +101,68 @@ public class HomeActivity extends AppCompatActivity {
                 findViewById(R.id.floatingBottomNav);
 
         if (floatingBottomNav != null) {
-            floatingBottomNav.setPadding(0, 0, 0, 0);
+            floatingBottomNav.setPadding(
+                    0,
+                    0,
+                    0,
+                    0
+            );
         }
 
-        if (homeRoot == null) {
-            return;
-        }
+        if (homeRoot != null) {
+            ViewCompat.setOnApplyWindowInsetsListener(
+                    homeRoot,
+                    (v, insets) -> {
+                        Insets statusBar =
+                                insets.getInsets(
+                                        WindowInsetsCompat.Type.statusBars()
+                                );
 
-        ViewCompat.setOnApplyWindowInsetsListener(
-                homeRoot,
-                (v, insets) -> {
-                    Insets statusBar = insets.getInsets(
-                            WindowInsetsCompat.Type.statusBars()
-                    );
+                        Insets navBar =
+                                insets.getInsets(
+                                        WindowInsetsCompat.Type.navigationBars()
+                                );
 
-                    Insets navBar = insets.getInsets(
-                            WindowInsetsCompat.Type.navigationBars()
-                    );
-
-                    v.setPadding(
-                            0,
-                            statusBar.top,
-                            0,
-                            0
-                    );
-
-                    if (floatingBottomNav != null
-                            && floatingBottomNav.getLayoutParams()
-                            instanceof CoordinatorLayout.LayoutParams) {
-
-                        CoordinatorLayout.LayoutParams lp =
-                                (CoordinatorLayout.LayoutParams)
-                                        floatingBottomNav.getLayoutParams();
-
-                        int baseMarginPx = dp(16);
-
-                        lp.bottomMargin =
-                                navBar.bottom + baseMarginPx;
-
-                        floatingBottomNav.setLayoutParams(lp);
-
-                        floatingBottomNav.setPadding(
+                        v.setPadding(
                                 0,
-                                0,
+                                statusBar.top,
                                 0,
                                 0
                         );
+
+                        if (floatingBottomNav != null
+                                && floatingBottomNav.getLayoutParams()
+                                instanceof CoordinatorLayout.LayoutParams) {
+
+                            CoordinatorLayout.LayoutParams lp =
+                                    (CoordinatorLayout.LayoutParams)
+                                            floatingBottomNav.getLayoutParams();
+
+                            int baseMarginPx =
+                                    (int) (
+                                            16 * getResources()
+                                                    .getDisplayMetrics()
+                                                    .density
+                                    );
+
+                            lp.bottomMargin =
+                                    navBar.bottom + baseMarginPx;
+
+                            floatingBottomNav.setLayoutParams(lp);
+
+                            floatingBottomNav.setPadding(
+                                    0,
+                                    0,
+                                    0,
+                                    0
+                            );
+                        }
+
+                        return WindowInsetsCompat.CONSUMED;
                     }
+            );
+        }
 
-                    return WindowInsetsCompat.CONSUMED;
-                }
-        );
-    }
-
-    private void setupRecyclerViews() {
         rvPopularPlaces =
                 findViewById(R.id.rvPopularPlaces);
 
@@ -211,42 +188,38 @@ public class HomeActivity extends AppCompatActivity {
                     )
             );
         }
-    }
 
-    private void setupNotificationViews() {
         notificationDot =
                 findViewById(R.id.notificationDot);
 
         messageDot =
                 findViewById(R.id.messageDot);
 
-        setDot(notificationDot, false);
-        setDot(messageDot, false);
-    }
+        if (notificationDot != null) {
+            notificationDot.setVisibility(View.GONE);
+        }
 
-    private void setupHeaderButtons() {
+        if (messageDot != null) {
+            messageDot.setVisibility(View.GONE);
+        }
+
+        setupPersonalizedGreeting();
+
         View btnNotificationsHome =
                 findViewById(R.id.btnNotificationsHome);
 
         if (btnNotificationsHome != null) {
-            btnNotificationsHome.setOnClickListener(v -> {
-                markAlertsChecked();
-
-                startActivity(
-                        new Intent(
-                                HomeActivity.this,
-                                NotificationsActivity.class
-                        )
-                );
-            });
+            btnNotificationsHome.setOnClickListener(
+                    v -> showHomeNotifications()
+            );
         }
 
         View btnProfile =
                 findViewById(R.id.btnProfile);
 
         if (btnProfile != null) {
-            btnProfile.setOnClickListener(v ->
-                    startActivity(
+            btnProfile.setOnClickListener(
+                    v -> startActivity(
                             new Intent(
                                     HomeActivity.this,
                                     TenantProfileActivity.class
@@ -254,10 +227,8 @@ public class HomeActivity extends AppCompatActivity {
                     )
             );
         }
-    }
 
-    private void setupSearch() {
-        searchAccommodation =
+        EditText searchAccommodation =
                 findViewById(R.id.etSearchPlace);
 
         View btnFilter =
@@ -275,98 +246,31 @@ public class HomeActivity extends AppCompatActivity {
             });
         }
 
-        if (searchAccommodation == null) {
-            return;
-        }
-
-        searchAccommodation.setSingleLine(true);
-
-        searchAccommodation.setImeOptions(
-                EditorInfo.IME_ACTION_SEARCH
-        );
-
-        searchAccommodation.setOnEditorActionListener(
-                (v, actionId, event) -> {
-                    if (actionId == EditorInfo.IME_ACTION_SEARCH
-                            || actionId == EditorInfo.IME_ACTION_DONE) {
-
-                        performSearch();
-                        return true;
-                    }
-
-                    return false;
-                }
-        );
-
-        searchAccommodation.setOnTouchListener(
-                (v, event) -> {
-                    if (event.getAction() != MotionEvent.ACTION_UP) {
-                        return false;
-                    }
-
-                    android.graphics.drawable.Drawable[] drawables =
-                            searchAccommodation.getCompoundDrawables();
-
-                    android.graphics.drawable.Drawable rightDrawable =
-                            drawables[2];
-
-                    if (rightDrawable == null) {
-                        return false;
-                    }
-
-                    int touchAreaStart =
-                            searchAccommodation.getWidth()
-                                    - searchAccommodation.getPaddingEnd()
-                                    - rightDrawable.getBounds().width()
-                                    - dp(12);
-
-                    if (event.getX() >= touchAreaStart) {
-                        performSearch();
-                        return true;
-                    }
-
-                    return false;
-                }
-        );
-    }
-
-    private void performSearch() {
-        String query = "";
-
         if (searchAccommodation != null) {
-            query = searchAccommodation
-                    .getText()
-                    .toString()
-                    .trim();
-        }
+            searchAccommodation.setOnEditorActionListener(
+                    (v, actionId, event) -> {
+                        if (actionId == EditorInfo.IME_ACTION_SEARCH
+                                || actionId == EditorInfo.IME_ACTION_DONE) {
 
-        openSearch(query, null);
-    }
+                            String query =
+                                    searchAccommodation
+                                            .getText()
+                                            .toString()
+                                            .trim();
 
-    private void openSearch(
-            String query,
-            String propertyType
-    ) {
-        Intent intent = new Intent(
-                HomeActivity.this,
-                SearchResultsActivity.class
-        );
+                            openSearch(query, null);
 
-        intent.putExtra(
-                "SEARCH_QUERY",
-                query == null ? "" : query.trim()
-        );
+                            return true;
+                        }
 
-        if (propertyType != null
-                && !propertyType.trim().isEmpty()) {
-
-            intent.putExtra(
-                    "PROPERTY_TYPE",
-                    propertyType.trim()
+                        return false;
+                    }
             );
         }
 
-        startActivity(intent);
+        setupBottomNavigation();
+
+        loadHomeFeedFromSupabase();
     }
 
     @Override
@@ -409,11 +313,18 @@ public class HomeActivity extends AppCompatActivity {
         String token =
                 SupabaseHelper.getAccessToken(this);
 
-        if (uid == null || uid.isEmpty()
-                || token == null || token.isEmpty()) {
+        if (uid == null
+                || uid.isEmpty()
+                || token == null
+                || token.isEmpty()) {
 
-            setDot(notificationDot, false);
-            setDot(messageDot, false);
+            if (notificationDot != null) {
+                notificationDot.setVisibility(View.GONE);
+            }
+
+            if (messageDot != null) {
+                messageDot.setVisibility(View.GONE);
+            }
 
             return;
         }
@@ -426,7 +337,9 @@ public class HomeActivity extends AppCompatActivity {
                         SupabaseHelper.encode(uid);
 
                 JSONArray messages = fetchRows(
-                        "/rest/v1/messages?select=id"
+                        "/rest/v1/messages"
+                                + "?select=id,sender_id,sender_name,"
+                                + "sender_role,message_text"
                                 + "&receiver_id=eq."
                                 + encodedUid
                                 + "&order=created_at.desc"
@@ -435,7 +348,8 @@ public class HomeActivity extends AppCompatActivity {
                 );
 
                 JSONArray applications = fetchRows(
-                        "/rest/v1/rental_applications?select=id,status"
+                        "/rest/v1/rental_applications"
+                                + "?select=id,status"
                                 + "&tenant_uid=eq."
                                 + encodedUid
                                 + "&status=in.(APPROVED,DECLINED,approved,declined)"
@@ -444,7 +358,8 @@ public class HomeActivity extends AppCompatActivity {
                 );
 
                 JSONArray chatRequests = fetchRows(
-                        "/rest/v1/chat_requests?select=id,status"
+                        "/rest/v1/chat_requests"
+                                + "?select=id,status"
                                 + "&receiver_id=eq."
                                 + encodedUid
                                 + "&status=eq.pending"
@@ -452,10 +367,25 @@ public class HomeActivity extends AppCompatActivity {
                         token
                 );
 
+                JSONArray viewings = fetchRows(
+                        "/rest/v1/viewings"
+                                + "?select=id,property_name,viewing_date,status"
+                                + "&tenant_uid=eq."
+                                + encodedUid
+                                + "&status=in.(Confirmed,Declined)"
+                                + "&limit=1000",
+                        token
+                );
+
+                JSONArray viewingKeys =
+                        viewings == null
+                                ? null
+                                : createViewingNotificationKeys(viewings);
+
                 boolean unreadMessages =
                         messages != null
                                 && TenantNotificationState.hasNew(
-                                getApplicationContext(),
+                                this,
                                 uid,
                                 "messages",
                                 messages
@@ -464,7 +394,7 @@ public class HomeActivity extends AppCompatActivity {
                 boolean unreadApplications =
                         applications != null
                                 && TenantNotificationState.hasNew(
-                                getApplicationContext(),
+                                this,
                                 uid,
                                 "applications",
                                 applications
@@ -473,20 +403,30 @@ public class HomeActivity extends AppCompatActivity {
                 boolean unreadChatRequests =
                         chatRequests != null
                                 && TenantNotificationState.hasNew(
-                                getApplicationContext(),
+                                this,
                                 uid,
                                 "chat_requests",
                                 chatRequests
                         );
 
+                boolean unreadViewings =
+                        viewingKeys != null
+                                && TenantNotificationState.hasNew(
+                                this,
+                                uid,
+                                "viewing_decisions",
+                                viewingKeys
+                        );
+
                 boolean unreadAlerts =
                         unreadApplications
-                                || unreadChatRequests;
+                                || unreadChatRequests
+                                || unreadViewings;
 
                 runOnUiThread(() -> {
-                    if (!homeVisible
-                            || isFinishing()
-                            || isDestroyed()) {
+                    if (isFinishing()
+                            || isDestroyed()
+                            || !homeVisible) {
                         return;
                     }
 
@@ -494,10 +434,14 @@ public class HomeActivity extends AppCompatActivity {
 
                     if (messages != null) {
                         latestMessages = messages;
-                        setDot(
-                                messageDot,
-                                unreadMessages
-                        );
+
+                        hasUnreadLandlordMessages =
+                                unreadMessages;
+
+                        newestLandlordMessage =
+                                messages.length() > 0
+                                        ? messages.optJSONObject(0)
+                                        : null;
                     }
 
                     if (applications != null) {
@@ -508,27 +452,83 @@ public class HomeActivity extends AppCompatActivity {
                         latestChatRequests = chatRequests;
                     }
 
-                    if (applications != null
-                            && chatRequests != null) {
+                    if (viewings != null) {
+                        latestViewings = viewings;
+                    }
 
-                        setDot(
-                                notificationDot,
-                                unreadAlerts
+                    if (viewingKeys != null) {
+                        latestViewingNotificationKeys =
+                                viewingKeys;
+
+                        hasUnreadViewingDecisions =
+                                unreadViewings;
+                    }
+
+                    if (messageDot != null) {
+                        messageDot.setVisibility(
+                                unreadMessages
+                                        ? View.VISIBLE
+                                        : View.GONE
+                        );
+                    }
+
+                    if (notificationDot != null) {
+                        notificationDot.setVisibility(
+                                (unreadAlerts
+                                        || hasUnreadLandlordMessages)
+                                        ? View.VISIBLE
+                                        : View.GONE
                         );
                     }
                 });
 
-            } catch (Exception e) {
-                Log.e(
-                        TAG,
-                        "Notification refresh failed",
-                        e
-                );
-
+            } catch (Exception ignored) {
             } finally {
                 notificationLoading = false;
             }
         });
+    }
+
+    private JSONArray createViewingNotificationKeys(
+            JSONArray viewings
+    ) {
+        JSONArray keys = new JSONArray();
+
+        for (int i = 0; i < viewings.length(); i++) {
+            JSONObject viewing =
+                    viewings.optJSONObject(i);
+
+            if (viewing == null) {
+                continue;
+            }
+
+            String id =
+                    viewing.optString("id", "");
+
+            String status =
+                    viewing.optString("status", "");
+
+            if (id.isEmpty()
+                    || status.isEmpty()) {
+                continue;
+            }
+
+            try {
+                JSONObject key =
+                        new JSONObject();
+
+                key.put(
+                        "id",
+                        id + "_" + status.toLowerCase()
+                );
+
+                keys.put(key);
+
+            } catch (Exception ignored) {
+            }
+        }
+
+        return keys;
     }
 
     private void markAlertsChecked() {
@@ -556,7 +556,30 @@ public class HomeActivity extends AppCompatActivity {
             );
         }
 
-        setDot(notificationDot, false);
+        markViewingDecisionsSeen();
+
+        updateNotificationDots();
+    }
+
+    private void markViewingDecisionsSeen() {
+        String uid = notificationUserId;
+
+        if (uid == null
+                || uid.isEmpty()
+                || latestViewingNotificationKeys == null) {
+            return;
+        }
+
+        TenantNotificationState.markSeen(
+                this,
+                uid,
+                "viewing_decisions",
+                latestViewingNotificationKeys
+        );
+
+        hasUnreadViewingDecisions = false;
+
+        updateNotificationDots();
     }
 
     private void markMessagesChecked() {
@@ -575,20 +598,226 @@ public class HomeActivity extends AppCompatActivity {
             );
         }
 
-        setDot(messageDot, false);
+        hasUnreadLandlordMessages = false;
+
+        if (messageDot != null) {
+            messageDot.setVisibility(View.GONE);
+        }
+
+        updateNotificationDots();
     }
 
-    private void setDot(
-            View dot,
-            boolean visible
-    ) {
-        if (dot != null) {
-            dot.setVisibility(
-                    visible
+    private void updateNotificationDots() {
+        String uid = notificationUserId;
+
+        if (uid == null || uid.isEmpty()) {
+            return;
+        }
+
+        boolean otherAlerts = false;
+
+        if (latestApplications != null) {
+            otherAlerts =
+                    TenantNotificationState.hasNew(
+                            this,
+                            uid,
+                            "applications",
+                            latestApplications
+                    );
+        }
+
+        if (latestChatRequests != null) {
+            otherAlerts =
+                    otherAlerts
+                            || TenantNotificationState.hasNew(
+                            this,
+                            uid,
+                            "chat_requests",
+                            latestChatRequests
+                    );
+        }
+
+        if (latestViewingNotificationKeys != null) {
+            otherAlerts =
+                    otherAlerts
+                            || TenantNotificationState.hasNew(
+                            this,
+                            uid,
+                            "viewing_decisions",
+                            latestViewingNotificationKeys
+                    );
+        }
+
+        if (notificationDot != null) {
+            notificationDot.setVisibility(
+                    (otherAlerts
+                            || hasUnreadLandlordMessages)
                             ? View.VISIBLE
                             : View.GONE
             );
         }
+
+        if (messageDot != null) {
+            messageDot.setVisibility(
+                    hasUnreadLandlordMessages
+                            ? View.VISIBLE
+                            : View.GONE
+            );
+        }
+    }
+
+    private void showHomeNotifications() {
+        String senderName = "Landlord";
+
+        if (newestLandlordMessage != null) {
+            String name =
+                    newestLandlordMessage
+                            .optString("sender_name", "")
+                            .trim();
+
+            if (!name.isEmpty()
+                    && !name.equalsIgnoreCase("null")) {
+                senderName = name;
+            }
+        }
+
+        StringBuilder notificationText =
+                new StringBuilder();
+
+        if (hasUnreadViewingDecisions
+                && latestViewings != null) {
+
+            for (int i = 0;
+                 i < latestViewings.length();
+                 i++) {
+
+                JSONObject viewing =
+                        latestViewings.optJSONObject(i);
+
+                if (viewing == null) {
+                    continue;
+                }
+
+                String propertyName =
+                        viewing.optString(
+                                "property_name",
+                                "Accommodation"
+                        );
+
+                String viewingDate =
+                        viewing.optString(
+                                "viewing_date",
+                                ""
+                        );
+
+                String status =
+                        viewing.optString(
+                                "status",
+                                ""
+                        );
+
+                if ("Confirmed".equalsIgnoreCase(status)) {
+                    notificationText.append(
+                            "VIEWING APPROVED\n\n"
+                    );
+
+                    notificationText.append(
+                            "Your viewing request for "
+                                    + propertyName
+                                    + " has been approved by the landlord."
+                    );
+
+                    if (!viewingDate.isEmpty()) {
+                        notificationText.append(
+                                "\nDate: " + viewingDate
+                        );
+                    }
+
+                    notificationText.append("\n\n");
+
+                } else if ("Declined".equalsIgnoreCase(status)) {
+                    notificationText.append(
+                            "VIEWING DECLINED\n\n"
+                    );
+
+                    notificationText.append(
+                            "Your viewing request for "
+                                    + propertyName
+                                    + " has been declined by the landlord."
+                    );
+
+                    if (!viewingDate.isEmpty()) {
+                        notificationText.append(
+                                "\nRequested date: "
+                                        + viewingDate
+                        );
+                    }
+
+                    notificationText.append("\n\n");
+                }
+            }
+        }
+
+        if (hasUnreadLandlordMessages) {
+            notificationText.append(
+                    "NEW MESSAGE\n\n"
+            );
+
+            notificationText.append(
+                    "You have a new message from "
+                            + senderName
+                            + ".\n\n"
+            );
+        }
+
+        if (notificationText.length() == 0) {
+            notificationText.append(
+                    "You have no new viewing decisions or direct messages."
+            );
+        }
+
+        AlertDialog.Builder dialog =
+                new AlertDialog.Builder(this)
+                        .setTitle("Notifications")
+                        .setMessage(
+                                notificationText.toString().trim()
+                        )
+                        .setNegativeButton(
+                                "Close",
+                                (d, which) -> {
+                                    markViewingDecisionsSeen();
+                                }
+                        );
+
+        dialog.setPositiveButton(
+                "My Viewings",
+                (d, which) -> {
+                    markViewingDecisionsSeen();
+
+                    startActivity(
+                            new Intent(
+                                    HomeActivity.this,
+                                    ViewingsActivity.class
+                            )
+                    );
+                }
+        );
+
+        dialog.setNeutralButton(
+                "Other Notifications",
+                (d, which) -> {
+                    markAlertsChecked();
+
+                    startActivity(
+                            new Intent(
+                                    HomeActivity.this,
+                                    NotificationsActivity.class
+                            )
+                    );
+                }
+        );
+
+        dialog.show();
     }
 
     private JSONArray fetchRows(
@@ -598,13 +827,15 @@ public class HomeActivity extends AppCompatActivity {
         HttpURLConnection connection = null;
 
         try {
-            connection = SupabaseHelper.createConnection(
-                    endpoint,
-                    "GET",
-                    token
-            );
+            connection =
+                    SupabaseHelper.createConnection(
+                            endpoint,
+                            "GET",
+                            token
+                    );
 
-            int code = connection.getResponseCode();
+            int code =
+                    connection.getResponseCode();
 
             String response =
                     SupabaseHelper.readResponse(connection);
@@ -613,14 +844,7 @@ public class HomeActivity extends AppCompatActivity {
                 return new JSONArray(response);
             }
 
-            Log.e(
-                    TAG,
-                    "Supabase HTTP " + code + ": " + response
-            );
-
-        } catch (Exception e) {
-            Log.e(TAG, "Supabase request failed", e);
-
+        } catch (Exception ignored) {
         } finally {
             if (connection != null) {
                 connection.disconnect();
@@ -657,7 +881,8 @@ public class HomeActivity extends AppCompatActivity {
                     fullName.trim().split("\\s+")[0];
 
             tvHomeGreeting.setText(
-                    "Hey, " + firstName
+                    "Hey, "
+                            + firstName
                             + "!\nTell us where you want to stay"
             );
 
@@ -681,15 +906,18 @@ public class HomeActivity extends AppCompatActivity {
             HttpURLConnection conn = null;
 
             try {
-                conn = SupabaseHelper.createConnection(
-                        "/rest/v1/listings?select=*"
-                                + "&order=created_at.desc"
-                                + "&limit=20",
-                        "GET",
-                        accessToken
-                );
+                conn =
+                        SupabaseHelper.createConnection(
+                                "/rest/v1/listings"
+                                        + "?select=*"
+                                        + "&order=created_at.desc"
+                                        + "&limit=20",
+                                "GET",
+                                accessToken
+                        );
 
-                int code = conn.getResponseCode();
+                int code =
+                        conn.getResponseCode();
 
                 String response =
                         SupabaseHelper.readResponse(conn);
@@ -704,7 +932,10 @@ public class HomeActivity extends AppCompatActivity {
                     List<JSONObject> exploreList =
                             new ArrayList<>();
 
-                    for (int i = 0; i < rawListings.length(); i++) {
+                    for (int i = 0;
+                         i < rawListings.length();
+                         i++) {
+
                         JSONObject item =
                                 rawListings.optJSONObject(i);
 
@@ -744,24 +975,9 @@ public class HomeActivity extends AppCompatActivity {
                             );
                         }
                     });
-
-                } else {
-                    Log.e(
-                            TAG,
-                            "Home feed HTTP "
-                                    + code
-                                    + ": "
-                                    + response
-                    );
                 }
 
-            } catch (Exception e) {
-                Log.e(
-                        TAG,
-                        "Could not load home feed",
-                        e
-                );
-
+            } catch (Exception ignored) {
             } finally {
                 if (conn != null) {
                     conn.disconnect();
@@ -789,8 +1005,8 @@ public class HomeActivity extends AppCompatActivity {
                 findViewById(R.id.navFavorites);
 
         if (navFavorites != null) {
-            navFavorites.setOnClickListener(v ->
-                    startActivity(
+            navFavorites.setOnClickListener(
+                    v -> startActivity(
                             new Intent(
                                     HomeActivity.this,
                                     SavedListingsActivity.class
@@ -803,13 +1019,17 @@ public class HomeActivity extends AppCompatActivity {
                 findViewById(R.id.navViewings);
 
         if (navViewings != null) {
-            navViewings.setOnClickListener(v ->
-                    startActivity(
-                            new Intent(
-                                    HomeActivity.this,
-                                    ViewingsActivity.class
-                            )
-                    )
+            navViewings.setOnClickListener(
+                    v -> {
+                        markViewingDecisionsSeen();
+
+                        startActivity(
+                                new Intent(
+                                        HomeActivity.this,
+                                        ViewingsActivity.class
+                                )
+                        );
+                    }
             );
         }
 
@@ -830,18 +1050,34 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
-    private int dp(float value) {
-        return Math.round(
-                value * getResources()
-                        .getDisplayMetrics()
-                        .density
+    private void openSearch(
+            String query,
+            String propertyType
+    ) {
+        Intent intent =
+                new Intent(
+                        HomeActivity.this,
+                        SearchResultsActivity.class
+                );
+
+        intent.putExtra(
+                "SEARCH_QUERY",
+                query
         );
+
+        if (propertyType != null
+                && !propertyType.isEmpty()) {
+            intent.putExtra(
+                    "PROPERTY_TYPE",
+                    propertyType
+            );
+        }
+
+        startActivity(intent);
     }
 
     @Override
     protected void onDestroy() {
-        homeVisible = false;
-
         notificationHandler.removeCallbacks(
                 notificationPoll
         );
@@ -870,44 +1106,54 @@ public class HomeActivity extends AppCompatActivity {
                 @NonNull ViewGroup parent,
                 int viewType
         ) {
+            float density =
+                    getResources()
+                            .getDisplayMetrics()
+                            .density;
+
             CardView card =
                     new CardView(HomeActivity.this);
 
             RecyclerView.LayoutParams cardParams =
                     new RecyclerView.LayoutParams(
-                            dp(230),
+                            Math.round(230 * density),
                             ViewGroup.LayoutParams.WRAP_CONTENT
                     );
 
-            cardParams.setMarginEnd(dp(14));
+            cardParams.setMarginEnd(
+                    Math.round(14 * density)
+            );
 
             card.setLayoutParams(cardParams);
-            card.setRadius(dp(18));
-            card.setCardElevation(dp(2));
+            card.setRadius(Math.round(18 * density));
+            card.setCardElevation(Math.round(2 * density));
             card.setUseCompatPadding(true);
             card.setCardBackgroundColor(Color.WHITE);
 
             LinearLayout root =
                     new LinearLayout(HomeActivity.this);
 
-            root.setOrientation(LinearLayout.VERTICAL);
+            root.setOrientation(
+                    LinearLayout.VERTICAL
+            );
 
             root.setPadding(
-                    dp(10),
-                    dp(10),
-                    dp(10),
-                    dp(14)
+                    Math.round(10 * density),
+                    Math.round(10 * density),
+                    Math.round(10 * density),
+                    Math.round(14 * density)
             );
 
             ImageView image =
                     new ImageView(HomeActivity.this);
 
-            image.setLayoutParams(
+            LinearLayout.LayoutParams imgParams =
                     new LinearLayout.LayoutParams(
                             ViewGroup.LayoutParams.MATCH_PARENT,
-                            dp(130)
-                    )
-            );
+                            Math.round(130 * density)
+                    );
+
+            image.setLayoutParams(imgParams);
 
             image.setScaleType(
                     ImageView.ScaleType.CENTER_CROP
@@ -923,6 +1169,7 @@ public class HomeActivity extends AppCompatActivity {
                     new TextView(HomeActivity.this);
 
             title.setTextSize(14.5f);
+
             title.setTextColor(
                     Color.parseColor("#1F1614")
             );
@@ -940,26 +1187,31 @@ public class HomeActivity extends AppCompatActivity {
                             ViewGroup.LayoutParams.WRAP_CONTENT
                     );
 
-            titleParams.topMargin = dp(8);
+            titleParams.topMargin =
+                    Math.round(8 * density);
 
             title.setLayoutParams(titleParams);
+
             root.addView(title);
 
             TextView location =
                     new TextView(HomeActivity.this);
 
             location.setTextSize(12);
+
             location.setTextColor(
                     Color.parseColor("#8C7A70")
             );
 
             location.setSingleLine(true);
+
             root.addView(location);
 
             TextView price =
                     new TextView(HomeActivity.this);
 
             price.setTextSize(14);
+
             price.setTextColor(
                     Color.parseColor("#BA5536")
             );
@@ -975,9 +1227,11 @@ public class HomeActivity extends AppCompatActivity {
                             ViewGroup.LayoutParams.WRAP_CONTENT
                     );
 
-            priceParams.topMargin = dp(6);
+            priceParams.topMargin =
+                    Math.round(6 * density);
 
             price.setLayoutParams(priceParams);
+
             root.addView(price);
 
             card.addView(root);
@@ -996,7 +1250,8 @@ public class HomeActivity extends AppCompatActivity {
                 @NonNull ListingViewHolder holder,
                 int position
         ) {
-            JSONObject item = items.get(position);
+            JSONObject item =
+                    items.get(position);
 
             String id =
                     item.optString("id", "");
@@ -1033,8 +1288,6 @@ public class HomeActivity extends AppCompatActivity {
                     android.R.drawable.ic_menu_gallery
             );
 
-            holder.ivImage.setTag(imageUrl);
-
             if (!imageUrl.isEmpty()) {
                 loadImageAsync(
                         imageUrl,
@@ -1043,20 +1296,11 @@ public class HomeActivity extends AppCompatActivity {
             }
 
             holder.itemView.setOnClickListener(v -> {
-                if (id.isEmpty()) {
-                    Toast.makeText(
-                            HomeActivity.this,
-                            "Property unavailable.",
-                            Toast.LENGTH_SHORT
-                    ).show();
-
-                    return;
-                }
-
-                Intent intent = new Intent(
-                        HomeActivity.this,
-                        PropertyDetailsActivity.class
-                );
+                Intent intent =
+                        new Intent(
+                                HomeActivity.this,
+                                PropertyDetailsActivity.class
+                        );
 
                 intent.putExtra(
                         "LISTING_ID",
@@ -1076,21 +1320,20 @@ public class HomeActivity extends AppCompatActivity {
                 String urlStr,
                 ImageView imageView
         ) {
-            if (imageExecutor.isShutdown()) {
-                return;
-            }
-
             imageExecutor.execute(() -> {
                 HttpURLConnection conn = null;
 
                 try {
-                    conn = (HttpURLConnection)
-                            new URL(urlStr).openConnection();
+                    conn =
+                            (HttpURLConnection)
+                                    new URL(urlStr)
+                                            .openConnection();
 
                     conn.setConnectTimeout(10000);
                     conn.setReadTimeout(15000);
 
-                    int res = conn.getResponseCode();
+                    int res =
+                            conn.getResponseCode();
 
                     if (res >= 200 && res < 300) {
                         try (InputStream in =
@@ -1106,28 +1349,17 @@ public class HomeActivity extends AppCompatActivity {
                                         return;
                                     }
 
-                                    Object tag =
-                                            imageView.getTag();
+                                    imageView.setImageBitmap(bmp);
 
-                                    if (urlStr.equals(tag)) {
-                                        imageView.setImageBitmap(bmp);
-
-                                        imageView.setScaleType(
-                                                ImageView.ScaleType.CENTER_CROP
-                                        );
-                                    }
+                                    imageView.setScaleType(
+                                            ImageView.ScaleType.CENTER_CROP
+                                    );
                                 });
                             }
                         }
                     }
 
-                } catch (Exception e) {
-                    Log.w(
-                            TAG,
-                            "Could not load accommodation image",
-                            e
-                    );
-
+                } catch (Exception ignored) {
                 } finally {
                     if (conn != null) {
                         conn.disconnect();

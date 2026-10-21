@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -6,6 +7,8 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="#FAF7F5">
+
+    <!-- HEADER -->
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -63,7 +66,10 @@
                     android:text="@string/manage_your_accommodation_listings"
                     android:textColor="#756763"
                     android:textSize="13sp" />
+
             </LinearLayout>
+
+            <!-- NOTIFICATIONS -->
 
             <FrameLayout
                 android:id="@+id/btnNotificationsLandlord"
@@ -89,6 +95,7 @@
                     android:layout_gravity="top|end"
                     android:background="@drawable/bg_notification_dot"
                     android:visibility="gone" />
+
             </FrameLayout>
 
             <ImageButton
@@ -101,8 +108,12 @@
                 android:padding="10dp"
                 android:scaleType="centerInside"
                 android:contentDescription="Open your profile" />
+
         </LinearLayout>
+
     </LinearLayout>
+
+    <!-- DASHBOARD CONTENT -->
 
     <ScrollView
         android:id="@+id/dashboardScroll"
@@ -130,6 +141,8 @@
                 android:textSize="19sp"
                 android:textStyle="bold" />
 
+            <!-- ADD LISTING -->
+
             <Button
                 android:id="@+id/btnAddListing"
                 android:layout_width="match_parent"
@@ -140,6 +153,8 @@
                 android:textAllCaps="false"
                 android:textColor="#FFFFFF"
                 android:textSize="16sp" />
+
+            <!-- MESSAGES -->
 
             <FrameLayout
                 android:layout_width="match_parent"
@@ -166,7 +181,10 @@
                     android:layout_marginEnd="12dp"
                     android:background="@drawable/bg_notification_dot"
                     android:visibility="gone" />
+
             </FrameLayout>
+
+            <!-- STATISTICS -->
 
             <TextView
                 android:id="@+id/txtStatistics"
@@ -183,6 +201,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
+
+                <!-- TOTAL -->
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -209,7 +229,10 @@
                         android:textColor="#7A2525"
                         android:textSize="25sp"
                         android:textStyle="bold" />
+
                 </LinearLayout>
+
+                <!-- AVAILABLE -->
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -237,7 +260,10 @@
                         android:textColor="#34734A"
                         android:textSize="25sp"
                         android:textStyle="bold" />
+
                 </LinearLayout>
+
+                <!-- PENDING LISTINGS -->
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -264,8 +290,12 @@
                         android:textColor="#A56B17"
                         android:textSize="25sp"
                         android:textStyle="bold" />
+
                 </LinearLayout>
+
             </LinearLayout>
+
+            <!-- ENQUIRIES -->
 
             <LinearLayout
                 android:id="@+id/cardPendingApplications"
@@ -311,7 +341,10 @@
                     android:text="@string/arrow_right"
                     android:textColor="#7A2525"
                     android:textSize="28sp" />
+
             </LinearLayout>
+
+            <!-- RENTAL APPLICATIONS -->
 
             <LinearLayout
                 android:id="@+id/cardRentalApplications"
@@ -357,7 +390,59 @@
                     android:text="@string/arrow_right"
                     android:textColor="#7A2525"
                     android:textSize="28sp" />
+
             </LinearLayout>
+
+            <!-- NEW: VIEWING REQUESTS -->
+
+            <LinearLayout
+                android:id="@+id/cardViewingRequests"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_circle_white"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:minHeight="64dp"
+                android:orientation="horizontal"
+                android:padding="16dp">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_viewings"
+                    app:tint="#7A2525"
+                    android:contentDescription="Viewing requests" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_weight="1"
+                    android:text="Viewing Requests"
+                    android:textColor="#1F1614"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <View
+                    android:id="@+id/viewingRequestsCardDot"
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:layout_marginEnd="12dp"
+                    android:background="@drawable/bg_notification_dot"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/arrow_right"
+                    android:textColor="#7A2525"
+                    android:textSize="28sp" />
+
+            </LinearLayout>
+
+            <!-- MY LISTINGS -->
 
             <TextView
                 android:id="@+id/txtMyListings"
@@ -387,8 +472,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical" />
+
         </LinearLayout>
+
     </ScrollView>
+
+    <!-- BOTTOM NAVIGATION -->
 
     <LinearLayout
         android:id="@+id/bottomNavigation"
@@ -400,6 +489,8 @@
         android:orientation="horizontal"
         android:paddingStart="6dp"
         android:paddingEnd="6dp">
+
+        <!-- HOME -->
 
         <LinearLayout
             android:id="@+id/navHome"
@@ -425,7 +516,10 @@
                 android:text="@string/home"
                 android:textColor="#FFFFFF"
                 android:textSize="11sp" />
+
         </LinearLayout>
+
+        <!-- LISTINGS -->
 
         <LinearLayout
             android:id="@+id/navListings"
@@ -451,7 +545,10 @@
                 android:text="@string/listings"
                 android:textColor="#FFD8CC"
                 android:textSize="11sp" />
+
         </LinearLayout>
+
+        <!-- ADD -->
 
         <LinearLayout
             android:id="@+id/navAdd"
@@ -481,7 +578,10 @@
                 android:text="@string/add"
                 android:textColor="#FFD8CC"
                 android:textSize="11sp" />
+
         </LinearLayout>
+
+        <!-- PROFILE -->
 
         <LinearLayout
             android:id="@+id/navProfile"
@@ -507,6 +607,9 @@
                 android:text="@string/profile"
                 android:textColor="#FFD8CC"
                 android:textSize="11sp" />
+
         </LinearLayout>
+
     </LinearLayout>
+
 </LinearLayout>
