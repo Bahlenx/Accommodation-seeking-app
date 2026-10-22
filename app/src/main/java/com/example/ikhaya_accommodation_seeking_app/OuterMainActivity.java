@@ -1,6 +1,8 @@
 package com.example.ikhaya_accommodation_seeking_app;
 
 import android.content.Intent;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -16,6 +18,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import java.util.Locale;
+import java.util.function.Consumer;
 
 public class OuterMainActivity extends AppCompatActivity {
 
@@ -23,6 +26,7 @@ public class OuterMainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         super.onCreate(savedInstanceState);
 
         if (SupabaseHelper.isSessionWithinThirtyDays(this) && SupabaseHelper.getUserId(this) != null) {
@@ -52,7 +56,6 @@ public class OuterMainActivity extends AppCompatActivity {
             return;
         }
 
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_greetingpage);
 
@@ -124,15 +127,15 @@ public class OuterMainActivity extends AppCompatActivity {
 
         Button[] langButtons = {btnEnglish, btnIsiXhosa, btnAfrikaans, btnSepedi, btnSesotho, btnIsiZulu};
 
-        int activeColor = android.graphics.Color.parseColor("#C85A32");
-        int inactiveColor = android.graphics.Color.parseColor("#EADFD5");
+        int activeColor = Color.parseColor("#C85A32");
+        int inactiveColor = Color.parseColor("#EADFD5");
 
-        java.util.function.Consumer<Button> highlightButton = (activeBtn) -> {
+        Consumer<Button> highlightButton = (activeBtn) -> {
             for (Button b : langButtons) {
                 if (b != null) {
                     boolean isActive = (b == activeBtn);
-                    b.setBackgroundTintList(android.content.res.ColorStateList.valueOf(isActive ? activeColor : inactiveColor));
-                    b.setTextColor(isActive ? android.graphics.Color.WHITE : android.graphics.Color.BLACK);
+                    b.setBackgroundTintList(ColorStateList.valueOf(isActive ? activeColor : inactiveColor));
+                    b.setTextColor(isActive ? Color.WHITE : Color.BLACK);
                 }
             }
         };

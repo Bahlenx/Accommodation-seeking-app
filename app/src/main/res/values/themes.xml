@@ -1,5 +1,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <style name="Theme.IKhaya_Accommodation_Seeking_App" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Theme.IkhayaAccommodationSeekingApp" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <!-- Keep your existing colors here -->
+
         <!-- Brand Colors -->
         <item name="colorPrimary">@color/colorSecondary</item>
         <item name="colorPrimaryVariant">@color/colorSecondary</item>
@@ -14,5 +16,8 @@
         <item name="android:statusBarColor">@color/appBackground</item>
         <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
         <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
+
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
     </style>
 </resources>

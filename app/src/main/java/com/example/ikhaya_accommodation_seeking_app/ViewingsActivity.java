@@ -1,6 +1,7 @@
 package com.example.ikhaya_accommodation_seeking_app;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.Uri;
@@ -351,17 +352,10 @@ public class ViewingsActivity extends AppCompatActivity {
 
         final String finalLandlordUid = landlordUid;
         final String finalLandlordName = landlordName;
-        final String finalTitle = title;
 
         btnContact.setOnClickListener(v -> {
             if (!finalLandlordUid.isEmpty()) {
-                Intent chatIntent = new Intent(ViewingsActivity.this, ChatActivity.class);
-                chatIntent.putExtra("RECEIVER_ID", finalLandlordUid);
-                chatIntent.putExtra("receiver_id", finalLandlordUid);
-                chatIntent.putExtra("RECEIVER_NAME", finalLandlordName);
-                chatIntent.putExtra("receiver_name", finalLandlordName);
-                chatIntent.putExtra("PROPERTY_TITLE", finalTitle);
-                startActivity(chatIntent);
+                openChatWithHost(finalLandlordUid, finalLandlordName);
             } else if (!landlordPhone.isEmpty()) {
                 try {
                     Intent dialIntent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + landlordPhone));
@@ -387,6 +381,50 @@ public class ViewingsActivity extends AppCompatActivity {
         }
 
         viewingsContainer.addView(card);
+    }
+
+    private void openChatWithHost(String hostUid, String hostName) {
+        String myUid = SupabaseHelper.getUserId(this);
+        String token = SupabaseHelper.getAccessToken(this);
+
+        if (myUid == null || hostUid == null || myUid.equals(hostUid)) {
+            Toast.makeText(this, "Cannot message host", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Launch chat immediately so UI feels instant
+        Intent intent = new Intent(this, ChatActivity.class);
+        intent.putExtra("RECEIVER_ID", hostUid);
+        intent.putExtra("RECEIVER_NAME", hostName);
+        intent.putExtra("IS_COMMUNITY", false);
+        startActivity(intent);
+
+        // Register an accepted chat_request in the background so it shows on Messages & Community
+        executor.execute(() -> {
+            HttpURLConnection conn = null;
+            try {
+                SharedPreferences prefs = getSharedPreferences("iKhayaSession", MODE_PRIVATE);
+                String myName = prefs.getString("USER_NAME", "Resident");
+                String myRole = prefs.getString("USER_ROLE", "tenant");
+
+                JSONObject body = new JSONObject();
+                body.put("sender_id", myUid);
+                body.put("sender_name", myName);
+                body.put("sender_role", myRole);
+                body.put("receiver_id", hostUid);
+                body.put("receiver_name", hostName != null && !hostName.isEmpty() ? hostName : "Landlord");
+                body.put("receiver_role", "landlord");
+                body.put("status", "accepted");
+
+                conn = SupabaseHelper.createConnection("/rest/v1/chat_requests", "POST", token);
+                conn.setRequestProperty("Prefer", "resolution=merge-duplicates,return=minimal");
+                SupabaseHelper.writeJson(conn, body);
+                conn.getResponseCode();
+            } catch (Exception ignored) {
+            } finally {
+                if (conn != null) conn.disconnect();
+            }
+        });
     }
 
     private String clean(String value) {

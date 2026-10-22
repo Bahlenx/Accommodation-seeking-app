@@ -1244,10 +1244,20 @@ public class AdminDashboardActivity extends AppCompatActivity {
         if (tvAdminGreeting != null) {
             String firstName = adminName.trim().split("\\s+")[0];
             tvAdminGreeting.setText(String.format(Locale.getDefault(), "%s, %s", getString(R.string.greeting_welcome), firstName));
+            tvAdminGreeting.setOnClickListener(v ->
+                    startActivity(new Intent(this, NotificationsActivity.class))
+            );
         }
 
         if (btnAdminLogout != null) {
             btnAdminLogout.setOnClickListener(v -> performLogout());
+        }
+
+        View btnNotificationsAdmin = findViewById(R.id.btnNotificationsAdmin);
+        if (btnNotificationsAdmin != null) {
+            btnNotificationsAdmin.setOnClickListener(v ->
+                    startActivity(new Intent(this, NotificationsActivity.class))
+            );
         }
 
         setupActionCards();
@@ -1365,7 +1375,9 @@ public class AdminDashboardActivity extends AppCompatActivity {
 
         View cardReports = findViewById(R.id.cardReports);
         if (cardReports != null) {
-            cardReports.setOnClickListener(v -> showProblemReportsDialog());
+            cardReports.setOnClickListener(v ->
+                    startActivity(new Intent(this, AdminReportsActivity.class))
+            );
         }
 
         // View cardProblemReports = findViewById(R.id.cardProblemReports);
@@ -1459,7 +1471,12 @@ public class AdminDashboardActivity extends AppCompatActivity {
         executor.execute(() -> {
             HttpURLConnection conn = null;
             try {
-                conn = SupabaseHelper.createConnection("/rest/v1/reports?select=*&order=created_at.desc", "GET", token);
+                // Filter only OPEN or PENDING tickets so resolved/dismissed ones aren't counted
+                conn = SupabaseHelper.createConnection(
+                        "/rest/v1/reports?select=id&status=in.(OPEN,open,PENDING,pending)", 
+                        "GET", 
+                        token
+                );
                 if (conn.getResponseCode() >= 200 && conn.getResponseCode() < 300) {
                     JSONArray arr = new JSONArray(SupabaseHelper.readResponse(conn));
                     problemReportsCache = arr;
@@ -5279,6 +5296,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -5302,8 +5322,33 @@ public class EnquiriesActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_enquiries);
 
+        View enquiriesRoot = findViewById(R.id.enquiriesRoot);
+        if (enquiriesRoot != null) {
+            ViewCompat.setOnApplyWindowInsetsListener(enquiriesRoot, (v, insets) -> {
+                Insets statusBar = insets.getInsets(WindowInsetsCompat.Type.statusBars());
+                Insets navBar = insets.getInsets(WindowInsetsCompat.Type.navigationBars());
+                int density = (int) v.getResources().getDisplayMetrics().density;
+                int sidePadding = 20 * density;
+                v.setPadding(
+                        sidePadding,
+                        statusBar.top + (16 * density),
+                        sidePadding,
+                        navBar.bottom + (16 * density)
+                );
+                return WindowInsetsCompat.CONSUMED;
+            });
+        }
+
         enquiriesContainer = findViewById(R.id.enquiriesContainer);
         txtNoEnquiries = findViewById(R.id.txtNoEnquiries);
+
+        if (txtNoEnquiries != null) {
+            GradientDrawable emptyBg = new GradientDrawable();
+            emptyBg.setColor(Color.WHITE);
+            emptyBg.setCornerRadius(dp(16));
+            emptyBg.setStroke(dp(1), Color.parseColor("#E2DDD9"));
+            txtNoEnquiries.setBackground(emptyBg);
+        }
 
         View btnBack = findViewById(R.id.btnBack);
 
@@ -5454,14 +5499,6 @@ public class EnquiriesActivity extends AppCompatActivity {
                 "email"
         );
 
-        String senderId = firstValue(
-                enquiry,
-                "tenant_uid",
-                "sender_uid",
-                "user_uid",
-                "applicant_uid"
-        );
-
         if (senderName.isEmpty()) {
             senderName = "Tenant";
         }
@@ -5474,19 +5511,18 @@ public class EnquiriesActivity extends AppCompatActivity {
         card.setOrientation(LinearLayout.VERTICAL);
 
         card.setPadding(
-                dp(16),
-                dp(16),
-                dp(16),
-                dp(16)
+                dp(18),
+                dp(18),
+                dp(18),
+                dp(18)
         );
 
-        card.setBackground(
-                roundedBackground(
-                        Color.WHITE,
-                        "#E5E5E5",
-                        14
-                )
-        );
+        GradientDrawable cardBg = new GradientDrawable();
+        cardBg.setColor(Color.WHITE);
+        cardBg.setCornerRadius(dp(16));
+        cardBg.setStroke(dp(1), Color.parseColor("#E2DDD9"));
+        card.setBackground(cardBg);
+        card.setElevation(dp(2));
 
         LinearLayout.LayoutParams cardParams =
                 new LinearLayout.LayoutParams(
@@ -5496,107 +5532,132 @@ public class EnquiriesActivity extends AppCompatActivity {
 
         cardParams.bottomMargin = dp(14);
         card.setLayoutParams(cardParams);
-        card.setElevation(dp(2));
+
+        // Header: Sender Name & Status Badge
+        LinearLayout header = new LinearLayout(this);
+        header.setOrientation(LinearLayout.HORIZONTAL);
+        header.setGravity(Gravity.CENTER_VERTICAL);
 
         TextView sender = new TextView(this);
         sender.setText(senderName);
-        sender.setTextSize(18);
+        sender.setTextSize(17);
         sender.setTypeface(null, Typeface.BOLD);
-        sender.setTextColor(Color.rgb(34, 34, 34));
+        sender.setTextColor(Color.parseColor("#1F1614"));
+
+        LinearLayout.LayoutParams nameParams =
+                new LinearLayout.LayoutParams(
+                        0,
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        1f
+                );
+        header.addView(sender, nameParams);
 
         TextView statusView = new TextView(this);
-        statusView.setText("Status: " + status);
-        statusView.setTextSize(13);
-        statusView.setTextColor(Color.rgb(211, 47, 47));
+        statusView.setText(status);
+        statusView.setTextSize(12);
+        statusView.setTypeface(null, Typeface.BOLD);
+        statusView.setPadding(dp(10), dp(4), dp(10), dp(4));
 
-        statusView.setPadding(
-                0,
-                dp(5),
-                0,
-                dp(10)
-        );
+        GradientDrawable statusBg = new GradientDrawable();
+        statusBg.setCornerRadius(dp(12));
+        if (status.equalsIgnoreCase("Approved") || status.equalsIgnoreCase("Confirmed")) {
+            statusView.setTextColor(Color.parseColor("#1B5E20"));
+            statusBg.setColor(Color.parseColor("#E8F5E9"));
+        } else if (status.equalsIgnoreCase("Declined") || status.equalsIgnoreCase("Denied")) {
+            statusView.setTextColor(Color.parseColor("#C62828"));
+            statusBg.setColor(Color.parseColor("#FFEBEE"));
+        } else {
+            statusView.setTextColor(Color.parseColor("#E65100"));
+            statusBg.setColor(Color.parseColor("#FFF3E0"));
+        }
+        statusView.setBackground(statusBg);
+        header.addView(statusView);
 
+        card.addView(header);
+
+        // Details block
         TextView details = new TextView(this);
-
         StringBuilder detailsText = new StringBuilder();
 
         if (!senderPhone.isEmpty()) {
-            detailsText.append("Phone: ")
-                    .append(senderPhone)
-                    .append("\n");
+            detailsText.append("ðŸ“ž ").append(senderPhone).append("\n");
         }
 
         if (!senderEmail.isEmpty()) {
-            detailsText.append("Email: ")
-                    .append(senderEmail)
-                    .append("\n");
+            detailsText.append("âœ‰ï¸ ").append(senderEmail).append("\n");
         }
 
-        if (!senderId.isEmpty()) {
-            detailsText.append("User ID: ")
-                    .append(senderId)
-                    .append("\n");
+        if (detailsText.length() > 0) {
+            detailsText.append("\n");
         }
 
-        detailsText.append("\nMessage\n")
-                .append(message);
+        detailsText.append("ðŸ’¬ Message:\n").append(message);
 
         details.setText(detailsText.toString());
         details.setTextSize(14);
-        details.setTextColor(Color.rgb(75, 75, 75));
+        details.setTextColor(Color.parseColor("#5A524E"));
         details.setLineSpacing(dp(3), 1f);
 
-        card.addView(sender);
-        card.addView(statusView);
-        card.addView(details);
+        LinearLayout.LayoutParams detailsParams =
+                new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                );
+        detailsParams.topMargin = dp(10);
+        card.addView(details, detailsParams);
 
         if (status.equalsIgnoreCase("pending")) {
             LinearLayout actions = new LinearLayout(this);
             actions.setOrientation(LinearLayout.HORIZONTAL);
             actions.setGravity(Gravity.CENTER_VERTICAL);
 
-            actions.setPadding(
-                    0,
-                    dp(14),
-                    0,
-                    0
-            );
+            LinearLayout.LayoutParams actionsParams =
+                    new LinearLayout.LayoutParams(
+                            LinearLayout.LayoutParams.MATCH_PARENT,
+                            LinearLayout.LayoutParams.WRAP_CONTENT
+                    );
+            actionsParams.topMargin = dp(14);
+            actions.setLayoutParams(actionsParams);
 
             Button approveButton = new Button(this);
             approveButton.setText("Approve contact");
-            approveButton.setAllCaps(false);
-            approveButton.setTextSize(12);
+            approveButton.setTransformationMethod(null);
+            approveButton.setTextSize(13);
+            approveButton.setTypeface(null, Typeface.BOLD);
+            approveButton.setTextColor(Color.WHITE);
 
-            approveButton.setBackgroundResource(
-                    R.drawable.selector_regular_button
-            );
+            GradientDrawable approveBg = new GradientDrawable();
+            approveBg.setColor(Color.parseColor("#34734A"));
+            approveBg.setCornerRadius(dp(12));
+            approveButton.setBackground(approveBg);
 
             Button denyButton = new Button(this);
             denyButton.setText("Deny");
-            denyButton.setAllCaps(false);
-            denyButton.setTextSize(12);
+            denyButton.setTransformationMethod(null);
+            denyButton.setTextSize(13);
+            denyButton.setTypeface(null, Typeface.BOLD);
+            denyButton.setTextColor(Color.WHITE);
 
-            denyButton.setBackgroundResource(
-                    R.drawable.selector_regular_button
-            );
+            GradientDrawable denyBg = new GradientDrawable();
+            denyBg.setColor(Color.parseColor("#7A2525"));
+            denyBg.setCornerRadius(dp(12));
+            denyButton.setBackground(denyBg);
 
             LinearLayout.LayoutParams buttonParams =
                     new LinearLayout.LayoutParams(
                             0,
-                            LinearLayout.LayoutParams.WRAP_CONTENT,
+                            dp(44),
                             1f
                     );
-
             buttonParams.setMarginEnd(dp(6));
             approveButton.setLayoutParams(buttonParams);
 
             LinearLayout.LayoutParams denyParams =
                     new LinearLayout.LayoutParams(
                             0,
-                            LinearLayout.LayoutParams.WRAP_CONTENT,
+                            dp(44),
                             1f
                     );
-
             denyParams.setMarginStart(dp(6));
             denyButton.setLayoutParams(denyParams);
 
@@ -7986,6 +8047,8 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -7993,6 +8056,9 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -8029,28 +8095,35 @@ public class LandlordViewingsActivity extends AppCompatActivity {
         root.setOrientation(LinearLayout.VERTICAL);
         root.setBackgroundColor(Color.parseColor("#FAF7F5"));
 
-        root.setPadding(
-                dp(20),
-                dp(24),
-                dp(20),
-                dp(12)
-        );
+        ViewCompat.setOnApplyWindowInsetsListener(root, (v, insets) -> {
+            Insets statusBar = insets.getInsets(WindowInsetsCompat.Type.statusBars());
+            Insets navBar = insets.getInsets(WindowInsetsCompat.Type.navigationBars());
+            int sideMargin = dp(20);
+            v.setPadding(
+                    sideMargin,
+                    statusBar.top + dp(16),
+                    sideMargin,
+                    navBar.bottom + dp(16)
+            );
+            return WindowInsetsCompat.CONSUMED;
+        });
 
         setContentView(root);
 
-        Button btnBack = new Button(this);
-        btnBack.setText("â† Back");
-        btnBack.setTransformationMethod(null);
-        btnBack.setTextColor(Color.WHITE);
-        btnBack.setBackground(
-                roundedBackground("#7A2525", 12)
-        );
+        ImageButton btnBack = new ImageButton(this);
+        btnBack.setImageResource(R.drawable.chevron_left);
+        btnBack.setBackgroundResource(R.drawable.bg_circle_white);
+        btnBack.setElevation(dp(1));
+        btnBack.setPadding(dp(7), dp(7), dp(7), dp(7));
+        btnBack.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        btnBack.setColorFilter(Color.parseColor("#1F1614"));
+        btnBack.setContentDescription("Back");
 
         root.addView(
                 btnBack,
                 new LinearLayout.LayoutParams(
-                        ViewGroup.LayoutParams.WRAP_CONTENT,
-                        dp(44)
+                        dp(38),
+                        dp(38)
                 )
         );
 
@@ -8058,7 +8131,7 @@ public class LandlordViewingsActivity extends AppCompatActivity {
 
         TextView heading = new TextView(this);
         heading.setText("Viewing Requests");
-        heading.setTextSize(25);
+        heading.setTextSize(24);
         heading.setTypeface(null, Typeface.BOLD);
         heading.setTextColor(Color.parseColor("#1F1614"));
 
@@ -8068,7 +8141,7 @@ public class LandlordViewingsActivity extends AppCompatActivity {
                         ViewGroup.LayoutParams.WRAP_CONTENT
                 );
 
-        headingParams.topMargin = dp(22);
+        headingParams.topMargin = dp(12);
         root.addView(heading, headingParams);
 
         TextView subtitle = new TextView(this);
@@ -8078,11 +8151,18 @@ public class LandlordViewingsActivity extends AppCompatActivity {
         subtitle.setTextSize(14);
         subtitle.setTextColor(Color.parseColor("#756763"));
 
-        root.addView(subtitle);
+        LinearLayout.LayoutParams subtitleParams =
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                );
+        subtitleParams.topMargin = dp(4);
+        root.addView(subtitle, subtitleParams);
 
         txtCount = new TextView(this);
         txtCount.setText("Loading requests...");
         txtCount.setTextSize(14);
+        txtCount.setTypeface(null, Typeface.BOLD);
         txtCount.setTextColor(Color.parseColor("#BA5536"));
 
         LinearLayout.LayoutParams countParams =
@@ -8091,7 +8171,7 @@ public class LandlordViewingsActivity extends AppCompatActivity {
                         ViewGroup.LayoutParams.WRAP_CONTENT
                 );
 
-        countParams.topMargin = dp(18);
+        countParams.topMargin = dp(12);
         countParams.bottomMargin = dp(12);
 
         root.addView(txtCount, countParams);
@@ -8121,14 +8201,16 @@ public class LandlordViewingsActivity extends AppCompatActivity {
 
         txtEmpty.setPadding(
                 dp(16),
-                dp(35),
+                dp(32),
                 dp(16),
-                dp(35)
+                dp(32)
         );
 
-        txtEmpty.setBackground(
-                roundedBackground("#FFFFFF", 16)
-        );
+        GradientDrawable emptyBg = new GradientDrawable();
+        emptyBg.setColor(Color.WHITE);
+        emptyBg.setCornerRadius(dp(16));
+        emptyBg.setStroke(dp(1), Color.parseColor("#E2DDD9"));
+        txtEmpty.setBackground(emptyBg);
 
         scrollContent.addView(txtEmpty);
 
@@ -8140,6 +8222,8 @@ public class LandlordViewingsActivity extends AppCompatActivity {
         Button btnRefresh = new Button(this);
         btnRefresh.setText("Refresh Requests");
         btnRefresh.setTransformationMethod(null);
+        btnRefresh.setTextSize(15);
+        btnRefresh.setTypeface(null, Typeface.BOLD);
         btnRefresh.setTextColor(Color.WHITE);
         btnRefresh.setBackground(
                 roundedBackground("#BA5536", 14)
@@ -8148,7 +8232,7 @@ public class LandlordViewingsActivity extends AppCompatActivity {
         LinearLayout.LayoutParams refreshParams =
                 new LinearLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
-                        dp(50)
+                        dp(48)
                 );
 
         refreshParams.topMargin = dp(12);
@@ -8339,15 +8423,18 @@ public class LandlordViewingsActivity extends AppCompatActivity {
         card.setOrientation(LinearLayout.VERTICAL);
 
         card.setPadding(
-                dp(16),
-                dp(16),
-                dp(16),
-                dp(16)
+                dp(18),
+                dp(18),
+                dp(18),
+                dp(18)
         );
 
-        card.setBackground(
-                roundedBackground("#FFFFFF", 18)
-        );
+        GradientDrawable cardBg = new GradientDrawable();
+        cardBg.setColor(Color.WHITE);
+        cardBg.setCornerRadius(dp(16));
+        cardBg.setStroke(dp(1), Color.parseColor("#E2DDD9"));
+        card.setBackground(cardBg);
+        card.setElevation(dp(2));
 
         LinearLayout.LayoutParams cardParams =
                 new LinearLayout.LayoutParams(
@@ -8358,14 +8445,48 @@ public class LandlordViewingsActivity extends AppCompatActivity {
         cardParams.bottomMargin = dp(14);
         requestsContainer.addView(card, cardParams);
 
+        // Header with property title and status pill
+        LinearLayout headerLayout = new LinearLayout(this);
+        headerLayout.setOrientation(LinearLayout.HORIZONTAL);
+        headerLayout.setGravity(Gravity.CENTER_VERTICAL);
+
         TextView tvProperty = createText(
                 propertyName,
-                18,
+                17,
                 "#1F1614",
                 true
         );
+        LinearLayout.LayoutParams propParams =
+                new LinearLayout.LayoutParams(
+                        0,
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        1f
+                );
+        headerLayout.addView(tvProperty, propParams);
 
-        card.addView(tvProperty);
+        TextView tvStatus = new TextView(this);
+        tvStatus.setText(status);
+        tvStatus.setTextSize(12);
+        tvStatus.setTypeface(null, Typeface.BOLD);
+        tvStatus.setPadding(dp(10), dp(4), dp(10), dp(4));
+
+        GradientDrawable statusBg = new GradientDrawable();
+        statusBg.setCornerRadius(dp(12));
+        if (status.equalsIgnoreCase("Confirmed")
+                || status.equalsIgnoreCase("Approved")) {
+            tvStatus.setTextColor(Color.parseColor("#1B5E20"));
+            statusBg.setColor(Color.parseColor("#E8F5E9"));
+        } else if (status.equalsIgnoreCase("Declined")) {
+            tvStatus.setTextColor(Color.parseColor("#C62828"));
+            statusBg.setColor(Color.parseColor("#FFEBEE"));
+        } else {
+            tvStatus.setTextColor(Color.parseColor("#E65100"));
+            statusBg.setColor(Color.parseColor("#FFF3E0"));
+        }
+        tvStatus.setBackground(statusBg);
+        headerLayout.addView(tvStatus);
+
+        card.addView(headerLayout);
 
         TextView tvDate = createText(
                 "ðŸ—“ " + viewingDate,
@@ -8374,7 +8495,7 @@ public class LandlordViewingsActivity extends AppCompatActivity {
                 true
         );
 
-        addTopMargin(card, tvDate, 10);
+        addTopMargin(card, tvDate, 8);
 
         TextView tvLocation = createText(
                 "ðŸ“ " + location,
@@ -8383,22 +8504,10 @@ public class LandlordViewingsActivity extends AppCompatActivity {
                 false
         );
 
-        addTopMargin(card, tvLocation, 6);
+        addTopMargin(card, tvLocation, 4);
 
-        TextView tvStatus = createText(
-                "Status: " + status,
-                13,
-                status.equalsIgnoreCase("Confirmed")
-                        ? "#34734A"
-                        : status.equalsIgnoreCase("Declined")
-                        ? "#A12626"
-                        : "#BA5536",
-                true
-        );
-
-        addTopMargin(card, tvStatus, 10);
-
-        if (!"Pending Host".equalsIgnoreCase(status)) {
+        if (!"Pending Host".equalsIgnoreCase(status)
+                && !"Pending".equalsIgnoreCase(status)) {
             return;
         }
 
@@ -10600,6 +10709,8 @@ public class OtpActivity extends AppCompatActivity {
 package com.example.ikhaya_accommodation_seeking_app;
 
 import android.content.Intent;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -10615,6 +10726,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import java.util.Locale;
+import java.util.function.Consumer;
 
 public class OuterMainActivity extends AppCompatActivity {
 
@@ -10622,6 +10734,7 @@ public class OuterMainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         super.onCreate(savedInstanceState);
 
         if (SupabaseHelper.isSessionWithinThirtyDays(this) && SupabaseHelper.getUserId(this) != null) {
@@ -10651,7 +10764,6 @@ public class OuterMainActivity extends AppCompatActivity {
             return;
         }
 
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_greetingpage);
 
@@ -10723,15 +10835,15 @@ public class OuterMainActivity extends AppCompatActivity {
 
         Button[] langButtons = {btnEnglish, btnIsiXhosa, btnAfrikaans, btnSepedi, btnSesotho, btnIsiZulu};
 
-        int activeColor = android.graphics.Color.parseColor("#C85A32");
-        int inactiveColor = android.graphics.Color.parseColor("#EADFD5");
+        int activeColor = Color.parseColor("#C85A32");
+        int inactiveColor = Color.parseColor("#EADFD5");
 
-        java.util.function.Consumer<Button> highlightButton = (activeBtn) -> {
+        Consumer<Button> highlightButton = (activeBtn) -> {
             for (Button b : langButtons) {
                 if (b != null) {
                     boolean isActive = (b == activeBtn);
-                    b.setBackgroundTintList(android.content.res.ColorStateList.valueOf(isActive ? activeColor : inactiveColor));
-                    b.setTextColor(isActive ? android.graphics.Color.WHITE : android.graphics.Color.BLACK);
+                    b.setBackgroundTintList(ColorStateList.valueOf(isActive ? activeColor : inactiveColor));
+                    b.setTextColor(isActive ? Color.WHITE : Color.BLACK);
                 }
             }
         };
@@ -15690,6 +15802,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
 
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -15964,7 +16077,13 @@ public class SupabaseHelper {
                 body.put("message", message);
 
                 writeJson(conn, body);
-                conn.getResponseCode();
+                int code = conn.getResponseCode();
+                if (code >= 200 && code < 300) {
+                    Log.d("SupabaseHelper", "Notification created successfully for: " + targetUid);
+                } else {
+                    String err = readResponse(conn);
+                    Log.e("SupabaseHelper", "Failed to insert notification. HTTP " + code + ": " + err);
+                }
             } catch (Exception e) {
                 Log.e("SupabaseHelper", "Failed to send notification", e);
             } finally {
@@ -15977,19 +16096,36 @@ public class SupabaseHelper {
         java.util.concurrent.Executors.newSingleThreadExecutor().execute(() -> {
             HttpURLConnection conn = null;
             try {
-                conn = createConnection("/rest/v1/profiles?select=firebase_uid&role=eq.ADMIN", "GET", token);
+                // Case-insensitive check on profiles
+                conn = createConnection("/rest/v1/profiles?select=firebase_uid&role=ilike.admin", "GET", token);
                 int code = conn.getResponseCode();
+
+                HashSet<String> adminUids = new HashSet<>();
 
                 if (code >= 200 && code < 300) {
                     String response = readResponse(conn);
                     JSONArray admins = new JSONArray(response);
-
                     for (int i = 0; i < admins.length(); i++) {
-                        String adminUid = admins.optJSONObject(i).optString("firebase_uid", "");
-                        if (!adminUid.isEmpty()) {
-                            createNotification(adminUid, title, message, token);
+                        String uid = admins.optJSONObject(i).optString("firebase_uid", "");
+                        if (!uid.isEmpty()) adminUids.add(uid);
+                    }
+                }
+                conn.disconnect();
+
+                // Fallback check on Users table if empty
+                if (adminUids.isEmpty()) {
+                    conn = createConnection("/rest/v1/Users?select=id&user_role=ilike.admin", "GET", token);
+                    if (conn.getResponseCode() >= 200 && conn.getResponseCode() < 300) {
+                        JSONArray legacyAdmins = new JSONArray(readResponse(conn));
+                        for (int i = 0; i < legacyAdmins.length(); i++) {
+                            String uid = legacyAdmins.optJSONObject(i).optString("id", "");
+                            if (!uid.isEmpty()) adminUids.add(uid);
                         }
                     }
+                }
+
+                for (String adminUid : adminUids) {
+                    createNotification(adminUid, title, message, token);
                 }
             } catch (Exception e) {
                 Log.e("SupabaseHelper", "Failed to notify admins", e);
@@ -16622,7 +16758,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
-import android.widget.Button;
+import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -16682,8 +16818,7 @@ public class UserSelectionActivity extends AppCompatActivity {
         editSearchUser = findViewById(R.id.editSearchUser);
 
         CardView cardCommunityChat = findViewById(R.id.cardCommunityChat);
-        Button btnViewAlerts = findViewById(R.id.btnViewAlerts);
-        Button btnSearchUser = findViewById(R.id.btnSearchUser);
+        View btnViewAlerts = findViewById(R.id.btnViewAlerts);
         TextView txtRoleBadge = findViewById(R.id.txtRoleBadge);
 
         accessToken = SupabaseHelper.getAccessToken(this);
@@ -16713,10 +16848,14 @@ public class UserSelectionActivity extends AppCompatActivity {
             );
         }
 
-        if (btnSearchUser != null && editSearchUser != null) {
-            btnSearchUser.setOnClickListener(v ->
-                    searchUsers(editSearchUser.getText().toString().trim())
-            );
+        if (editSearchUser != null) {
+            editSearchUser.setOnEditorActionListener((v, actionId, event) -> {
+                if (actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_DONE) {
+                    searchUsers(editSearchUser.getText().toString().trim());
+                    return true;
+                }
+                return false;
+            });
         }
 
         setupBottomNavigation();
@@ -16790,7 +16929,7 @@ public class UserSelectionActivity extends AppCompatActivity {
                 ImageView imgNavViewings = findViewById(R.id.imgNavViewings);
                 TextView tvNavViewings = findViewById(R.id.tvNavViewings);
 
-                if (imgNavViewings != null) imgNavViewings.setImageResource(R.drawable.house);
+                if (imgNavViewings != null) imgNavViewings.setImageResource(R.drawable.ic_plus_circle);
                 if (tvNavViewings != null) tvNavViewings.setText(R.string.add);
 
                 if (navViewings != null) {
@@ -18006,6 +18145,24 @@ public class ViewingsActivity extends AppCompatActivity {
       android:strokeLineCap="round"/>
 </vector>
 
+
+
+
+=== FILE: C:\Users\Tsosa\AndroidStudioProjects\Accommodation-seeking-app\app\src\main\res\drawable\chevron_right.xml ===
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:pathData="m9,18 l6,-6 -6,-6"
+        android:strokeLineJoin="round"
+        android:strokeWidth="2"
+        android:fillColor="#00000000"
+        android:strokeColor="#BA5536"
+        android:strokeLineCap="round"/>
+</vector>
 
 
 
@@ -19388,6 +19545,21 @@ public class ViewingsActivity extends AppCompatActivity {
 
 
 
+=== FILE: C:\Users\Tsosa\AndroidStudioProjects\Accommodation-seeking-app\app\src\main\res\drawable\ic_my_listings.xml ===
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M12,3L2,12H5V21H19V12H22L12,3ZM17,19H14V14H10V19H7V10.2L12,5.7L17,10.2V19Z" />
+</vector>
+
+
+
 === FILE: C:\Users\Tsosa\AndroidStudioProjects\Accommodation-seeking-app\app\src\main\res\drawable\ic_otp.xml ===
 
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
@@ -19505,6 +19677,21 @@ public class ViewingsActivity extends AppCompatActivity {
 
 
 
+=== FILE: C:\Users\Tsosa\AndroidStudioProjects\Accommodation-seeking-app\app\src\main\res\drawable\ic_plus_circle.xml ===
+
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+  <path
+      android:pathData="M12,2A10,10 0 1,0 22,12A10,10 0 0,0 12,2M12,20A8,8 0 1,1 20,12A8,8 0 0,1 12,20M13,7H11V11H7V13H11V17H13V13H17V11H13Z"
+      android:fillColor="#FFFFFF"/>
+</vector>
+
+
+
 === FILE: C:\Users\Tsosa\AndroidStudioProjects\Accommodation-seeking-app\app\src\main\res\drawable\ic_south_africa.xml ===
 
 <vector
@@ -19584,6 +19771,21 @@ public class ViewingsActivity extends AppCompatActivity {
     
 </vector>
 
+
+
+
+=== FILE: C:\Users\Tsosa\AndroidStudioProjects\Accommodation-seeking-app\app\src\main\res\drawable\ic_tenant_enquiries.xml ===
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M20,2H4C2.9,2 2,2.9 2,4V22L6,18H20C21.1,18 22,17.1 22,16V4C22,2.9 21.1,2 20,2ZM20,16H5.17L4,17.17V4H20V16ZM7,7H17V9H7ZM7,11H14V13H7Z" />
+</vector>
 
 
 
@@ -19722,6 +19924,21 @@ public class ViewingsActivity extends AppCompatActivity {
         android:fillColor="#00000000"
         android:strokeColor="#000000"
         android:strokeLineCap="round"/>
+</vector>
+
+
+
+=== FILE: C:\Users\Tsosa\AndroidStudioProjects\Accommodation-seeking-app\app\src\main\res\drawable\ic_viewing_requests.xml ===
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M19,4H18V2H16V4H8V2H6V4H5C3.9,4 3,4.9 3,6V20C3,21.1 3.9,22 5,22H19C20.1,22 21,21.1 21,20V6C21,4.9 20.1,4 19,4ZM19,20H5V10H19V20ZM19,8H5V6H19V8ZM10,18L6.5,14.5L7.91,13.09L10,15.17L15.59,9.59L17,11Z" />
 </vector>
 
 
@@ -20035,6 +20252,59 @@ public class ViewingsActivity extends AppCompatActivity {
 
 
 
+=== FILE: C:\Users\Tsosa\AndroidStudioProjects\Accommodation-seeking-app\app\src\main\res\drawable\user_round_group.xml ===
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+  <path
+      android:pathData="M17,21a5,5 0,0 0,-10 0"
+      android:strokeLineJoin="round"
+      android:strokeWidth="2"
+      android:fillColor="#00000000"
+      android:strokeColor="#BA5536"
+      android:strokeLineCap="round"/>
+  <path
+      android:pathData="M22,10.5a3.5,3.5 0,0 0,-5.507 -2.868"
+      android:strokeLineJoin="round"
+      android:strokeWidth="2"
+      android:fillColor="#00000000"
+      android:strokeColor="#BA5536"
+      android:strokeLineCap="round"/>
+  <path
+      android:pathData="M7.507,7.632A3.5,3.5 0,0 0,2 10.5"
+      android:strokeLineJoin="round"
+      android:strokeWidth="2"
+      android:fillColor="#00000000"
+      android:strokeColor="#BA5536"
+      android:strokeLineCap="round"/>
+  <path
+      android:pathData="M12,13m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0"
+      android:strokeLineJoin="round"
+      android:strokeWidth="2"
+      android:fillColor="#00000000"
+      android:strokeColor="#BA5536"
+      android:strokeLineCap="round"/>
+  <path
+      android:pathData="M18.5,4.5m-2.5,0a2.5,2.5 0,1 1,5 0a2.5,2.5 0,1 1,-5 0"
+      android:strokeLineJoin="round"
+      android:strokeWidth="2"
+      android:fillColor="#00000000"
+      android:strokeColor="#BA5536"
+      android:strokeLineCap="round"/>
+  <path
+      android:pathData="M5.5,4.5m-2.5,0a2.5,2.5 0,1 1,5 0a2.5,2.5 0,1 1,-5 0"
+      android:strokeLineJoin="round"
+      android:strokeWidth="2"
+      android:fillColor="#00000000"
+      android:strokeColor="#BA5536"
+      android:strokeLineCap="round"/>
+</vector>
+
+
+
 === FILE: C:\Users\Tsosa\AndroidStudioProjects\Accommodation-seeking-app\app\src\main\res\layout\activity_add_listing.xml ===
 
 <?xml version="1.0" encoding="utf-8"?>
@@ -20043,6 +20313,7 @@ public class ViewingsActivity extends AppCompatActivity {
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     android:background="@color/appBackground">
 
     <LinearLayout
@@ -20087,6 +20358,7 @@ public class ViewingsActivity extends AppCompatActivity {
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:fillViewport="true"
+        android:clipToPadding="false"
         app:layout_constraintTop_toBottomOf="@id/addListingHeader"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -20098,7 +20370,7 @@ public class ViewingsActivity extends AppCompatActivity {
             android:orientation="vertical"
             android:paddingHorizontal="24dp"
             android:paddingTop="8dp"
-            android:paddingBottom="48dp">
+            android:paddingBottom="100dp">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -20129,7 +20401,6 @@ public class ViewingsActivity extends AppCompatActivity {
                 android:textStyle="bold"
                 android:textSize="14sp" />
 
-            <!-- AutoComplete Input for Uber-style locality typing -->
             <AutoCompleteTextView
                 android:id="@+id/autoCompleteLocation"
                 android:layout_width="match_parent"
@@ -20141,7 +20412,6 @@ public class ViewingsActivity extends AppCompatActivity {
                 android:inputType="textCapSentences"
                 android:completionThreshold="3" />
 
-            <!-- Interactive Pin Action Row -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -20174,7 +20444,6 @@ public class ViewingsActivity extends AppCompatActivity {
                     app:strokeColor="#D1C7BD" />
             </LinearLayout>
 
-            <!-- Visual Status Pill -->
             <TextView
                 android:id="@+id/tvLocationCoords"
                 android:layout_width="match_parent"
@@ -20185,7 +20454,6 @@ public class ViewingsActivity extends AppCompatActivity {
                 android:textColor="#8C7A70"
                 android:textSize="13sp" />
 
-            <!-- Listing Purpose Toggle -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -20218,7 +20486,6 @@ public class ViewingsActivity extends AppCompatActivity {
                     android:text="@string/for_sale" />
             </com.google.android.material.chip.ChipGroup>
 
-            <!-- Price Label -->
             <TextView
                 android:id="@+id/tvPriceLabel"
                 android:layout_width="wrap_content"
@@ -20239,7 +20506,6 @@ public class ViewingsActivity extends AppCompatActivity {
                 android:inputType="numberDecimal"
                 android:singleLine="true" />
 
-            <!-- Rooms Label -->
             <TextView
                 android:id="@+id/tvRoomsLabel"
                 android:layout_width="wrap_content"
@@ -20484,7 +20750,6 @@ public class ViewingsActivity extends AppCompatActivity {
 
 
 
-
 === FILE: C:\Users\Tsosa\AndroidStudioProjects\Accommodation-seeking-app\app\src\main\res\layout\activity_admin_active_listings.xml ===
 
 <?xml version="1.0" encoding="utf-8"?>
@@ -20639,7 +20904,39 @@ public class ViewingsActivity extends AppCompatActivity {
                         android:textStyle="bold" />
                 </LinearLayout>
 
+                <!-- Notification Bell Button -->
+                <FrameLayout
+                    android:id="@+id/btnNotificationsAdmin"
+                    android:layout_width="38dp"
+                    android:layout_height="38dp"
+                    android:layout_centerVertical="true"
+                    android:layout_toStartOf="@id/tvAdminConsoleBadge"
+                    android:layout_marginEnd="10dp"
+                    android:background="@drawable/bg_circle_white"
+                    android:clickable="true"
+                    android:elevation="1dp"
+                    android:focusable="true">
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_gravity="center"
+                        android:contentDescription="@string/notifications"
+                        android:src="@android:drawable/ic_popup_reminder"
+                        app:tint="#BA5536" />
+
+                    <View
+                        android:id="@+id/adminNotificationDot"
+                        android:layout_width="8dp"
+                        android:layout_height="8dp"
+                        android:layout_gravity="top|end"
+                        android:layout_margin="4dp"
+                        android:background="@drawable/bg_notification_dot"
+                        android:visibility="gone" />
+                </FrameLayout>
+
                 <TextView
+                    android:id="@+id/tvAdminConsoleBadge"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
@@ -22859,10 +23156,11 @@ public class ViewingsActivity extends AppCompatActivity {
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/enquiriesRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F7F7F7"
+    android:background="#FAF7F5"
     android:padding="20dp">
 
     <!-- Circular Back Button -->
@@ -22884,18 +23182,29 @@ public class ViewingsActivity extends AppCompatActivity {
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:text="@string/enquiries"
-        android:textColor="#222222"
+        android:textColor="#1F1614"
         android:textSize="24sp"
         android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/txtEnquiriesSubtitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="12dp"
+        android:text="Review and respond to resident enquiries."
+        android:textColor="#756763"
+        android:textSize="14sp" />
 
     <TextView
         android:id="@+id/txtNoEnquiries"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="20dp"
+        android:layout_marginTop="12dp"
         android:gravity="center"
+        android:padding="32dp"
         android:text="@string/no_enquiries_yet"
-        android:textColor="#777777"
+        android:textColor="#756763"
         android:textSize="15sp"
         android:visibility="gone" />
 
@@ -22904,7 +23213,7 @@ public class ViewingsActivity extends AppCompatActivity {
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="8dp"
         android:fillViewport="true">
 
         <LinearLayout
@@ -23648,7 +23957,7 @@ public class ViewingsActivity extends AppCompatActivity {
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Landlord Hub"
+                            android:text="@string/landlord_hub"
                             android:textColor="#BA5536"
                             android:textSize="11sp"
                             android:textStyle="bold" />
@@ -23674,12 +23983,13 @@ public class ViewingsActivity extends AppCompatActivity {
                         android:clickable="true"
                         android:focusable="true"
                         android:elevation="1dp"
-                        android:contentDescription="Notifications">
+                        android:contentDescription="@string/notifications">
 
                         <ImageView
                             android:layout_width="20dp"
                             android:layout_height="20dp"
                             android:layout_gravity="center"
+                            android:contentDescription="@string/notifications"
                             android:src="@android:drawable/ic_popup_reminder"
                             app:tint="#1F1614" />
 
@@ -23715,7 +24025,7 @@ public class ViewingsActivity extends AppCompatActivity {
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="24dp"
-                android:text="Welcome, Landlord"
+                android:text="@string/welcome_landlord"
                 android:textColor="#1F1614"
                 android:textSize="26sp"
                 android:textStyle="bold" />
@@ -23752,7 +24062,7 @@ public class ViewingsActivity extends AppCompatActivity {
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Total Listings"
+                            android:text="@string/total_listings"
                             android:textColor="#8C7A70"
                             android:textSize="13sp"
                             android:textStyle="bold" />
@@ -23763,7 +24073,7 @@ public class ViewingsActivity extends AppCompatActivity {
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
                             android:layout_marginBottom="8dp"
-                            android:text="0"
+                            android:text="@string/count_zero"
                             android:textColor="#1F1614"
                             android:textSize="26sp"
                             android:textStyle="bold" />
@@ -23771,7 +24081,7 @@ public class ViewingsActivity extends AppCompatActivity {
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="â— All properties"
+                            android:text="@string/bullet_all_properties"
                             android:textColor="#8C7A70"
                             android:textSize="11sp" />
                     </LinearLayout>
@@ -23800,7 +24110,7 @@ public class ViewingsActivity extends AppCompatActivity {
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Available"
+                            android:text="@string/available"
                             android:textColor="#8C7A70"
                             android:textSize="13sp"
                             android:textStyle="bold" />
@@ -23811,7 +24121,7 @@ public class ViewingsActivity extends AppCompatActivity {
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
                             android:layout_marginBottom="8dp"
-                            android:text="0"
+                            android:text="@string/count_zero"
                             android:textColor="#1F1614"
                             android:textSize="26sp"
                             android:textStyle="bold" />
@@ -23819,7 +24129,7 @@ public class ViewingsActivity extends AppCompatActivity {
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="â— Live on platform"
+                            android:text="@string/bullet_live_on_platform"
                             android:textColor="#2DCE89"
                             android:textSize="11sp" />
                     </LinearLayout>
@@ -23857,7 +24167,7 @@ public class ViewingsActivity extends AppCompatActivity {
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Pending Review"
+                            android:text="@string/pending_review"
                             android:textColor="#8C7A70"
                             android:textSize="13sp"
                             android:textStyle="bold" />
@@ -23868,7 +24178,7 @@ public class ViewingsActivity extends AppCompatActivity {
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
                             android:layout_marginBottom="8dp"
-                            android:text="0"
+                            android:text="@string/count_zero"
                             android:textColor="#1F1614"
                             android:textSize="26sp"
                             android:textStyle="bold" />
@@ -23876,7 +24186,7 @@ public class ViewingsActivity extends AppCompatActivity {
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="â— Awaiting admin"
+                            android:text="@string/bullet_awaiting_admin"
                             android:textColor="#F5A623"
                             android:textSize="11sp" />
                     </LinearLayout>
@@ -23905,7 +24215,7 @@ public class ViewingsActivity extends AppCompatActivity {
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Unread Messages"
+                            android:text="@string/unread_messages"
                             android:textColor="#8C7A70"
                             android:textSize="13sp"
                             android:textStyle="bold" />
@@ -23916,7 +24226,7 @@ public class ViewingsActivity extends AppCompatActivity {
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
                             android:layout_marginBottom="8dp"
-                            android:text="0"
+                            android:text="@string/count_zero"
                             android:textColor="#1F1614"
                             android:textSize="26sp"
                             android:textStyle="bold" />
@@ -23924,7 +24234,7 @@ public class ViewingsActivity extends AppCompatActivity {
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="â— Needs reply"
+                            android:text="@string/bullet_needs_reply"
                             android:textColor="#BA5536"
                             android:textSize="11sp" />
                     </LinearLayout>
@@ -23936,7 +24246,7 @@ public class ViewingsActivity extends AppCompatActivity {
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
-                android:text="Activity"
+                android:text="@string/activity_header"
                 android:textColor="#1F1614"
                 android:textSize="19sp"
                 android:textStyle="bold" />
@@ -23965,7 +24275,8 @@ public class ViewingsActivity extends AppCompatActivity {
                         android:layout_height="22dp"
                         android:layout_alignParentStart="true"
                         android:layout_centerVertical="true"
-                        android:src="@drawable/ic_viewings"
+                        android:contentDescription="@string/tenant_enquiries"
+                        android:src="@drawable/ic_tenant_enquiries"
                         app:tint="#BA5536" />
 
                     <LinearLayout
@@ -23979,7 +24290,7 @@ public class ViewingsActivity extends AppCompatActivity {
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Tenant Enquiries"
+                            android:text="@string/tenant_enquiries"
                             android:textColor="#1F1614"
                             android:textSize="15sp"
                             android:textStyle="bold" />
@@ -23987,7 +24298,7 @@ public class ViewingsActivity extends AppCompatActivity {
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="View messages &amp; questions"
+                            android:text="@string/view_messages_questions"
                             android:textColor="#8C7A70"
                             android:textSize="12sp" />
                     </LinearLayout>
@@ -24008,7 +24319,7 @@ public class ViewingsActivity extends AppCompatActivity {
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true"
-                        android:text="â€º"
+                        android:text="@string/arrow_right"
                         android:textColor="#BA5536"
                         android:textSize="26sp" />
                 </RelativeLayout>
@@ -24038,6 +24349,7 @@ public class ViewingsActivity extends AppCompatActivity {
                         android:layout_height="22dp"
                         android:layout_alignParentStart="true"
                         android:layout_centerVertical="true"
+                        android:contentDescription="@string/rental_applications"
                         android:src="@drawable/heart"
                         app:tint="#BA5536" />
 
@@ -24052,7 +24364,7 @@ public class ViewingsActivity extends AppCompatActivity {
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Rental Applications"
+                            android:text="@string/rental_applications"
                             android:textColor="#1F1614"
                             android:textSize="15sp"
                             android:textStyle="bold" />
@@ -24060,7 +24372,7 @@ public class ViewingsActivity extends AppCompatActivity {
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Approve or decline offers"
+                            android:text="@string/approve_decline_offers"
                             android:textColor="#8C7A70"
                             android:textSize="12sp" />
                     </LinearLayout>
@@ -24081,13 +24393,13 @@ public class ViewingsActivity extends AppCompatActivity {
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true"
-                        android:text="â€º"
+                        android:text="@string/arrow_right"
                         android:textColor="#BA5536"
                         android:textSize="26sp" />
                 </RelativeLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- Viewing Requests Tile (Preserved from Right Branch) -->
+            <!-- Viewing Requests Tile -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/cardViewingRequests"
                 android:layout_width="match_parent"
@@ -24111,7 +24423,8 @@ public class ViewingsActivity extends AppCompatActivity {
                         android:layout_height="22dp"
                         android:layout_alignParentStart="true"
                         android:layout_centerVertical="true"
-                        android:src="@drawable/ic_viewings"
+                        android:contentDescription="@string/viewing_requests"
+                        android:src="@drawable/ic_viewing_requests"
                         app:tint="#BA5536" />
 
                     <LinearLayout
@@ -24125,7 +24438,7 @@ public class ViewingsActivity extends AppCompatActivity {
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Viewing Requests"
+                            android:text="@string/viewing_requests"
                             android:textColor="#1F1614"
                             android:textSize="15sp"
                             android:textStyle="bold" />
@@ -24133,7 +24446,7 @@ public class ViewingsActivity extends AppCompatActivity {
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Manage booking appointments"
+                            android:text="@string/manage_booking_appointments"
                             android:textColor="#8C7A70"
                             android:textSize="12sp" />
                     </LinearLayout>
@@ -24154,13 +24467,12 @@ public class ViewingsActivity extends AppCompatActivity {
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true"
-                        android:text="â€º"
+                        android:text="@string/arrow_right"
                         android:textColor="#BA5536"
                         android:textSize="26sp" />
                 </RelativeLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- 5. MY LISTINGS PREVIEW SECTION (Preserved from Right Branch) -->
             <TextView
                 android:id="@+id/txtMyListings"
                 android:layout_width="match_parent"
@@ -24241,6 +24553,7 @@ public class ViewingsActivity extends AppCompatActivity {
             <ImageView
                 android:layout_width="20dp"
                 android:layout_height="20dp"
+                android:contentDescription="@string/nav_dashboard"
                 android:src="@drawable/layout_dashboard"
                 app:tint="#FFFFFF" />
 
@@ -24250,7 +24563,7 @@ public class ViewingsActivity extends AppCompatActivity {
                 android:layout_marginTop="3dp"
                 android:includeFontPadding="false"
                 android:singleLine="true"
-                android:text="Dashboard"
+                android:text="@string/nav_dashboard"
                 android:textColor="#FFFFFF"
                 android:textSize="10sp"
                 android:textStyle="bold" />
@@ -24269,6 +24582,7 @@ public class ViewingsActivity extends AppCompatActivity {
             <ImageView
                 android:layout_width="20dp"
                 android:layout_height="20dp"
+                android:contentDescription="@string/listings"
                 android:src="@drawable/book_user"
                 app:tint="#FFD8CC" />
 
@@ -24293,15 +24607,12 @@ public class ViewingsActivity extends AppCompatActivity {
             android:gravity="center"
             android:orientation="vertical">
 
-            <TextView
-                android:layout_width="22dp"
-                android:layout_height="22dp"
-                android:gravity="center"
-                android:includeFontPadding="false"
-                android:text="+"
-                android:textColor="#FFD8CC"
-                android:textSize="22sp"
-                android:textStyle="bold" />
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:contentDescription="@string/add"
+                android:src="@drawable/ic_plus_circle"
+                app:tint="#FFD8CC" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -24332,6 +24643,7 @@ public class ViewingsActivity extends AppCompatActivity {
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:layout_gravity="center"
+                    android:contentDescription="@string/nav_messages"
                     android:src="@drawable/messages_circle"
                     app:tint="#FFD8CC" />
 
@@ -24350,7 +24662,7 @@ public class ViewingsActivity extends AppCompatActivity {
                 android:layout_marginTop="3dp"
                 android:includeFontPadding="false"
                 android:singleLine="true"
-                android:text="Messages"
+                android:text="@string/nav_messages"
                 android:textColor="#FFD8CC"
                 android:textSize="10sp" />
         </LinearLayout>
@@ -25191,15 +25503,12 @@ public class ViewingsActivity extends AppCompatActivity {
             android:gravity="center"
             android:orientation="vertical">
 
-            <TextView
-                android:layout_width="22dp"
-                android:layout_height="22dp"
-                android:gravity="center"
-                android:includeFontPadding="false"
-                android:text="@string/symbol_plus"
-                android:textColor="#FFD8CC"
-                android:textSize="22sp"
-                android:textStyle="bold" />
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:contentDescription="@string/add"
+                android:src="@drawable/ic_plus_circle"
+                app:tint="#FFD8CC" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -25267,14 +25576,17 @@ public class ViewingsActivity extends AppCompatActivity {
             android:orientation="vertical"
             android:padding="20dp">
 
-            <Button
+            <ImageButton
                 android:id="@+id/btnBack"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/selector_regular_button"
-                app:backgroundTint="@null"
-                android:text="@string/back"
-                android:textAllCaps="false" />
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:background="@drawable/bg_circle_white"
+                android:contentDescription="@string/desc_back_button"
+                android:elevation="1dp"
+                android:padding="7dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/chevron_left"
+                app:tint="#1F1614" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -27862,9 +28174,10 @@ public class ViewingsActivity extends AppCompatActivity {
     android:fitsSystemWindows="false">
 
     <ScrollView
+        android:id="@+id/messagesScrollView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingBottom="130dp"
+        android:paddingBottom="100dp"
         android:clipToPadding="false"
         android:fillViewport="true"
         android:scrollbars="none">
@@ -27875,164 +28188,220 @@ public class ViewingsActivity extends AppCompatActivity {
             android:orientation="vertical"
             android:padding="20dp">
 
-            <!-- Header with Role Badge -->
-
-            <Button
+            <!-- Minimalist Back Button -->
+            <ImageView
                 android:id="@+id/btnBack"
-                android:layout_width="wrap_content"
-                android:layout_height="44dp"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="12dp"
-                android:background="@drawable/selector_regular_button"
-                android:text="@string/back"
-                android:textAllCaps="false" />
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                android:src="@drawable/chevron_left"
+                app:tint="#1F1614" />
 
-            <RelativeLayout
+            <!-- Header with Earthy Role Badge -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:layout_marginBottom="4dp">
+                android:orientation="vertical"
+                android:layout_marginBottom="24dp">
 
                 <TextView
                     android:id="@+id/txtHeader"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentStart="true"
                     android:text="@string/title_messages_community"
-                    android:textColor="#212529"
-                    android:textSize="24sp"
+                    android:textColor="#1F1614"
+                    android:textSize="26sp"
                     android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/txtRoleBadge"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/txtHeader"
-                    android:layout_marginTop="4dp"
+                    android:layout_marginTop="6dp"
                     android:background="@drawable/custom_input"
-                    android:backgroundTint="#E3F2FD"
+                    android:backgroundTint="#EFEBE4"
                     android:paddingStart="12dp"
                     android:paddingTop="4dp"
                     android:paddingEnd="12dp"
                     android:paddingBottom="4dp"
                     android:text="MEMBER"
-                    android:textColor="#1976D2"
-                    android:textSize="12sp"
+                    android:textColor="#8C7A70"
+                    android:textSize="11sp"
                     android:textStyle="bold" />
+            </LinearLayout>
 
-            </RelativeLayout>
-
+            <!-- Activity Section (Matches Landlord Dashboard Style) -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/desc_chat_community"
-                android:textSize="14sp"
-                android:textColor="#6C757D"
-                android:layout_marginBottom="16dp" />
+                android:layout_marginBottom="12dp"
+                android:text="Activity"
+                android:textColor="#1F1614"
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
-            <!-- View Alerts Button -->
-            <Button
+            <!-- Chat Alerts Card -->
+            <androidx.cardview.widget.CardView
                 android:id="@+id/btnViewAlerts"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp"
-                android:background="@drawable/selector_regular_button"
-                app:backgroundTint="@null"
-                android:text="@string/btn_view_chat_alerts"
-                android:textAllCaps="false" />
-
-            <!-- PINNED COMMUNITY CHAT CARD -->
-            <androidx.cardview.widget.CardView
-                android:id="@+id/cardCommunityChat"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                app:cardBackgroundColor="#FFFFFF"
                 app:cardCornerRadius="16dp"
-                app:cardElevation="4dp"
-                app:cardBackgroundColor="#FFF4E6"
-                android:layout_marginBottom="24dp"
+                app:cardElevation="1dp"
                 android:clickable="true"
                 android:focusable="true">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="18dp">
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="16dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/title_ikhaya_community"
-                        android:textSize="18sp"
-                        android:textStyle="bold"
-                        android:textColor="#D9480F" />
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:src="@android:drawable/ic_popup_reminder"
+                        app:tint="#BA5536" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:text="@string/desc_community_room"
-                        android:textSize="13sp"
-                        android:textColor="#495057"
-                        android:layout_marginTop="4dp" />
+                        android:layout_marginStart="16dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/btn_view_chat_alerts"
+                            android:textColor="#1F1614"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="Manage pending requests"
+                            android:textColor="#8C7A70"
+                            android:textSize="13sp" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:src="@drawable/chevron_right"
+                        app:tint="#BA5536" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- SEARCH SECTION -->
+            <!-- Community Chat Card -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardCommunityChat"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                app:cardBackgroundColor="#FFFFFF"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="1dp"
+                android:clickable="true"
+                android:focusable="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="16dp">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/user_round_group"
+                        app:tint="#BA5536" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/title_ikhaya_community"
+                            android:textColor="#1F1614"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="@string/desc_community_room"
+                            android:textColor="#8C7A70"
+                            android:textSize="13sp" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:src="@drawable/chevron_right"
+                        app:tint="#BA5536" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Search Section -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
                 android:text="@string/title_search_users"
+                android:textColor="#1F1614"
                 android:textSize="18sp"
-                android:textStyle="bold"
-                android:textColor="#212529"
-                android:layout_marginBottom="8dp" />
+                android:textStyle="bold" />
 
-            <LinearLayout
+            <EditText
+                android:id="@+id/editSearchUser"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="16dp">
-
-                <EditText
-                    android:id="@+id/editSearchUser"
-                    android:layout_width="0dp"
-                    android:layout_height="50dp"
-                    android:layout_weight="1"
-                    android:background="@drawable/custom_input"
-                    android:hint="@string/hint_type_name_search"
-                    android:paddingStart="16dp"
-                    android:paddingEnd="16dp"
-                    android:inputType="textPersonName"
-                    android:textColor="#212529"
-                    android:textColorHint="#6C757D" />
-
-                <Button
-                    android:id="@+id/btnSearchUser"
-                    android:layout_width="wrap_content"
-                    android:layout_height="50dp"
-                    android:layout_marginStart="8dp"
-                    android:background="@drawable/selector_regular_button"
-                    app:backgroundTint="@null"
-                    android:text="@string/search"
-                    android:textAllCaps="false" />
-            </LinearLayout>
+                android:layout_height="52dp"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/custom_input"
+                android:backgroundTint="#FFFFFF"
+                android:drawableStart="@drawable/search"
+                android:drawablePadding="12dp"
+                android:elevation="1dp"
+                android:hint="@string/hint_type_name_search"
+                android:imeOptions="actionSearch"
+                android:inputType="textPersonName"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:textColor="#1F1614"
+                android:textColorHint="#8C7A70" />
 
             <LinearLayout
                 android:id="@+id/searchResultsContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginBottom="16dp" />
+                android:layout_marginBottom="16dp"
+                android:orientation="vertical" />
 
-            <!-- DIRECT MESSAGES SECTION -->
+            <!-- Direct Messages Section -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
                 android:text="@string/title_direct_messages"
+                android:textColor="#1F1614"
                 android:textSize="18sp"
-                android:textStyle="bold"
-                android:textColor="#212529"
-                android:layout_marginBottom="12dp" />
+                android:textStyle="bold" />
 
             <ProgressBar
                 android:id="@+id/progressUsers"
@@ -28041,19 +28410,16 @@ public class ViewingsActivity extends AppCompatActivity {
                 android:layout_gravity="center"
                 android:layout_marginTop="20dp" />
 
-            <!-- Dynamic container for active direct chats -->
             <LinearLayout
                 android:id="@+id/usersListContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical" />
 
-
-
         </LinearLayout>
     </ScrollView>
 
-    <!-- FLOATING PILL BOTTOM NAVIGATION (Messages Active) -->
+    <!-- FLOATING PILL BOTTOM NAVIGATION -->
     <LinearLayout
         android:id="@+id/floatingBottomNav"
         android:layout_width="match_parent"
@@ -28070,7 +28436,6 @@ public class ViewingsActivity extends AppCompatActivity {
         android:padding="0dp"
         android:weightSum="4">
 
-        <!-- Tab 1: Discover / Dashboard -->
         <LinearLayout
             android:id="@+id/navHome"
             android:layout_width="0dp"
@@ -28079,7 +28444,6 @@ public class ViewingsActivity extends AppCompatActivity {
             android:background="?attr/selectableItemBackgroundBorderless"
             android:gravity="center"
             android:orientation="vertical">
-
             <ImageView
                 android:id="@+id/imgNavHome"
                 android:layout_width="20dp"
@@ -28087,7 +28451,6 @@ public class ViewingsActivity extends AppCompatActivity {
                 android:contentDescription="@string/nav_discover"
                 android:src="@drawable/earth"
                 app:tint="#FFD8CC" />
-
             <TextView
                 android:id="@+id/tvNavHome"
                 android:layout_width="wrap_content"
@@ -28099,7 +28462,6 @@ public class ViewingsActivity extends AppCompatActivity {
                 android:textSize="10.5sp" />
         </LinearLayout>
 
-        <!-- Tab 2: Favorites / Listings -->
         <LinearLayout
             android:id="@+id/navFavorites"
             android:layout_width="0dp"
@@ -28108,7 +28470,6 @@ public class ViewingsActivity extends AppCompatActivity {
             android:background="?attr/selectableItemBackgroundBorderless"
             android:gravity="center"
             android:orientation="vertical">
-
             <ImageView
                 android:id="@+id/imgNavFavorites"
                 android:layout_width="20dp"
@@ -28116,7 +28477,6 @@ public class ViewingsActivity extends AppCompatActivity {
                 android:contentDescription="@string/nav_favorites"
                 android:src="@drawable/heart"
                 app:tint="#FFD8CC" />
-
             <TextView
                 android:id="@+id/tvNavFavorites"
                 android:layout_width="wrap_content"
@@ -28128,7 +28488,6 @@ public class ViewingsActivity extends AppCompatActivity {
                 android:textSize="10.5sp" />
         </LinearLayout>
 
-        <!-- Tab 3: Viewings / Add -->
         <LinearLayout
             android:id="@+id/navViewings"
             android:layout_width="0dp"
@@ -28137,7 +28496,6 @@ public class ViewingsActivity extends AppCompatActivity {
             android:background="?attr/selectableItemBackgroundBorderless"
             android:gravity="center"
             android:orientation="vertical">
-
             <ImageView
                 android:id="@+id/imgNavViewings"
                 android:layout_width="20dp"
@@ -28145,7 +28503,6 @@ public class ViewingsActivity extends AppCompatActivity {
                 android:contentDescription="@string/nav_viewings"
                 android:src="@drawable/ic_viewings"
                 app:tint="#FFD8CC" />
-
             <TextView
                 android:id="@+id/tvNavViewings"
                 android:layout_width="wrap_content"
@@ -28157,7 +28514,6 @@ public class ViewingsActivity extends AppCompatActivity {
                 android:textSize="10.5sp" />
         </LinearLayout>
 
-        <!-- Tab 4: Messages (Active) -->
         <LinearLayout
             android:id="@+id/navMessages"
             android:layout_width="0dp"
@@ -28166,14 +28522,12 @@ public class ViewingsActivity extends AppCompatActivity {
             android:background="?attr/selectableItemBackgroundBorderless"
             android:gravity="center"
             android:orientation="vertical">
-
             <ImageView
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:contentDescription="@string/nav_messages"
                 android:src="@drawable/messages_circle"
                 app:tint="#FFFFFF" />
-
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -29586,6 +29940,21 @@ public class ViewingsActivity extends AppCompatActivity {
     <string name="label_not_provided">Not provided</string>
     <string name="language_updated_successfully">Language updated successfully.</string>
     <string name="press_back_again_to_exit">Press back again to exit iKhaya</string>
+    <string name="landlord_hub">Landlord Hub</string>
+    <string name="welcome_landlord">Welcome, Landlord</string>
+    <string name="total_listings">Total Listings</string>
+    <string name="bullet_all_properties">â— All properties</string>
+    <string name="bullet_live_on_platform">â— Live on platform</string>
+    <string name="pending_review">Pending Review</string>
+    <string name="bullet_awaiting_admin">â— Awaiting admin</string>
+    <string name="unread_messages">Unread Messages</string>
+    <string name="bullet_needs_reply">â— Needs reply</string>
+    <string name="activity_header">Activity</string>
+    <string name="tenant_enquiries">Tenant Enquiries</string>
+    <string name="view_messages_questions">View messages &amp; questions</string>
+    <string name="approve_decline_offers">Approve or decline offers</string>
+    <string name="viewing_requests">Viewing Requests</string>
+    <string name="manage_booking_appointments">Manage booking appointments</string>
 
     <!-- Welcome / Registration / Login Flow -->
     <string name="get_started_btn">Get Started</string>
@@ -30493,7 +30862,9 @@ public class ViewingsActivity extends AppCompatActivity {
 === FILE: C:\Users\Tsosa\AndroidStudioProjects\Accommodation-seeking-app\app\src\main\res\values\themes.xml ===
 
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <style name="Theme.IKhaya_Accommodation_Seeking_App" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Theme.IkhayaAccommodationSeekingApp" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <!-- Keep your existing colors here -->
+
         <!-- Brand Colors -->
         <item name="colorPrimary">@color/colorSecondary</item>
         <item name="colorPrimaryVariant">@color/colorSecondary</item>
@@ -30508,6 +30879,9 @@ public class ViewingsActivity extends AppCompatActivity {
         <item name="android:statusBarColor">@color/appBackground</item>
         <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
         <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
+
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
     </style>
 </resources>
 
@@ -30541,6 +30915,21 @@ public class ViewingsActivity extends AppCompatActivity {
     <string name="label_not_provided">Nie verskaf nie</string>
     <string name="language_updated_successfully">Taal suksesvol opgedateer.</string>
     <string name="press_back_again_to_exit">Druk weer terug om iKhaya te verlaat</string>
+    <string name="landlord_hub">Verhuurder-sentrum</string>
+    <string name="welcome_landlord">Welkom, Verhuurder</string>
+    <string name="total_listings">Totale Noterings</string>
+    <string name="bullet_all_properties">â— Alle eiendomme</string>
+    <string name="bullet_live_on_platform">â— Regstreeks op platform</string>
+    <string name="pending_review">Hangende Hersiening</string>
+    <string name="bullet_awaiting_admin">â— Wag op admin</string>
+    <string name="unread_messages">Ongeleesde Boodskappe</string>
+    <string name="bullet_needs_reply">â— Benodig antwoord</string>
+    <string name="activity_header">Akwatiewe</string>
+    <string name="tenant_enquiries">Inwoner-navrae</string>
+    <string name="view_messages_questions">Bekyk boodskappe &amp; vrae</string>
+    <string name="approve_decline_offers">Keur goed of wys aanbiedinge af</string>
+    <string name="viewing_requests">Besigtigingsversoeke</string>
+    <string name="manage_booking_appointments">Bestuur besprekingsafsprake</string>
 
     <!-- Welcome / Registration / Login Flow -->
     <string name="get_started_btn">Begin Nou</string>
@@ -31449,7 +31838,8 @@ public class ViewingsActivity extends AppCompatActivity {
 
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Theme.IKhaya_Accommodation_Seeking_App" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+    <style name="Theme.IkhayaAccommodationSeekingApp" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <!-- Keep your existing colors here -->
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/colorSecondary</item>
         <item name="colorPrimaryVariant">@color/colorPrimary</item>
@@ -31464,6 +31854,15 @@ public class ViewingsActivity extends AppCompatActivity {
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
         <!-- Force Light Mode -->
         <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
+
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+
+        <!-- Forces the top status bar icons (time, wifi, battery) to be dark -->
+        <item name="android:windowLightStatusBar">true</item>
+
+        <!-- Forces the placeholder text inside text boxes to be a visible gray -->
+        <item name="android:textColorHint">#757575</item>
         <!-- Customize your theme here. -->
     </style>
 </resources>
@@ -31498,6 +31897,21 @@ public class ViewingsActivity extends AppCompatActivity {
     <string name="label_not_provided">Ga se ya fiwa</string>
     <string name="language_updated_successfully">Leleme le mpshafalitÅ¡we ka katlego.</string>
     <string name="press_back_again_to_exit">Kgotla morago gape go tÅ¡wa go iKhaya</string>
+    <string name="landlord_hub">Lekala la Mong-wa-ntlo</string>
+    <string name="welcome_landlord">Amohelega, Mong-wa-ntlo</string>
+    <string name="total_listings">Bodulo Ka moka</string>
+    <string name="bullet_all_properties">â— Dintlo ka moka</string>
+    <string name="bullet_live_on_platform">â— TÅ¡e di Å¡omago sefoleng</string>
+    <string name="pending_review">E sa Ntse e EmetÅ¡we Tlhahlobo</string>
+    <string name="bullet_awaiting_admin">â— E emetÅ¡eng molaodi</string>
+    <string name="unread_messages">MelaetÅ¡a ye e sa Baloang</string>
+    <string name="bullet_needs_reply">â— E hlokago karabo</string>
+    <string name="activity_header">DidiriÅ¡wa</string>
+    <string name="tenant_enquiries">DipotÅ¡iÅ¡o tÅ¡a Modudi</string>
+    <string name="view_messages_questions">Bona melaetÅ¡a le dipotÅ¡iÅ¡o</string>
+    <string name="approve_decline_offers">Amogela goba o hane ditlhahiso</string>
+    <string name="viewing_requests">Dikopo tÅ¡a Pono</string>
+    <string name="manage_booking_appointments">Laola dipono tÅ¡a li-booking</string>
 
     <!-- Welcome / Registration / Login Flow -->
     <string name="get_started_btn">Thoma Bjale</string>
@@ -32430,6 +32844,21 @@ public class ViewingsActivity extends AppCompatActivity {
     <string name="label_not_provided">Ha e fanoa</string>
     <string name="language_updated_successfully">Puo e nchafalitsoe ka katleho.</string>
     <string name="press_back_again_to_exit">Thanya morao hape ho tsoa ho iKhaya</string>
+    <string name="landlord_hub">Setsi sa Mong-a-ntlo</string>
+    <string name="welcome_landlord">Amoheleha, Mong-a-ntlo</string>
+    <string name="total_listings">Bodulo Kaofela</string>
+    <string name="bullet_all_properties">â— Litheo tsohle</string>
+    <string name="bullet_live_on_platform">â— Tse sebetsang sefoleng</string>
+    <string name="pending_review">E sa Ntse e Emetswe Tlhahlobo</string>
+    <string name="bullet_awaiting_admin">â— E emetseng motsamaisi</string>
+    <string name="unread_messages">Melaetsa e sa Baloang</string>
+    <string name="bullet_needs_reply">â— E hlokang karabo</string>
+    <string name="activity_header">Liketsahalo</string>
+    <string name="tenant_enquiries">Lipotso tsa Abahi</string>
+    <string name="view_messages_questions">Bona melaetsa le lipotso</string>
+    <string name="approve_decline_offers">Amohela kapa o hane ditlhahiso</string>
+    <string name="viewing_requests">LikÅpo tsa ho Bona</string>
+    <string name="manage_booking_appointments">Laola diboka tsa li-booking</string>
 
     <!-- Welcome / Registration / Login Flow -->
     <string name="get_started_btn">Qala Hona Joale</string>
@@ -33362,6 +33791,21 @@ public class ViewingsActivity extends AppCompatActivity {
     <string name="label_not_provided">Ayinikwanga</string>
     <string name="language_updated_successfully">Ulwimi luhlaziywe ngempumelelo.</string>
     <string name="press_back_again_to_exit">Cofa emva kwakhona ukuze uphume e-iKhaya</string>
+    <string name="landlord_hub">Iziko Lomnini</string>
+    <string name="welcome_landlord">Uwamkelekile, Mnikazi</string>
+    <string name="total_listings">Iindawo Iyonke</string>
+    <string name="bullet_all_properties">â— Zonke iindawo</string>
+    <string name="bullet_live_on_platform">â— Ezisebenza kwi-platform</string>
+    <string name="pending_review">Kusalindelwe Ukupononongwa</string>
+    <string name="bullet_awaiting_admin">â— Kusalindelwe umlawuli</string>
+    <string name="unread_messages">Imiyaleyo Engafundwanga</string>
+    <string name="bullet_needs_reply">â— Idinga impendulo</string>
+    <string name="activity_header">Inqubo</string>
+    <string name="tenant_enquiries">Imibuzo Yabahlali</string>
+    <string name="view_messages_questions">Buka imiyaleyo nemibuzo</string>
+    <string name="approve_decline_offers">Vumela okanye uchithe izithembiso</string>
+    <string name="viewing_requests">Izicelo Zokutyelela</string>
+    <string name="manage_booking_appointments">Lawula amadinga eehambo</string>
 
     <!-- Welcome / Registration / Login Flow -->
     <string name="get_started_btn">Qalisa Manje</string>
@@ -34294,6 +34738,21 @@ public class ViewingsActivity extends AppCompatActivity {
     <string name="label_not_provided">Akunikeziwe</string>
     <string name="language_updated_successfully">Ulwimi luvuselelwe ngempumelelo.</string>
     <string name="press_back_again_to_exit">Cindezela emuva futhi ukuze uphume e-iKhaya</string>
+    <string name="landlord_hub">Iziko LikaMnikazi</string>
+    <string name="welcome_landlord">Uyayamukelwa, Mnikazi</string>
+    <string name="total_listings">Izindawo Kukonke</string>
+    <string name="bullet_all_properties">â— Zonke izindawo</string>
+    <string name="bullet_live_on_platform">â— Zisebenza e-platform</string>
+    <string name="pending_review">Kusalindeleke Ukubhekwa</string>
+    <string name="bullet_awaiting_admin">â— Kusalindeleke umlawuli</string>
+    <string name="unread_messages">Imilayezo Engafundiwe</string>
+    <string name="bullet_needs_reply">â— Idinga impendulo</string>
+    <string name="activity_header">Inqubo</string>
+    <string name="tenant_enquiries">Imibuzo Yabahlali</string>
+    <string name="view_messages_questions">Buka imilayezo nemibuzo</string>
+    <string name="approve_decline_offers">Vumela noma uchithe izithembiso</string>
+    <string name="viewing_requests">Izicelo Zokuvakasha</string>
+    <string name="manage_booking_appointments">Phatha amadinga amabhukhi</string>
 
     <!-- Welcome / Registration / Login Flow -->
     <string name="get_started_btn">Qala Manje</string>
@@ -35257,7 +35716,7 @@ public class ViewingsActivity extends AppCompatActivity {
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.IKhaya_Accommodation_Seeking_App">
+        android:theme="@style/Theme.IkhayaAccommodationSeekingApp">
 
         <!-- Launcher Activity -->
         <activity

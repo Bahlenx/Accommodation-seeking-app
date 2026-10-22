@@ -1,6 +1,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Theme.IKhaya_Accommodation_Seeking_App" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+    <style name="Theme.IkhayaAccommodationSeekingApp" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <!-- Keep your existing colors here -->
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/colorSecondary</item>
         <item name="colorPrimaryVariant">@color/colorPrimary</item>
@@ -15,6 +16,15 @@
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
         <!-- Force Light Mode -->
         <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
+
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+
+        <!-- Forces the top status bar icons (time, wifi, battery) to be dark -->
+        <item name="android:windowLightStatusBar">true</item>
+
+        <!-- Forces the placeholder text inside text boxes to be a visible gray -->
+        <item name="android:textColorHint">#757575</item>
         <!-- Customize your theme here. -->
     </style>
 </resources>

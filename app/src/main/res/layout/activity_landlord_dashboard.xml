@@ -691,7 +691,7 @@
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:contentDescription="@string/listings"
-                android:src="@drawable/ic_my_listings"
+                android:src="@drawable/book_user"
                 app:tint="#FFD8CC" />
 
             <TextView

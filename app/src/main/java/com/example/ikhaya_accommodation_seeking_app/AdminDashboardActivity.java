@@ -330,7 +330,12 @@ public class AdminDashboardActivity extends AppCompatActivity {
         executor.execute(() -> {
             HttpURLConnection conn = null;
             try {
-                conn = SupabaseHelper.createConnection("/rest/v1/reports?select=*&order=created_at.desc", "GET", token);
+                // Filter only OPEN or PENDING tickets so resolved/dismissed ones aren't counted
+                conn = SupabaseHelper.createConnection(
+                        "/rest/v1/reports?select=id&status=in.(OPEN,open,PENDING,pending)", 
+                        "GET", 
+                        token
+                );
                 if (conn.getResponseCode() >= 200 && conn.getResponseCode() < 300) {
                     JSONArray arr = new JSONArray(SupabaseHelper.readResponse(conn));
                     problemReportsCache = arr;

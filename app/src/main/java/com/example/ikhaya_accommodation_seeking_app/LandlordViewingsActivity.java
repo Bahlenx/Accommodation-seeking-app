@@ -10,6 +10,8 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -17,6 +19,9 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -53,28 +58,35 @@ public class LandlordViewingsActivity extends AppCompatActivity {
         root.setOrientation(LinearLayout.VERTICAL);
         root.setBackgroundColor(Color.parseColor("#FAF7F5"));
 
-        root.setPadding(
-                dp(20),
-                dp(24),
-                dp(20),
-                dp(12)
-        );
+        ViewCompat.setOnApplyWindowInsetsListener(root, (v, insets) -> {
+            Insets statusBar = insets.getInsets(WindowInsetsCompat.Type.statusBars());
+            Insets navBar = insets.getInsets(WindowInsetsCompat.Type.navigationBars());
+            int sideMargin = dp(20);
+            v.setPadding(
+                    sideMargin,
+                    statusBar.top + dp(16),
+                    sideMargin,
+                    navBar.bottom + dp(16)
+            );
+            return WindowInsetsCompat.CONSUMED;
+        });
 
         setContentView(root);
 
-        Button btnBack = new Button(this);
-        btnBack.setText("← Back");
-        btnBack.setTransformationMethod(null);
-        btnBack.setTextColor(Color.WHITE);
-        btnBack.setBackground(
-                roundedBackground("#7A2525", 12)
-        );
+        ImageButton btnBack = new ImageButton(this);
+        btnBack.setImageResource(R.drawable.chevron_left);
+        btnBack.setBackgroundResource(R.drawable.bg_circle_white);
+        btnBack.setElevation(dp(1));
+        btnBack.setPadding(dp(7), dp(7), dp(7), dp(7));
+        btnBack.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        btnBack.setColorFilter(Color.parseColor("#1F1614"));
+        btnBack.setContentDescription("Back");
 
         root.addView(
                 btnBack,
                 new LinearLayout.LayoutParams(
-                        ViewGroup.LayoutParams.WRAP_CONTENT,
-                        dp(44)
+                        dp(38),
+                        dp(38)
                 )
         );
 
@@ -82,7 +94,7 @@ public class LandlordViewingsActivity extends AppCompatActivity {
 
         TextView heading = new TextView(this);
         heading.setText("Viewing Requests");
-        heading.setTextSize(25);
+        heading.setTextSize(24);
         heading.setTypeface(null, Typeface.BOLD);
         heading.setTextColor(Color.parseColor("#1F1614"));
 
@@ -92,7 +104,7 @@ public class LandlordViewingsActivity extends AppCompatActivity {
                         ViewGroup.LayoutParams.WRAP_CONTENT
                 );
 
-        headingParams.topMargin = dp(22);
+        headingParams.topMargin = dp(12);
         root.addView(heading, headingParams);
 
         TextView subtitle = new TextView(this);
@@ -102,11 +114,18 @@ public class LandlordViewingsActivity extends AppCompatActivity {
         subtitle.setTextSize(14);
         subtitle.setTextColor(Color.parseColor("#756763"));
 
-        root.addView(subtitle);
+        LinearLayout.LayoutParams subtitleParams =
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                );
+        subtitleParams.topMargin = dp(4);
+        root.addView(subtitle, subtitleParams);
 
         txtCount = new TextView(this);
         txtCount.setText("Loading requests...");
         txtCount.setTextSize(14);
+        txtCount.setTypeface(null, Typeface.BOLD);
         txtCount.setTextColor(Color.parseColor("#BA5536"));
 
         LinearLayout.LayoutParams countParams =
@@ -115,7 +134,7 @@ public class LandlordViewingsActivity extends AppCompatActivity {
                         ViewGroup.LayoutParams.WRAP_CONTENT
                 );
 
-        countParams.topMargin = dp(18);
+        countParams.topMargin = dp(12);
         countParams.bottomMargin = dp(12);
 
         root.addView(txtCount, countParams);
@@ -145,14 +164,16 @@ public class LandlordViewingsActivity extends AppCompatActivity {
 
         txtEmpty.setPadding(
                 dp(16),
-                dp(35),
+                dp(32),
                 dp(16),
-                dp(35)
+                dp(32)
         );
 
-        txtEmpty.setBackground(
-                roundedBackground("#FFFFFF", 16)
-        );
+        GradientDrawable emptyBg = new GradientDrawable();
+        emptyBg.setColor(Color.WHITE);
+        emptyBg.setCornerRadius(dp(16));
+        emptyBg.setStroke(dp(1), Color.parseColor("#E2DDD9"));
+        txtEmpty.setBackground(emptyBg);
 
         scrollContent.addView(txtEmpty);
 
@@ -164,6 +185,8 @@ public class LandlordViewingsActivity extends AppCompatActivity {
         Button btnRefresh = new Button(this);
         btnRefresh.setText("Refresh Requests");
         btnRefresh.setTransformationMethod(null);
+        btnRefresh.setTextSize(15);
+        btnRefresh.setTypeface(null, Typeface.BOLD);
         btnRefresh.setTextColor(Color.WHITE);
         btnRefresh.setBackground(
                 roundedBackground("#BA5536", 14)
@@ -172,7 +195,7 @@ public class LandlordViewingsActivity extends AppCompatActivity {
         LinearLayout.LayoutParams refreshParams =
                 new LinearLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
-                        dp(50)
+                        dp(48)
                 );
 
         refreshParams.topMargin = dp(12);
@@ -363,15 +386,18 @@ public class LandlordViewingsActivity extends AppCompatActivity {
         card.setOrientation(LinearLayout.VERTICAL);
 
         card.setPadding(
-                dp(16),
-                dp(16),
-                dp(16),
-                dp(16)
+                dp(18),
+                dp(18),
+                dp(18),
+                dp(18)
         );
 
-        card.setBackground(
-                roundedBackground("#FFFFFF", 18)
-        );
+        GradientDrawable cardBg = new GradientDrawable();
+        cardBg.setColor(Color.WHITE);
+        cardBg.setCornerRadius(dp(16));
+        cardBg.setStroke(dp(1), Color.parseColor("#E2DDD9"));
+        card.setBackground(cardBg);
+        card.setElevation(dp(2));
 
         LinearLayout.LayoutParams cardParams =
                 new LinearLayout.LayoutParams(
@@ -382,14 +408,48 @@ public class LandlordViewingsActivity extends AppCompatActivity {
         cardParams.bottomMargin = dp(14);
         requestsContainer.addView(card, cardParams);
 
+        // Header with property title and status pill
+        LinearLayout headerLayout = new LinearLayout(this);
+        headerLayout.setOrientation(LinearLayout.HORIZONTAL);
+        headerLayout.setGravity(Gravity.CENTER_VERTICAL);
+
         TextView tvProperty = createText(
                 propertyName,
-                18,
+                17,
                 "#1F1614",
                 true
         );
+        LinearLayout.LayoutParams propParams =
+                new LinearLayout.LayoutParams(
+                        0,
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        1f
+                );
+        headerLayout.addView(tvProperty, propParams);
 
-        card.addView(tvProperty);
+        TextView tvStatus = new TextView(this);
+        tvStatus.setText(status);
+        tvStatus.setTextSize(12);
+        tvStatus.setTypeface(null, Typeface.BOLD);
+        tvStatus.setPadding(dp(10), dp(4), dp(10), dp(4));
+
+        GradientDrawable statusBg = new GradientDrawable();
+        statusBg.setCornerRadius(dp(12));
+        if (status.equalsIgnoreCase("Confirmed")
+                || status.equalsIgnoreCase("Approved")) {
+            tvStatus.setTextColor(Color.parseColor("#1B5E20"));
+            statusBg.setColor(Color.parseColor("#E8F5E9"));
+        } else if (status.equalsIgnoreCase("Declined")) {
+            tvStatus.setTextColor(Color.parseColor("#C62828"));
+            statusBg.setColor(Color.parseColor("#FFEBEE"));
+        } else {
+            tvStatus.setTextColor(Color.parseColor("#E65100"));
+            statusBg.setColor(Color.parseColor("#FFF3E0"));
+        }
+        tvStatus.setBackground(statusBg);
+        headerLayout.addView(tvStatus);
+
+        card.addView(headerLayout);
 
         TextView tvDate = createText(
                 "🗓 " + viewingDate,
@@ -398,7 +458,7 @@ public class LandlordViewingsActivity extends AppCompatActivity {
                 true
         );
 
-        addTopMargin(card, tvDate, 10);
+        addTopMargin(card, tvDate, 8);
 
         TextView tvLocation = createText(
                 "📍 " + location,
@@ -407,22 +467,10 @@ public class LandlordViewingsActivity extends AppCompatActivity {
                 false
         );
 
-        addTopMargin(card, tvLocation, 6);
+        addTopMargin(card, tvLocation, 4);
 
-        TextView tvStatus = createText(
-                "Status: " + status,
-                13,
-                status.equalsIgnoreCase("Confirmed")
-                        ? "#34734A"
-                        : status.equalsIgnoreCase("Declined")
-                        ? "#A12626"
-                        : "#BA5536",
-                true
-        );
-
-        addTopMargin(card, tvStatus, 10);
-
-        if (!"Pending Host".equalsIgnoreCase(status)) {
+        if (!"Pending Host".equalsIgnoreCase(status)
+                && !"Pending".equalsIgnoreCase(status)) {
             return;
         }
 

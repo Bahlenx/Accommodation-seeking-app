@@ -10,7 +10,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
-import android.widget.Button;
+import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -70,8 +70,7 @@ public class UserSelectionActivity extends AppCompatActivity {
         editSearchUser = findViewById(R.id.editSearchUser);
 
         CardView cardCommunityChat = findViewById(R.id.cardCommunityChat);
-        Button btnViewAlerts = findViewById(R.id.btnViewAlerts);
-        Button btnSearchUser = findViewById(R.id.btnSearchUser);
+        View btnViewAlerts = findViewById(R.id.btnViewAlerts);
         TextView txtRoleBadge = findViewById(R.id.txtRoleBadge);
 
         accessToken = SupabaseHelper.getAccessToken(this);
@@ -101,10 +100,14 @@ public class UserSelectionActivity extends AppCompatActivity {
             );
         }
 
-        if (btnSearchUser != null && editSearchUser != null) {
-            btnSearchUser.setOnClickListener(v ->
-                    searchUsers(editSearchUser.getText().toString().trim())
-            );
+        if (editSearchUser != null) {
+            editSearchUser.setOnEditorActionListener((v, actionId, event) -> {
+                if (actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_DONE) {
+                    searchUsers(editSearchUser.getText().toString().trim());
+                    return true;
+                }
+                return false;
+            });
         }
 
         setupBottomNavigation();
@@ -282,88 +285,112 @@ public class UserSelectionActivity extends AppCompatActivity {
 
     private void loadActiveChats() {
         if (accessToken == null || accessToken.isEmpty()) {
-            if (progressUsers != null) {
-                progressUsers.setVisibility(View.GONE);
-            }
+            if (progressUsers != null) progressUsers.setVisibility(View.GONE);
             return;
         }
 
         executor.execute(() -> {
-            HttpURLConnection conn = null;
+            HttpURLConnection connReqs = null;
+            HttpURLConnection connMsgs = null;
             try {
                 String encId = SupabaseHelper.encode(currentUserId);
-                String endpoint = "/rest/v1/chat_requests?or=(sender_id.eq."
-                        + encId
-                        + ",receiver_id.eq."
-                        + encId
+
+                // 1. Fetch accepted chat requests
+                String reqEndpoint = "/rest/v1/chat_requests?or=(sender_id.eq."
+                        + encId + ",receiver_id.eq." + encId
                         + ")&status=eq.accepted&order=created_at.desc";
 
-                conn = SupabaseHelper.createConnection(endpoint, "GET", accessToken);
-                int code = conn.getResponseCode();
-                String response = SupabaseHelper.readResponse(conn);
+                connReqs = SupabaseHelper.createConnection(reqEndpoint, "GET", accessToken);
+                JSONArray requestsArray = connReqs.getResponseCode() >= 200 && connReqs.getResponseCode() < 300
+                        ? new JSONArray(SupabaseHelper.readResponse(connReqs))
+                        : new JSONArray();
 
-                if (code >= 200 && code < 300) {
-                    JSONArray requestsArray = new JSONArray(response);
-                    runOnUiThread(() -> {
-                        if (isFinishing() || isDestroyed()) return;
-                        if (progressUsers != null) progressUsers.setVisibility(View.GONE);
-                        populateActiveChats(requestsArray);
-                    });
-                } else {
-                    runOnUiThread(() -> {
-                        if (isFinishing() || isDestroyed()) return;
-                        if (progressUsers != null) progressUsers.setVisibility(View.GONE);
-                        if (code != 404) {
-                            Toast.makeText(this, getString(R.string.error_load_messages_http) + " " + code + ": " + response, Toast.LENGTH_LONG).show();
-                        }
-                    });
-                }
+                // 2. Fetch all direct messages sent or received to catch host/viewing chats
+                String msgEndpoint = "/rest/v1/messages?or=(sender_id.eq."
+                        + encId + ",receiver_id.eq." + encId
+                        + ")&receiver_id=neq.COMMUNITY&order=created_at.desc&limit=100";
+
+                connMsgs = SupabaseHelper.createConnection(msgEndpoint, "GET", accessToken);
+                JSONArray messagesArray = connMsgs.getResponseCode() >= 200 && connMsgs.getResponseCode() < 300
+                        ? new JSONArray(SupabaseHelper.readResponse(connMsgs))
+                        : new JSONArray();
+
+                runOnUiThread(() -> {
+                    if (isFinishing() || isDestroyed()) return;
+                    if (progressUsers != null) progressUsers.setVisibility(View.GONE);
+                    mergeAndDisplayChats(requestsArray, messagesArray);
+                });
+
             } catch (Exception e) {
                 runOnUiThread(() -> {
                     if (progressUsers != null) progressUsers.setVisibility(View.GONE);
                 });
             } finally {
-                if (conn != null) conn.disconnect();
+                if (connReqs != null) connReqs.disconnect();
+                if (connMsgs != null) connMsgs.disconnect();
             }
         });
     }
 
-    private void populateActiveChats(JSONArray requestsArray) {
+    private void mergeAndDisplayChats(JSONArray requestsArray, JSONArray messagesArray) {
         if (usersListContainer == null) return;
         usersListContainer.removeAllViews();
 
-        try {
-            if (requestsArray.length() == 0) {
-                TextView emptyText = new TextView(this);
-                emptyText.setText(R.string.no_active_direct_chats);
-                emptyText.setTextColor(Color.parseColor("#6C757D"));
-                emptyText.setTextSize(14f);
-                emptyText.setPadding(0, dpToPx(8), 0, dpToPx(8));
-                usersListContainer.addView(emptyText);
-                return;
+        HashSet<String> seenUserIds = new HashSet<>();
+
+        // Add confirmed contacts from chat_requests
+        for (int i = 0; i < requestsArray.length(); i++) {
+            JSONObject reqObj = requestsArray.optJSONObject(i);
+            if (reqObj == null) continue;
+
+            String senderId = reqObj.optString("sender_id");
+            String receiverId = reqObj.optString("receiver_id");
+
+            String targetUserId, targetName, targetRole;
+            if (currentUserId.equals(senderId)) {
+                targetUserId = receiverId;
+                targetName = reqObj.optString("receiver_name", getString(R.string.notification_user));
+                targetRole = reqObj.optString("receiver_role", getString(R.string.notification_member));
+            } else {
+                targetUserId = senderId;
+                targetName = reqObj.optString("sender_name", getString(R.string.notification_user));
+                targetRole = reqObj.optString("sender_role", getString(R.string.notification_member));
             }
 
-            for (int i = 0; i < requestsArray.length(); i++) {
-                JSONObject reqObj = requestsArray.getJSONObject(i);
-
-                String senderId = reqObj.optString("sender_id");
-                String receiverId = reqObj.optString("receiver_id");
-
-                String targetUserId, targetName, targetRole;
-                if (currentUserId.equals(senderId)) {
-                    targetUserId = receiverId;
-                    targetName = reqObj.optString("receiver_name", getString(R.string.notification_user));
-                    targetRole = reqObj.optString("receiver_role", getString(R.string.notification_member));
-                } else {
-                    targetUserId = senderId;
-                    targetName = reqObj.optString("sender_name", getString(R.string.notification_user));
-                    targetRole = reqObj.optString("sender_role", getString(R.string.notification_member));
-                }
-
+            if (!targetUserId.isEmpty() && !seenUserIds.contains(targetUserId)) {
+                seenUserIds.add(targetUserId);
                 addUserCard(targetUserId, targetName, targetRole, usersListContainer, getString(R.string.tap_to_message));
             }
-        } catch (Exception e) {
-            Log.e(TAG, "Could not display active chats", e);
+        }
+
+        // Add contacts discovered from actual message threads (like Scheduled Viewings)
+        for (int i = 0; i < messagesArray.length(); i++) {
+            JSONObject msgObj = messagesArray.optJSONObject(i);
+            if (msgObj == null) continue;
+
+            String senderId = msgObj.optString("sender_id");
+            String receiverId = msgObj.optString("receiver_id");
+
+            String targetUserId = currentUserId.equals(senderId) ? receiverId : senderId;
+            if (targetUserId.isEmpty() || seenUserIds.contains(targetUserId)) continue;
+
+            String targetName = currentUserId.equals(senderId)
+                    ? (targetUserId.length() > 8 ? "Host (" + targetUserId.substring(0, 6) + ")" : "Host")
+                    : msgObj.optString("sender_name", "Host");
+
+            String targetRole = currentUserId.equals(senderId) ? "landlord" : msgObj.optString("sender_role", "member");
+
+            seenUserIds.add(targetUserId);
+            addUserCard(targetUserId, targetName, targetRole, usersListContainer, getString(R.string.tap_to_message));
+        }
+
+        if (seenUserIds.isEmpty()) {
+            TextView emptyText = new TextView(this);
+            emptyText.setText(R.string.no_active_direct_chats);
+            emptyText.setTextColor(Color.parseColor("#6C757D"));
+            emptyText.setTextSize(14f);
+            emptyText.setPadding(0, dpToPx(8), 0, dpToPx(8));
+            usersListContainer.addView(emptyText);
         }
     }
 

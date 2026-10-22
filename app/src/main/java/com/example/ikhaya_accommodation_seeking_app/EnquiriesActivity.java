@@ -13,6 +13,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -36,8 +39,33 @@ public class EnquiriesActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_enquiries);
 
+        View enquiriesRoot = findViewById(R.id.enquiriesRoot);
+        if (enquiriesRoot != null) {
+            ViewCompat.setOnApplyWindowInsetsListener(enquiriesRoot, (v, insets) -> {
+                Insets statusBar = insets.getInsets(WindowInsetsCompat.Type.statusBars());
+                Insets navBar = insets.getInsets(WindowInsetsCompat.Type.navigationBars());
+                int density = (int) v.getResources().getDisplayMetrics().density;
+                int sidePadding = 20 * density;
+                v.setPadding(
+                        sidePadding,
+                        statusBar.top + (16 * density),
+                        sidePadding,
+                        navBar.bottom + (16 * density)
+                );
+                return WindowInsetsCompat.CONSUMED;
+            });
+        }
+
         enquiriesContainer = findViewById(R.id.enquiriesContainer);
         txtNoEnquiries = findViewById(R.id.txtNoEnquiries);
+
+        if (txtNoEnquiries != null) {
+            GradientDrawable emptyBg = new GradientDrawable();
+            emptyBg.setColor(Color.WHITE);
+            emptyBg.setCornerRadius(dp(16));
+            emptyBg.setStroke(dp(1), Color.parseColor("#E2DDD9"));
+            txtNoEnquiries.setBackground(emptyBg);
+        }
 
         View btnBack = findViewById(R.id.btnBack);
 
@@ -188,14 +216,6 @@ public class EnquiriesActivity extends AppCompatActivity {
                 "email"
         );
 
-        String senderId = firstValue(
-                enquiry,
-                "tenant_uid",
-                "sender_uid",
-                "user_uid",
-                "applicant_uid"
-        );
-
         if (senderName.isEmpty()) {
             senderName = "Tenant";
         }
@@ -208,19 +228,18 @@ public class EnquiriesActivity extends AppCompatActivity {
         card.setOrientation(LinearLayout.VERTICAL);
 
         card.setPadding(
-                dp(16),
-                dp(16),
-                dp(16),
-                dp(16)
+                dp(18),
+                dp(18),
+                dp(18),
+                dp(18)
         );
 
-        card.setBackground(
-                roundedBackground(
-                        Color.WHITE,
-                        "#E5E5E5",
-                        14
-                )
-        );
+        GradientDrawable cardBg = new GradientDrawable();
+        cardBg.setColor(Color.WHITE);
+        cardBg.setCornerRadius(dp(16));
+        cardBg.setStroke(dp(1), Color.parseColor("#E2DDD9"));
+        card.setBackground(cardBg);
+        card.setElevation(dp(2));
 
         LinearLayout.LayoutParams cardParams =
                 new LinearLayout.LayoutParams(
@@ -230,107 +249,132 @@ public class EnquiriesActivity extends AppCompatActivity {
 
         cardParams.bottomMargin = dp(14);
         card.setLayoutParams(cardParams);
-        card.setElevation(dp(2));
+
+        // Header: Sender Name & Status Badge
+        LinearLayout header = new LinearLayout(this);
+        header.setOrientation(LinearLayout.HORIZONTAL);
+        header.setGravity(Gravity.CENTER_VERTICAL);
 
         TextView sender = new TextView(this);
         sender.setText(senderName);
-        sender.setTextSize(18);
+        sender.setTextSize(17);
         sender.setTypeface(null, Typeface.BOLD);
-        sender.setTextColor(Color.rgb(34, 34, 34));
+        sender.setTextColor(Color.parseColor("#1F1614"));
+
+        LinearLayout.LayoutParams nameParams =
+                new LinearLayout.LayoutParams(
+                        0,
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        1f
+                );
+        header.addView(sender, nameParams);
 
         TextView statusView = new TextView(this);
-        statusView.setText("Status: " + status);
-        statusView.setTextSize(13);
-        statusView.setTextColor(Color.rgb(211, 47, 47));
+        statusView.setText(status);
+        statusView.setTextSize(12);
+        statusView.setTypeface(null, Typeface.BOLD);
+        statusView.setPadding(dp(10), dp(4), dp(10), dp(4));
 
-        statusView.setPadding(
-                0,
-                dp(5),
-                0,
-                dp(10)
-        );
+        GradientDrawable statusBg = new GradientDrawable();
+        statusBg.setCornerRadius(dp(12));
+        if (status.equalsIgnoreCase("Approved") || status.equalsIgnoreCase("Confirmed")) {
+            statusView.setTextColor(Color.parseColor("#1B5E20"));
+            statusBg.setColor(Color.parseColor("#E8F5E9"));
+        } else if (status.equalsIgnoreCase("Declined") || status.equalsIgnoreCase("Denied")) {
+            statusView.setTextColor(Color.parseColor("#C62828"));
+            statusBg.setColor(Color.parseColor("#FFEBEE"));
+        } else {
+            statusView.setTextColor(Color.parseColor("#E65100"));
+            statusBg.setColor(Color.parseColor("#FFF3E0"));
+        }
+        statusView.setBackground(statusBg);
+        header.addView(statusView);
 
+        card.addView(header);
+
+        // Details block
         TextView details = new TextView(this);
-
         StringBuilder detailsText = new StringBuilder();
 
         if (!senderPhone.isEmpty()) {
-            detailsText.append("Phone: ")
-                    .append(senderPhone)
-                    .append("\n");
+            detailsText.append("📞 ").append(senderPhone).append("\n");
         }
 
         if (!senderEmail.isEmpty()) {
-            detailsText.append("Email: ")
-                    .append(senderEmail)
-                    .append("\n");
+            detailsText.append("✉️ ").append(senderEmail).append("\n");
         }
 
-        if (!senderId.isEmpty()) {
-            detailsText.append("User ID: ")
-                    .append(senderId)
-                    .append("\n");
+        if (detailsText.length() > 0) {
+            detailsText.append("\n");
         }
 
-        detailsText.append("\nMessage\n")
-                .append(message);
+        detailsText.append("💬 Message:\n").append(message);
 
         details.setText(detailsText.toString());
         details.setTextSize(14);
-        details.setTextColor(Color.rgb(75, 75, 75));
+        details.setTextColor(Color.parseColor("#5A524E"));
         details.setLineSpacing(dp(3), 1f);
 
-        card.addView(sender);
-        card.addView(statusView);
-        card.addView(details);
+        LinearLayout.LayoutParams detailsParams =
+                new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                );
+        detailsParams.topMargin = dp(10);
+        card.addView(details, detailsParams);
 
         if (status.equalsIgnoreCase("pending")) {
             LinearLayout actions = new LinearLayout(this);
             actions.setOrientation(LinearLayout.HORIZONTAL);
             actions.setGravity(Gravity.CENTER_VERTICAL);
 
-            actions.setPadding(
-                    0,
-                    dp(14),
-                    0,
-                    0
-            );
+            LinearLayout.LayoutParams actionsParams =
+                    new LinearLayout.LayoutParams(
+                            LinearLayout.LayoutParams.MATCH_PARENT,
+                            LinearLayout.LayoutParams.WRAP_CONTENT
+                    );
+            actionsParams.topMargin = dp(14);
+            actions.setLayoutParams(actionsParams);
 
             Button approveButton = new Button(this);
             approveButton.setText("Approve contact");
-            approveButton.setAllCaps(false);
-            approveButton.setTextSize(12);
+            approveButton.setTransformationMethod(null);
+            approveButton.setTextSize(13);
+            approveButton.setTypeface(null, Typeface.BOLD);
+            approveButton.setTextColor(Color.WHITE);
 
-            approveButton.setBackgroundResource(
-                    R.drawable.selector_regular_button
-            );
+            GradientDrawable approveBg = new GradientDrawable();
+            approveBg.setColor(Color.parseColor("#34734A"));
+            approveBg.setCornerRadius(dp(12));
+            approveButton.setBackground(approveBg);
 
             Button denyButton = new Button(this);
             denyButton.setText("Deny");
-            denyButton.setAllCaps(false);
-            denyButton.setTextSize(12);
+            denyButton.setTransformationMethod(null);
+            denyButton.setTextSize(13);
+            denyButton.setTypeface(null, Typeface.BOLD);
+            denyButton.setTextColor(Color.WHITE);
 
-            denyButton.setBackgroundResource(
-                    R.drawable.selector_regular_button
-            );
+            GradientDrawable denyBg = new GradientDrawable();
+            denyBg.setColor(Color.parseColor("#7A2525"));
+            denyBg.setCornerRadius(dp(12));
+            denyButton.setBackground(denyBg);
 
             LinearLayout.LayoutParams buttonParams =
                     new LinearLayout.LayoutParams(
                             0,
-                            LinearLayout.LayoutParams.WRAP_CONTENT,
+                            dp(44),
                             1f
                     );
-
             buttonParams.setMarginEnd(dp(6));
             approveButton.setLayoutParams(buttonParams);
 
             LinearLayout.LayoutParams denyParams =
                     new LinearLayout.LayoutParams(
                             0,
-                            LinearLayout.LayoutParams.WRAP_CONTENT,
+                            dp(44),
                             1f
                     );
-
             denyParams.setMarginStart(dp(6));
             denyButton.setLayoutParams(denyParams);
 
