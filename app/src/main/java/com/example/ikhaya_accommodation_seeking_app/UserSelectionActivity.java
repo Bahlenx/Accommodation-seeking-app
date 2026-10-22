@@ -3,13 +3,18 @@ package com.example.ikhaya_accommodation_seeking_app;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,10 +31,13 @@ import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class UserSelectionActivity extends AppCompatActivity {
+
+    private static final String TAG = "UserSelection";
 
     private LinearLayout usersListContainer;
     private LinearLayout searchResultsContainer;
@@ -51,7 +59,7 @@ public class UserSelectionActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_selection);
 
-        android.view.View btnBack = findViewById(R.id.btnBack);
+        View btnBack = findViewById(R.id.btnBack);
         if (btnBack != null) {
             btnBack.setOnClickListener(v -> finish());
         }
@@ -74,16 +82,16 @@ public class UserSelectionActivity extends AppCompatActivity {
         }
 
         SharedPreferences prefs = getSharedPreferences("iKhayaSession", MODE_PRIVATE);
-        currentUserName = prefs.getString("USER_NAME", "iKhaya User");
-        currentUserRole = prefs.getString("USER_ROLE", "Member");
+        currentUserName = prefs.getString("USER_NAME", getString(R.string.default_chat_user_name));
+        currentUserRole = prefs.getString("USER_ROLE", getString(R.string.default_chat_member_role));
 
         if (txtRoleBadge != null) {
-            txtRoleBadge.setText(currentUserRole.toUpperCase() + " ●");
+            txtRoleBadge.setText(String.format(Locale.getDefault(), "%s ●", currentUserRole.toUpperCase(Locale.getDefault())));
         }
 
         if (cardCommunityChat != null) {
             cardCommunityChat.setOnClickListener(v ->
-                    openChat("COMMUNITY", "🌍 iKhaya Community Group", true)
+                    openChat("COMMUNITY", "🌍 " + getString(R.string.subtitle_community_room), true)
             );
         }
 
@@ -107,6 +115,10 @@ public class UserSelectionActivity extends AppCompatActivity {
         View userSelectionRoot = findViewById(R.id.userSelectionRoot);
         View floatingBottomNav = findViewById(R.id.floatingBottomNav);
 
+        SharedPreferences prefs = getSharedPreferences("iKhayaSession", MODE_PRIVATE);
+        String role = prefs.getString("USER_ROLE", "");
+        boolean isLandlord = getIntent().getBooleanExtra("isLandlord", "landlord".equalsIgnoreCase(role) || "ADMIN".equalsIgnoreCase(role));
+
         if (floatingBottomNav != null) {
             floatingBottomNav.setPadding(0, 0, 0, 0);
 
@@ -119,7 +131,7 @@ public class UserSelectionActivity extends AppCompatActivity {
 
                     if (floatingBottomNav.getLayoutParams() instanceof CoordinatorLayout.LayoutParams) {
                         CoordinatorLayout.LayoutParams lp = (CoordinatorLayout.LayoutParams) floatingBottomNav.getLayoutParams();
-                        int baseMarginPx = (int) (16 * getResources().getDisplayMetrics().density);
+                        int baseMarginPx = Math.round(16f * getResources().getDisplayMetrics().density);
                         lp.bottomMargin = navBar.bottom + baseMarginPx;
                         floatingBottomNav.setLayoutParams(lp);
                         floatingBottomNav.setPadding(0, 0, 0, 0);
@@ -129,30 +141,79 @@ public class UserSelectionActivity extends AppCompatActivity {
                 });
             }
 
-            View navHome = findViewById(R.id.navHome);
-            if (navHome != null) {
-                navHome.setOnClickListener(v -> {
-                    Intent intent = new Intent(UserSelectionActivity.this, HomeActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                    startActivity(intent);
-                    finish();
-                });
-            }
+            if (isLandlord) {
+                View navHome = findViewById(R.id.navHome);
+                ImageView imgNavHome = findViewById(R.id.imgNavHome);
+                TextView tvNavHome = findViewById(R.id.tvNavHome);
 
-            View navFavorites = findViewById(R.id.navFavorites);
-            if (navFavorites != null) {
-                navFavorites.setOnClickListener(v -> {
-                    startActivity(new Intent(UserSelectionActivity.this, SavedListingsActivity.class));
-                    finish();
-                });
-            }
+                if (imgNavHome != null) imgNavHome.setImageResource(R.drawable.layout_dashboard);
+                if (tvNavHome != null) tvNavHome.setText(R.string.nav_dashboard);
 
-            View navViewings = findViewById(R.id.navViewings);
-            if (navViewings != null) {
-                navViewings.setOnClickListener(v -> {
-                    startActivity(new Intent(UserSelectionActivity.this, ViewingsActivity.class));
-                    finish();
-                });
+                if (navHome != null) {
+                    navHome.setOnClickListener(v -> {
+                        Intent intent = new Intent(UserSelectionActivity.this, LandlordDashboardActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                        startActivity(intent);
+                        finish();
+                    });
+                }
+
+                View navFavorites = findViewById(R.id.navFavorites);
+                ImageView imgNavFavorites = findViewById(R.id.imgNavFavorites);
+                TextView tvNavFavorites = findViewById(R.id.tvNavFavorites);
+
+                if (imgNavFavorites != null) imgNavFavorites.setImageResource(R.drawable.book_user);
+                if (tvNavFavorites != null) tvNavFavorites.setText(R.string.listings);
+
+                if (navFavorites != null) {
+                    navFavorites.setOnClickListener(v -> {
+                        Intent intent = new Intent(UserSelectionActivity.this, MyListingsActivity.class);
+                        intent.putExtra("FILTER_STATUS", "ALL");
+                        startActivity(intent);
+                        finish();
+                    });
+                }
+
+                View navViewings = findViewById(R.id.navViewings);
+                ImageView imgNavViewings = findViewById(R.id.imgNavViewings);
+                TextView tvNavViewings = findViewById(R.id.tvNavViewings);
+
+                if (imgNavViewings != null) imgNavViewings.setImageResource(R.drawable.ic_plus_circle);
+                if (tvNavViewings != null) tvNavViewings.setText(R.string.add);
+
+                if (navViewings != null) {
+                    navViewings.setOnClickListener(v -> {
+                        Intent intent = new Intent(UserSelectionActivity.this, AddListingActivity.class);
+                        startActivity(intent);
+                        finish();
+                    });
+                }
+            } else {
+                View navHome = findViewById(R.id.navHome);
+                if (navHome != null) {
+                    navHome.setOnClickListener(v -> {
+                        Intent intent = new Intent(UserSelectionActivity.this, HomeActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                        startActivity(intent);
+                        finish();
+                    });
+                }
+
+                View navFavorites = findViewById(R.id.navFavorites);
+                if (navFavorites != null) {
+                    navFavorites.setOnClickListener(v -> {
+                        startActivity(new Intent(UserSelectionActivity.this, SavedListingsActivity.class));
+                        finish();
+                    });
+                }
+
+                View navViewings = findViewById(R.id.navViewings);
+                if (navViewings != null) {
+                    navViewings.setOnClickListener(v -> {
+                        startActivity(new Intent(UserSelectionActivity.this, ViewingsActivity.class));
+                        finish();
+                    });
+                }
             }
         }
     }
@@ -205,12 +266,11 @@ public class UserSelectionActivity extends AppCompatActivity {
 
                 if (code >= 200 && code < 300) {
                     JSONArray rows = new JSONArray(response);
-
                     LandlordNotificationState.markSeen(getApplicationContext(), "messages", userId, rows);
                     TenantNotificationState.markSeen(getApplicationContext(), userId, "messages", rows);
                 }
             } catch (Exception e) {
-                android.util.Log.w("UserSelection", "Could not mark messages as seen", e);
+                Log.w(TAG, "Could not mark messages as seen", e);
             } finally {
                 if (connection != null) {
                     connection.disconnect();
@@ -254,7 +314,7 @@ public class UserSelectionActivity extends AppCompatActivity {
                         if (isFinishing() || isDestroyed()) return;
                         if (progressUsers != null) progressUsers.setVisibility(View.GONE);
                         if (code != 404) {
-                            Toast.makeText(this, "Could not load chats: " + response, Toast.LENGTH_LONG).show();
+                            Toast.makeText(this, getString(R.string.error_load_messages_http) + " " + code + ": " + response, Toast.LENGTH_LONG).show();
                         }
                     });
                 }
@@ -275,10 +335,10 @@ public class UserSelectionActivity extends AppCompatActivity {
         try {
             if (requestsArray.length() == 0) {
                 TextView emptyText = new TextView(this);
-                emptyText.setText("No active direct chats yet. Search for a user above to send a chat request.");
+                emptyText.setText(R.string.no_active_direct_chats);
                 emptyText.setTextColor(Color.parseColor("#6C757D"));
                 emptyText.setTextSize(14f);
-                emptyText.setPadding(0, 20, 0, 20);
+                emptyText.setPadding(0, dpToPx(8), 0, dpToPx(8));
                 usersListContainer.addView(emptyText);
                 return;
             }
@@ -292,25 +352,25 @@ public class UserSelectionActivity extends AppCompatActivity {
                 String targetUserId, targetName, targetRole;
                 if (currentUserId.equals(senderId)) {
                     targetUserId = receiverId;
-                    targetName = reqObj.optString("receiver_name", "User");
-                    targetRole = reqObj.optString("receiver_role", "Member");
+                    targetName = reqObj.optString("receiver_name", getString(R.string.notification_user));
+                    targetRole = reqObj.optString("receiver_role", getString(R.string.notification_member));
                 } else {
                     targetUserId = senderId;
-                    targetName = reqObj.optString("sender_name", "User");
-                    targetRole = reqObj.optString("sender_role", "Member");
+                    targetName = reqObj.optString("sender_name", getString(R.string.notification_user));
+                    targetRole = reqObj.optString("sender_role", getString(R.string.notification_member));
                 }
 
-                addUserCard(targetUserId, targetName, targetRole, usersListContainer, "Tap to message");
+                addUserCard(targetUserId, targetName, targetRole, usersListContainer, getString(R.string.tap_to_message));
             }
         } catch (Exception e) {
-            android.util.Log.e("UserSelection", "Could not display active chats", e);
+            Log.e(TAG, "Could not display active chats", e);
         }
     }
 
     private void searchUsers(String query) {
         if (query.isEmpty()) return;
 
-        Toast.makeText(this, "Searching...", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, R.string.searching_users_toast, Toast.LENGTH_SHORT).show();
         if (searchResultsContainer != null) {
             searchResultsContainer.removeAllViews();
         }
@@ -336,14 +396,14 @@ public class UserSelectionActivity extends AppCompatActivity {
 
                 runOnUiThread(() -> {
                     if (!isFinishing() && !isDestroyed()) {
-                        renderDualSearchResults(profilesArray, usersArray, query.toLowerCase());
+                        renderDualSearchResults(profilesArray, usersArray, query.toLowerCase(Locale.getDefault()));
                     }
                 });
 
             } catch (Exception e) {
                 runOnUiThread(() -> {
                     if (!isFinishing() && !isDestroyed()) {
-                        Toast.makeText(this, "Error during search: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, getString(R.string.error_during_search_prefix) + " " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
             } finally {
@@ -375,15 +435,15 @@ public class UserSelectionActivity extends AppCompatActivity {
                     fullName = obj.optString("firstName", "");
                 }
                 if (fullName.isEmpty()) {
-                    fullName = obj.optString("email", "User");
+                    fullName = obj.optString("email", getString(R.string.notification_user));
                 }
 
-                String role = obj.optString("role", "Member");
+                String role = obj.optString("role", getString(R.string.notification_member));
 
-                if (fullName.toLowerCase().contains(queryLower)) {
+                if (fullName.toLowerCase(Locale.getDefault()).contains(queryLower)) {
                     seenIds.add(userId);
                     found = true;
-                    addUserCard(userId, fullName, role, searchResultsContainer, "Request Chat");
+                    addUserCard(userId, fullName, role, searchResultsContainer, getString(R.string.request_chat));
                 }
             }
 
@@ -399,36 +459,36 @@ public class UserSelectionActivity extends AppCompatActivity {
                 String surname = obj.optString("surname", "");
                 String fullName = (firstName + " " + surname).trim();
                 if (fullName.isEmpty()) {
-                    fullName = obj.optString("email", "User");
+                    fullName = obj.optString("email", getString(R.string.notification_user));
                 }
 
-                String role = obj.optString("user_role", "Member");
+                String role = obj.optString("user_role", getString(R.string.notification_member));
 
-                if (fullName.toLowerCase().contains(queryLower)) {
+                if (fullName.toLowerCase(Locale.getDefault()).contains(queryLower)) {
                     seenIds.add(userId);
                     found = true;
-                    addUserCard(userId, fullName, role, searchResultsContainer, "Request Chat");
+                    addUserCard(userId, fullName, role, searchResultsContainer, getString(R.string.request_chat));
                 }
             }
 
             if (!found) {
-                Toast.makeText(this, "No matching users found.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.no_matching_users_found, Toast.LENGTH_SHORT).show();
             }
         } catch (Exception e) {
-            android.util.Log.e("UserSelection", "Could not display search results", e);
+            Log.e(TAG, "Could not display search results", e);
         }
     }
 
-    private void showContactDeleteMenu(android.view.View anchor, String targetUid) {
-        android.widget.PopupMenu popup = new android.widget.PopupMenu(this, anchor);
-        popup.getMenu().add("Delete Chat & Contact");
+    private void showContactDeleteMenu(View anchor, String targetUid) {
+        PopupMenu popup = new PopupMenu(this, anchor);
+        popup.getMenu().add(R.string.menu_delete_contact_and_chat);
         popup.setOnMenuItemClickListener(item -> {
-            if ("Delete Chat & Contact".equals(item.getTitle())) {
+            if (item.getTitle() != null && item.getTitle().equals(getString(R.string.menu_delete_contact_and_chat))) {
                 new androidx.appcompat.app.AlertDialog.Builder(this)
-                        .setTitle("Delete Contact")
-                        .setMessage("Delete this contact and all chat history?")
-                        .setPositiveButton("Delete", (dialog, which) -> deleteContactAndChat(targetUid))
-                        .setNegativeButton("Cancel", null)
+                        .setTitle(R.string.dialog_title_delete_contact)
+                        .setMessage(R.string.dialog_msg_delete_contact_confirm)
+                        .setPositiveButton(R.string.btn_delete, (dialog, which) -> deleteContactAndChat(targetUid))
+                        .setNegativeButton(R.string.btn_cancel, null)
                         .show();
             }
             return true;
@@ -440,30 +500,30 @@ public class UserSelectionActivity extends AppCompatActivity {
         String myUid = SupabaseHelper.getUserId(this);
         String token = SupabaseHelper.getAccessToken(this);
         if (myUid == null || token == null) return;
-        
+
         executor.execute(() -> {
             try {
                 String encodedMy = SupabaseHelper.encode(myUid);
                 String encodedTarget = SupabaseHelper.encode(targetUid);
-                
-                // Delete messages
-                String endpointMsg = "/rest/v1/messages?or=(and(sender_id.eq." + encodedMy + ",receiver_id.eq." + encodedTarget + "),and(sender_id.eq." + encodedTarget + ",receiver_id.eq." + encodedMy + "))";
+
+                String endpointMsg = "/rest/v1/messages?or=(and(sender_id.eq." + encodedMy + ",receiver_id.eq." + encodedTarget
+                        + "),and(sender_id.eq." + encodedTarget + ",receiver_id.eq." + encodedMy + "))";
                 HttpURLConnection connMsg = SupabaseHelper.createConnection(endpointMsg, "DELETE", token);
                 connMsg.getResponseCode();
                 connMsg.disconnect();
-                
-                // Delete chat request
-                String endpointReq = "/rest/v1/chat_requests?or=(and(sender_id.eq." + encodedMy + ",receiver_id.eq." + encodedTarget + "),and(sender_id.eq." + encodedTarget + ",receiver_id.eq." + encodedMy + "))";
+
+                String endpointReq = "/rest/v1/chat_requests?or=(and(sender_id.eq." + encodedMy + ",receiver_id.eq." + encodedTarget
+                        + "),and(sender_id.eq." + encodedTarget + ",receiver_id.eq." + encodedMy + "))";
                 HttpURLConnection connReq = SupabaseHelper.createConnection(endpointReq, "DELETE", token);
                 connReq.getResponseCode();
                 connReq.disconnect();
-                
+
                 runOnUiThread(() -> {
-                    Toast.makeText(this, "Contact deleted", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, R.string.toast_chat_deleted, Toast.LENGTH_SHORT).show();
                     recreate();
                 });
             } catch (Exception e) {
-                runOnUiThread(() -> Toast.makeText(this, "Failed to delete contact", Toast.LENGTH_SHORT).show());
+                runOnUiThread(() -> Toast.makeText(this, R.string.error_failed_to_delete_contact, Toast.LENGTH_SHORT).show());
             }
         });
     }
@@ -476,16 +536,17 @@ public class UserSelectionActivity extends AppCompatActivity {
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
         );
-        cardParams.setMargins(0, 0, 0, 24);
+        cardParams.setMargins(0, 0, 0, dpToPx(12));
         card.setLayoutParams(cardParams);
-        card.setRadius(32f);
-        card.setCardElevation(6f);
+        card.setRadius(dpToPx(16));
+        card.setCardElevation(dpToPx(3));
         card.setCardBackgroundColor(Color.WHITE);
 
         LinearLayout innerLayout = new LinearLayout(this);
         innerLayout.setOrientation(LinearLayout.HORIZONTAL);
-        innerLayout.setGravity(android.view.Gravity.CENTER_VERTICAL);
-        innerLayout.setPadding(40, 36, 40, 36);
+        innerLayout.setGravity(Gravity.CENTER_VERTICAL);
+        int pad = dpToPx(16);
+        innerLayout.setPadding(pad, pad, pad, pad);
 
         LinearLayout textLayout = new LinearLayout(this);
         textLayout.setOrientation(LinearLayout.VERTICAL);
@@ -496,29 +557,29 @@ public class UserSelectionActivity extends AppCompatActivity {
 
         TextView txtName = new TextView(this);
         txtName.setText(targetName);
-        txtName.setTextSize(17f);
+        txtName.setTextSize(16f);
         txtName.setTypeface(null, Typeface.BOLD);
-        txtName.setTextColor(Color.parseColor("#212529"));
+        txtName.setTextColor(Color.parseColor("#1F1614"));
 
         TextView txtRole = new TextView(this);
-        txtRole.setText(targetRole.toUpperCase() + " • " + actionText);
+        txtRole.setText(String.format(Locale.getDefault(), "%s • %s", targetRole.toUpperCase(Locale.getDefault()), actionText));
         txtRole.setTextSize(12f);
         txtRole.setTextColor(Color.parseColor("#6C757D"));
 
         textLayout.addView(txtName);
         textLayout.addView(txtRole);
         innerLayout.addView(textLayout);
-        
-        if (!"Request Chat".equals(actionText)) {
+
+        if (!getString(R.string.request_chat).equals(actionText)) {
             TextView btnOptions = new TextView(this);
             btnOptions.setText("⋮");
             btnOptions.setTextSize(20f);
             btnOptions.setTypeface(null, Typeface.BOLD);
             btnOptions.setTextColor(Color.parseColor("#6C757D"));
-            btnOptions.setPadding(24, 12, 12, 12);
+            btnOptions.setPadding(dpToPx(12), dpToPx(6), dpToPx(6), dpToPx(6));
             btnOptions.setBackgroundResource(R.drawable.selector_regular_button);
-            btnOptions.setBackgroundTintList(android.content.res.ColorStateList.valueOf(Color.TRANSPARENT));
-            
+            btnOptions.setBackgroundTintList(ColorStateList.valueOf(Color.TRANSPARENT));
+
             btnOptions.setOnClickListener(v -> showContactDeleteMenu(btnOptions, targetUserId));
             innerLayout.addView(btnOptions);
         }
@@ -526,7 +587,7 @@ public class UserSelectionActivity extends AppCompatActivity {
         card.addView(innerLayout);
 
         card.setOnClickListener(v -> {
-            if ("Request Chat".equals(actionText)) {
+            if (getString(R.string.request_chat).equals(actionText)) {
                 checkAndRequestChat(targetUserId, targetName, targetRole);
             } else {
                 openChat(targetUserId, targetName, false);
@@ -537,7 +598,7 @@ public class UserSelectionActivity extends AppCompatActivity {
     }
 
     private void checkAndRequestChat(String targetUserId, String targetName, String targetRole) {
-        Toast.makeText(this, "Checking request status...", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, R.string.toast_checking_request_status, Toast.LENGTH_SHORT).show();
 
         executor.execute(() -> {
             HttpURLConnection conn = null;
@@ -567,7 +628,7 @@ public class UserSelectionActivity extends AppCompatActivity {
                             runOnUiThread(() -> openChat(targetUserId, targetName, false));
                         } else {
                             runOnUiThread(() ->
-                                    Toast.makeText(this, "A chat request with this user is already pending.", Toast.LENGTH_LONG).show()
+                                    Toast.makeText(this, R.string.toast_request_already_pending, Toast.LENGTH_LONG).show()
                             );
                         }
                     } else {
@@ -575,12 +636,12 @@ public class UserSelectionActivity extends AppCompatActivity {
                     }
                 } else {
                     runOnUiThread(() ->
-                            Toast.makeText(this, "Network error: " + response, Toast.LENGTH_LONG).show()
+                            Toast.makeText(this, getString(R.string.error_send_failed_http) + " " + response, Toast.LENGTH_LONG).show()
                     );
                 }
             } catch (Exception e) {
                 runOnUiThread(() ->
-                        Toast.makeText(this, "Error checking status: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, getString(R.string.error_during_search_prefix) + " " + e.getMessage(), Toast.LENGTH_SHORT).show()
                 );
             } finally {
                 if (conn != null) conn.disconnect();
@@ -590,13 +651,12 @@ public class UserSelectionActivity extends AppCompatActivity {
 
     private void showRequestDialog(String targetUserId, String targetName, String targetRole) {
         new AlertDialog.Builder(this)
-                .setTitle("Send Chat Request?")
-                .setMessage("Send a chat request to " + targetName + " (" + targetRole
-                        + ")? They must accept your request in Alerts before you can message each other.")
-                .setPositiveButton("Send Request", (dialog, which) ->
+                .setTitle(R.string.dialog_title_send_chat_request)
+                .setMessage(getString(R.string.dialog_msg_send_chat_request, targetName, targetRole))
+                .setPositiveButton(R.string.btn_send_request, (dialog, which) ->
                         sendChatRequest(targetUserId, targetName, targetRole)
                 )
-                .setNegativeButton("Cancel", null)
+                .setNegativeButton(R.string.btn_cancel, null)
                 .show();
     }
 
@@ -621,17 +681,17 @@ public class UserSelectionActivity extends AppCompatActivity {
 
                 if (code >= 200 && code < 300) {
                     runOnUiThread(() ->
-                            Toast.makeText(this, "Chat request sent!", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this, R.string.toast_chat_request_sent, Toast.LENGTH_SHORT).show()
                     );
                 } else {
                     String error = SupabaseHelper.readResponse(conn);
                     runOnUiThread(() ->
-                            Toast.makeText(this, "Failed to send request: " + error, Toast.LENGTH_LONG).show()
+                            Toast.makeText(this, getString(R.string.error_send_failed_http) + " " + error, Toast.LENGTH_LONG).show()
                     );
                 }
             } catch (Exception e) {
                 runOnUiThread(() ->
-                        Toast.makeText(this, "Error sending request.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, R.string.error_sending_message_prefix, Toast.LENGTH_SHORT).show()
                 );
             } finally {
                 if (conn != null) conn.disconnect();
@@ -648,6 +708,10 @@ public class UserSelectionActivity extends AppCompatActivity {
         intent.putExtra("SENDER_NAME", currentUserName);
         intent.putExtra("SENDER_ROLE", currentUserRole);
         startActivity(intent);
+    }
+
+    private int dpToPx(int dp) {
+        return Math.round(dp * getResources().getDisplayMetrics().density);
     }
 
     @Override

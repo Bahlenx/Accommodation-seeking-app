@@ -2,7 +2,6 @@ package com.example.ikhaya_accommodation_seeking_app;
 
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -11,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import org.json.JSONArray;
 
 import java.net.HttpURLConnection;
+import java.util.Locale;
 
 public class PaymentsReceivedActivity extends AppCompatActivity {
 
@@ -21,16 +21,17 @@ public class PaymentsReceivedActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_payments_received);
 
-        android.view.View btnBack = findViewById(R.id.btnBack);
+        View btnBack = findViewById(R.id.btnBack);
         txtNoPayments = findViewById(R.id.txtNoPayments);
 
-        btnBack.setOnClickListener(v -> finish());
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> finish());
+        }
 
         loadPayments();
     }
 
     private void loadPayments() {
-
         String userId = SupabaseHelper.getUserId(this);
         String accessToken = SupabaseHelper.getAccessToken(this);
 
@@ -39,61 +40,52 @@ public class PaymentsReceivedActivity extends AppCompatActivity {
         }
 
         new Thread(() -> {
-
             HttpURLConnection connection = null;
 
             try {
+                String endpoint = "/rest/v1/payments"
+                        + "?select=*"
+                        + "&landlord_uid=eq." + SupabaseHelper.encode(userId);
 
-                String endpoint =
-                        "/rest/v1/payments" +
-                                "?select=*" +
-                                "&landlord_uid=eq." +
-                                SupabaseHelper.encode(userId);
+                connection = SupabaseHelper.createConnection(endpoint, "GET", accessToken);
 
-                connection = SupabaseHelper.createConnection(
-                        endpoint,
-                        "GET",
-                        accessToken
-                );
-
-                String response =
-                        SupabaseHelper.readResponse(connection);
-
-                JSONArray payments =
-                        new JSONArray(response);
+                String response = SupabaseHelper.readResponse(connection);
+                JSONArray payments = new JSONArray(response);
 
                 runOnUiThread(() -> {
+                    if (isFinishing() || isDestroyed() || txtNoPayments == null) {
+                        return;
+                    }
 
                     if (payments.length() > 0) {
-
-                        txtNoPayments.setText(
-                                payments.length() +
-                                        " payment(s) found."
-                        );
-
+                        txtNoPayments.setText(String.format(
+                                Locale.getDefault(),
+                                "%d %s",
+                                payments.length(),
+                                getString(R.string.payments_found_suffix)
+                        ));
+                        txtNoPayments.setVisibility(View.VISIBLE);
                     } else {
-
+                        txtNoPayments.setText(R.string.no_payments_received_found);
                         txtNoPayments.setVisibility(View.VISIBLE);
                     }
                 });
 
             } catch (Exception e) {
-
-                runOnUiThread(() ->
-                        Toast.makeText(
-                                PaymentsReceivedActivity.this,
-                                "Could not load payments.",
-                                Toast.LENGTH_SHORT
-                        ).show()
-                );
+                runOnUiThread(() -> {
+                    if (isFinishing() || isDestroyed()) return;
+                    Toast.makeText(
+                            PaymentsReceivedActivity.this,
+                            R.string.error_could_not_load_payments,
+                            Toast.LENGTH_SHORT
+                    ).show();
+                });
 
             } finally {
-
                 if (connection != null) {
                     connection.disconnect();
                 }
             }
-
         }).start();
     }
 }

@@ -50,7 +50,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="24dp"
-            android:text="Choose the language you want to use in the app."
+            android:text="@string/desc_choose_language"
             android:textSize="14sp"
             android:textColor="#777777"
             android:lineSpacingExtra="3dp" />
@@ -138,7 +138,7 @@
             android:layout_marginTop="28dp"
             android:background="@drawable/selector_regular_button"
             app:backgroundTint="@null"
-            android:text="Apply"
+            android:text="@string/btn_apply"
             android:textColor="#FFFFFF"
             android:textAllCaps="false"
             android:textSize="16sp"

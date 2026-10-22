@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F8F9FA">
+    android:background="#FAF7F5">
 
     <!-- TOP CHAT HEADER -->
     <LinearLayout
@@ -23,7 +23,7 @@
             android:layout_width="38dp"
             android:layout_height="38dp"
             android:background="@drawable/bg_circle_white"
-            android:contentDescription="@string/desc_back_button"
+            android:contentDescription="Back"
             android:elevation="1dp"
             android:padding="7dp"
             android:scaleType="fitCenter"
@@ -42,7 +42,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Chat"
-                android:textColor="#212529"
+                android:textColor="#1F1614"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
@@ -51,7 +51,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Active"
-                android:textColor="#4CAF50"
+                android:textColor="#2DCE89"
                 android:textSize="12sp" />
         </LinearLayout>
 
@@ -73,7 +73,7 @@
             android:textSize="22sp"
             android:textStyle="bold"
             android:gravity="center"
-            android:textColor="#212529"
+            android:textColor="#1F1614"
             android:background="?attr/selectableItemBackgroundBorderless" />
     </LinearLayout>
 
@@ -114,6 +114,8 @@
             android:text="+"
             android:textSize="20sp"
             android:textStyle="bold"
+            android:textColor="#BA5536"
+            android:background="@drawable/selector_regular_button"
             android:layout_marginEnd="8dp" />
 
         <EditText
@@ -133,8 +135,8 @@
             android:paddingEnd="16dp"
             android:paddingTop="12dp"
             android:paddingBottom="12dp"
-            android:textColor="#212529"
-            android:textColorHint="#6C757D" />
+            android:textColor="#1F1614"
+            android:textColorHint="#8C7A70" />
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -149,7 +151,7 @@
                 android:layout_height="wrap_content"
                 android:text="0/1000"
                 android:textSize="10sp"
-                android:textColor="#6C757D"
+                android:textColor="#8C7A70"
                 android:layout_marginBottom="2dp" />
 
             <Button

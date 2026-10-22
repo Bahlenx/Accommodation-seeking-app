@@ -67,6 +67,7 @@ public class AdminActiveListingAdapter extends RecyclerView.Adapter<AdminActiveL
             intent.putExtra("LISTING_DETAILS", listing.getDetails());
             intent.putExtra("LANDLORD_NAME", listing.getLandlordName());
             intent.putExtra("IMAGE_URL", listing.getImageUrl());
+            intent.putExtra("LISTING_STATUS", listing.getStatus()); 
             context.startActivity(intent);
         });
 

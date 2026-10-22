@@ -1,53 +1,66 @@
-
 package com.example.ikhaya_accommodation_seeking_app;
 
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.Locale;
-
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.OpenableColumns;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Base64;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class ChatActivity extends AppCompatActivity {
 
+    private static final String TAG = "ChatActivity";
+
     private LinearLayout messagesContainer;
     private ScrollView chatScrollView;
     private EditText editMessage;
-    private android.view.View btnSend;
+    private View btnSend;
     private TextView txtCharCount;
-    private android.view.View btnAttachFile;
-    private android.view.View btnClearChat;
-    private android.view.View btnChatOptions;
-    
-    private androidx.activity.result.ActivityResultLauncher<Intent> filePickerLauncher;
+    private View btnAttachFile;
+    private View btnClearChat;
+    private View btnChatOptions;
+
+    private ActivityResultLauncher<Intent> filePickerLauncher;
 
     private String senderId;
     private String senderName;
@@ -61,11 +74,9 @@ public class ChatActivity extends AppCompatActivity {
 
     private String lastMessagesSnapshot = "";
 
-    private final ExecutorService executor =
-            Executors.newSingleThreadExecutor();
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
-    private final Handler pollHandler =
-            new Handler(Looper.getMainLooper());
+    private final Handler pollHandler = new Handler(Looper.getMainLooper());
 
     private final Runnable pollRunnable = new Runnable() {
         @Override
@@ -89,7 +100,7 @@ public class ChatActivity extends AppCompatActivity {
         btnClearChat = findViewById(R.id.btnClearChat);
         btnChatOptions = findViewById(R.id.btnChatOptions);
 
-        android.view.View btnBack = findViewById(R.id.btnBackChat);
+        View btnBack = findViewById(R.id.btnBackChat);
         TextView txtTitle = findViewById(R.id.txtChatTitle);
         TextView txtSubtitle = findViewById(R.id.txtChatSubtitle);
 
@@ -100,20 +111,15 @@ public class ChatActivity extends AppCompatActivity {
         senderRole = getIntent().getStringExtra("SENDER_ROLE");
         receiverId = getIntent().getStringExtra("RECEIVER_ID");
 
-        String receiverName =
-                getIntent().getStringExtra("RECEIVER_NAME");
-
-        isCommunity = getIntent().getBooleanExtra(
-                "IS_COMMUNITY",
-                false
-        );
+        String receiverName = getIntent().getStringExtra("RECEIVER_NAME");
+        isCommunity = getIntent().getBooleanExtra("IS_COMMUNITY", false);
 
         if (senderName == null || senderName.trim().isEmpty()) {
-            senderName = "iKhaya User";
+            senderName = getString(R.string.default_chat_user_name);
         }
 
         if (senderRole == null || senderRole.trim().isEmpty()) {
-            senderRole = "Member";
+            senderRole = getString(R.string.default_chat_member_role);
         }
 
         if (isCommunity) {
@@ -121,19 +127,13 @@ public class ChatActivity extends AppCompatActivity {
         }
 
         if (txtTitle != null) {
-            txtTitle.setText(
-                    receiverName != null
-                            ? receiverName
-                            : "Chat"
-            );
+            txtTitle.setText(receiverName != null ? receiverName : getString(R.string.title_chat_fallback));
         }
 
         if (txtSubtitle != null) {
-            txtSubtitle.setText(
-                    isCommunity
-                            ? "Public Community Room (All Users)"
-                            : "Direct Message"
-            );
+            txtSubtitle.setText(isCommunity
+                    ? getString(R.string.subtitle_community_room)
+                    : getString(R.string.subtitle_direct_message));
         }
 
         if (btnBack != null) {
@@ -145,7 +145,7 @@ public class ChatActivity extends AppCompatActivity {
         }
 
         if (editMessage != null && txtCharCount != null) {
-            editMessage.addTextChangedListener(new android.text.TextWatcher() {
+            editMessage.addTextChangedListener(new TextWatcher() {
                 @Override
                 public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
@@ -153,36 +153,36 @@ public class ChatActivity extends AppCompatActivity {
                 public void onTextChanged(CharSequence s, int start, int before, int count) {}
 
                 @Override
-                public void afterTextChanged(android.text.Editable s) {
-                    txtCharCount.setText(s.length() + "/1000");
+                public void afterTextChanged(Editable s) {
+                    txtCharCount.setText(String.format(Locale.getDefault(), "%d/1000", s.length()));
                 }
             });
         }
-        
+
         if (isCommunity) {
             if (btnChatOptions != null) btnChatOptions.setVisibility(View.GONE);
             if (btnClearChat != null) btnClearChat.setVisibility(View.GONE);
         } else {
-            if (btnClearChat != null) btnClearChat.setVisibility(View.GONE); // Use options menu instead
+            if (btnClearChat != null) btnClearChat.setVisibility(View.GONE);
             if (btnChatOptions != null) {
                 btnChatOptions.setOnClickListener(v -> {
-                    android.widget.PopupMenu popup = new android.widget.PopupMenu(this, v);
-                    popup.getMenu().add("Delete Chat Messages");
-                    popup.getMenu().add("Delete Contact & Chat");
+                    PopupMenu popup = new PopupMenu(this, v);
+                    popup.getMenu().add(getString(R.string.menu_delete_chat_messages));
+                    popup.getMenu().add(getString(R.string.menu_delete_contact_and_chat));
                     popup.setOnMenuItemClickListener(item -> {
-                        if ("Delete Chat Messages".equals(item.getTitle())) {
-                            new androidx.appcompat.app.AlertDialog.Builder(this)
-                                    .setTitle("Delete Messages")
-                                    .setMessage("Delete all messages with this user?")
-                                    .setPositiveButton("Delete", (dialog, which) -> deleteChatMessagesOnly())
-                                    .setNegativeButton("Cancel", null)
+                        if (getString(R.string.menu_delete_chat_messages).contentEquals(item.getTitle())) {
+                            new AlertDialog.Builder(this)
+                                    .setTitle(R.string.dialog_title_delete_messages)
+                                    .setMessage(R.string.dialog_msg_delete_messages_confirm)
+                                    .setPositiveButton(R.string.btn_delete, (dialog, which) -> deleteChatMessagesOnly())
+                                    .setNegativeButton(R.string.btn_cancel, null)
                                     .show();
-                        } else if ("Delete Contact & Chat".equals(item.getTitle())) {
-                            new androidx.appcompat.app.AlertDialog.Builder(this)
-                                    .setTitle("Delete Contact")
-                                    .setMessage("Delete this contact and all chat history?")
-                                    .setPositiveButton("Delete", (dialog, which) -> deleteContactAndChat())
-                                    .setNegativeButton("Cancel", null)
+                        } else if (getString(R.string.menu_delete_contact_and_chat).contentEquals(item.getTitle())) {
+                            new AlertDialog.Builder(this)
+                                    .setTitle(R.string.dialog_title_delete_contact)
+                                    .setMessage(R.string.dialog_msg_delete_contact_confirm)
+                                    .setPositiveButton(R.string.btn_delete, (dialog, which) -> deleteContactAndChat())
+                                    .setNegativeButton(R.string.btn_cancel, null)
                                     .show();
                         }
                         return true;
@@ -191,21 +191,25 @@ public class ChatActivity extends AppCompatActivity {
                 });
             }
         }
-        
+
         filePickerLauncher = registerForActivityResult(
-                new androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult(),
+                new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                         handleFileSelection(result.getData().getData());
                     }
                 }
         );
-        
+
         if (btnAttachFile != null) {
             btnAttachFile.setOnClickListener(v -> {
-                new androidx.appcompat.app.AlertDialog.Builder(this)
-                        .setTitle("Attach File")
-                        .setItems(new String[]{"Send Picture", "Send PDF Document"}, (dialog, which) -> {
+                String[] attachOptions = {
+                        getString(R.string.attach_option_picture),
+                        getString(R.string.attach_option_pdf)
+                };
+                new AlertDialog.Builder(this)
+                        .setTitle(R.string.dialog_title_attach_file)
+                        .setItems(attachOptions, (dialog, which) -> {
                             Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                             if (which == 0) {
                                 intent.setType("image/*");
@@ -228,12 +232,7 @@ public class ChatActivity extends AppCompatActivity {
                 || accessToken == null || accessToken.trim().isEmpty()
                 || receiverId == null || receiverId.trim().isEmpty()) {
 
-            Toast.makeText(
-                    this,
-                    "Please sign in to use chat.",
-                    Toast.LENGTH_LONG
-            ).show();
-
+            Toast.makeText(this, R.string.error_sign_in_for_chat, Toast.LENGTH_LONG).show();
             if (btnSend != null) {
                 btnSend.setEnabled(false);
             }
@@ -243,11 +242,9 @@ public class ChatActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
         if (senderId != null && !senderId.isEmpty()
                 && receiverId != null && !receiverId.isEmpty()
                 && accessToken != null && !accessToken.isEmpty()) {
-
             pollHandler.removeCallbacks(pollRunnable);
             pollHandler.post(pollRunnable);
         }
@@ -271,39 +268,28 @@ public class ChatActivity extends AppCompatActivity {
 
             try {
                 String endpoint;
-
                 if (isCommunity) {
-                    endpoint =
-                            "/rest/v1/messages?receiver_id=eq.COMMUNITY"
-                                    + "&order=created_at.asc&limit=150";
+                    endpoint = "/rest/v1/messages?receiver_id=eq.COMMUNITY"
+                            + "&order=created_at.asc&limit=150";
                 } else {
-                    String encodedSender =
-                            SupabaseHelper.encode(senderId);
+                    String encodedSender = SupabaseHelper.encode(senderId);
+                    String encodedReceiver = SupabaseHelper.encode(receiverId);
 
-                    String encodedReceiver =
-                            SupabaseHelper.encode(receiverId);
-
-                    endpoint =
-                            "/rest/v1/messages?or=(and(sender_id.eq."
-                                    + encodedSender
-                                    + ",receiver_id.eq."
-                                    + encodedReceiver
-                                    + "),and(sender_id.eq."
-                                    + encodedReceiver
-                                    + ",receiver_id.eq."
-                                    + encodedSender
-                                    + "))&order=created_at.asc&limit=150";
+                    endpoint = "/rest/v1/messages?or=(and(sender_id.eq."
+                            + encodedSender
+                            + ",receiver_id.eq."
+                            + encodedReceiver
+                            + "),and(sender_id.eq."
+                            + encodedReceiver
+                            + ",receiver_id.eq."
+                            + encodedSender
+                            + "))&order=created_at.asc&limit=150";
                 }
 
-                connection = SupabaseHelper.createConnection(
-                        endpoint,
-                        "GET",
-                        accessToken
-                );
+                connection = SupabaseHelper.createConnection(endpoint, "GET", accessToken);
 
                 int code = connection.getResponseCode();
-                String response =
-                        SupabaseHelper.readResponse(connection);
+                String response = SupabaseHelper.readResponse(connection);
 
                 if (code >= 200 && code < 300) {
                     JSONArray messages = new JSONArray(response);
@@ -321,15 +307,9 @@ public class ChatActivity extends AppCompatActivity {
                 } else {
                     runOnUiThread(() -> {
                         pollHandler.removeCallbacks(pollRunnable);
-
                         if (!isFinishing() && !isDestroyed()) {
-                            Toast.makeText(
-                                    this,
-                                    "Failed to load messages (HTTP "
-                                            + code + "): " + response,
-                                    Toast.LENGTH_LONG
-                            ).show();
-                            Log.e("ChatActivity", "Fetch messages HTTP " + code + ": " + response);
+                            Toast.makeText(this, getString(R.string.error_load_messages_http) + " " + code, Toast.LENGTH_LONG).show();
+                            Log.e(TAG, "Fetch messages HTTP " + code + ": " + response);
                         }
                     });
                 }
@@ -339,7 +319,6 @@ public class ChatActivity extends AppCompatActivity {
                 if (connection != null) {
                     connection.disconnect();
                 }
-
                 fetchingMessages = false;
             }
         });
@@ -353,29 +332,27 @@ public class ChatActivity extends AppCompatActivity {
         messagesContainer.removeAllViews();
         String lastDateLabel = "";
 
+        if (messages.length() == 0) {
+            TextView txtEmptyChat = new TextView(this);
+            txtEmptyChat.setText(R.string.msg_no_messages_say_hello);
+            txtEmptyChat.setTextColor(Color.parseColor("#8C7A70"));
+            txtEmptyChat.setTextSize(14f);
+            txtEmptyChat.setGravity(Gravity.CENTER);
+            txtEmptyChat.setPadding(0, dpToPx(32), 0, dpToPx(32));
+            messagesContainer.addView(txtEmptyChat);
+            return;
+        }
+
         for (int i = 0; i < messages.length(); i++) {
             JSONObject message = messages.optJSONObject(i);
-
-            if (message == null) {
-                continue;
-            }
+            if (message == null) continue;
 
             String messageId = message.optString("id", "");
-
-            String messageSenderId =
-                    message.optString("sender_id", "");
-
-            String messageSenderName =
-                    message.optString("sender_name", "User");
-
-            String messageSenderRole =
-                    message.optString("sender_role", "Member");
-
-            String messageText =
-                    message.optString("message_text", "");
-                    
-            String createdAt = 
-                    message.optString("created_at", "");
+            String messageSenderId = message.optString("sender_id", "");
+            String messageSenderName = message.optString("sender_name", getString(R.string.default_chat_user_name));
+            String messageSenderRole = message.optString("sender_role", getString(R.string.default_chat_member_role));
+            String messageText = message.optString("message_text", "");
+            String createdAt = message.optString("created_at", "");
 
             String timeFormatted = "";
             String dateLabel = "";
@@ -389,9 +366,9 @@ public class ChatActivity extends AppCompatActivity {
                     timeFormatted = localZdt.format(DateTimeFormatter.ofPattern("HH:mm"));
 
                     if (localZdt.toLocalDate().equals(now.toLocalDate())) {
-                        dateLabel = "Today";
+                        dateLabel = getString(R.string.date_label_today);
                     } else if (localZdt.toLocalDate().equals(now.toLocalDate().minusDays(1))) {
-                        dateLabel = "Yesterday";
+                        dateLabel = getString(R.string.date_label_yesterday);
                     } else {
                         dateLabel = localZdt.format(DateTimeFormatter.ofPattern("EEE, dd MMM yyyy", Locale.getDefault()));
                     }
@@ -419,9 +396,7 @@ public class ChatActivity extends AppCompatActivity {
         }
 
         if (chatScrollView != null) {
-            chatScrollView.post(() ->
-                    chatScrollView.scrollTo(0, messagesContainer.getBottom())
-            );
+            chatScrollView.post(() -> chatScrollView.fullScroll(View.FOCUS_DOWN));
         }
     }
 
@@ -459,7 +434,6 @@ public class ChatActivity extends AppCompatActivity {
             String timeFormatted,
             boolean isMe
     ) {
-        // 1. Wrapper (Controls Left/Right Screen Alignment)
         LinearLayout wrapper = new LinearLayout(this);
         wrapper.setLayoutParams(new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
@@ -467,10 +441,8 @@ public class ChatActivity extends AppCompatActivity {
         ));
         wrapper.setOrientation(LinearLayout.VERTICAL);
         wrapper.setGravity(isMe ? Gravity.END : Gravity.START);
-        // Use wrapper padding instead of bubble margins to prevent layout clipping
-        wrapper.setPadding(dpToPx(12), 0, dpToPx(12), 0); 
+        wrapper.setPadding(dpToPx(12), 0, dpToPx(12), 0);
 
-        // 2. Chat Bubble (CardView)
         CardView bubble = new CardView(this);
         LinearLayout.LayoutParams bubbleParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -481,16 +453,12 @@ public class ChatActivity extends AppCompatActivity {
         bubble.setRadius(dpToPx(16));
         bubble.setCardElevation(dpToPx(2));
         bubble.setCardBackgroundColor(Color.parseColor(isMe ? "#FFE8CC" : "#FFFFFF"));
-        
-        // CRITICAL FIX: Stops CardView from adding invisible padding that squashes text horizontally
         bubble.setPreventCornerOverlap(false);
 
-        // 3. Inner Content Container
         LinearLayout content = new LinearLayout(this);
-        // Explicit LayoutParams force Android to measure the horizontal expansion correctly
-        android.widget.FrameLayout.LayoutParams contentParams = new android.widget.FrameLayout.LayoutParams(
-                android.widget.FrameLayout.LayoutParams.WRAP_CONTENT,
-                android.widget.FrameLayout.LayoutParams.WRAP_CONTENT
+        FrameLayout.LayoutParams contentParams = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT
         );
         content.setLayoutParams(contentParams);
         content.setOrientation(LinearLayout.VERTICAL);
@@ -498,8 +466,8 @@ public class ChatActivity extends AppCompatActivity {
 
         if (!isMe && isCommunity) {
             TextView txtAuthor = new TextView(this);
-            txtAuthor.setText(authorName + " • " + authorRole.toUpperCase());
-            txtAuthor.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 12f);
+            txtAuthor.setText(String.format(Locale.getDefault(), "%s • %s", authorName, authorRole.toUpperCase(Locale.getDefault())));
+            txtAuthor.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f);
             txtAuthor.setTypeface(null, Typeface.BOLD);
             txtAuthor.setTextColor(Color.parseColor("#D9480F"));
             content.addView(txtAuthor);
@@ -508,7 +476,7 @@ public class ChatActivity extends AppCompatActivity {
         if (messageText.startsWith("[IMAGE_BASE64]:")) {
             String base64Image = messageText.substring("[IMAGE_BASE64]:".length());
             try {
-                byte[] decodedString = android.util.Base64.decode(base64Image, android.util.Base64.DEFAULT);
+                byte[] decodedString = Base64.decode(base64Image, Base64.DEFAULT);
                 Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
                 ImageView imageView = new ImageView(this);
                 imageView.setImageBitmap(decodedByte);
@@ -522,20 +490,20 @@ public class ChatActivity extends AppCompatActivity {
                 content.addView(imageView);
             } catch (Exception e) {
                 TextView txtMessage = new TextView(this);
-                txtMessage.setText("[Image missing]");
+                txtMessage.setText(R.string.placeholder_image_missing);
                 content.addView(txtMessage);
             }
         } else if (messageText.startsWith("[PDF_FILE]:")) {
             String[] parts = messageText.substring("[PDF_FILE]:".length()).split("\\|", 2);
-            String fileName = parts.length > 0 ? parts[0] : "Document.pdf";
+            String fileName = parts.length > 0 ? parts[0] : getString(R.string.default_document_filename);
             TextView txtMessage = new TextView(this);
-            txtMessage.setText("📄 PDF: " + fileName + "\n(Tap to open)");
-            txtMessage.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 14f);
+            txtMessage.setText(String.format(Locale.getDefault(), "📄 PDF: %s\n(%s)", fileName, getString(R.string.label_tap_to_open)));
+            txtMessage.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
             txtMessage.setTextColor(Color.parseColor("#0056b3"));
             txtMessage.setTypeface(null, Typeface.ITALIC);
-            txtMessage.setOnClickListener(v -> {
-                Toast.makeText(this, "Opening PDF: " + fileName, Toast.LENGTH_SHORT).show();
-            });
+            txtMessage.setOnClickListener(v ->
+                    Toast.makeText(this, getString(R.string.toast_opening_pdf) + " " + fileName, Toast.LENGTH_SHORT).show()
+            );
             content.addView(txtMessage);
         } else {
             TextView txtMessage = new TextView(this);
@@ -544,20 +512,18 @@ public class ChatActivity extends AppCompatActivity {
                     LinearLayout.LayoutParams.WRAP_CONTENT
             );
             txtMessage.setLayoutParams(textParams);
-            
-            // Calculate exact max width (80% of screen minus internal paddings)
+
             int screenWidth = getResources().getDisplayMetrics().widthPixels;
-            int maxTextWidth = (int) (screenWidth * 0.80f) - dpToPx(32); 
+            int maxTextWidth = (int) (screenWidth * 0.80f) - dpToPx(32);
             txtMessage.setMaxWidth(maxTextWidth);
 
             txtMessage.setText(messageText);
-            txtMessage.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 16f); 
+            txtMessage.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f);
             txtMessage.setTextColor(Color.parseColor("#212529"));
-            txtMessage.setLineSpacing(0, 1.2f); // Visual Fix: Improves paragraph readability
+            txtMessage.setLineSpacing(0, 1.2f);
             content.addView(txtMessage);
         }
 
-        // VISUAL FIX: Add the timeFormatted parameter to the UI (it was completely missing before)
         TextView txtTime = new TextView(this);
         LinearLayout.LayoutParams timeParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -566,41 +532,41 @@ public class ChatActivity extends AppCompatActivity {
         timeParams.gravity = Gravity.END;
         txtTime.setLayoutParams(timeParams);
         txtTime.setText(timeFormatted);
-        txtTime.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 11f);
+        txtTime.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f);
         txtTime.setTextColor(Color.parseColor(isMe ? "#998A7A" : "#8A8D91"));
         txtTime.setPadding(0, dpToPx(4), 0, 0);
         content.addView(txtTime);
 
-        // Assemble the layouts
         bubble.addView(content);
-        
+
         if (!isCommunity || isMe) {
             bubble.setOnLongClickListener(v -> {
-                new androidx.appcompat.app.AlertDialog.Builder(this)
-                        .setTitle("Delete Message")
-                        .setMessage("Delete this message?")
-                        .setPositiveButton("Delete", (dialog, which) -> {
-                            executor.execute(() -> {
-                                try {
-                                    HttpURLConnection conn = SupabaseHelper.createConnection("/rest/v1/messages?id=eq." + SupabaseHelper.encode(messageId), "DELETE", accessToken);
-                                    int code = conn.getResponseCode();
-                                    conn.disconnect();
-                                    if (code >= 200 && code < 300) {
-                                        runOnUiThread(this::fetchMessages);
-                                    }
-                                } catch (Exception ignored) {}
-                            });
-                        })
-                        .setNegativeButton("Cancel", null)
+                new AlertDialog.Builder(this)
+                        .setTitle(R.string.dialog_title_delete_single_message)
+                        .setMessage(R.string.dialog_msg_delete_single_message)
+                        .setPositiveButton(R.string.btn_delete, (dialog, which) -> executor.execute(() -> {
+                            try {
+                                HttpURLConnection conn = SupabaseHelper.createConnection(
+                                        "/rest/v1/messages?id=eq." + SupabaseHelper.encode(messageId),
+                                        "DELETE",
+                                        accessToken
+                                );
+                                int code = conn.getResponseCode();
+                                conn.disconnect();
+                                if (code >= 200 && code < 300) {
+                                    runOnUiThread(this::fetchMessages);
+                                }
+                            } catch (Exception ignored) {}
+                        }))
+                        .setNegativeButton(R.string.btn_cancel, null)
                         .show();
                 return true;
             });
         }
-        
+
         wrapper.addView(bubble);
         messagesContainer.addView(wrapper);
 
-        // Visual Fix: fullScroll is much more reliable than scrollTo when the keyboard opens
         if (chatScrollView != null) {
             chatScrollView.post(() -> chatScrollView.fullScroll(View.FOCUS_DOWN));
         }
@@ -612,7 +578,10 @@ public class ChatActivity extends AppCompatActivity {
             try {
                 String encodedSender = SupabaseHelper.encode(senderId);
                 String encodedReceiver = SupabaseHelper.encode(receiverId);
-                String endpoint = "/rest/v1/messages?or=(and(sender_id.eq." + encodedSender + ",receiver_id.eq." + encodedReceiver + "),and(sender_id.eq." + encodedReceiver + ",receiver_id.eq." + encodedSender + "))";
+                String endpoint = "/rest/v1/messages?or=(and(sender_id.eq." + encodedSender
+                        + ",receiver_id.eq." + encodedReceiver
+                        + "),and(sender_id.eq." + encodedReceiver
+                        + ",receiver_id.eq." + encodedSender + "))";
                 HttpURLConnection conn = SupabaseHelper.createConnection(endpoint, "DELETE", accessToken);
                 int code = conn.getResponseCode();
                 conn.disconnect();
@@ -621,7 +590,7 @@ public class ChatActivity extends AppCompatActivity {
                     runOnUiThread(this::fetchMessages);
                 }
             } catch (Exception e) {
-                Log.e("ChatActivity", "Failed to delete messages", e);
+                Log.e(TAG, "Failed to delete messages", e);
             }
         });
     }
@@ -632,41 +601,43 @@ public class ChatActivity extends AppCompatActivity {
             try {
                 String encodedSender = SupabaseHelper.encode(senderId);
                 String encodedReceiver = SupabaseHelper.encode(receiverId);
-                
-                // Delete messages
-                String endpointMsg = "/rest/v1/messages?or=(and(sender_id.eq." + encodedSender + ",receiver_id.eq." + encodedReceiver + "),and(sender_id.eq." + encodedReceiver + ",receiver_id.eq." + encodedSender + "))";
+
+                String endpointMsg = "/rest/v1/messages?or=(and(sender_id.eq." + encodedSender
+                        + ",receiver_id.eq." + encodedReceiver
+                        + "),and(sender_id.eq." + encodedReceiver
+                        + ",receiver_id.eq." + encodedSender + "))";
                 HttpURLConnection connMsg = SupabaseHelper.createConnection(endpointMsg, "DELETE", accessToken);
                 connMsg.getResponseCode();
                 connMsg.disconnect();
-                
-                // Delete chat request
-                String endpointReq = "/rest/v1/chat_requests?or=(and(sender_id.eq." + encodedSender + ",receiver_id.eq." + encodedReceiver + "),and(sender_id.eq." + encodedReceiver + ",receiver_id.eq." + encodedSender + "))";
+
+                String endpointReq = "/rest/v1/chat_requests?or=(and(sender_id.eq." + encodedSender
+                        + ",receiver_id.eq." + encodedReceiver
+                        + "),and(sender_id.eq." + encodedReceiver
+                        + ",receiver_id.eq." + encodedSender + "))";
                 HttpURLConnection connReq = SupabaseHelper.createConnection(endpointReq, "DELETE", accessToken);
-                int code = connReq.getResponseCode();
+                connReq.getResponseCode();
                 connReq.disconnect();
-                
+
                 runOnUiThread(() -> {
-                    Toast.makeText(this, "Chat deleted", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, R.string.toast_chat_deleted, Toast.LENGTH_SHORT).show();
                     finish();
                 });
             } catch (Exception e) {
-                Log.e("ChatActivity", "Failed to delete contact", e);
+                Log.e(TAG, "Failed to delete contact", e);
             }
         });
     }
 
-    private void handleFileSelection(android.net.Uri uri) {
+    private void handleFileSelection(Uri uri) {
         if (uri == null) return;
-        
+
         executor.execute(() -> {
             try {
                 String mimeType = getContentResolver().getType(uri);
                 if (mimeType != null && mimeType.startsWith("image/")) {
-                    // Handle Image
-                    java.io.InputStream is = getContentResolver().openInputStream(uri);
+                    InputStream is = getContentResolver().openInputStream(uri);
                     Bitmap originalBitmap = BitmapFactory.decodeStream(is);
                     if (originalBitmap != null) {
-                        // Scale down to max 480px width
                         int width = originalBitmap.getWidth();
                         int height = originalBitmap.getHeight();
                         if (width > 480) {
@@ -674,43 +645,42 @@ public class ChatActivity extends AppCompatActivity {
                             width = 480;
                         }
                         Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, width, height, true);
-                        
-                        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+
+                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
                         scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 65, baos);
                         byte[] imageBytes = baos.toByteArray();
-                        String base64Image = android.util.Base64.encodeToString(imageBytes, android.util.Base64.NO_WRAP);
-                        
+                        String base64Image = Base64.encodeToString(imageBytes, Base64.NO_WRAP);
+
                         String payload = "[IMAGE_BASE64]:" + base64Image;
                         runOnUiThread(() -> sendPayload(payload));
                     }
                 } else if (mimeType != null && mimeType.equals("application/pdf")) {
-                    // Handle PDF (Using Base64 for simplicity, but ideally should upload to Storage)
-                    String fileName = "Document.pdf";
-                    android.database.Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+                    String fileName = getString(R.string.default_document_filename);
+                    Cursor cursor = getContentResolver().query(uri, null, null, null, null);
                     if (cursor != null && cursor.moveToFirst()) {
-                        int nameIndex = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME);
+                        int nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
                         if (nameIndex != -1) {
                             fileName = cursor.getString(nameIndex);
                         }
                         cursor.close();
                     }
-                    
-                    java.io.InputStream is = getContentResolver().openInputStream(uri);
-                    java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+
+                    InputStream is = getContentResolver().openInputStream(uri);
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     byte[] buffer = new byte[8192];
                     int bytesRead;
                     while ((bytesRead = is.read(buffer)) != -1) {
                         baos.write(buffer, 0, bytesRead);
                     }
                     byte[] pdfBytes = baos.toByteArray();
-                    String base64Pdf = android.util.Base64.encodeToString(pdfBytes, android.util.Base64.NO_WRAP);
-                    
+                    String base64Pdf = Base64.encodeToString(pdfBytes, Base64.NO_WRAP);
+
                     String payload = "[PDF_FILE]:" + fileName + "|" + base64Pdf;
                     runOnUiThread(() -> sendPayload(payload));
                 }
             } catch (Exception e) {
-                Log.e("ChatActivity", "Error handling file", e);
-                runOnUiThread(() -> Toast.makeText(ChatActivity.this, "Failed to attach file", Toast.LENGTH_SHORT).show());
+                Log.e(TAG, "Error handling file", e);
+                runOnUiThread(() -> Toast.makeText(ChatActivity.this, R.string.error_failed_to_attach_file, Toast.LENGTH_SHORT).show());
             }
         });
     }
@@ -720,26 +690,24 @@ public class ChatActivity extends AppCompatActivity {
             return;
         }
 
-        String messageText =
-                editMessage.getText().toString(); // remove the trim here since trailing newlines might be intentional during composing, but generally trim is okay
-
+        String messageText = editMessage.getText().toString();
         if (messageText.trim().isEmpty()) {
             return;
         }
 
         sendPayload(messageText);
     }
-    
+
     private void sendPayload(String payloadText) {
         if (senderId == null || senderId.trim().isEmpty()) {
             senderId = SupabaseHelper.getUserId(this);
         }
 
-        if (senderName == null || senderName.trim().isEmpty() || "iKhaya User".equals(senderName)) {
-            senderName = getSharedPreferences("iKhayaSession", MODE_PRIVATE).getString("USER_NAME", "User");
+        if (senderName == null || senderName.trim().isEmpty() || getString(R.string.default_chat_user_name).equals(senderName)) {
+            senderName = getSharedPreferences("iKhayaSession", MODE_PRIVATE).getString("USER_NAME", getString(R.string.default_chat_user_name));
         }
 
-        if (senderRole == null || senderRole.trim().isEmpty() || "Member".equals(senderRole)) {
+        if (senderRole == null || senderRole.trim().isEmpty() || getString(R.string.default_chat_member_role).equals(senderRole)) {
             senderRole = getSharedPreferences("iKhayaSession", MODE_PRIVATE).getString("USER_ROLE", "tenant");
         }
 
@@ -747,12 +715,7 @@ public class ChatActivity extends AppCompatActivity {
                 || receiverId == null || receiverId.isEmpty()
                 || accessToken == null || accessToken.isEmpty()) {
 
-            Toast.makeText(
-                    this,
-                    "Please sign in to send messages.",
-                    Toast.LENGTH_SHORT
-            ).show();
-
+            Toast.makeText(this, R.string.error_sign_in_for_chat, Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -764,24 +727,14 @@ public class ChatActivity extends AppCompatActivity {
 
         executor.execute(() -> {
             HttpURLConnection connection = null;
-
             boolean success = false;
             String error = "";
 
             try {
-                connection = SupabaseHelper.createConnection(
-                        "/rest/v1/messages",
-                        "POST",
-                        accessToken
-                );
-
-                connection.setRequestProperty(
-                        "Prefer",
-                        "return=minimal"
-                );
+                connection = SupabaseHelper.createConnection("/rest/v1/messages", "POST", accessToken);
+                connection.setRequestProperty("Prefer", "return=minimal");
 
                 JSONObject body = new JSONObject();
-
                 body.put("sender_id", senderId);
                 body.put("sender_name", senderName);
                 body.put("sender_role", senderRole);
@@ -791,23 +744,17 @@ public class ChatActivity extends AppCompatActivity {
                 SupabaseHelper.writeJson(connection, body);
 
                 int code = connection.getResponseCode();
-
-                String response =
-                        SupabaseHelper.readResponse(connection);
+                String response = SupabaseHelper.readResponse(connection);
 
                 success = code >= 200 && code < 300;
-
                 if (!success) {
-                    error = "Send failed (HTTP "
-                            + code + "): " + response;
-                    Log.e("ChatActivity", error);
+                    error = getString(R.string.error_send_failed_http) + " " + code + ": " + response;
+                    Log.e(TAG, error);
                 }
 
             } catch (Exception e) {
-                error = "Error sending message: "
-                        + e.getMessage();
-                Log.e("ChatActivity", error);
-
+                error = getString(R.string.error_sending_message_prefix) + " " + e.getMessage();
+                Log.e(TAG, error);
             } finally {
                 if (connection != null) {
                     connection.disconnect();
@@ -820,37 +767,26 @@ public class ChatActivity extends AppCompatActivity {
             runOnUiThread(() -> {
                 sendingMessage = false;
 
-                if (isFinishing() || isDestroyed()) {
-                    return;
-                }
+                if (isFinishing() || isDestroyed()) return;
 
                 if (btnSend != null) {
                     btnSend.setEnabled(true);
                 }
 
                 if (sent) {
-                    if (payloadText.equals(
-                            editMessage.getText().toString().trim()
-                    )) {
+                    if (payloadText.equals(editMessage.getText().toString().trim())) {
                         editMessage.setText("");
                     }
-
                     fetchMessages();
                 } else {
-                    Toast.makeText(
-                            this,
-                            failureMessage,
-                            Toast.LENGTH_LONG
-                    ).show();
+                    Toast.makeText(this, failureMessage, Toast.LENGTH_LONG).show();
                 }
             });
         });
     }
 
     private int dpToPx(int dp) {
-        return Math.round(
-                dp * getResources().getDisplayMetrics().density
-        );
+        return Math.round(dp * getResources().getDisplayMetrics().density);
     }
 
     @Override

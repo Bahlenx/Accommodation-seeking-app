@@ -1,9 +1,9 @@
-
 package com.example.ikhaya_accommodation_seeking_app;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Button;
+import android.util.Log;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -13,6 +13,7 @@ import com.google.firebase.auth.FirebaseAuth;
 
 public class TenantProfileActivity extends AppCompatActivity {
 
+    private static final String TAG = "TenantProfile";
     private TextView txtUserName;
 
     @Override
@@ -21,100 +22,34 @@ public class TenantProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_tenant_profile);
 
         txtUserName = findViewById(R.id.txtUserName);
-
-        android.view.View btnBack = findViewById(R.id.btnBack);
-        Button btnPersonalInfo = findViewById(R.id.btnPersonalInfo);
-        Button btnChangeLanguage = findViewById(R.id.btnChangeLanguage);
-        Button btnSavedListings = findViewById(R.id.btnSavedListings);
-        Button btnApplications = findViewById(R.id.btnApplications);
-        Button btnPaymentHistory = findViewById(R.id.btnPaymentHistory);
-        Button btnNotifications = findViewById(R.id.btnNotifications);
-        Button btnChangePassword = findViewById(R.id.btnChangePassword);
-        Button btnReportProblem = findViewById(R.id.btnReportProblem);
-        Button btnLogout = findViewById(R.id.btnLogout);
-
         if (txtUserName != null) {
-            txtUserName.setText("Loading...");
+            txtUserName.setText(R.string.loading_text);
         }
 
+        View btnBack = findViewById(R.id.btnBack);
         if (btnBack != null) {
             btnBack.setOnClickListener(v -> finish());
         }
 
-        if (btnPersonalInfo != null) {
-            btnPersonalInfo.setOnClickListener(v ->
-                    startActivity(new Intent(
-                            TenantProfileActivity.this,
-                            PersonalInformationActivity.class
-                    ))
-            );
-        }
+        bindNavAction(R.id.btnPersonalInfo, PersonalInformationActivity.class);
+        bindNavAction(R.id.btnChangeLanguage, LanguageSettingsActivity.class);
+        bindNavAction(R.id.btnSavedListings, SavedListingsActivity.class);
+        bindNavAction(R.id.btnApplications, ApplicationsActivity.class);
+        bindNavAction(R.id.btnPaymentHistory, PaymentHistoryActivity.class);
+        bindNavAction(R.id.btnNotifications, NotificationsActivity.class);
+        bindNavAction(R.id.btnChangePassword, ChangePasswordActivity.class);
+        bindNavAction(R.id.btnReportProblem, ReportProblemActivity.class);
 
-        if (btnChangeLanguage != null) {
-            btnChangeLanguage.setOnClickListener(v ->
-                    startActivity(new Intent(
-                            TenantProfileActivity.this,
-                            LanguageSettingsActivity.class
-                    ))
-            );
-        }
-
-        if (btnSavedListings != null) {
-            btnSavedListings.setOnClickListener(v ->
-                    startActivity(new Intent(
-                            TenantProfileActivity.this,
-                            SavedListingsActivity.class
-                    ))
-            );
-        }
-
-        if (btnApplications != null) {
-            btnApplications.setOnClickListener(v ->
-                    startActivity(new Intent(
-                            TenantProfileActivity.this,
-                            ApplicationsActivity.class
-                    ))
-            );
-        }
-
-        if (btnPaymentHistory != null) {
-            btnPaymentHistory.setOnClickListener(v ->
-                    startActivity(new Intent(
-                            TenantProfileActivity.this,
-                            PaymentHistoryActivity.class
-                    ))
-            );
-        }
-
-        if (btnNotifications != null) {
-            btnNotifications.setOnClickListener(v ->
-                    startActivity(new Intent(
-                            TenantProfileActivity.this,
-                            NotificationsActivity.class
-                    ))
-            );
-        }
-
-        if (btnChangePassword != null) {
-            btnChangePassword.setOnClickListener(v ->
-                    startActivity(new Intent(
-                            TenantProfileActivity.this,
-                            ChangePasswordActivity.class
-                    ))
-            );
-        }
-
-        if (btnReportProblem != null) {
-            btnReportProblem.setOnClickListener(v ->
-                    startActivity(new Intent(
-                            TenantProfileActivity.this,
-                            ReportProblemActivity.class
-                    ))
-            );
-        }
-
+        View btnLogout = findViewById(R.id.btnLogout);
         if (btnLogout != null) {
             btnLogout.setOnClickListener(v -> logout());
+        }
+    }
+
+    private void bindNavAction(int viewId, Class<?> destination) {
+        View target = findViewById(viewId);
+        if (target != null) {
+            target.setOnClickListener(v -> startActivity(new Intent(TenantProfileActivity.this, destination)));
         }
     }
 
@@ -136,7 +71,7 @@ public class TenantProfileActivity extends AppCompatActivity {
                 } else if (!email.isEmpty()) {
                     txtUserName.setText(email);
                 } else {
-                    txtUserName.setText("Tenant");
+                    txtUserName.setText(R.string.tenant);
                 }
             }
         });
@@ -145,30 +80,29 @@ public class TenantProfileActivity extends AppCompatActivity {
     private void logout() {
         try {
             FirebaseAuth.getInstance().signOut();
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            Log.e(TAG, "Firebase sign-out failed", e);
         }
 
         try {
             SupabaseHelper.clearSession(this);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            Log.e(TAG, "Supabase sign-out failed", e);
         }
+
+        getSharedPreferences("iKhayaSession", MODE_PRIVATE)
+                .edit()
+                .clear()
+                .apply();
 
         Toast.makeText(
                 this,
-                "Logged out successfully",
+                R.string.logged_out_successfully,
                 Toast.LENGTH_SHORT
         ).show();
 
-        Intent intent = new Intent(
-                TenantProfileActivity.this,
-                OuterMainActivity.class
-        );
-
-        intent.setFlags(
-                Intent.FLAG_ACTIVITY_NEW_TASK
-                        | Intent.FLAG_ACTIVITY_CLEAR_TASK
-        );
-
+        Intent intent = new Intent(TenantProfileActivity.this, OuterMainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
     }

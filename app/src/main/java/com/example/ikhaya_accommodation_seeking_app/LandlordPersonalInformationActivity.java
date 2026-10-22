@@ -1,8 +1,7 @@
-
 package com.example.ikhaya_accommodation_seeking_app;
 
 import android.os.Bundle;
-import android.widget.Button;
+import android.view.View;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -18,7 +17,7 @@ public class LandlordPersonalInformationActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_landlord_personal_information);
 
-        android.view.View btnBack = findViewById(R.id.btnBack);
+        View btnBack = findViewById(R.id.btnBack);
 
         txtName = findViewById(R.id.txtName);
         txtEmail = findViewById(R.id.txtEmail);
@@ -39,15 +38,15 @@ public class LandlordPersonalInformationActivity extends AppCompatActivity {
 
     private void showLoading() {
         if (txtName != null) {
-            txtName.setText("Loading...");
+            txtName.setText(R.string.loading_text);
         }
 
         if (txtEmail != null) {
-            txtEmail.setText("Loading...");
+            txtEmail.setText(R.string.loading_text);
         }
 
         if (txtPhone != null) {
-            txtPhone.setText("Loading...");
+            txtPhone.setText(R.string.loading_text);
         }
     }
 
@@ -58,21 +57,15 @@ public class LandlordPersonalInformationActivity extends AppCompatActivity {
             }
 
             if (txtName != null) {
-                txtName.setText(
-                        name.isEmpty() ? "Not provided" : name
-                );
+                txtName.setText(name.isEmpty() ? getString(R.string.label_not_provided) : name);
             }
 
             if (txtEmail != null) {
-                txtEmail.setText(
-                        email.isEmpty() ? "Not provided" : email
-                );
+                txtEmail.setText(email.isEmpty() ? getString(R.string.label_not_provided) : email);
             }
 
             if (txtPhone != null) {
-                txtPhone.setText(
-                        phone.isEmpty() ? "Not provided" : phone
-                );
+                txtPhone.setText(phone.isEmpty() ? getString(R.string.label_not_provided) : phone);
             }
         });
     }

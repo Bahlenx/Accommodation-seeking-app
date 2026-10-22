@@ -127,10 +127,8 @@
 
                 <!-- Search Input Pill -->
                 <androidx.cardview.widget.CardView
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="54dp"
-                    android:layout_marginEnd="12dp"
-                    android:layout_weight="1"
                     app:cardBackgroundColor="#FFFFFF"
                     app:cardCornerRadius="27dp"
                     app:cardElevation="2dp">
@@ -165,25 +163,6 @@
                             android:textSize="14sp" />
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
-
-                <!-- Filter Bottom Sheet Trigger -->
-                <FrameLayout
-                    android:id="@+id/btnSearchSubmit"
-                    android:layout_width="54dp"
-                    android:layout_height="54dp"
-                    android:background="@drawable/bg_circle_white"
-                    android:clickable="true"
-                    android:elevation="2dp"
-                    android:focusable="true">
-
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:layout_gravity="center"
-                        android:contentDescription="@string/desc_filter_options"
-                        android:src="@android:drawable/ic_menu_sort_by_size"
-                        app:tint="#1F1614" />
-                </FrameLayout>
             </LinearLayout>
 
             <!-- 4. SECTION 1: MOST POPULAR PLACES -->
