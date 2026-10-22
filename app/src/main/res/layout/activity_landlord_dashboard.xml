@@ -384,7 +384,7 @@
                         android:layout_alignParentStart="true"
                         android:layout_centerVertical="true"
                         android:contentDescription="@string/tenant_enquiries"
-                        android:src="@drawable/ic_viewings"
+                        android:src="@drawable/ic_tenant_enquiries"
                         app:tint="#BA5536" />
 
                     <LinearLayout
@@ -507,7 +507,7 @@
                 </RelativeLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- Viewing Requests Tile (Preserved from Right Branch) -->
+            <!-- Viewing Requests Tile -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/cardViewingRequests"
                 android:layout_width="match_parent"
@@ -532,7 +532,7 @@
                         android:layout_alignParentStart="true"
                         android:layout_centerVertical="true"
                         android:contentDescription="@string/viewing_requests"
-                        android:src="@drawable/ic_viewings"
+                        android:src="@drawable/ic_viewing_requests"
                         app:tint="#BA5536" />
 
                     <LinearLayout
@@ -581,7 +581,6 @@
                 </RelativeLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- 5. MY LISTINGS PREVIEW SECTION (Preserved from Right Branch) -->
             <TextView
                 android:id="@+id/txtMyListings"
                 android:layout_width="match_parent"
@@ -692,7 +691,7 @@
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:contentDescription="@string/listings"
-                android:src="@drawable/book_user"
+                android:src="@drawable/ic_my_listings"
                 app:tint="#FFD8CC" />
 
             <TextView
