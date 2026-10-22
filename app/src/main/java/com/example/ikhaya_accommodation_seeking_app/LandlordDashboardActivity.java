@@ -340,6 +340,9 @@ public class LandlordDashboardActivity extends AppCompatActivity {
         super.onResume();
 
         dashboardVisible = true;
+        
+        View scroll = findViewById(R.id.dashboardScroll);
+        if (scroll != null) scroll.post(scroll::requestLayout);
 
         refreshDashboardData();
 
@@ -1218,7 +1221,7 @@ public class LandlordDashboardActivity extends AppCompatActivity {
     private JSONArray fetchRows(
             String endpoint,
             String token
-    ) throws Exception {
+    ) {
 
         HttpURLConnection connection = null;
 
@@ -1239,16 +1242,14 @@ public class LandlordDashboardActivity extends AppCompatActivity {
 
             if (code < 200 || code >= 300) {
 
-                throw new java.io.IOException(
-                        "HTTP "
-                                + code
-                                + ": "
-                                + response
-                );
+                return new JSONArray();
             }
 
             return new JSONArray(response);
 
+        } catch (Exception e) {
+            Log.e(TAG, "Fetch rows failed for endpoint " + endpoint, e);
+            return new JSONArray();
         } finally {
 
             if (connection != null) {

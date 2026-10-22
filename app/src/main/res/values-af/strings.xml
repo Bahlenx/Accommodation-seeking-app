@@ -71,7 +71,7 @@
 
     <!-- OTP -->
     <string name="otp_button">Stuur Verifikasie-SMS</string>
-    <string name="otp_warning">Ons sal \'n gratis SMS-OTP stuur om jou foonnommer te verifieer. Geen lugtyd of data nodig nie.</string>
+    <string name="otp_warning">Please ensure your email address is valid and accessible. We will send a 6-digit One-Time Pin (OTP) to your email to verify your account.</string>
     <string name="otp_text">OTP-verifikasie</string>
     <string name="otp_hint">Voer die kode in wat per SMS aan jou gestuur is</string>
     <string name="verify_otp_btn">Verifieer OTP</string>

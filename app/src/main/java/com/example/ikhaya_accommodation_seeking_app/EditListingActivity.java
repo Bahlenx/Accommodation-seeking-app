@@ -45,7 +45,7 @@ public class EditListingActivity extends AppCompatActivity {
         descriptionInput = findViewById(R.id.edtEditDescription);
         saveButton = findViewById(R.id.btnSaveListingChanges);
 
-        Button backButton = findViewById(R.id.btnBackEditListing);
+        android.view.View backButton = findViewById(R.id.btnBackEditListing);
         backButton.setOnClickListener(v -> finish());
 
         listingId = getIntent().getStringExtra("LISTING_ID");

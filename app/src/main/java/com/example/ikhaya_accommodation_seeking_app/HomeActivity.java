@@ -177,6 +177,7 @@ public class HomeActivity extends AppCompatActivity {
                             false
                     )
             );
+            rvPopularPlaces.setNestedScrollingEnabled(false);
         }
 
         if (rvExploreNewArea != null) {
@@ -187,6 +188,7 @@ public class HomeActivity extends AppCompatActivity {
                             false
                     )
             );
+            rvExploreNewArea.setNestedScrollingEnabled(false);
         }
 
         notificationDot =
@@ -278,6 +280,12 @@ public class HomeActivity extends AppCompatActivity {
         super.onResume();
 
         homeVisible = true;
+        
+        View search = findViewById(R.id.etSearchPlace);
+        if (search != null) search.clearFocus();
+        
+        View scroll = findViewById(R.id.homeScrollView);
+        if (scroll != null) scroll.post(scroll::requestLayout);
 
         setupPersonalizedGreeting();
 

@@ -92,7 +92,7 @@
 
     <!-- OTP Flow -->
     <string name="otp_button">Send Verification SMS</string>
-    <string name="otp_warning">We will send a free SMS OTP code to verify your phone number. No airtime or data needed</string>
+    <string name="otp_warning">Please ensure your email address is valid and accessible. We will send a 6-digit One-Time Pin (OTP) to your email to verify your account.</string>
     <string name="otp_text">OTP Verification</string>
     <string name="otp_hint">Please enter the code sent to you by SMS</string>
     <string name="verify_otp_btn">Verify OTP</string>

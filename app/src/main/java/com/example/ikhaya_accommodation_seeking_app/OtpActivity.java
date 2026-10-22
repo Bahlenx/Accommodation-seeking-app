@@ -61,8 +61,13 @@ public class OtpActivity extends AppCompatActivity {
         role = "landlord".equalsIgnoreCase(incomingIntent.getStringExtra("USER_ROLE")) ? "landlord" : "tenant";
         password = incomingIntent.getStringExtra("USER_PASSWORD");
 
-        rbEmailOtp.setText("Email OTP (" + email + ")");
-        rbSmsOtp.setText("SMS OTP (" + phone + ")");
+        if (rbSmsOtp != null) {
+            rbSmsOtp.setVisibility(android.view.View.GONE);
+        }
+        if (rbEmailOtp != null) {
+            rbEmailOtp.setChecked(true);
+            rbEmailOtp.setText("Email OTP (" + email + ")");
+        }
 
         setupOtpJumps(otp1, otp2);
         setupOtpJumps(otp2, otp3);
@@ -76,7 +81,9 @@ public class OtpActivity extends AppCompatActivity {
         
         if (incomingIntent.getBooleanExtra("INITIAL_OTP_SENT", false)) {
             Toast.makeText(this, "6-digit OTP sent to " + email + " (check Spam folder too)", Toast.LENGTH_LONG).show();
-            // Don't auto start cooldown on intent, let user do it if needed
+            startResendCooldown();
+        } else {
+            sendOtp();
         }
     }
     
@@ -85,7 +92,7 @@ public class OtpActivity extends AppCompatActivity {
         if (resendTimer != null) {
             resendTimer.cancel();
         }
-        resendTimer = new android.os.CountDownTimer(60000, 1000) {
+        resendTimer = new android.os.CountDownTimer(30000, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
                 btnSendOtp.setText("Resend OTP in " + (millisUntilFinished / 1000) + "s");
@@ -94,86 +101,59 @@ public class OtpActivity extends AppCompatActivity {
             @Override
             public void onFinish() {
                 btnSendOtp.setEnabled(true);
-                btnSendOtp.setText("Resend OTP Code");
+                btnSendOtp.setText("Send / Resend OTP Code");
             }
         }.start();
     }
 
     private void sendOtp() {
+        startResendCooldown();
         new Thread(() -> {
             try {
                 HttpURLConnection connection;
                 JSONObject body = new JSONObject();
                 
-                if (rbEmailOtp.isChecked()) {
-                    connection = SupabaseHelper.createConnection("/auth/v1/otp", "POST", null);
-                    body.put("email", email);
-                    body.put("create_user", true);
-                    
-                    JSONObject metadata = new JSONObject();
-                    metadata.put("first_name", username);
-                    metadata.put("surname", surname);
-                    metadata.put("phone", phone);
-                    metadata.put("role", role);
-                    body.put("data", metadata);
-                    
-                    SupabaseHelper.writeJson(connection, body);
-                    int code = connection.getResponseCode();
-                    String response = SupabaseHelper.readResponse(connection);
+                connection = SupabaseHelper.createConnection("/auth/v1/otp", "POST", null);
+                body.put("email", email);
+                body.put("create_user", true);
+                JSONObject metadata = new JSONObject();
+                metadata.put("first_name", username);
+                metadata.put("surname", surname);
+                metadata.put("phone", phone);
+                metadata.put("role", role);
+                body.put("data", metadata);
+                SupabaseHelper.writeJson(connection, body);
+                int code = connection.getResponseCode();
+                String response = SupabaseHelper.readResponse(connection);
+                connection.disconnect();
+
+                if (code >= 400) {
+                    connection = SupabaseHelper.createConnection("/auth/v1/resend", "POST", null);
+                    JSONObject resendBody = new JSONObject();
+                    resendBody.put("type", "signup");
+                    resendBody.put("email", email);
+                    SupabaseHelper.writeJson(connection, resendBody);
+                    code = connection.getResponseCode();
+                    response = SupabaseHelper.readResponse(connection);
                     connection.disconnect();
-                    
-                    if (code >= 400) {
-                        connection = SupabaseHelper.createConnection("/auth/v1/resend", "POST", null);
-                        JSONObject resendBody = new JSONObject();
-                        resendBody.put("type", "signup");
-                        resendBody.put("email", email);
-                        SupabaseHelper.writeJson(connection, resendBody);
-                        code = connection.getResponseCode();
-                        response = SupabaseHelper.readResponse(connection);
-                        connection.disconnect();
-                    }
-                    
-                    final int finalCode = code;
-                    final String finalResponse = response;
-                    
-                    runOnUiThread(() -> {
-                        if (finalCode >= 200 && finalCode < 300) {
-                            Toast.makeText(this, "6-digit OTP sent to " + email, Toast.LENGTH_SHORT).show();
-                            startResendCooldown();
-                        } else {
-                            btnSendOtp.setEnabled(true);
-                            btnSendOtp.setText("Send / Resend OTP Code");
-                            Toast.makeText(this, "Failed to send OTP: " + finalResponse, Toast.LENGTH_LONG).show();
-                        }
-                    });
-                } else {
-                    connection = SupabaseHelper.createConnection("/auth/v1/otp", "POST", null);
-                    body.put("create_user", true);
-                    String formattedPhone = formatPhone(phone);
-                    body.put("phone", formattedPhone);
-                    
-                    SupabaseHelper.writeJson(connection, body);
-                    int code = connection.getResponseCode();
-                    String response = SupabaseHelper.readResponse(connection);
-                    connection.disconnect();
-                    
-                    final int finalCode = code;
-                    final String finalResponse = response;
-                    
-                    runOnUiThread(() -> {
-                        if (finalCode >= 200 && finalCode < 300) {
-                            Toast.makeText(this, "OTP Sent!", Toast.LENGTH_SHORT).show();
-                            startResendCooldown();
-                        } else {
-                            btnSendOtp.setEnabled(true);
-                            btnSendOtp.setText("Send / Resend OTP Code");
-                            Toast.makeText(this, "Failed to send OTP: " + finalResponse, Toast.LENGTH_LONG).show();
-                        }
-                    });
                 }
 
+                final int finalCode = code;
+                final String finalResponse = response;
+
+                runOnUiThread(() -> {
+                    if (finalCode >= 200 && finalCode < 300) {
+                        Toast.makeText(this, "OTP Sent!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        if (resendTimer != null) resendTimer.cancel();
+                        btnSendOtp.setEnabled(true);
+                        btnSendOtp.setText("Send / Resend OTP Code");
+                        Toast.makeText(this, "Failed to send OTP: " + finalResponse, Toast.LENGTH_LONG).show();
+                    }
+                });
             } catch (Exception e) {
                 runOnUiThread(() -> {
+                    if (resendTimer != null) resendTimer.cancel();
                     btnSendOtp.setEnabled(true);
                     btnSendOtp.setText("Send / Resend OTP Code");
                     Toast.makeText(this, "Error sending OTP: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -202,20 +182,15 @@ public class OtpActivity extends AppCompatActivity {
                 JSONObject body = new JSONObject();
                 body.put("token", enteredCode);
                 
-                if (rbEmailOtp.isChecked()) {
-                    body.put("type", "email");
-                    body.put("email", email);
-                } else {
-                    body.put("type", "sms");
-                    body.put("phone", formatPhone(phone));
-                }
+                body.put("type", "email");
+                body.put("email", email);
 
                 SupabaseHelper.writeJson(connection, body);
                 int code = connection.getResponseCode();
                 String response = SupabaseHelper.readResponse(connection);
                 connection.disconnect();
 
-                if (code >= 400 && rbEmailOtp.isChecked()) {
+                if (code >= 400) {
                     // Fallback to magiclink
                     connection = SupabaseHelper.createConnection("/auth/v1/verify", "POST", null);
                     body.put("type", "magiclink");
@@ -225,7 +200,7 @@ public class OtpActivity extends AppCompatActivity {
                     connection.disconnect();
                     
                     if (code >= 400) {
-                        // Fallback to signup type for newly created users via OTP
+                        // Fallback to signup type
                         connection = SupabaseHelper.createConnection("/auth/v1/verify", "POST", null);
                         body.put("type", "signup");
                         SupabaseHelper.writeJson(connection, body);
@@ -248,27 +223,25 @@ public class OtpActivity extends AppCompatActivity {
                             JSONObject user = data.optJSONObject("user");
                             String userId = user != null ? user.optString("id", "") : "";
 
-                            SupabaseHelper.saveSession(this, accessToken, refreshToken, userId, (username + " " + surname).trim(), role);
+                            SupabaseHelper.saveSession(this, accessToken, refreshToken, userId, null, null);
 
                             Toast.makeText(this, "Verified successfully!", Toast.LENGTH_SHORT).show();
                             
-                            if (!accessToken.isEmpty() && password != null && !password.isEmpty()) {
+                            if (password != null && !password.isEmpty() && !accessToken.isEmpty()) {
                                 new Thread(() -> {
                                     try {
-                                        HttpURLConnection putConn = SupabaseHelper.createConnection("/auth/v1/user", "PUT", accessToken);
-                                        JSONObject putBody = new JSONObject();
-                                        putBody.put("password", password);
-                                        
-                                        JSONObject metadata = new JSONObject();
-                                        metadata.put("first_name", username);
-                                        metadata.put("surname", surname);
-                                        metadata.put("phone", phone);
-                                        metadata.put("role", role);
-                                        putBody.put("data", metadata);
-                                        
-                                        SupabaseHelper.writeJson(putConn, putBody);
-                                        putConn.getResponseCode();
-                                        putConn.disconnect();
+                                        HttpURLConnection userConn = SupabaseHelper.createConnection("/auth/v1/user", "PUT", accessToken);
+                                        JSONObject updateBody = new JSONObject();
+                                        updateBody.put("password", password);
+                                        JSONObject meta = new JSONObject();
+                                        meta.put("first_name", username);
+                                        meta.put("surname", surname);
+                                        meta.put("phone", phone);
+                                        meta.put("role", role);
+                                        updateBody.put("data", meta);
+                                        SupabaseHelper.writeJson(userConn, updateBody);
+                                        userConn.getResponseCode();
+                                        userConn.disconnect();
                                     } catch (Exception ignored) {}
                                 }).start();
                             }

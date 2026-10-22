@@ -419,6 +419,55 @@ public class UserSelectionActivity extends AppCompatActivity {
         }
     }
 
+    private void showContactDeleteMenu(android.view.View anchor, String targetUid) {
+        android.widget.PopupMenu popup = new android.widget.PopupMenu(this, anchor);
+        popup.getMenu().add("Delete Chat & Contact");
+        popup.setOnMenuItemClickListener(item -> {
+            if ("Delete Chat & Contact".equals(item.getTitle())) {
+                new androidx.appcompat.app.AlertDialog.Builder(this)
+                        .setTitle("Delete Contact")
+                        .setMessage("Delete this contact and all chat history?")
+                        .setPositiveButton("Delete", (dialog, which) -> deleteContactAndChat(targetUid))
+                        .setNegativeButton("Cancel", null)
+                        .show();
+            }
+            return true;
+        });
+        popup.show();
+    }
+
+    private void deleteContactAndChat(String targetUid) {
+        String myUid = SupabaseHelper.getUserId(this);
+        String token = SupabaseHelper.getAccessToken(this);
+        if (myUid == null || token == null) return;
+        
+        executor.execute(() -> {
+            try {
+                String encodedMy = SupabaseHelper.encode(myUid);
+                String encodedTarget = SupabaseHelper.encode(targetUid);
+                
+                // Delete messages
+                String endpointMsg = "/rest/v1/messages?or=(and(sender_id.eq." + encodedMy + ",receiver_id.eq." + encodedTarget + "),and(sender_id.eq." + encodedTarget + ",receiver_id.eq." + encodedMy + "))";
+                HttpURLConnection connMsg = SupabaseHelper.createConnection(endpointMsg, "DELETE", token);
+                connMsg.getResponseCode();
+                connMsg.disconnect();
+                
+                // Delete chat request
+                String endpointReq = "/rest/v1/chat_requests?or=(and(sender_id.eq." + encodedMy + ",receiver_id.eq." + encodedTarget + "),and(sender_id.eq." + encodedTarget + ",receiver_id.eq." + encodedMy + "))";
+                HttpURLConnection connReq = SupabaseHelper.createConnection(endpointReq, "DELETE", token);
+                connReq.getResponseCode();
+                connReq.disconnect();
+                
+                runOnUiThread(() -> {
+                    Toast.makeText(this, "Contact deleted", Toast.LENGTH_SHORT).show();
+                    recreate();
+                });
+            } catch (Exception e) {
+                runOnUiThread(() -> Toast.makeText(this, "Failed to delete contact", Toast.LENGTH_SHORT).show());
+            }
+        });
+    }
+
     private void addUserCard(String targetUserId, String targetName, String targetRole, LinearLayout parent, String actionText) {
         if (parent == null) return;
 
@@ -434,8 +483,16 @@ public class UserSelectionActivity extends AppCompatActivity {
         card.setCardBackgroundColor(Color.WHITE);
 
         LinearLayout innerLayout = new LinearLayout(this);
-        innerLayout.setOrientation(LinearLayout.VERTICAL);
+        innerLayout.setOrientation(LinearLayout.HORIZONTAL);
+        innerLayout.setGravity(android.view.Gravity.CENTER_VERTICAL);
         innerLayout.setPadding(40, 36, 40, 36);
+
+        LinearLayout textLayout = new LinearLayout(this);
+        textLayout.setOrientation(LinearLayout.VERTICAL);
+        LinearLayout.LayoutParams textParams = new LinearLayout.LayoutParams(
+                0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.0f
+        );
+        textLayout.setLayoutParams(textParams);
 
         TextView txtName = new TextView(this);
         txtName.setText(targetName);
@@ -448,8 +505,24 @@ public class UserSelectionActivity extends AppCompatActivity {
         txtRole.setTextSize(12f);
         txtRole.setTextColor(Color.parseColor("#6C757D"));
 
-        innerLayout.addView(txtName);
-        innerLayout.addView(txtRole);
+        textLayout.addView(txtName);
+        textLayout.addView(txtRole);
+        innerLayout.addView(textLayout);
+        
+        if (!"Request Chat".equals(actionText)) {
+            TextView btnOptions = new TextView(this);
+            btnOptions.setText("⋮");
+            btnOptions.setTextSize(20f);
+            btnOptions.setTypeface(null, Typeface.BOLD);
+            btnOptions.setTextColor(Color.parseColor("#6C757D"));
+            btnOptions.setPadding(24, 12, 12, 12);
+            btnOptions.setBackgroundResource(R.drawable.selector_regular_button);
+            btnOptions.setBackgroundTintList(android.content.res.ColorStateList.valueOf(Color.TRANSPARENT));
+            
+            btnOptions.setOnClickListener(v -> showContactDeleteMenu(btnOptions, targetUserId));
+            innerLayout.addView(btnOptions);
+        }
+
         card.addView(innerLayout);
 
         card.setOnClickListener(v -> {

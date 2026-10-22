@@ -281,7 +281,7 @@
         android:id="@+id/otp_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Proceed to OTP Verification"
+        android:text="Proceed to Create Password"
         android:background="@drawable/selector_regular_button"
         app:backgroundTint="@null"
         app:layout_constraintBottom_toBottomOf="parent"

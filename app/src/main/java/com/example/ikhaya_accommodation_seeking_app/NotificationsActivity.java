@@ -43,7 +43,7 @@ public class NotificationsActivity extends AppCompatActivity {
         notificationsListContainer =
                 findViewById(R.id.notificationsListContainer);
 
-        Button btnBack = findViewById(R.id.btnBack);
+        android.view.View btnBack = findViewById(R.id.btnBack);
 
         if (btnBack != null) {
             btnBack.setOnClickListener(v -> finish());
@@ -380,15 +380,21 @@ public class NotificationsActivity extends AppCompatActivity {
             accept.setEnabled(false);
             decline.setEnabled(false);
 
-            updateRequestStatus(
-                    request,
-                    "declined",
-                    card,
-                    null,
-                    null,
-                    accept,
-                    decline
-            );
+            card.setVisibility(android.view.View.GONE);
+            executor.execute(() -> {
+                try {
+                    String reqId = request.optString("id", "");
+                    String endpoint = "/rest/v1/chat_requests?id=eq." + SupabaseHelper.encode(reqId);
+                    HttpURLConnection connection = SupabaseHelper.createConnection(
+                            endpoint,
+                            "DELETE",
+                            accessToken
+                    );
+                    int code = connection.getResponseCode();
+                    connection.disconnect();
+                } catch (Exception ignored) {
+                }
+            });
         });
 
         actions.addView(accept);

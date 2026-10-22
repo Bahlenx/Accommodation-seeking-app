@@ -152,6 +152,15 @@ public class CreatePasswordActivity extends AppCompatActivity {
         registerBtn.setOnClickListener(v -> continueRegistration());
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (registerBtn != null) {
+            registerBtn.setEnabled(true);
+            registerBtn.setText("Proceed to OTP Verification");
+        }
+    }
+
     private void continueRegistration() {
         String username = getIntent().getStringExtra("USER_NAME");
         String surname = getIntent().getStringExtra("USER_SURNAME");
@@ -190,10 +199,10 @@ public class CreatePasswordActivity extends AppCompatActivity {
 
         new Thread(() -> {
             try {
-                HttpURLConnection connection = SupabaseHelper.createConnection("/auth/v1/signup", "POST", null);
+                HttpURLConnection connection = SupabaseHelper.createConnection("/auth/v1/otp", "POST", null);
                 JSONObject body = new JSONObject();
                 body.put("email", email);
-                body.put("password", password);
+                body.put("create_user", true);
                 
                 JSONObject metadata = new JSONObject();
                 metadata.put("first_name", username);
@@ -206,30 +215,29 @@ public class CreatePasswordActivity extends AppCompatActivity {
                 int code = connection.getResponseCode();
                 connection.disconnect();
 
-                if (code >= 200 && code < 300) {
-                    runOnUiThread(() -> {
-                        Intent nextIntent = new Intent(CreatePasswordActivity.this, OtpActivity.class);
-                        nextIntent.putExtra("USER_NAME", username);
-                        nextIntent.putExtra("USER_SURNAME", surname);
-                        nextIntent.putExtra("USER_PHONE", phone);
-                        nextIntent.putExtra("USER_EMAIL", email);
-                        nextIntent.putExtra("USER_ROLE", normalizedRole);
-                        nextIntent.putExtra("USER_PASSWORD", password);
-                        nextIntent.putExtra("INITIAL_OTP_SENT", true);
-                        startActivity(nextIntent);
-                    });
-                } else if (code == 400 || code == 422) {
-                    // Unverified user already exists, trigger OTP sending
-                    connection = SupabaseHelper.createConnection("/auth/v1/otp", "POST", null);
-                    JSONObject resendBody = new JSONObject();
-                    resendBody.put("email", email);
-                    resendBody.put("create_user", true);
-                    resendBody.put("data", metadata);
-                    SupabaseHelper.writeJson(connection, resendBody);
+                if (code >= 400) {
+                    // Fallback to signup then resend
+                    connection = SupabaseHelper.createConnection("/auth/v1/signup", "POST", null);
+                    body.put("password", password);
+                    SupabaseHelper.writeJson(connection, body);
                     connection.getResponseCode();
                     connection.disconnect();
                     
+                    connection = SupabaseHelper.createConnection("/auth/v1/resend", "POST", null);
+                    JSONObject resendBody = new JSONObject();
+                    resendBody.put("type", "signup");
+                    resendBody.put("email", email);
+                    SupabaseHelper.writeJson(connection, resendBody);
+                    code = connection.getResponseCode();
+                    connection.disconnect();
+                }
+
+                final int finalCode = code;
+
+                if (finalCode >= 200 && finalCode < 300) {
                     runOnUiThread(() -> {
+                        registerBtn.setEnabled(true);
+                        registerBtn.setText("Proceed to OTP Verification");
                         Intent nextIntent = new Intent(CreatePasswordActivity.this, OtpActivity.class);
                         nextIntent.putExtra("USER_NAME", username);
                         nextIntent.putExtra("USER_SURNAME", surname);
@@ -244,7 +252,7 @@ public class CreatePasswordActivity extends AppCompatActivity {
                     runOnUiThread(() -> {
                         registerBtn.setEnabled(true);
                         registerBtn.setText("Proceed to OTP Verification");
-                        Toast.makeText(this, "Failed to create account (HTTP " + code + ")", Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, "Failed to create account (HTTP " + finalCode + ")", Toast.LENGTH_LONG).show();
                     });
                 }
             } catch (Exception e) {

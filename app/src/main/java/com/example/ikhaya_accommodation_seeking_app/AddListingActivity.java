@@ -119,7 +119,7 @@ public class AddListingActivity extends AppCompatActivity {
         submitButton = findViewById(R.id.btnSubmitListing);
         amenitiesGroup = findViewById(R.id.cgSelectedAmenities);
 
-        View backButton = findViewById(R.id.btnBackAddListing);
+        android.view.View backButton = findViewById(R.id.btnBackAddListing);
         if (backButton != null) {
             backButton.setOnClickListener(v -> finish());
         }
