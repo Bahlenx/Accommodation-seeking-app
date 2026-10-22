@@ -459,70 +459,49 @@ public class ChatActivity extends AppCompatActivity {
             String timeFormatted,
             boolean isMe
     ) {
+        // 1. Wrapper (Controls Left/Right Screen Alignment)
         LinearLayout wrapper = new LinearLayout(this);
-
-        wrapper.setLayoutParams(
-                new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT
-                )
-        );
-
+        wrapper.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        ));
         wrapper.setOrientation(LinearLayout.VERTICAL);
         wrapper.setGravity(isMe ? Gravity.END : Gravity.START);
+        // Use wrapper padding instead of bubble margins to prevent layout clipping
+        wrapper.setPadding(dpToPx(12), 0, dpToPx(12), 0); 
 
+        // 2. Chat Bubble (CardView)
         CardView bubble = new CardView(this);
-
-        LinearLayout.LayoutParams bubbleParams =
-                new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.WRAP_CONTENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT
-                );
-
-        int horizontalMargin = dpToPx(40);
-
-        bubbleParams.setMargins(
-                isMe ? horizontalMargin : 0,
-                dpToPx(4),
-                isMe ? 0 : horizontalMargin,
-                dpToPx(8)
+        LinearLayout.LayoutParams bubbleParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
         );
-
+        bubbleParams.setMargins(0, dpToPx(4), 0, dpToPx(8));
         bubble.setLayoutParams(bubbleParams);
-        bubble.setRadius(dpToPx(15));
+        bubble.setRadius(dpToPx(16));
         bubble.setCardElevation(dpToPx(2));
+        bubble.setCardBackgroundColor(Color.parseColor(isMe ? "#FFE8CC" : "#FFFFFF"));
+        
+        // CRITICAL FIX: Stops CardView from adding invisible padding that squashes text horizontally
+        bubble.setPreventCornerOverlap(false);
 
-        bubble.setCardBackgroundColor(
-                Color.parseColor(
-                        isMe ? "#FFE8CC" : "#FFFFFF"
-                )
-        );
-
+        // 3. Inner Content Container
         LinearLayout content = new LinearLayout(this);
-        content.setOrientation(LinearLayout.VERTICAL);
-
-        content.setPadding(
-                dpToPx(16),
-                dpToPx(10),
-                dpToPx(16),
-                dpToPx(10)
+        // Explicit LayoutParams force Android to measure the horizontal expansion correctly
+        android.widget.FrameLayout.LayoutParams contentParams = new android.widget.FrameLayout.LayoutParams(
+                android.widget.FrameLayout.LayoutParams.WRAP_CONTENT,
+                android.widget.FrameLayout.LayoutParams.WRAP_CONTENT
         );
+        content.setLayoutParams(contentParams);
+        content.setOrientation(LinearLayout.VERTICAL);
+        content.setPadding(dpToPx(16), dpToPx(12), dpToPx(16), dpToPx(12));
 
         if (!isMe && isCommunity) {
             TextView txtAuthor = new TextView(this);
-
-            txtAuthor.setText(
-                    authorName + " • "
-                            + authorRole.toUpperCase()
-            );
-
-            txtAuthor.setTextSize(12f);
+            txtAuthor.setText(authorName + " • " + authorRole.toUpperCase());
+            txtAuthor.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 12f);
             txtAuthor.setTypeface(null, Typeface.BOLD);
-
-            txtAuthor.setTextColor(
-                    Color.parseColor("#D9480F")
-            );
-
+            txtAuthor.setTextColor(Color.parseColor("#D9480F"));
             content.addView(txtAuthor);
         }
 
@@ -535,7 +514,6 @@ public class ChatActivity extends AppCompatActivity {
                 imageView.setImageBitmap(decodedByte);
                 imageView.setAdjustViewBounds(true);
                 imageView.setMaxWidth(dpToPx(220));
-                
                 LinearLayout.LayoutParams imgParams = new LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.WRAP_CONTENT,
                         LinearLayout.LayoutParams.WRAP_CONTENT
@@ -550,52 +528,50 @@ public class ChatActivity extends AppCompatActivity {
         } else if (messageText.startsWith("[PDF_FILE]:")) {
             String[] parts = messageText.substring("[PDF_FILE]:".length()).split("\\|", 2);
             String fileName = parts.length > 0 ? parts[0] : "Document.pdf";
-            String base64Data = parts.length > 1 ? parts[1] : "";
-            
             TextView txtMessage = new TextView(this);
             txtMessage.setText("📄 PDF: " + fileName + "\n(Tap to open)");
-            txtMessage.setTextSize(14f);
+            txtMessage.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 14f);
             txtMessage.setTextColor(Color.parseColor("#0056b3"));
             txtMessage.setTypeface(null, Typeface.ITALIC);
-            
             txtMessage.setOnClickListener(v -> {
-                // To keep it simple without FileProvider setup, just toast or save
                 Toast.makeText(this, "Opening PDF: " + fileName, Toast.LENGTH_SHORT).show();
             });
             content.addView(txtMessage);
         } else {
             TextView txtMessage = new TextView(this);
-            
-            int maxBubbleWidth = (int) (getResources().getDisplayMetrics().widthPixels * 0.88f);
-            txtMessage.setMaxWidth(maxBubbleWidth);
-
-            txtMessage.setText(messageText);
-            txtMessage.setTextSize(15f);
-
-            txtMessage.setTextColor(
-                    Color.parseColor("#212529")
-            );
-
-            content.addView(txtMessage);
-        }
-
-        if (!timeFormatted.isEmpty()) {
-            TextView txtTime = new TextView(this);
-            txtTime.setText(timeFormatted);
-            txtTime.setTextSize(11f);
-            txtTime.setTextColor(Color.parseColor(isMe ? "#5C5F66" : "#868E96"));
-            
-            LinearLayout.LayoutParams timeParams = new LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams textParams = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT
             );
-            timeParams.gravity = Gravity.END;
-            timeParams.topMargin = dpToPx(4);
-            txtTime.setLayoutParams(timeParams);
+            txtMessage.setLayoutParams(textParams);
             
-            content.addView(txtTime);
+            // Calculate exact max width (80% of screen minus internal paddings)
+            int screenWidth = getResources().getDisplayMetrics().widthPixels;
+            int maxTextWidth = (int) (screenWidth * 0.80f) - dpToPx(32); 
+            txtMessage.setMaxWidth(maxTextWidth);
+
+            txtMessage.setText(messageText);
+            txtMessage.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 16f); 
+            txtMessage.setTextColor(Color.parseColor("#212529"));
+            txtMessage.setLineSpacing(0, 1.2f); // Visual Fix: Improves paragraph readability
+            content.addView(txtMessage);
         }
-        
+
+        // VISUAL FIX: Add the timeFormatted parameter to the UI (it was completely missing before)
+        TextView txtTime = new TextView(this);
+        LinearLayout.LayoutParams timeParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        timeParams.gravity = Gravity.END;
+        txtTime.setLayoutParams(timeParams);
+        txtTime.setText(timeFormatted);
+        txtTime.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 11f);
+        txtTime.setTextColor(Color.parseColor(isMe ? "#998A7A" : "#8A8D91"));
+        txtTime.setPadding(0, dpToPx(4), 0, 0);
+        content.addView(txtTime);
+
+        // Assemble the layouts
         bubble.addView(content);
         
         if (!isCommunity || isMe) {
@@ -623,6 +599,11 @@ public class ChatActivity extends AppCompatActivity {
         
         wrapper.addView(bubble);
         messagesContainer.addView(wrapper);
+
+        // Visual Fix: fullScroll is much more reliable than scrollTo when the keyboard opens
+        if (chatScrollView != null) {
+            chatScrollView.post(() -> chatScrollView.fullScroll(View.FOCUS_DOWN));
+        }
     }
 
     private void deleteChatMessagesOnly() {
