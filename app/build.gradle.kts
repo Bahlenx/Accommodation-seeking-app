@@ -67,4 +67,8 @@ dependencies {
     androidTestImplementation(libs.ext.junit)
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("org.osmdroid:osmdroid-android:6.1.20")
+    // Import the Firebase BoM
+    implementation(platform("com.google.firebase:firebase-bom:32.8.0"))
+    // Add Firebase Analytics
+    implementation("com.google.firebase:firebase-analytics")
 }

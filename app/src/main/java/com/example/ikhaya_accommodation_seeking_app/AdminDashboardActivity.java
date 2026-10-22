@@ -3,19 +3,22 @@ package com.example.ikhaya_accommodation_seeking_app;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
+import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -25,19 +28,30 @@ public class AdminDashboardActivity extends AppCompatActivity {
 
     private static final String TAG = "AdminDashboard";
 
-    private TextView tvStatPending, tvTrendPending;
+    private TextView tvStatPending;
     private TextView tvStatActive;
     private TextView tvStatUsers;
     private TextView tvStatTotalProperties;
-    private TextView tvStatReports;
-    private TextView tvTrendReports;
+    private TextView tvClearancePercent;
+    private ProgressBar pbApprovalRatio;
 
     private int pendingCount = 0;
     private int activeCount = 0;
 
-    private JSONArray problemReportsCache = new JSONArray();
-
     private final ExecutorService executor = Executors.newFixedThreadPool(3);
+    
+    private Handler refreshHandler = new Handler(Looper.getMainLooper());
+    private boolean isDashboardVisible = false;
+
+    private final Runnable dataPoll = new Runnable() {
+        @Override
+        public void run() {
+            if (isDashboardVisible) {
+                loadAllDashboardCounts();
+                refreshHandler.postDelayed(this, 10000); // Check every 10 seconds
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,14 +72,13 @@ public class AdminDashboardActivity extends AppCompatActivity {
         setContentView(R.layout.activity_admin_dashboard);
 
         tvStatPending = findViewById(R.id.tvStatPending);
-        tvTrendPending = findViewById(R.id.tvTrendPending);
         tvStatActive = findViewById(R.id.tvStatActive);
         tvStatUsers = findViewById(R.id.tvStatUsers);
         tvStatTotalProperties = findViewById(R.id.tvStatTotalProperties);
-        tvStatReports = findViewById(R.id.tvStatReports);
-        tvTrendReports = findViewById(R.id.tvTrendReports);
+        tvClearancePercent = findViewById(R.id.tvClearancePercent);
+        pbApprovalRatio = findViewById(R.id.pbApprovalRatio);
 
-        Button btnAdminExit = findViewById(R.id.btnAdminExit);
+        View btnAdminLogout = findViewById(R.id.btnAdminLogout);
         TextView tvAdminGreeting = findViewById(R.id.tvAdminGreeting);
 
         SharedPreferences prefs = getSharedPreferences("iKhayaSession", MODE_PRIVATE);
@@ -74,37 +87,146 @@ public class AdminDashboardActivity extends AppCompatActivity {
             adminName = prefs.getString("USER_NAME", "Administrator");
         }
 
-        if (tvAdminGreeting != null) tvAdminGreeting.setText("Logged in: " + adminName);
-        if (btnAdminExit != null) btnAdminExit.setOnClickListener(v -> finish());
+        if (tvAdminGreeting != null) {
+            String firstName = adminName.trim().split("\\s+")[0];
+            tvAdminGreeting.setText("Welcome, " + firstName);
+        }
+        if (btnAdminLogout != null) {
+            btnAdminLogout.setOnClickListener(v -> performLogout());
+        }
 
-        setupMetricCardClickListeners();
+        setupActionCards();
+        updateGraphHighlight();
+    }
+
+    private void updateGraphHighlight() {
+        View barMon = findViewById(R.id.barMonday);
+        View barTue = findViewById(R.id.barTuesday);
+        View barWed = findViewById(R.id.barWednesday);
+        View barThu = findViewById(R.id.barThursday);
+        View barFri = findViewById(R.id.barFriday);
+        View barSat = findViewById(R.id.barSaturday);
+        View barSun = findViewById(R.id.barSunday);
+
+        View[] bars = {null, barSun, barMon, barTue, barWed, barThu, barFri, barSat};
+
+        int inactiveColor = Color.parseColor("#FFD8CC");
+        int activeColor = Color.parseColor("#BA5536");
+
+        for (int i = 1; i < bars.length; i++) {
+            if (bars[i] != null) {
+                if (bars[i].getBackground() != null) {
+                    bars[i].getBackground().setTint(inactiveColor);
+                } else {
+                    bars[i].setBackgroundColor(inactiveColor);
+                }
+                bars[i].getLayoutParams().height = dpToPx(35);
+                bars[i].requestLayout();
+            }
+        }
+
+        Calendar calendar = Calendar.getInstance();
+        int currentDay = calendar.get(Calendar.DAY_OF_WEEK);
+
+        if (bars[currentDay] != null) {
+            if (bars[currentDay].getBackground() != null) {
+                bars[currentDay].getBackground().setTint(activeColor);
+            } else {
+                bars[currentDay].setBackgroundColor(activeColor);
+            }
+            bars[currentDay].getLayoutParams().height = dpToPx(62);
+            bars[currentDay].requestLayout();
+        }
+    }
+
+    private int dpToPx(int dp) {
+        float density = getResources().getDisplayMetrics().density;
+        return Math.round((float) dp * density);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        loadAllDashboardCounts();
+        isDashboardVisible = true;
+        refreshHandler.post(dataPoll);
     }
 
-    private void setupMetricCardClickListeners() {
-        View cardPending = findViewById(R.id.cardPending);
-        if (cardPending != null) {
-            cardPending.setOnClickListener(v -> startActivity(new Intent(this, AdminPendingQueueActivity.class)));
+    @Override
+    protected void onPause() {
+        isDashboardVisible = false;
+        refreshHandler.removeCallbacks(dataPoll);
+        super.onPause();
+    }
+
+    private void setupActionCards() {
+        // Top 4 Metrics Cards
+        View cardMetricPending = findViewById(R.id.cardMetricPending);
+        if (cardMetricPending != null) {
+            cardMetricPending.setOnClickListener(v ->
+                    startActivity(new Intent(this, AdminPendingQueueActivity.class))
+            );
         }
 
-        View cardUsers = findViewById(R.id.cardUsers);
-        if (cardUsers != null) {
-            cardUsers.setOnClickListener(v -> startActivity(new Intent(this, AdminUsersActivity.class)));
+        View cardMetricActive = findViewById(R.id.cardMetricActive);
+        if (cardMetricActive != null) {
+            cardMetricActive.setOnClickListener(v ->
+                    startActivity(new Intent(this, AdminActiveListingsActivity.class))
+            );
+        }
+
+        View cardMetricUsers = findViewById(R.id.cardMetricUsers);
+        if (cardMetricUsers != null) {
+            cardMetricUsers.setOnClickListener(v ->
+                    startActivity(new Intent(this, AdminUsersActivity.class))
+            );
+        }
+
+        View cardMetricIngest = findViewById(R.id.cardMetricIngest);
+        if (cardMetricIngest != null) {
+            cardMetricIngest.setOnClickListener(v ->
+                    startActivity(new Intent(this, AdminActiveListingsActivity.class))
+            );
+        }
+
+        // Moderation Queues Section Cards
+        View cardPending = findViewById(R.id.cardPending);
+        if (cardPending != null) {
+            cardPending.setOnClickListener(v ->
+                    startActivity(new Intent(this, AdminPendingQueueActivity.class))
+            );
         }
 
         View cardActive = findViewById(R.id.cardActive);
         if (cardActive != null) {
-            cardActive.setOnClickListener(v -> startActivity(new Intent(this, AdminActiveListingsActivity.class)));
+            cardActive.setOnClickListener(v ->
+                    startActivity(new Intent(this, AdminActiveListingsActivity.class))
+            );
         }
 
-        View cardProblemReports = findViewById(R.id.cardProblemReports);
-        if (cardProblemReports != null) {
-            cardProblemReports.setOnClickListener(v -> showProblemReportsDialog());
+        View cardUsers = findViewById(R.id.cardUsers);
+        if (cardUsers != null) {
+            cardUsers.setOnClickListener(v ->
+                    startActivity(new Intent(this, AdminUsersActivity.class))
+            );
+        }
+
+        View cardReports = findViewById(R.id.cardReports);
+        if (cardReports != null) {
+            cardReports.setOnClickListener(v ->
+                    startActivity(new Intent(this, AdminReportsActivity.class))
+            );
+        }
+
+        // External Link to Supabase Web Console
+        View rowSupabaseEngine = findViewById(R.id.rowSupabaseEngine);
+        if (rowSupabaseEngine != null) {
+            rowSupabaseEngine.setOnClickListener(v -> {
+                Intent browserIntent = new Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse("https://supabase.com/dashboard")
+                );
+                startActivity(browserIntent);
+            });
         }
     }
 
@@ -112,7 +234,6 @@ public class AdminDashboardActivity extends AppCompatActivity {
         loadPendingCount();
         loadActiveCount();
         loadLiveUsersCount();
-        loadReportsCount();
     }
 
     private void loadPendingCount() {
@@ -126,8 +247,11 @@ public class AdminDashboardActivity extends AppCompatActivity {
                     pendingCount = arr.length();
                     runOnUiThread(this::updateAggregatedMetrics);
                 }
-            } catch (Exception e) { Log.e(TAG, "Error", e); }
-            finally { if (conn != null) conn.disconnect(); }
+            } catch (Exception e) {
+                Log.e(TAG, "Error fetching pending listings", e);
+            } finally {
+                if (conn != null) conn.disconnect();
+            }
         });
     }
 
@@ -142,8 +266,11 @@ public class AdminDashboardActivity extends AppCompatActivity {
                     activeCount = arr.length();
                     runOnUiThread(this::updateAggregatedMetrics);
                 }
-            } catch (Exception e) { Log.e(TAG, "Error", e); }
-            finally { if (conn != null) conn.disconnect(); }
+            } catch (Exception e) {
+                Log.e(TAG, "Error fetching active listings", e);
+            } finally {
+                if (conn != null) conn.disconnect();
+            }
         });
     }
 
@@ -165,102 +292,43 @@ public class AdminDashboardActivity extends AppCompatActivity {
                         if (tvStatUsers != null) tvStatUsers.setText(String.valueOf(count));
                     });
                 }
-            } catch (Exception e) { Log.e(TAG, "Error", e); }
-            finally { if (conn != null) conn.disconnect(); }
-        });
-    }
-
-    private void loadReportsCount() {
-        String token = SupabaseHelper.getAccessToken(this);
-        executor.execute(() -> {
-            HttpURLConnection conn = null;
-            try {
-                conn = SupabaseHelper.createConnection("/rest/v1/reports?select=*&order=created_at.desc", "GET", token);
-                if (conn.getResponseCode() >= 200 && conn.getResponseCode() < 300) {
-                    JSONArray arr = new JSONArray(SupabaseHelper.readResponse(conn));
-                    problemReportsCache = arr;
-                    final int count = arr.length();
-                    runOnUiThread(() -> {
-                        if (tvStatReports != null) tvStatReports.setText(String.valueOf(count));
-                        if (tvTrendReports != null) {
-                            if (count > 0) {
-                                tvTrendReports.setText(count + " pending reports");
-                                tvTrendReports.setTextColor(Color.parseColor("#FB6340"));
-                            } else {
-                                tvTrendReports.setText("No issues reported");
-                                tvTrendReports.setTextColor(Color.parseColor("#2DCE89"));
-                            }
-                        }
-                    });
-                }
-            } catch (Exception e) { Log.e(TAG, "Error loading reports", e); }
-            finally { if (conn != null) conn.disconnect(); }
-        });
-    }
-
-    private void showProblemReportsDialog() {
-        if (problemReportsCache.length() == 0) {
-            new androidx.appcompat.app.AlertDialog.Builder(this)
-                    .setTitle("User Problem Reports")
-                    .setMessage("No problem reports submitted yet.")
-                    .setPositiveButton("OK", null)
-                    .show();
-            return;
-        }
-
-        executor.execute(() -> {
-            String token = SupabaseHelper.getAccessToken(this);
-            java.util.HashMap<String, String> userMap = new java.util.HashMap<>();
-            HttpURLConnection conn = null;
-            try {
-                conn = SupabaseHelper.createConnection("/rest/v1/profiles?select=firebase_uid,full_name,role", "GET", token);
-                if (conn.getResponseCode() >= 200 && conn.getResponseCode() < 300) {
-                    JSONArray profiles = new JSONArray(SupabaseHelper.readResponse(conn));
-                    for (int i = 0; i < profiles.length(); i++) {
-                        JSONObject p = profiles.getJSONObject(i);
-                        userMap.put(p.optString("firebase_uid"), p.optString("full_name") + " (" + p.optString("role") + ")");
-                    }
-                }
-            } catch (Exception ignored) {}
-            finally { if (conn != null) conn.disconnect(); }
-
-            runOnUiThread(() -> {
-                String[] items = new String[problemReportsCache.length()];
-                for (int i = 0; i < problemReportsCache.length(); i++) {
-                    JSONObject report = problemReportsCache.optJSONObject(i);
-                    if (report == null) continue;
-                    
-                    String uid = report.optString("reporter_uid", "Unknown UID");
-                    String reporterInfo = userMap.containsKey(uid) ? userMap.get(uid) : uid;
-                    String date = report.optString("created_at", "").split("T")[0];
-                    String desc = report.optString("description", "No description");
-                    
-                    items[i] = "Date: " + date + "\nReporter: " + reporterInfo + "\n\n" + desc;
-                }
-
-                new androidx.appcompat.app.AlertDialog.Builder(this)
-                        .setTitle("User Problem Reports")
-                        .setItems(items, null)
-                        .setPositiveButton("Close", null)
-                        .show();
-            });
+            } catch (Exception e) {
+                Log.e(TAG, "Error fetching user counts", e);
+            } finally {
+                if (conn != null) conn.disconnect();
+            }
         });
     }
 
     private void updateAggregatedMetrics() {
         if (tvStatPending != null) tvStatPending.setText(String.valueOf(pendingCount));
         if (tvStatActive != null) tvStatActive.setText(String.valueOf(activeCount));
-        if (tvStatTotalProperties != null) tvStatTotalProperties.setText(String.valueOf(pendingCount + activeCount));
 
-        if (tvTrendPending != null) {
-            if (pendingCount > 0) {
-                tvTrendPending.setText(pendingCount + " awaiting review");
-                tvTrendPending.setTextColor(Color.parseColor("#FB6340"));
-            } else {
-                tvTrendPending.setText("All caught up");
-                tvTrendPending.setTextColor(Color.parseColor("#2DCE89"));
-            }
+        int totalProperties = pendingCount + activeCount;
+        if (tvStatTotalProperties != null) {
+            tvStatTotalProperties.setText(String.valueOf(totalProperties));
         }
+
+        if (totalProperties > 0) {
+            int rate = (int) Math.round(((double) activeCount / totalProperties) * 100);
+            if (pbApprovalRatio != null) pbApprovalRatio.setProgress(rate);
+            if (tvClearancePercent != null) tvClearancePercent.setText(rate + "%");
+        } else {
+            if (pbApprovalRatio != null) pbApprovalRatio.setProgress(100);
+            if (tvClearancePercent != null) tvClearancePercent.setText("100%");
+        }
+    }
+
+    private void performLogout() {
+        // Clear cached Supabase credentials
+        SharedPreferences prefs = getSharedPreferences("iKhayaSession", MODE_PRIVATE);
+        prefs.edit().clear().apply();
+
+        // Redirect to LoginActivity and clear back stack
+        Intent intent = new Intent(this, LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
     }
 
     @Override

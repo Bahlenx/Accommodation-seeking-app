@@ -152,7 +152,7 @@ public class LoginActivity extends AppCompatActivity {
                     SupabaseHelper.saveSession(LoginActivity.this, accessToken, refreshToken, userId, null, null);
 
                     // Query profile and determine routing
-                    getUserRole(accessToken, userId);
+                    getUserRole(accessToken, userId, email);
 
                 } else {
                     showLoginError("Login failed: " + extractErrorMessage(response));
@@ -244,7 +244,7 @@ public class LoginActivity extends AppCompatActivity {
     /**
      * Loads the user's role and full name from the profiles table and verifies suspension status.
      */
-    private void getUserRole(String accessToken, String userId) {
+    private void getUserRole(String accessToken, String userId, String email) {
         executor.execute(() -> {
             HttpURLConnection connection = null;
 
@@ -277,10 +277,10 @@ public class LoginActivity extends AppCompatActivity {
 
                         SupabaseHelper.saveSession(LoginActivity.this, null, null, null, finalFullName, finalRole);
 
-                        runOnUiThread(() -> routeUser(finalRole, finalFullName));
+                        runOnUiThread(() -> routeUser(finalRole, finalFullName, email));
                     } else {
                         // Fallback check against the legacy Users table
-                        fallbackToUsersTable(userId, accessToken);
+                        fallbackToUsersTable(userId, accessToken, email);
                     }
                 } else {
                     showLoginError("Could not load account profile: " + extractErrorMessage(response));
@@ -299,7 +299,7 @@ public class LoginActivity extends AppCompatActivity {
     /**
      * Fallback to query the legacy Users table if profiles row is not found.
      */
-    private void fallbackToUsersTable(String userId, String accessToken) {
+    private void fallbackToUsersTable(String userId, String accessToken, String email) {
         try {
             String encodedUserId = URLEncoder.encode(userId, "UTF-8");
             String endpoint = "/rest/v1/Users?select=user_role,firstName,surname,is_suspended&id=eq." + encodedUserId + "&limit=1";
@@ -328,7 +328,7 @@ public class LoginActivity extends AppCompatActivity {
 
                     SupabaseHelper.saveSession(LoginActivity.this, null, null, null, finalFullName, finalRole);
 
-                    runOnUiThread(() -> routeUser(finalRole, finalFullName));
+                    runOnUiThread(() -> routeUser(finalRole, finalFullName, email));
                 } else {
                     showLoginError("Your account profile was not found in either table.");
                 }
@@ -345,15 +345,15 @@ public class LoginActivity extends AppCompatActivity {
      * Routes the user to their respective dashboard based on their role.
      * Passes the user's full name to AdminDashboardActivity so the header greets them personally.
      */
-    private void routeUser(String role, String fullName) {
+    private void routeUser(String role, String fullName, String email) {
         Intent intent;
 
-        if ("landlord".equalsIgnoreCase(role)) {
-            intent = new Intent(LoginActivity.this, LandlordDashboardActivity.class);
-        } else if ("admin".equalsIgnoreCase(role)) {
+        if ("admin".equalsIgnoreCase(role) || (email != null && email.equalsIgnoreCase("admin@ikhaya.com"))) {
             intent = new Intent(LoginActivity.this, AdminDashboardActivity.class);
             intent.putExtra("USER_ROLE", "ADMIN");
             intent.putExtra("USER_NAME", fullName);
+        } else if ("landlord".equalsIgnoreCase(role)) {
+            intent = new Intent(LoginActivity.this, LandlordDashboardActivity.class);
         } else {
             intent = new Intent(LoginActivity.this, HomeActivity.class);
         }

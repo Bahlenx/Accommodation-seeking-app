@@ -32,7 +32,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:text="Pending Approvals"
+            android:text="@string/admin_pending_listings"
             android:textColor="#FFFFFF"
             android:textSize="20sp"
             android:textStyle="bold" />
@@ -53,7 +53,7 @@
             android:background="@android:color/transparent"
             android:drawableStart="@android:drawable/ic_menu_search"
             android:drawablePadding="12dp"
-            android:hint="Search property or landlord..."
+            android:hint="@string/hint_search_property_landlord"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
             android:singleLine="true"
@@ -81,7 +81,7 @@
                 android:layout_height="36dp"
                 android:layout_marginEnd="8dp"
                 android:backgroundTint="#5E72E4"
-                android:text="Newest First"
+                android:text="@string/admin_sort_newest"
                 android:textColor="#FFFFFF"
                 android:textSize="12sp" />
 
@@ -91,7 +91,7 @@
                 android:layout_height="36dp"
                 android:layout_marginEnd="8dp"
                 android:backgroundTint="#E9ECEF"
-                android:text="Oldest First (Urgent)"
+                android:text="@string/admin_sort_oldest"
                 android:textColor="#32325D"
                 android:textSize="12sp" />
         </LinearLayout>
@@ -104,7 +104,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
         android:padding="16dp"
-        android:text="No pending listings found."
+        android:text="@string/admin_no_pending_listings"
         android:textAlignment="center"
         android:textColor="#8898AA"
         android:textSize="16sp"

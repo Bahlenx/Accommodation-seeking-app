@@ -625,4 +625,33 @@
 
     <string name="property_type" translatable="false">Property Type</string>
     <string name="rental_applications" translatable="false">Rental Applications</string>
+
+    <!-- New Admin and Map Features Strings -->
+    <string name="search_location_hint">Search location...</string>
+    <string name="drop_move_pin">Drop and move pin</string>
+    <string name="use_my_gps">Use my GPS</string>
+    <string name="no_pin_dropped">No pin dropped</string>
+    <string name="listing_purpose">Listing purpose</string>
+    <string name="for_rent">For Rent</string>
+    <string name="for_sale">For Sale</string>
+    <string name="submit_for_review">Submit for review</string>
+    <string name="admin_active_listings">Admin Active Listings</string>
+    <string name="hint_search_live_properties">Search live properties...</string>
+    <string name="admin_no_active_listings">No active listings.</string>
+    <string name="admin_pending_listings">Admin Pending Listings</string>
+    <string name="hint_search_property_landlord">Search property or landlord...</string>
+    <string name="admin_sort_newest">Sort Newest</string>
+    <string name="admin_sort_oldest">Sort Oldest</string>
+    <string name="admin_no_pending_listings">No pending listings.</string>
+    <string name="admin_user_directory">Admin User Directory</string>
+    <string name="hint_search_users_admin">Search users...</string>
+    <string name="admin_filter_all">All</string>
+    <string name="admin_status_suspended">Suspended</string>
+    <string name="total_selling_price_r">Total selling price (R)</string>
+    <string name="photos_selected_count">%1$d photos selected</string>
+    <string name="edit_accommodation">Edit Accommodation</string>
+    <string name="submit_changes_for_review">Submit changes for review</string>
+    <string name="desc_map_pin">Map Pin</string>
+    <string name="drag_map_pin_instruction">Drag the map to position the pin exactly over your property</string>
+    <string name="confirm_location_pin">Confirm Location</string>
 </resources>

@@ -63,6 +63,7 @@ public class AdminListingAdapter extends RecyclerView.Adapter<AdminListingAdapte
             intent.putExtra("LISTING_DETAILS", listing.getDetails());
             intent.putExtra("LANDLORD_NAME", listing.getLandlordName());
             intent.putExtra("IMAGE_URL", listing.getImageUrl());
+            intent.putExtra("LISTING_STATUS", listing.getStatus()); 
             context.startActivity(intent);
         });
 
@@ -116,8 +117,12 @@ public class AdminListingAdapter extends RecyclerView.Adapter<AdminListingAdapte
                 // Native OkHttp PATCH
                 SupabaseHelper.patch(endpoint, body, token);
 
-                if ("REJECTED".equalsIgnoreCase(newStatus) && listing.getLandlordUid() != null && !listing.getLandlordUid().isEmpty()) {
-                    sendRejectionNotification(token, listing.getLandlordUid(), listing.getTitle(), reason);
+                if (listing.getLandlordUid() != null && !listing.getLandlordUid().isEmpty()) {
+                    if ("REJECTED".equalsIgnoreCase(newStatus)) {
+                        sendNotification(token, listing.getLandlordUid(), "Listing Rejected: " + listing.getTitle(), "Your accommodation submission was rejected. Reason: " + reason);
+                    } else if ("APPROVED".equalsIgnoreCase(newStatus)) {
+                        sendNotification(token, listing.getLandlordUid(), "Listing Approved: " + listing.getTitle(), "Congratulations! Your property is now live on the platform.");
+                    }
                 }
 
                 mainHandler.post(() -> {
@@ -139,7 +144,7 @@ public class AdminListingAdapter extends RecyclerView.Adapter<AdminListingAdapte
         });
     }
 
-    private void sendRejectionNotification(String token, String landlordUid, String propertyTitle, String reason) {
+    private void sendNotification(String token, String landlordUid, String title, String message) {
         HttpURLConnection conn = null;
         try {
             conn = SupabaseHelper.createConnection("/rest/v1/notifications", "POST", token);
@@ -147,8 +152,8 @@ public class AdminListingAdapter extends RecyclerView.Adapter<AdminListingAdapte
 
             JSONObject notif = new JSONObject();
             notif.put("user_uid", landlordUid);
-            notif.put("title", "Listing Rejected: " + propertyTitle);
-            notif.put("message", "Your accommodation submission was rejected. Reason: " + reason);
+            notif.put("title", title);
+            notif.put("message", message);
 
             SupabaseHelper.writeJson(conn, notif);
             conn.getResponseCode();

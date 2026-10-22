@@ -1,4 +1,3 @@
-
 package com.example.ikhaya_accommodation_seeking_app;
 
 import android.app.DatePickerDialog;
@@ -87,11 +86,8 @@ public class PropertyDetailsActivity extends AppCompatActivity {
     private String priceText = "";
     private String propertyType = "Room";
     private boolean isForSale = false;
-    private boolean listingLoaded = false;
-    private boolean viewingSubmitting = false;
 
-    private final ExecutorService executor =
-            Executors.newFixedThreadPool(2);
+    private final ExecutorService executor = Executors.newFixedThreadPool(2);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,75 +95,46 @@ public class PropertyDetailsActivity extends AppCompatActivity {
 
         Configuration.getInstance().load(
                 getApplicationContext(),
-                PreferenceManager.getDefaultSharedPreferences(
-                        getApplicationContext()
-                )
+                PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
         );
 
-        Configuration.getInstance().setUserAgentValue(
-                getPackageName()
-        );
+        Configuration.getInstance().setUserAgentValue(getPackageName());
 
         setContentView(R.layout.activity_property_details);
 
-        View detailsRoot =
-                findViewById(R.id.propertyDetailsRoot);
-
-        View floatingBookingBar =
-                findViewById(R.id.floatingBookingBar);
+        // Window insets adjustment to float booking pill cleanly above system gesture bar
+        View detailsRoot = findViewById(R.id.propertyDetailsRoot);
+        View floatingBookingBar = findViewById(R.id.floatingBookingBar);
 
         if (floatingBookingBar != null) {
-            floatingBookingBar.setPadding(
-                    dpToPx(18), 0, dpToPx(18), 0
-            );
+            floatingBookingBar.setPadding(dpToPx(18), 0, dpToPx(18), 0);
 
             if (detailsRoot != null) {
-                ViewCompat.setOnApplyWindowInsetsListener(
-                        detailsRoot,
-                        (v, insets) -> {
-                            Insets navBar = insets.getInsets(
-                                    WindowInsetsCompat.Type.navigationBars()
-                            );
+                ViewCompat.setOnApplyWindowInsetsListener(detailsRoot, (v, insets) -> {
+                    Insets navBar = insets.getInsets(WindowInsetsCompat.Type.navigationBars());
 
-                            if (floatingBookingBar.getLayoutParams()
-                                    instanceof CoordinatorLayout.LayoutParams) {
+                    if (floatingBookingBar.getLayoutParams() instanceof CoordinatorLayout.LayoutParams) {
+                        CoordinatorLayout.LayoutParams lp =
+                                (CoordinatorLayout.LayoutParams) floatingBookingBar.getLayoutParams();
+                        int baseMarginPx = dpToPx(16);
+                        lp.bottomMargin = navBar.bottom + baseMarginPx;
+                        floatingBookingBar.setLayoutParams(lp);
+                        floatingBookingBar.setPadding(dpToPx(18), 0, dpToPx(18), 0);
+                    }
 
-                                CoordinatorLayout.LayoutParams lp =
-                                        (CoordinatorLayout.LayoutParams)
-                                                floatingBookingBar.getLayoutParams();
-
-                                lp.bottomMargin =
-                                        navBar.bottom + dpToPx(16);
-
-                                floatingBookingBar.setLayoutParams(lp);
-
-                                floatingBookingBar.setPadding(
-                                        dpToPx(18), 0, dpToPx(18), 0
-                                );
-                            }
-
-                            return WindowInsetsCompat.CONSUMED;
-                        }
-                );
+                    return WindowInsetsCompat.CONSUMED;
+                });
             }
         }
 
         listingId = getIntent().getStringExtra("LISTING_ID");
-
-        if (listingId == null || listingId.trim().isEmpty()) {
+        if (listingId == null) {
             listingId = getIntent().getStringExtra("listingId");
         }
 
-        if (getIntent().hasExtra("latitude")
-                && getIntent().hasExtra("longitude")) {
-
-            verifiedLatitude = getIntent().getDoubleExtra(
-                    "latitude", Double.NaN
-            );
-
-            verifiedLongitude = getIntent().getDoubleExtra(
-                    "longitude", Double.NaN
-            );
+        if (getIntent().hasExtra("latitude") && getIntent().hasExtra("longitude")) {
+            verifiedLatitude = getIntent().getDoubleExtra("latitude", Double.NaN);
+            verifiedLongitude = getIntent().getDoubleExtra("longitude", Double.NaN);
         }
 
         initializeViews();
@@ -178,12 +145,6 @@ public class PropertyDetailsActivity extends AppCompatActivity {
 
         if (listingId != null && !listingId.trim().isEmpty()) {
             loadListingFromSupabase();
-        } else {
-            Toast.makeText(
-                    this,
-                    "Property ID is missing.",
-                    Toast.LENGTH_LONG
-            ).show();
         }
     }
 
@@ -204,7 +165,6 @@ public class PropertyDetailsActivity extends AppCompatActivity {
         btnTranslate = findViewById(R.id.btnTranslate);
 
         View btnBack = findViewById(R.id.btnBack);
-
         if (btnBack != null) {
             btnBack.setOnClickListener(v -> finish());
         }
@@ -223,9 +183,7 @@ public class PropertyDetailsActivity extends AppCompatActivity {
             propertyDescription.setText("");
         }
 
-        Locale currentLocale =
-                getResources().getConfiguration().getLocales().get(0);
-
+        Locale currentLocale = getResources().getConfiguration().getLocales().get(0);
         String currentLang = currentLocale.getLanguage();
 
         if (btnTranslate != null) {
@@ -241,29 +199,30 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                     if (txtPropertyName != null) {
                         txtPropertyName.setText(propertyName);
                     }
-
                     if (propertyDescription != null) {
-                        propertyDescription.setText(
-                                originalDescription
-                        );
+                        propertyDescription.setText(originalDescription);
                     }
-
-                    btnTranslate.setText(
-                            getString(
-                                    R.string.translate_to_language,
-                                    getLanguageDisplayName(currentLang)
-                            )
-                    );
-
+                    btnTranslate.setText(getString(R.string.translate_to_language, getLanguageDisplayName(currentLang)));
                     isTranslated = false;
                     return;
                 }
 
                 if (!cachedTranslatedDescription.isEmpty()) {
-                    displayTranslation(
-                            cachedTranslatedDescription
-                    );
-
+                    String[] parts = cachedTranslatedDescription.split(" ::: ");
+                    if (parts.length >= 2) {
+                        if (txtPropertyName != null) {
+                            txtPropertyName.setText(parts[0].trim());
+                        }
+                        if (propertyDescription != null) {
+                            propertyDescription.setText(parts[1].trim());
+                        }
+                    } else {
+                        if (propertyDescription != null) {
+                            propertyDescription.setText(cachedTranslatedDescription);
+                        }
+                    }
+                    btnTranslate.setText(R.string.show_original);
+                    isTranslated = true;
                     return;
                 }
 
@@ -273,8 +232,7 @@ public class PropertyDetailsActivity extends AppCompatActivity {
 
                 btnTranslate.setEnabled(false);
 
-                String textToTranslate =
-                        propertyName + " ::: " + originalDescription;
+                String textToTranslate = propertyName + " ::: " + originalDescription;
 
                 GeminiTranslator.translate(
                         textToTranslate,
@@ -282,48 +240,38 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                         new GeminiTranslator.TranslationCallback() {
                             @Override
                             public void onSuccess(String result) {
-                                runOnUiThread(() -> {
-                                    if (isFinishing() || isDestroyed()) {
-                                        return;
+                                if (progressTranslate != null) {
+                                    progressTranslate.setVisibility(View.GONE);
+                                }
+                                btnTranslate.setEnabled(true);
+                                cachedTranslatedDescription = result;
+
+                                String[] parts = result.split(" ::: ");
+                                if (parts.length >= 2) {
+                                    if (txtPropertyName != null) {
+                                        txtPropertyName.setText(parts[0].trim());
                                     }
-
-                                    if (progressTranslate != null) {
-                                        progressTranslate.setVisibility(
-                                                View.GONE
-                                        );
+                                    if (propertyDescription != null) {
+                                        propertyDescription.setText(parts[1].trim());
                                     }
-
-                                    btnTranslate.setEnabled(true);
-                                    cachedTranslatedDescription = result;
-
-                                    displayTranslation(result);
-                                });
+                                } else {
+                                    if (propertyDescription != null) {
+                                        propertyDescription.setText(result);
+                                    }
+                                }
+                                btnTranslate.setText(R.string.show_original);
+                                isTranslated = true;
                             }
 
                             @Override
                             public void onError(String errorMessage) {
-                                runOnUiThread(() -> {
-                                    if (isFinishing() || isDestroyed()) {
-                                        return;
-                                    }
-
-                                    if (progressTranslate != null) {
-                                        progressTranslate.setVisibility(
-                                                View.GONE
-                                        );
-                                    }
-
-                                    btnTranslate.setEnabled(true);
-
-                                    Toast.makeText(
-                                            PropertyDetailsActivity.this,
-                                            getString(
-                                                    R.string.translation_failed,
-                                                    errorMessage
-                                            ),
-                                            Toast.LENGTH_SHORT
-                                    ).show();
-                                });
+                                if (progressTranslate != null) {
+                                    progressTranslate.setVisibility(View.GONE);
+                                }
+                                btnTranslate.setEnabled(true);
+                                Toast.makeText(PropertyDetailsActivity.this,
+                                        getString(R.string.translation_failed, errorMessage),
+                                        Toast.LENGTH_SHORT).show();
                             }
                         }
                 );
@@ -331,35 +279,8 @@ public class PropertyDetailsActivity extends AppCompatActivity {
         }
     }
 
-    private void displayTranslation(String result) {
-        String[] parts = result.split(" ::: ", 2);
-
-        if (parts.length >= 2) {
-            if (txtPropertyName != null) {
-                txtPropertyName.setText(parts[0].trim());
-            }
-
-            if (propertyDescription != null) {
-                propertyDescription.setText(parts[1].trim());
-            }
-        } else if (propertyDescription != null) {
-            propertyDescription.setText(result);
-        }
-
-        if (btnTranslate != null) {
-            btnTranslate.setText(R.string.show_original);
-        }
-
-        isTranslated = true;
-    }
-
-    private void populateChipGroup(
-            ChipGroup group,
-            Object rawValues
-    ) {
-        if (group == null
-                || rawValues == null
-                || rawValues == JSONObject.NULL) {
+    private void populateChipGroup(ChipGroup group, Object rawValues) {
+        if (group == null || rawValues == null || rawValues == JSONObject.NULL) {
             return;
         }
 
@@ -367,16 +288,12 @@ public class PropertyDetailsActivity extends AppCompatActivity {
 
         if (rawValues instanceof JSONArray) {
             JSONArray values = (JSONArray) rawValues;
-
             for (int i = 0; i < values.length(); i++) {
                 addChip(group, values.optString(i, ""));
             }
-
         } else {
             String raw = String.valueOf(rawValues).trim();
-
-            if (raw.isEmpty()
-                    || "null".equalsIgnoreCase(raw)) {
+            if (raw.isEmpty() || "null".equalsIgnoreCase(raw)) {
                 return;
             }
 
@@ -392,47 +309,27 @@ public class PropertyDetailsActivity extends AppCompatActivity {
         }
 
         Chip chip = new Chip(this);
-
         chip.setText(value.trim());
         chip.setClickable(false);
         chip.setCheckable(false);
-
-        chip.setChipBackgroundColor(
-                ColorStateList.valueOf(Color.WHITE)
-        );
-
-        chip.setTextColor(
-                Color.parseColor("#1F1614")
-        );
-
+        chip.setChipBackgroundColor(ColorStateList.valueOf(Color.parseColor("#FFFFFF")));
+        chip.setTextColor(Color.parseColor("#1F1614"));
         chip.setTextSize(12);
-
         group.addView(chip);
     }
 
     private void setupButtons() {
-        Button btnGetDirections =
-                findViewById(R.id.btnGetDirections);
-
-        View btnOpenMap =
-                findViewById(R.id.btnOpenMap);
-
-        View btnSave =
-                findViewById(R.id.btnSave);
-
-        View btnContact =
-                findViewById(R.id.btnContactLandlord);
+        Button btnGetDirections = findViewById(R.id.btnGetDirections);
+        View btnOpenMap = findViewById(R.id.btnOpenMap);
+        View btnSave = findViewById(R.id.btnSave);
+        View btnContact = findViewById(R.id.btnContactLandlord);
 
         if (btnGetDirections != null) {
-            btnGetDirections.setOnClickListener(
-                    v -> launchTurnByTurnNavigation()
-            );
+            btnGetDirections.setOnClickListener(v -> launchTurnByTurnNavigation());
         }
 
         if (btnOpenMap != null) {
-            btnOpenMap.setOnClickListener(
-                    v -> openLocationInMaps(false)
-            );
+            btnOpenMap.setOnClickListener(v -> openLocationInMaps(false));
         }
 
         if (btnSave != null) {
@@ -440,61 +337,34 @@ public class PropertyDetailsActivity extends AppCompatActivity {
         }
 
         if (btnContact != null) {
-            btnContact.setOnClickListener(
-                    v -> contactLandlord()
-            );
+            btnContact.setOnClickListener(v -> contactLandlord());
         }
     }
 
     private void setupRoleViews() {
-        boolean isLandlord = getIntent().getBooleanExtra(
-                "isLandlord",
-                false
-        );
+        boolean isLandlord = getIntent().getBooleanExtra("isLandlord", false);
 
-        View btnContactLandlord =
-                findViewById(R.id.btnContactLandlord);
-
-        Button btnEditListing =
-                findViewById(R.id.btnEditListing);
-
-        btnApplyToRent =
-                findViewById(R.id.btnApplyToRent);
+        View btnContactLandlord = findViewById(R.id.btnContactLandlord);
+        Button btnEditListing = findViewById(R.id.btnEditListing);
+        btnApplyToRent = findViewById(R.id.btnApplyToRent);
 
         if (isLandlord) {
-            if (btnContactLandlord != null) {
-                btnContactLandlord.setVisibility(View.GONE);
-            }
-
-            if (btnApplyToRent != null) {
-                btnApplyToRent.setVisibility(View.GONE);
-            }
+            if (btnContactLandlord != null) btnContactLandlord.setVisibility(View.GONE);
+            if (btnApplyToRent != null) btnApplyToRent.setVisibility(View.GONE);
 
             if (btnEditListing != null) {
                 btnEditListing.setVisibility(View.VISIBLE);
-
                 btnEditListing.setOnClickListener(v -> {
-                    Intent intent = new Intent(
-                            this,
-                            AddListingActivity.class
-                    );
-
-                    intent.putExtra("isEditing", true);
-                    intent.putExtra("listingId", listingId);
-                    intent.putExtra("propertyName", propertyName);
-
-                    startActivity(intent);
+                    Intent editIntent = new Intent(this, AddListingActivity.class);
+                    editIntent.putExtra("isEditing", true);
+                    editIntent.putExtra("listingId", listingId);
+                    editIntent.putExtra("propertyName", propertyName);
+                    startActivity(editIntent);
                 });
             }
-
         } else {
-            if (btnContactLandlord != null) {
-                btnContactLandlord.setVisibility(View.VISIBLE);
-            }
-
-            if (btnEditListing != null) {
-                btnEditListing.setVisibility(View.GONE);
-            }
+            if (btnContactLandlord != null) btnContactLandlord.setVisibility(View.VISIBLE);
+            if (btnEditListing != null) btnEditListing.setVisibility(View.GONE);
 
             if (btnApplyToRent != null) {
                 btnApplyToRent.setVisibility(View.VISIBLE);
@@ -504,74 +374,25 @@ public class PropertyDetailsActivity extends AppCompatActivity {
     }
 
     private void updateActionButtonsForOffering() {
-        if (btnApplyToRent == null) {
-            return;
-        }
+        if (btnApplyToRent == null) return;
 
         if (isForSale) {
-            btnApplyToRent.setText(
-                    R.string.btn_book_site_visit
-            );
-
-            if (tvTermsSubtitle != null) {
-                tvTermsSubtitle.setText(
-                        R.string.terms_sale_subtitle
-                );
-            }
-
-            if (tvVerifiedBadge != null) {
-                tvVerifiedBadge.setText(
-                        R.string.verified_property_badge
-                );
-            }
-
-            if (tvContactLabel != null) {
-                tvContactLabel.setText(
-                        R.string.contact_seller
-                );
-            }
-
+            btnApplyToRent.setText(R.string.btn_book_site_visit);
+            if (tvTermsSubtitle != null) tvTermsSubtitle.setText(R.string.terms_sale_subtitle);
+            if (tvVerifiedBadge != null) tvVerifiedBadge.setText(R.string.verified_property_badge);
+            if (tvContactLabel != null) tvContactLabel.setText(R.string.contact_seller);
         } else {
-            btnApplyToRent.setText(
-                    R.string.btn_schedule_viewing_action
-            );
-
-            if (tvTermsSubtitle != null) {
-                tvTermsSubtitle.setText(
-                        R.string.terms_rent_subtitle
-                );
-            }
-
-            if (tvVerifiedBadge != null) {
-                tvVerifiedBadge.setText(
-                        R.string.verified_rental_badge
-                );
-            }
-
-            if (tvContactLabel != null) {
-                tvContactLabel.setText(
-                        R.string.contact_caretaker
-                );
-            }
+            btnApplyToRent.setText(R.string.btn_schedule_viewing_action);
+            if (tvTermsSubtitle != null) tvTermsSubtitle.setText(R.string.terms_rent_subtitle);
+            if (tvVerifiedBadge != null) tvVerifiedBadge.setText(R.string.verified_rental_badge);
+            if (tvContactLabel != null) tvContactLabel.setText(R.string.contact_caretaker);
         }
 
-        btnApplyToRent.setOnClickListener(
-                v -> showActionOptions()
-        );
+        btnApplyToRent.setOnClickListener(v -> showActionOptions());
     }
 
     private void showActionOptions() {
-        if (!listingLoaded) {
-            Toast.makeText(
-                    this,
-                    "Property details are still loading.",
-                    Toast.LENGTH_SHORT
-            ).show();
-            return;
-        }
-
         String[] options;
-
         if (isForSale) {
             options = new String[]{
                     getString(R.string.btn_book_site_visit),
@@ -585,11 +406,7 @@ public class PropertyDetailsActivity extends AppCompatActivity {
         }
 
         new AlertDialog.Builder(this)
-                .setTitle(
-                        propertyName.isEmpty()
-                                ? getString(R.string.app_name)
-                                : propertyName
-                )
+                .setTitle(propertyName.isEmpty() ? getString(R.string.app_name) : propertyName)
                 .setItems(options, (dialog, which) -> {
                     if (which == 0) {
                         showScheduleViewingDialog();
@@ -601,55 +418,22 @@ public class PropertyDetailsActivity extends AppCompatActivity {
     }
 
     private void showScheduleViewingDialog() {
-        if (!listingLoaded
-                || listingId == null
-                || listingId.trim().isEmpty()
-                || landlordUid.trim().isEmpty()) {
+        Calendar cal = Calendar.getInstance();
 
-            Toast.makeText(
-                    this,
-                    "Property or landlord information is not ready.",
-                    Toast.LENGTH_LONG
-            ).show();
-
-            return;
-        }
-
-        if (viewingSubmitting) {
-            Toast.makeText(
-                    this,
-                    "Your viewing request is being submitted.",
-                    Toast.LENGTH_SHORT
-            ).show();
-
-            return;
-        }
-
-        Calendar calendar = Calendar.getInstance();
-
-        DatePickerDialog datePicker = new DatePickerDialog(
+        new DatePickerDialog(
                 this,
                 (view, year, month, dayOfMonth) -> {
                     String selectedDate = String.format(
-                            Locale.US,
+                            Locale.getDefault(),
                             "%04d-%02d-%02d",
-                            year,
-                            month + 1,
-                            dayOfMonth
+                            year, month + 1, dayOfMonth
                     );
-
                     showTimeSlotPicker(selectedDate);
                 },
-                calendar.get(Calendar.YEAR),
-                calendar.get(Calendar.MONTH),
-                calendar.get(Calendar.DAY_OF_MONTH)
-        );
-
-        datePicker.getDatePicker().setMinDate(
-                System.currentTimeMillis() - 1000
-        );
-
-        datePicker.show();
+                cal.get(Calendar.YEAR),
+                cal.get(Calendar.MONTH),
+                cal.get(Calendar.DAY_OF_MONTH)
+        ).show();
     }
 
     private void showTimeSlotPicker(String viewingDate) {
@@ -660,78 +444,32 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                 "Late Afternoon (16:00 - 18:00)"
         };
 
-        String title = isForSale
-                ? "Select Site Inspection Time"
-                : "Select Viewing Time";
+        String title = isForSale ? "Select Site Inspection Time" : "Select Viewing Time";
 
         new AlertDialog.Builder(this)
                 .setTitle(title)
                 .setItems(timeSlots, (dialog, which) -> {
-                    String selectedSlot =
-                            viewingDate + " " + timeSlots[which];
-
-                    submitViewingToSupabase(selectedSlot);
+                    String fullViewingSlot = viewingDate + " " + timeSlots[which];
+                    submitViewingToSupabase(fullViewingSlot);
                 })
                 .show();
     }
 
-    private void submitViewingToSupabase(
-            String formattedViewingTime
-    ) {
-        if (viewingSubmitting) {
-            return;
-        }
-
+    private void submitViewingToSupabase(String formattedViewingTime) {
         String userId = SupabaseHelper.getUserId(this);
+        String accessToken = SupabaseHelper.getAccessToken(this);
 
-        String accessToken =
-                SupabaseHelper.getAccessToken(this);
-
-        if (userId == null || userId.trim().isEmpty()
-                || accessToken == null
-                || accessToken.trim().isEmpty()) {
-
-            Toast.makeText(
-                    this,
-                    "Please log in to schedule a viewing.",
-                    Toast.LENGTH_LONG
-            ).show();
-
+        if (userId == null || userId.isEmpty() || accessToken == null || accessToken.isEmpty()) {
+            showFormError(R.string.please_log_in_to_save);
             return;
         }
-
-        if (!listingLoaded
-                || listingId == null
-                || listingId.trim().isEmpty()
-                || landlordUid.trim().isEmpty()) {
-
-            Toast.makeText(
-                    this,
-                    "Property information is not ready yet.",
-                    Toast.LENGTH_LONG
-            ).show();
-
-            return;
-        }
-
-        if (userId.equals(landlordUid)) {
-            Toast.makeText(
-                    this,
-                    "You cannot book a viewing of your own property.",
-                    Toast.LENGTH_LONG
-            ).show();
-
-            return;
-        }
-
-        viewingSubmitting = true;
 
         executor.execute(() -> {
             HttpURLConnection connection = null;
-
             try {
-                JSONObject body = new JSONObject();
+                connection = SupabaseHelper.createConnection("/rest/v1/viewings", "POST", accessToken);
 
+                JSONObject body = new JSONObject();
                 body.put("tenant_uid", userId);
                 body.put("landlord_uid", landlordUid);
                 body.put("listing_id", listingId);
@@ -740,111 +478,23 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                 body.put("viewing_date", formattedViewingTime);
                 body.put("status", "Pending Host");
 
-                connection = SupabaseHelper.createConnection(
-                        "/rest/v1/viewings",
-                        "POST",
-                        accessToken
-                );
-
-                connection.setRequestProperty(
-                        "Prefer",
-                        "return=representation"
-                );
-
                 SupabaseHelper.writeJson(connection, body);
-
-                int responseCode =
-                        connection.getResponseCode();
-
-                String response =
-                        SupabaseHelper.readResponse(connection);
-
-                Log.d(
-                        TAG,
-                        "Viewing request HTTP "
-                                + responseCode
-                                + ": "
-                                + response
-                );
+                int responseCode = connection.getResponseCode();
 
                 runOnUiThread(() -> {
-                    viewingSubmitting = false;
-
-                    if (isFinishing() || isDestroyed()) {
-                        return;
-                    }
-
-                    if (responseCode >= 200
-                            && responseCode < 300) {
-
-                        String successMessage = isForSale
-                                ? "Your site inspection request was sent successfully."
-                                : "Your viewing request was sent successfully.";
-
-                        new AlertDialog.Builder(this)
-                                .setTitle("Request Sent")
-                                .setMessage(
-                                        successMessage
-                                                + "\n\n"
-                                                + "Property: "
-                                                + propertyName
-                                                + "\n"
-                                                + "Viewing: "
-                                                + formattedViewingTime
-                                                + "\n"
-                                                + "Status: Pending Host"
-                                                + "\n\n"
-                                                + "You can track this request in My Viewings."
-                                )
-                                .setNegativeButton(
-                                        "Stay Here",
-                                        null
-                                )
-                                .setPositiveButton(
-                                        "My Viewings",
-                                        (dialog, which) -> {
-                                            Intent intent = new Intent(
-                                                    PropertyDetailsActivity.this,
-                                                    ViewingsActivity.class
-                                            );
-
-                                            startActivity(intent);
-                                        }
-                                )
-                                .show();
-
+                    if (responseCode >= 200 && responseCode < 300) {
+                        String successMsg = isForSale
+                                ? "Site inspection requested! Check your Viewings tab."
+                                : "Viewing requested! Check your Viewings tab.";
+                        Toast.makeText(this, successMsg, Toast.LENGTH_LONG).show();
                     } else {
-                        Toast.makeText(
-                                this,
-                                "Could not schedule viewing (HTTP "
-                                        + responseCode
-                                        + "). Check Logcat.",
-                                Toast.LENGTH_LONG
-                        ).show();
+                        Toast.makeText(this, "Could not submit appointment. Please try again.", Toast.LENGTH_SHORT).show();
                     }
                 });
 
             } catch (Exception e) {
-                Log.e(
-                        TAG,
-                        "Viewing submission failed",
-                        e
-                );
-
-                runOnUiThread(() -> {
-                    viewingSubmitting = false;
-
-                    if (isFinishing() || isDestroyed()) {
-                        return;
-                    }
-
-                    Toast.makeText(
-                            this,
-                            "Network error requesting appointment.",
-                            Toast.LENGTH_LONG
-                    ).show();
-                });
-
+                Log.e(TAG, "Schedule viewing error", e);
+                runOnUiThread(() -> Toast.makeText(this, "Network error requesting appointment.", Toast.LENGTH_SHORT).show());
             } finally {
                 if (connection != null) {
                     connection.disconnect();
@@ -854,112 +504,54 @@ public class PropertyDetailsActivity extends AppCompatActivity {
     }
 
     private void showApplicationBottomSheet() {
-        BottomSheetDialog dialog =
-                new BottomSheetDialog(this);
-
+        BottomSheetDialog dialog = new BottomSheetDialog(this);
         dialog.setContentView(R.layout.dialog_apply_rental);
 
-        ImageButton btnCloseDialog =
-                dialog.findViewById(R.id.btnCloseDialog);
-
-        TextView dialogTitle =
-                dialog.findViewById(R.id.dialogPropertyTitle);
-
-        EditText etApplicantName =
-                dialog.findViewById(R.id.etApplicantName);
-
-        EditText etIdNumber =
-                dialog.findViewById(R.id.etIdNumber);
-
-        EditText etPhone =
-                dialog.findViewById(R.id.etPhone);
-
-        EditText etEmergencyContact =
-                dialog.findViewById(R.id.etEmergencyContact);
-
-        Spinner spinnerOccupation =
-                dialog.findViewById(R.id.spinnerOccupation);
-
-        TextView tvSelectedMoveInDate =
-                dialog.findViewById(R.id.tvSelectedMoveInDate);
-
-        Spinner spinnerLeaseDuration =
-                dialog.findViewById(R.id.spinnerLeaseDuration);
-
-        Spinner spinnerOccupants =
-                dialog.findViewById(R.id.spinnerOccupants);
-
-        EditText etTenantNote =
-                dialog.findViewById(R.id.etTenantNote);
-
-        CheckBox cbAcceptTerms =
-                dialog.findViewById(R.id.cbAcceptTerms);
-
-        Button btnSubmit =
-                dialog.findViewById(R.id.btnSubmitApplication);
+        ImageButton btnCloseDialog = dialog.findViewById(R.id.btnCloseDialog);
+        TextView dialogTitle = dialog.findViewById(R.id.dialogPropertyTitle);
+        EditText etApplicantName = dialog.findViewById(R.id.etApplicantName);
+        EditText etIdNumber = dialog.findViewById(R.id.etIdNumber);
+        EditText etPhone = dialog.findViewById(R.id.etPhone);
+        EditText etEmergencyContact = dialog.findViewById(R.id.etEmergencyContact);
+        Spinner spinnerOccupation = dialog.findViewById(R.id.spinnerOccupation);
+        TextView tvSelectedMoveInDate = dialog.findViewById(R.id.tvSelectedMoveInDate);
+        Spinner spinnerLeaseDuration = dialog.findViewById(R.id.spinnerLeaseDuration);
+        Spinner spinnerOccupants = dialog.findViewById(R.id.spinnerOccupants);
+        EditText etTenantNote = dialog.findViewById(R.id.etTenantNote);
+        CheckBox cbAcceptTerms = dialog.findViewById(R.id.cbAcceptTerms);
+        Button btnSubmit = dialog.findViewById(R.id.btnSubmitApplication);
 
         if (dialogTitle != null) {
             String title = isForSale
                     ? "Offer / Purchase Enquiry"
-                    : getString(
-                    R.string.application_dialog_title,
-                    propertyName,
-                    priceText
-            );
-
+                    : getString(R.string.application_dialog_title, propertyName, priceText);
             dialogTitle.setText(title);
         }
 
         if (btnCloseDialog != null) {
-            btnCloseDialog.setOnClickListener(v ->
-                    new AlertDialog.Builder(this)
-                            .setTitle(R.string.dialog_discard_title)
-                            .setMessage(R.string.dialog_discard_message)
-                            .setPositiveButton(
-                                    R.string.dialog_btn_discard,
-                                    (d, which) -> dialog.dismiss()
-                            )
-                            .setNegativeButton(
-                                    R.string.dialog_btn_continue,
-                                    null
-                            )
-                            .show()
-            );
+            btnCloseDialog.setOnClickListener(v -> new AlertDialog.Builder(this)
+                    .setTitle(R.string.dialog_discard_title)
+                    .setMessage(R.string.dialog_discard_message)
+                    .setPositiveButton(R.string.dialog_btn_discard, (d, which) -> dialog.dismiss())
+                    .setNegativeButton(R.string.dialog_btn_continue, null)
+                    .show());
         }
 
-        final String[] chosenDate = {
-                getString(R.string.default_move_in_date)
-        };
+        final String[] chosenDate = { getString(R.string.default_move_in_date) };
 
         if (tvSelectedMoveInDate != null) {
             tvSelectedMoveInDate.setOnClickListener(v -> {
-                Calendar calendar = Calendar.getInstance();
-
-                DatePickerDialog picker = new DatePickerDialog(
+                Calendar cal = Calendar.getInstance();
+                new DatePickerDialog(
                         this,
                         (view, year, month, dayOfMonth) -> {
-                            chosenDate[0] = String.format(
-                                    Locale.US,
-                                    "%02d/%02d/%d",
-                                    dayOfMonth,
-                                    month + 1,
-                                    year
-                            );
-
-                            tvSelectedMoveInDate.setText(
-                                    chosenDate[0]
-                            );
+                            chosenDate[0] = String.format(Locale.getDefault(), "%02d/%02d/%d", dayOfMonth, month + 1, year);
+                            tvSelectedMoveInDate.setText(chosenDate[0]);
                         },
-                        calendar.get(Calendar.YEAR),
-                        calendar.get(Calendar.MONTH),
-                        calendar.get(Calendar.DAY_OF_MONTH)
-                );
-
-                picker.getDatePicker().setMinDate(
-                        System.currentTimeMillis() - 1000
-                );
-
-                picker.show();
+                        cal.get(Calendar.YEAR),
+                        cal.get(Calendar.MONTH),
+                        cal.get(Calendar.DAY_OF_MONTH)
+                ).show();
             });
         }
 
@@ -969,21 +561,10 @@ public class PropertyDetailsActivity extends AppCompatActivity {
             }
 
             btnSubmit.setOnClickListener(v -> {
-                String name = etApplicantName != null
-                        ? etApplicantName.getText().toString().trim()
-                        : "";
-
-                String idNum = etIdNumber != null
-                        ? etIdNumber.getText().toString().trim()
-                        : "";
-
-                String phone = etPhone != null
-                        ? etPhone.getText().toString().trim()
-                        : "";
-
-                String emergency = etEmergencyContact != null
-                        ? etEmergencyContact.getText().toString().trim()
-                        : "";
+                String name = etApplicantName != null ? etApplicantName.getText().toString().trim() : "";
+                String idNum = etIdNumber != null ? etIdNumber.getText().toString().trim() : "";
+                String phone = etPhone != null ? etPhone.getText().toString().trim() : "";
+                String emergency = etEmergencyContact != null ? etEmergencyContact.getText().toString().trim() : "";
 
                 if (name.isEmpty()) {
                     showFormError(R.string.err_enter_name);
@@ -995,49 +576,36 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                     return;
                 }
 
-                if (phone.length() != 10
-                        || !phone.startsWith("0")) {
+                if (phone.length() != 10 || !phone.startsWith("0")) {
                     showFormError(R.string.err_enter_phone);
                     return;
                 }
 
-                if (emergency.length() != 10
-                        || !emergency.startsWith("0")) {
+                if (emergency.length() != 10 || !emergency.startsWith("0")) {
                     showFormError(R.string.err_enter_emergency);
                     return;
                 }
 
-                if (cbAcceptTerms != null
-                        && !cbAcceptTerms.isChecked()) {
+                if (cbAcceptTerms != null && !cbAcceptTerms.isChecked()) {
                     showFormError(R.string.err_accept_terms);
                     return;
                 }
 
-                String occupation =
-                        spinnerOccupation != null
-                                && spinnerOccupation.getSelectedItem() != null
-                                ? spinnerOccupation.getSelectedItem().toString()
-                                : getString(R.string.default_occupation);
+                String occupation = (spinnerOccupation != null && spinnerOccupation.getSelectedItem() != null)
+                        ? spinnerOccupation.getSelectedItem().toString()
+                        : getString(R.string.default_occupation);
 
-                String duration =
-                        spinnerLeaseDuration != null
-                                && spinnerLeaseDuration.getSelectedItem() != null
-                                ? spinnerLeaseDuration.getSelectedItem().toString()
-                                : getString(R.string.default_lease_duration);
+                String duration = (spinnerLeaseDuration != null && spinnerLeaseDuration.getSelectedItem() != null)
+                        ? spinnerLeaseDuration.getSelectedItem().toString()
+                        : getString(R.string.default_lease_duration);
 
-                String occupants =
-                        spinnerOccupants != null
-                                && spinnerOccupants.getSelectedItem() != null
-                                ? spinnerOccupants.getSelectedItem().toString()
-                                : getString(R.string.default_occupants);
+                String occupants = (spinnerOccupants != null && spinnerOccupants.getSelectedItem() != null)
+                        ? spinnerOccupants.getSelectedItem().toString()
+                        : getString(R.string.default_occupants);
 
-                String note =
-                        etTenantNote != null
-                                && !etTenantNote.getText()
-                                .toString().trim().isEmpty()
-                                ? etTenantNote.getText()
-                                .toString().trim()
-                                : getString(R.string.default_tenant_note);
+                String note = (etTenantNote != null && !etTenantNote.getText().toString().trim().isEmpty())
+                        ? etTenantNote.getText().toString().trim()
+                        : getString(R.string.default_tenant_note);
 
                 submitRentalApplicationToSupabase(
                         dialog,
@@ -1069,25 +637,15 @@ public class PropertyDetailsActivity extends AppCompatActivity {
             String occupants,
             String note
     ) {
-        String tenantUid =
-                SupabaseHelper.getUserId(this);
-
-        String accessToken =
-                SupabaseHelper.getAccessToken(this);
+        String tenantUid = SupabaseHelper.getUserId(this);
+        String accessToken = SupabaseHelper.getAccessToken(this);
 
         if (tenantUid == null || tenantUid.trim().isEmpty()
-                || accessToken == null
-                || accessToken.trim().isEmpty()
-                || listingId == null
-                || listingId.trim().isEmpty()
-                || landlordUid.trim().isEmpty()) {
+                || accessToken == null || accessToken.trim().isEmpty()
+                || listingId == null || listingId.trim().isEmpty()
+                || landlordUid == null || landlordUid.trim().isEmpty()) {
 
-            Toast.makeText(
-                    this,
-                    R.string.rental_application_missing_details,
-                    Toast.LENGTH_LONG
-            ).show();
-
+            Toast.makeText(this, R.string.rental_application_missing_details, Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -1096,10 +654,8 @@ public class PropertyDetailsActivity extends AppCompatActivity {
 
         executor.execute(() -> {
             HttpURLConnection connection = null;
-
             try {
                 JSONObject body = new JSONObject();
-
                 body.put("listing_id", listingId);
                 body.put("landlord_uid", landlordUid);
                 body.put("tenant_uid", tenantUid);
@@ -1113,102 +669,41 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                 body.put("note", note);
                 body.put("status", "PENDING");
 
-                connection = SupabaseHelper.createConnection(
-                        "/rest/v1/rental_applications",
-                        "POST",
-                        accessToken
-                );
-
+                connection = SupabaseHelper.createConnection("/rest/v1/rental_applications", "POST", accessToken);
                 SupabaseHelper.writeJson(connection, body);
 
-                int responseCode =
-                        connection.getResponseCode();
+                int responseCode = connection.getResponseCode();
+                String response = SupabaseHelper.readResponse(connection);
 
-                String response =
-                        SupabaseHelper.readResponse(connection);
-
-                Log.d(
-                        TAG,
-                        "Rental application HTTP "
-                                + responseCode
-                                + ": "
-                                + response
-                );
+                Log.d(TAG, "Rental application HTTP " + responseCode + ": " + response);
 
                 runOnUiThread(() -> {
-                    if (isFinishing() || isDestroyed()) {
-                        return;
-                    }
+                    if (isFinishing() || isDestroyed()) return;
 
-                    if (responseCode >= 200
-                            && responseCode < 300) {
-
+                    if (responseCode >= 200 && responseCode < 300) {
                         dialog.dismiss();
-
-                        Toast.makeText(
-                                this,
-                                R.string.rental_application_sent,
-                                Toast.LENGTH_LONG
-                        ).show();
+                        Toast.makeText(this, R.string.rental_application_sent, Toast.LENGTH_LONG).show();
 
                         if (btnApplyToRent != null) {
-                            btnApplyToRent.setText(
-                                    R.string.btn_pending_review
-                            );
-
+                            btnApplyToRent.setText(R.string.btn_pending_review);
                             btnApplyToRent.setEnabled(false);
-
-                            btnApplyToRent.setBackgroundTintList(
-                                    ColorStateList.valueOf(Color.GRAY)
-                            );
+                            btnApplyToRent.setBackgroundTintList(ColorStateList.valueOf(Color.GRAY));
                         }
-
                     } else {
                         btnSubmit.setEnabled(true);
-
-                        btnSubmit.setText(
-                                isForSale
-                                        ? "Submit Purchase Offer"
-                                        : getString(R.string.btn_apply_to_rent)
-                        );
-
-                        Toast.makeText(
-                                this,
-                                "Application failed (HTTP "
-                                        + responseCode
-                                        + "). Check Logcat.",
-                                Toast.LENGTH_LONG
-                        ).show();
+                        btnSubmit.setText(isForSale ? "Submit Purchase Offer" : getString(R.string.btn_apply_to_rent));
+                        Toast.makeText(this, "Application failed (HTTP " + responseCode + "). Check Logcat.", Toast.LENGTH_LONG).show();
                     }
                 });
 
             } catch (Exception e) {
-                Log.e(
-                        TAG,
-                        "Rental application submission failed",
-                        e
-                );
-
+                Log.e(TAG, "Rental application submission failed", e);
                 runOnUiThread(() -> {
-                    if (isFinishing() || isDestroyed()) {
-                        return;
-                    }
-
+                    if (isFinishing() || isDestroyed()) return;
                     btnSubmit.setEnabled(true);
-
-                    btnSubmit.setText(
-                            isForSale
-                                    ? "Submit Purchase Offer"
-                                    : getString(R.string.btn_apply_to_rent)
-                    );
-
-                    Toast.makeText(
-                            this,
-                            R.string.rental_application_send_failed,
-                            Toast.LENGTH_LONG
-                    ).show();
+                    btnSubmit.setText(isForSale ? "Submit Purchase Offer" : getString(R.string.btn_apply_to_rent));
+                    Toast.makeText(this, R.string.rental_application_send_failed, Toast.LENGTH_LONG).show();
                 });
-
             } finally {
                 if (connection != null) {
                     connection.disconnect();
@@ -1218,19 +713,12 @@ public class PropertyDetailsActivity extends AppCompatActivity {
     }
 
     private void showFormError(int messageResource) {
-        Toast.makeText(
-                this,
-                messageResource,
-                Toast.LENGTH_SHORT
-        ).show();
+        Toast.makeText(this, messageResource, Toast.LENGTH_SHORT).show();
     }
 
     private void setupEmbeddedMap() {
         mapView = findViewById(R.id.mapView);
-
-        if (mapView == null) {
-            return;
-        }
+        if (mapView == null) return;
 
         XYTileSource tileSource = new XYTileSource(
                 "OpenStreetMapDE",
@@ -1238,9 +726,7 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                 19,
                 256,
                 ".png",
-                new String[]{
-                        "https://tile.openstreetmap.de/"
-                },
+                new String[]{ "https://tile.openstreetmap.de/" },
                 "© OpenStreetMap contributors"
         );
 
@@ -1248,393 +734,153 @@ public class PropertyDetailsActivity extends AppCompatActivity {
         mapView.setMultiTouchControls(true);
         mapView.getController().setZoom(16.0);
 
-        if (!Double.isNaN(verifiedLatitude)
-                && !Double.isNaN(verifiedLongitude)) {
-
-            plotMarkerOnMap(
-                    verifiedLatitude,
-                    verifiedLongitude
-            );
+        if (!Double.isNaN(verifiedLatitude) && !Double.isNaN(verifiedLongitude)) {
+            plotMarkerOnMap(verifiedLatitude, verifiedLongitude);
         }
     }
 
-    private void updateMapCoordinatesFromLocation(
-            String location
-    ) {
-        if (location == null || location.trim().isEmpty()) {
-            return;
-        }
+    private void updateMapCoordinatesFromLocation(String location) {
+        if (location == null || location.trim().isEmpty()) return;
 
         executor.execute(() -> {
             try {
-                Geocoder geocoder = new Geocoder(
-                        this,
-                        Locale.getDefault()
-                );
-
-                List<Address> addresses =
-                        geocoder.getFromLocationName(location, 1);
+                Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+                List<Address> addresses = geocoder.getFromLocationName(location, 1);
 
                 if (addresses != null && !addresses.isEmpty()) {
                     Address address = addresses.get(0);
+                    verifiedLatitude = address.getLatitude();
+                    verifiedLongitude = address.getLongitude();
 
-                    double latitude = address.getLatitude();
-                    double longitude = address.getLongitude();
-
-                    verifiedLatitude = latitude;
-                    verifiedLongitude = longitude;
-
-                    runOnUiThread(() -> {
-                        if (!isFinishing() && !isDestroyed()) {
-                            plotMarkerOnMap(
-                                    latitude,
-                                    longitude
-                            );
-                        }
-                    });
+                    runOnUiThread(() -> plotMarkerOnMap(verifiedLatitude, verifiedLongitude));
                 }
-
             } catch (Exception e) {
-                Log.w(
-                        TAG,
-                        "Could not geocode property location",
-                        e
-                );
+                Log.w(TAG, "Could not geocode property location", e);
             }
         });
     }
 
-    private void plotMarkerOnMap(
-            double latitude,
-            double longitude
-    ) {
-        if (mapView == null) {
-            return;
-        }
+    private void plotMarkerOnMap(double lat, double lon) {
+        if (mapView == null) return;
 
-        GeoPoint point = new GeoPoint(
-                latitude,
-                longitude
-        );
-
+        GeoPoint point = new GeoPoint(lat, lon);
         mapView.getController().setCenter(point);
         mapView.getOverlays().clear();
 
         Marker marker = new Marker(mapView);
-
         marker.setPosition(point);
-
-        marker.setAnchor(
-                Marker.ANCHOR_CENTER,
-                Marker.ANCHOR_BOTTOM
-        );
-
-        marker.setTitle(
-                propertyName.isEmpty()
-                        ? "Property Location"
-                        : propertyName
-        );
-
+        marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+        marker.setTitle(propertyName.isEmpty() ? "Property Location" : propertyName);
         marker.setSnippet(locationText);
-
-        marker.setIcon(
-                ContextCompat.getDrawable(
-                        this,
-                        org.osmdroid.library.R.drawable.marker_default
-                )
-        );
+        marker.setIcon(ContextCompat.getDrawable(this, org.osmdroid.library.R.drawable.marker_default));
 
         mapView.getOverlays().add(marker);
         mapView.invalidate();
     }
 
     private void launchTurnByTurnNavigation() {
-        if (Double.isNaN(verifiedLatitude)
-                || Double.isNaN(verifiedLongitude)
-                || Double.isInfinite(verifiedLatitude)
-                || Double.isInfinite(verifiedLongitude)) {
-
+        if (Double.isNaN(verifiedLatitude) || Double.isNaN(verifiedLongitude)
+                || Double.isInfinite(verifiedLatitude) || Double.isInfinite(verifiedLongitude)) {
             openLocationInMaps(true);
             return;
         }
 
-        Uri navigationUri = Uri.parse(
-                "google.navigation:q="
-                        + verifiedLatitude
-                        + ","
-                        + verifiedLongitude
-                        + "&mode=d"
-        );
+        Uri navigationUri = Uri.parse("google.navigation:q=" + verifiedLatitude + "," + verifiedLongitude + "&mode=d");
+        Intent navigationIntent = new Intent(Intent.ACTION_VIEW, navigationUri);
+        navigationIntent.setPackage("com.google.android.apps.maps");
 
-        Intent navigationIntent = new Intent(
-                Intent.ACTION_VIEW,
-                navigationUri
-        );
-
-        navigationIntent.setPackage(
-                "com.google.android.apps.maps"
-        );
-
-        try {
-            if (navigationIntent.resolveActivity(
-                    getPackageManager()
-            ) != null) {
-
-                startActivity(navigationIntent);
-
-            } else {
-                Uri fallbackUri = Uri.parse(
-                        "https://www.google.com/maps/dir/?api=1"
-                                + "&destination="
-                                + verifiedLatitude
-                                + ","
-                                + verifiedLongitude
-                );
-
-                startActivity(
-                        new Intent(
-                                Intent.ACTION_VIEW,
-                                fallbackUri
-                        )
-                );
-            }
-
-        } catch (Exception e) {
-            Toast.makeText(
-                    this,
-                    "Could not open navigation.",
-                    Toast.LENGTH_SHORT
-            ).show();
+        if (navigationIntent.resolveActivity(getPackageManager()) != null) {
+            startActivity(navigationIntent);
+        } else {
+            Uri fallbackUri = Uri.parse(String.format(Locale.ENGLISH, "geo:%f,%f?q=%f,%f",
+                    verifiedLatitude, verifiedLongitude, verifiedLatitude, verifiedLongitude));
+            startActivity(new Intent(Intent.ACTION_VIEW, fallbackUri));
         }
     }
 
     private void openLocationInMaps(boolean directions) {
-        if (locationText == null
-                || locationText.trim().isEmpty()) {
-
+        if (locationText == null || locationText.trim().isEmpty()) {
             showFormError(R.string.location_not_available);
             return;
         }
 
-        String encodedLocation =
-                Uri.encode(locationText);
-
+        String encodedLocation = Uri.encode(locationText);
         Uri uri = directions
-                ? Uri.parse(
-                "https://www.google.com/maps/dir/?api=1"
-                        + "&destination="
-                        + encodedLocation
-        )
-                : Uri.parse(
-                "https://www.google.com/maps/search/?api=1"
-                        + "&query="
-                        + encodedLocation
-        );
+                ? Uri.parse("https://www.google.com/maps/dir/?api=1&destination=" + encodedLocation)
+                : Uri.parse("https://www.google.com/maps/search/?api=1&query=" + encodedLocation);
 
         try {
-            startActivity(
-                    new Intent(Intent.ACTION_VIEW, uri)
-            );
-
+            startActivity(new Intent(Intent.ACTION_VIEW, uri));
         } catch (Exception e) {
             showFormError(R.string.could_not_open_maps);
         }
     }
 
     private void loadListingFromSupabase() {
-        String accessToken =
-                SupabaseHelper.getAccessToken(this);
-
-        if (accessToken == null
-                || accessToken.trim().isEmpty()) {
-
-            Toast.makeText(
-                    this,
-                    "Please log in again.",
-                    Toast.LENGTH_LONG
-            ).show();
-
-            return;
-        }
+        String accessToken = SupabaseHelper.getAccessToken(this);
 
         executor.execute(() -> {
             HttpURLConnection connection = null;
-
             try {
-                String endpoint =
-                        "/rest/v1/listings?select=*&id=eq."
-                                + URLEncoder.encode(
-                                listingId,
-                                "UTF-8"
-                        ).replace("+", "%20")
-                                + "&limit=1";
+                String endpoint = "/rest/v1/listings?select=*&id=eq."
+                        + URLEncoder.encode(listingId, "UTF-8").replace("+", "%20")
+                        + "&limit=1";
 
-                connection = SupabaseHelper.createConnection(
-                        endpoint,
-                        "GET",
-                        accessToken
-                );
+                connection = SupabaseHelper.createConnection(endpoint, "GET", accessToken);
+                int responseCode = connection.getResponseCode();
+                String response = SupabaseHelper.readResponse(connection);
 
-                int responseCode =
-                        connection.getResponseCode();
-
-                String response =
-                        SupabaseHelper.readResponse(connection);
-
-                if (responseCode < 200
-                        || responseCode >= 300) {
-
-                    Log.e(
-                            TAG,
-                            "Could not load listing. HTTP "
-                                    + responseCode
-                                    + ": "
-                                    + response
-                    );
-
-                    runOnUiThread(() ->
-                            Toast.makeText(
-                                    this,
-                                    "Could not load property details.",
-                                    Toast.LENGTH_LONG
-                            ).show()
-                    );
-
+                if (responseCode < 200 || responseCode >= 300) {
+                    Log.e(TAG, "Could not load listing. HTTP " + responseCode + ": " + response);
                     return;
                 }
 
                 JSONArray listings = new JSONArray(response);
+                if (listings.length() == 0) return;
 
-                if (listings.length() == 0) {
-                    runOnUiThread(() ->
-                            Toast.makeText(
-                                    this,
-                                    "Property not found.",
-                                    Toast.LENGTH_LONG
-                            ).show()
-                    );
+                JSONObject listing = listings.getJSONObject(0);
 
-                    return;
-                }
+                String imageUrl = listing.optString("image_url", "");
+                String name = listing.optString("property_name", "");
+                String price = listing.optString("price", "");
+                String location = listing.optString("location", "");
+                String description = listing.optString("description", "");
+                propertyType = listing.optString("property_type", "Room");
+                String offerType = listing.optString("offer_type", "rent");
 
-                JSONObject listing =
-                        listings.getJSONObject(0);
+                isForSale = "sale".equalsIgnoreCase(offerType)
+                        || "Farm".equalsIgnoreCase(propertyType)
+                        || "Vacant Land".equalsIgnoreCase(propertyType)
+                        || "Land".equalsIgnoreCase(propertyType);
 
-                String imageUrl =
-                        listing.optString("image_url", "");
-
-                String name =
-                        listing.optString("property_name", "");
-
-                String price =
-                        listing.optString("price", "");
-
-                String location =
-                        listing.optString("location", "");
-
-                String description =
-                        listing.optString("description", "");
-
-                propertyType = listing.optString(
-                        "property_type",
-                        "Room"
-                );
-
-                String offerType = listing.optString(
-                        "offer_type",
-                        "rent"
-                );
-
-                isForSale =
-                        "sale".equalsIgnoreCase(offerType)
-                                || "Farm".equalsIgnoreCase(propertyType)
-                                || "Vacant Land".equalsIgnoreCase(propertyType)
-                                || "Land".equalsIgnoreCase(propertyType);
-
-                landlordUid = clean(
-                        listing.optString("landlord_uid", "")
-                );
-
+                landlordUid = listing.optString("landlord_uid", "");
                 propertyName = clean(name);
                 locationText = clean(location);
                 originalDescription = clean(description);
 
-                if (price == null
-                        || price.trim().isEmpty()
-                        || "null".equalsIgnoreCase(price.trim())) {
-
+                if (price == null || price.trim().isEmpty() || "null".equalsIgnoreCase(price.trim())) {
                     priceText = "";
-
                 } else if (isForSale) {
-                    priceText = getString(
-                            R.string.price_for_sale_value,
-                            price
-                    );
-
+                    priceText = getString(R.string.price_for_sale_value, price);
                 } else {
-                    priceText = getString(
-                            R.string.price_per_month_value,
-                            price
-                    );
+                    priceText = getString(R.string.price_per_month_value, price);
                 }
 
-                listingLoaded = true;
-
                 runOnUiThread(() -> {
-                    if (isFinishing() || isDestroyed()) {
-                        return;
-                    }
+                    if (txtPropertyName != null) txtPropertyName.setText(propertyName);
+                    if (txtPropertyPrice != null) txtPropertyPrice.setText(priceText);
+                    if (txtPropertyLocation != null) txtPropertyLocation.setText(locationText);
+                    if (propertyDescription != null) propertyDescription.setText(originalDescription);
 
-                    if (txtPropertyName != null) {
-                        txtPropertyName.setText(propertyName);
-                    }
-
-                    if (txtPropertyPrice != null) {
-                        txtPropertyPrice.setText(priceText);
-                    }
-
-                    if (txtPropertyLocation != null) {
-                        txtPropertyLocation.setText(locationText);
-                    }
-
-                    if (propertyDescription != null) {
-                        propertyDescription.setText(
-                                originalDescription
-                        );
-                    }
-
-                    populateChipGroup(
-                            chipGroupAmenities,
-                            listing.opt("amenities")
-                    );
-
-                    populateChipGroup(
-                            chipGroupRules,
-                            listing.opt("rules")
-                    );
+                    populateChipGroup(chipGroupAmenities, listing.opt("amenities"));
+                    populateChipGroup(chipGroupRules, listing.opt("rules"));
 
                     updateActionButtonsForOffering();
 
-                    Locale locale =
-                            getResources()
-                                    .getConfiguration()
-                                    .getLocales()
-                                    .get(0);
-
-                    if (btnTranslate != null
-                            && !"en".equals(locale.getLanguage())
-                            && !originalDescription.trim().isEmpty()) {
-
+                    Locale locale = getResources().getConfiguration().getLocales().get(0);
+                    if (btnTranslate != null && !"en".equals(locale.getLanguage()) && !originalDescription.trim().isEmpty()) {
                         btnTranslate.setVisibility(View.VISIBLE);
-
-                        btnTranslate.setText(
-                                getString(
-                                        R.string.translate_to_language,
-                                        getLanguageDisplayName(
-                                                locale.getLanguage()
-                                        )
-                                )
-                        );
+                        btnTranslate.setText(getString(R.string.translate_to_language, getLanguageDisplayName(locale.getLanguage())));
                     }
                 });
 
@@ -1642,39 +888,19 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                     loadPropertyImage(imageUrl);
                 }
 
-                double dbLat = listing.optDouble(
-                        "latitude",
-                        Double.NaN
-                );
+                double dbLat = listing.optDouble("latitude", Double.NaN);
+                double dbLon = listing.optDouble("longitude", Double.NaN);
 
-                double dbLon = listing.optDouble(
-                        "longitude",
-                        Double.NaN
-                );
-
-                if (!Double.isNaN(dbLat)
-                        && !Double.isNaN(dbLon)) {
-
+                if (!Double.isNaN(dbLat) && !Double.isNaN(dbLon)) {
                     verifiedLatitude = dbLat;
                     verifiedLongitude = dbLon;
-
-                    runOnUiThread(() -> {
-                        if (!isFinishing() && !isDestroyed()) {
-                            plotMarkerOnMap(dbLat, dbLon);
-                        }
-                    });
-
+                    runOnUiThread(() -> plotMarkerOnMap(verifiedLatitude, verifiedLongitude));
                 } else {
                     updateMapCoordinatesFromLocation(location);
                 }
 
             } catch (Exception e) {
-                Log.e(
-                        TAG,
-                        "Error loading listing details",
-                        e
-                );
-
+                Log.e(TAG, "Error loading listing details", e);
             } finally {
                 if (connection != null) {
                     connection.disconnect();
@@ -1684,63 +910,35 @@ public class PropertyDetailsActivity extends AppCompatActivity {
     }
 
     private void loadPropertyImage(String imageUrl) {
-        if (imageUrl == null
-                || imageUrl.trim().isEmpty()
-                || "null".equalsIgnoreCase(imageUrl.trim())) {
+        if (imageUrl == null || imageUrl.trim().isEmpty() || "null".equalsIgnoreCase(imageUrl.trim())) {
             return;
         }
 
         executor.execute(() -> {
             HttpURLConnection connection = null;
-
             try {
-                connection =
-                        (HttpURLConnection)
-                                new URL(imageUrl.trim())
-                                        .openConnection();
-
+                connection = (HttpURLConnection) new URL(imageUrl.trim()).openConnection();
                 connection.setConnectTimeout(15000);
                 connection.setReadTimeout(20000);
                 connection.setRequestMethod("GET");
                 connection.connect();
 
-                int responseCode =
-                        connection.getResponseCode();
-
-                if (responseCode >= 200
-                        && responseCode < 300) {
-
-                    try (InputStream input =
-                                 connection.getInputStream()) {
-
-                        Bitmap bitmap =
-                                BitmapFactory.decodeStream(input);
-
-                        if (bitmap != null) {
+                int responseCode = connection.getResponseCode();
+                if (responseCode >= 200 && responseCode < 300) {
+                    try (InputStream input = connection.getInputStream()) {
+                        Bitmap bitmap = BitmapFactory.decodeStream(input);
+                        if (bitmap != null && !isFinishing() && !isDestroyed()) {
                             runOnUiThread(() -> {
-                                if (isFinishing() || isDestroyed()) {
-                                    return;
-                                }
-
                                 if (propertyImage != null) {
                                     propertyImage.setImageBitmap(bitmap);
-
-                                    propertyImage.setScaleType(
-                                            ImageView.ScaleType.CENTER_CROP
-                                    );
+                                    propertyImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
                                 }
                             });
                         }
                     }
                 }
-
             } catch (Exception e) {
-                Log.e(
-                        TAG,
-                        "Could not display property image",
-                        e
-                );
-
+                Log.e(TAG, "Could not display property image", e);
             } finally {
                 if (connection != null) {
                     connection.disconnect();
@@ -1751,84 +949,35 @@ public class PropertyDetailsActivity extends AppCompatActivity {
 
     private void saveListing() {
         String userId = SupabaseHelper.getUserId(this);
+        String accessToken = SupabaseHelper.getAccessToken(this);
 
-        String accessToken =
-                SupabaseHelper.getAccessToken(this);
-
-        if (userId == null || userId.isEmpty()
-                || accessToken == null
-                || accessToken.isEmpty()) {
-
+        if (userId == null || userId.isEmpty() || accessToken == null || accessToken.isEmpty()) {
             showFormError(R.string.please_log_in_to_save);
-            return;
-        }
-
-        if (listingId == null || listingId.isEmpty()) {
-            Toast.makeText(
-                    this,
-                    "Property ID is missing.",
-                    Toast.LENGTH_SHORT
-            ).show();
-
             return;
         }
 
         executor.execute(() -> {
             HttpURLConnection connection = null;
-
             try {
-                connection = SupabaseHelper.createConnection(
-                        "/rest/v1/saved_listings",
-                        "POST",
-                        accessToken
-                );
-
+                connection = SupabaseHelper.createConnection("/rest/v1/saved_listings", "POST", accessToken);
                 JSONObject body = new JSONObject();
-
                 body.put("tenant_uid", userId);
                 body.put("listing_id", listingId);
 
                 SupabaseHelper.writeJson(connection, body);
-
-                int responseCode =
-                        connection.getResponseCode();
-
-                String response =
-                        SupabaseHelper.readResponse(connection);
-
-                Log.d(
-                        TAG,
-                        "Save listing HTTP "
-                                + responseCode
-                                + ": "
-                                + response
-                );
+                int responseCode = connection.getResponseCode();
 
                 runOnUiThread(() -> {
-                    if (isFinishing() || isDestroyed()) {
-                        return;
-                    }
-
-                    if (responseCode >= 200
-                            && responseCode < 300) {
-
-                        showFormError(
-                                R.string.accommodation_saved
-                        );
-
+                    if (responseCode >= 200 && responseCode < 300) {
+                        showFormError(R.string.accommodation_saved);
                     } else if (responseCode == 409) {
                         showFormError(R.string.already_saved);
-
                     } else {
-                        showFormError(
-                                R.string.could_not_save_accommodation
-                        );
+                        showFormError(R.string.could_not_save_accommodation);
                     }
                 });
-
             } catch (Exception e) {
                 Log.e(TAG, "Save listing error", e);
-
             } finally {
                 if (connection != null) {
                     connection.disconnect();
@@ -1839,90 +988,35 @@ public class PropertyDetailsActivity extends AppCompatActivity {
 
     private void contactLandlord() {
         String userId = SupabaseHelper.getUserId(this);
+        String accessToken = SupabaseHelper.getAccessToken(this);
 
-        String accessToken =
-                SupabaseHelper.getAccessToken(this);
-
-        if (userId == null || userId.isEmpty()
-                || accessToken == null
-                || accessToken.isEmpty()) {
-
-            showFormError(
-                    R.string.please_log_in_to_contact_landlord
-            );
-
-            return;
-        }
-
-        if (listingId == null || listingId.isEmpty()
-                || landlordUid.trim().isEmpty()) {
-
-            Toast.makeText(
-                    this,
-                    "Landlord information is not available yet.",
-                    Toast.LENGTH_LONG
-            ).show();
-
+        if (userId == null || userId.isEmpty() || accessToken == null || accessToken.isEmpty()) {
+            showFormError(R.string.please_log_in_to_contact_landlord);
             return;
         }
 
         executor.execute(() -> {
             HttpURLConnection connection = null;
-
             try {
-                connection = SupabaseHelper.createConnection(
-                        "/rest/v1/enquiries",
-                        "POST",
-                        accessToken
-                );
-
+                connection = SupabaseHelper.createConnection("/rest/v1/enquiries", "POST", accessToken);
                 JSONObject body = new JSONObject();
-
                 body.put("tenant_uid", userId);
                 body.put("landlord_uid", landlordUid);
                 body.put("listing_id", listingId);
-
-                body.put(
-                        "message",
-                        getString(R.string.default_enquiry_message)
-                );
+                body.put("message", getString(R.string.default_enquiry_message));
 
                 SupabaseHelper.writeJson(connection, body);
-
-                int responseCode =
-                        connection.getResponseCode();
-
-                String response =
-                        SupabaseHelper.readResponse(connection);
-
-                Log.d(
-                        TAG,
-                        "Contact landlord HTTP "
-                                + responseCode
-                                + ": "
-                                + response
-                );
+                int responseCode = connection.getResponseCode();
 
                 runOnUiThread(() -> {
-                    if (isFinishing() || isDestroyed()) {
-                        return;
-                    }
-
-                    if (responseCode >= 200
-                            && responseCode < 300) {
-
+                    if (responseCode >= 200 && responseCode < 300) {
                         showFormError(R.string.enquiry_sent);
-
                     } else {
-                        showFormError(
-                                R.string.could_not_send_enquiry
-                        );
+                        showFormError(R.string.could_not_send_enquiry);
                     }
                 });
-
             } catch (Exception e) {
                 Log.e(TAG, "Contact landlord error", e);
-
             } finally {
                 if (connection != null) {
                     connection.disconnect();
@@ -1932,63 +1026,42 @@ public class PropertyDetailsActivity extends AppCompatActivity {
     }
 
     private String clean(String value) {
-        if (value == null
-                || "null".equalsIgnoreCase(value.trim())) {
+        if (value == null || "null".equalsIgnoreCase(value.trim())) {
             return "";
         }
-
         return value.trim();
     }
 
     private String getLanguageDisplayName(String code) {
         switch (code) {
-            case "zu":
-                return getString(R.string.language_isizulu);
-
-            case "xh":
-                return getString(R.string.language_isixhosa);
-
-            case "st":
-                return getString(R.string.language_sesotho);
-
-            default:
-                return getString(R.string.language_local);
+            case "zu": return getString(R.string.language_isizulu);
+            case "xh": return getString(R.string.language_isixhosa);
+            case "st": return getString(R.string.language_sesotho);
+            default: return getString(R.string.language_local);
         }
     }
 
     private int dpToPx(int dp) {
-        float density =
-                getResources().getDisplayMetrics().density;
-
+        float density = getResources().getDisplayMetrics().density;
         return Math.round(dp * density);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-
-        if (mapView != null) {
-            mapView.onResume();
-        }
+        if (mapView != null) mapView.onResume();
     }
 
     @Override
     protected void onPause() {
-        if (mapView != null) {
-            mapView.onPause();
-        }
-
+        if (mapView != null) mapView.onPause();
         super.onPause();
     }
 
     @Override
     protected void onDestroy() {
-        if (mapView != null) {
-            mapView.onDetach();
-        }
-
+        if (mapView != null) mapView.onDetach();
         executor.shutdownNow();
-
         super.onDestroy();
     }
 }
