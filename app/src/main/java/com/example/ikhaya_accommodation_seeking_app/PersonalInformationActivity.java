@@ -4,6 +4,7 @@ package com.example.ikhaya_accommodation_seeking_app;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
+import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -18,7 +19,7 @@ public class PersonalInformationActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_personal_information);
 
-        Button btnBack = findViewById(R.id.btnBack);
+        View btnBack = findViewById(R.id.btnBack);
 
         txtName = findViewById(R.id.txtName);
         txtEmail = findViewById(R.id.txtEmail);

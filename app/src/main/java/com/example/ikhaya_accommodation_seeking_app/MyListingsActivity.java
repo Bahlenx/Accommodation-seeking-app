@@ -31,6 +31,7 @@ import java.util.concurrent.Executors;
 
 public class MyListingsActivity extends AppCompatActivity {
 
+    private String activeFilter = "ALL";
     private LinearLayout listingsContainer;
     private TextView txtNoListings;
     private final ExecutorService executor =
@@ -50,10 +51,55 @@ public class MyListingsActivity extends AppCompatActivity {
         listingsContainer = findViewById(R.id.myListingsContainer);
         txtNoListings = findViewById(R.id.txtNoListings);
 
-        Button btnBack = findViewById(R.id.btnBack);
+        View btnBack = findViewById(R.id.btnBack);
         btnBack.setOnClickListener(v -> finish());
 
+        String passedFilter = getIntent().getStringExtra("FILTER_STATUS");
+        if (passedFilter != null) {
+            activeFilter = passedFilter;
+        }
+
+        setupBottomNavigation();
         loadMyListings();
+    }
+
+    private void setupBottomNavigation() {
+        View floatingBottomNav = findViewById(R.id.floatingBottomNav);
+        if (floatingBottomNav != null) {
+            floatingBottomNav.setPadding(0, 0, 0, 0);
+
+            View navHome = findViewById(R.id.navHome);
+            if (navHome != null) {
+                navHome.setOnClickListener(v -> {
+                    Intent intent = new Intent(MyListingsActivity.this, LandlordDashboardActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                    startActivity(intent);
+                    finish();
+                });
+            }
+
+            View navListings = findViewById(R.id.navListings);
+            if (navListings != null) {
+                navListings.setOnClickListener(v -> {
+                    View scroll = findViewById(R.id.myListingsScroll);
+                    if (scroll != null) scroll.scrollTo(0, 0);
+                });
+            }
+
+            View navAdd = findViewById(R.id.navAdd);
+            if (navAdd != null) {
+                navAdd.setOnClickListener(v -> startActivity(new Intent(MyListingsActivity.this, AddListingActivity.class)));
+            }
+
+            View navMessages = findViewById(R.id.navMessages);
+            if (navMessages != null) {
+                navMessages.setOnClickListener(v -> {
+                    Intent intent = new Intent(MyListingsActivity.this, UserSelectionActivity.class);
+                    intent.putExtra("isLandlord", true);
+                    startActivity(intent);
+                });
+            }
+        }
     }
 
     @Override
@@ -104,20 +150,29 @@ public class MyListingsActivity extends AppCompatActivity {
 
                 runOnUiThread(() -> {
                     listingsContainer.removeAllViews();
-
-                    if (listings.length() == 0) {
-                        txtNoListings.setText("You haven't added any listings yet.");
-                        txtNoListings.setVisibility(View.VISIBLE);
-                        return;
-                    }
-
-                    txtNoListings.setVisibility(View.GONE);
+                    int visibleCount = 0;
 
                     for (int i = 0; i < listings.length(); i++) {
                         JSONObject listing = listings.optJSONObject(i);
                         if (listing != null) {
+                            String status = firstValue(listing, "status", "availability");
+
+                            if (!activeFilter.equals("ALL") && !activeFilter.equalsIgnoreCase(status)) {
+                                continue;
+                            }
+
                             addListingCard(listing);
+                            visibleCount++;
                         }
+                    }
+
+                    if (visibleCount == 0) {
+                        txtNoListings.setText(activeFilter.equals("ALL") ?
+                                "You haven't added any listings yet." :
+                                "No listings found for this category.");
+                        txtNoListings.setVisibility(View.VISIBLE);
+                    } else {
+                        txtNoListings.setVisibility(View.GONE);
                     }
                 });
 
@@ -169,12 +224,26 @@ public class MyListingsActivity extends AppCompatActivity {
                 "photo"
         );
 
+        String status = firstValue(listing, "status", "availability");
+
         if (propertyName.isEmpty()) propertyName = "Property";
+
+        // Append the status to the title with color coding
+        if ("PENDING".equalsIgnoreCase(status)) {
+            txtListingName.setText(propertyName + " (In Review)");
+            txtListingName.setTextColor(Color.parseColor("#DC3545")); // Red
+        } else if ("REJECTED".equalsIgnoreCase(status)) {
+            txtListingName.setText(propertyName + " (Requires Fixes)");
+            txtListingName.setTextColor(Color.parseColor("#DC3545")); // Red
+        } else {
+            txtListingName.setText(propertyName + " (Live)");
+            txtListingName.setTextColor(Color.parseColor("#2DCE89")); // Green
+        }
+
         if (location.isEmpty()) location = "Location not provided";
         if (price.isEmpty()) price = "0";
         if (rooms.isEmpty()) rooms = "Not specified";
 
-        txtListingName.setText(propertyName);
         txtListingLocation.setText(location);
         txtListingPrice.setText("R" + price + " / month");
         txtListingRooms.setText(rooms + " rooms");
@@ -219,6 +288,19 @@ public class MyListingsActivity extends AppCompatActivity {
                     .setPositiveButton("Delete", (dialog, which) ->
                             deleteListing(listingId))
                     .show();
+        });
+
+        // Make the entire card clickable to preview the listing
+        card.setOnClickListener(v -> {
+            if (listingId.isEmpty()) {
+                showMessage("Listing ID is missing.");
+                return;
+            }
+
+            Intent intent = new Intent(MyListingsActivity.this, PropertyDetailsActivity.class);
+            intent.putExtra("LISTING_ID", listingId);
+            intent.putExtra("isLandlord", true); // Tells the details screen to hide the "Rent" button
+            startActivity(intent);
         });
 
         listingsContainer.addView(card);

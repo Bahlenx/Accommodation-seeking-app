@@ -47,6 +47,7 @@
         <activity android:name=".AdminUsersActivity" android:exported="false" />
         <activity android:name=".AdminPendingQueueActivity" android:exported="false" />
         <activity android:name=".AdminActiveListingsActivity" android:exported="false" />
+        <activity android:name=".AdminReportsActivity" android:exported="false" />
 
         <!-- Listing Management -->
         <activity

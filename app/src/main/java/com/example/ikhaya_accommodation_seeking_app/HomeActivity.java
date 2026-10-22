@@ -137,14 +137,6 @@ public class HomeActivity extends AppCompatActivity {
 
         // 4. Search and Filter triggers
         EditText searchAccommodation = findViewById(R.id.etSearchPlace);
-        View btnFilter = findViewById(R.id.btnSearchSubmit);
-
-        if (btnFilter != null) {
-            btnFilter.setOnClickListener(v -> {
-                FilterBottomSheetDialog filterSheet = new FilterBottomSheetDialog();
-                filterSheet.show(getSupportFragmentManager(), "FilterBottomSheetDialog");
-            });
-        }
 
         if (searchAccommodation != null) {
             searchAccommodation.setOnEditorActionListener((v, actionId, event) -> {
@@ -291,7 +283,7 @@ public class HomeActivity extends AppCompatActivity {
 
         if (!fullName.trim().isEmpty()) {
             String firstName = fullName.trim().split("\\s+")[0];
-            tvHomeGreeting.setText("Hey, " + firstName + "!\nTell us where you want to stay");
+            tvHomeGreeting.setText(getString(R.string.home_greeting_personalized, firstName));
         } else {
             tvHomeGreeting.setText(R.string.home_greeting_default);
         }
@@ -304,8 +296,9 @@ public class HomeActivity extends AppCompatActivity {
         new Thread(() -> {
             HttpURLConnection conn = null;
             try {
+                // Filter feed to only show APPROVED listings
                 conn = SupabaseHelper.createConnection(
-                        "/rest/v1/listings?select=*&order=created_at.desc&limit=20",
+                        "/rest/v1/listings?select=*&status=eq.APPROVED&order=created_at.desc&limit=20",
                         "GET",
                         accessToken
                 );
@@ -483,14 +476,14 @@ public class HomeActivity extends AppCompatActivity {
         public void onBindViewHolder(@NonNull ListingViewHolder holder, int position) {
             JSONObject item = items.get(position);
             String id = item.optString("id", "");
-            String name = item.optString("property_name", "Accommodation");
+            String name = item.optString("property_name", getString(R.string.accommodation));
             String location = item.optString("location", "South Africa");
             String price = item.optString("price", "0");
             String imageUrl = item.optString("image_url", "");
 
             holder.tvTitle.setText(name);
-            holder.tvLocation.setText("📍 " + location);
-            holder.tvPrice.setText("R " + price + " / mo");
+            holder.tvLocation.setText(getString(R.string.listing_location_pin, location));
+            holder.tvPrice.setText(getString(R.string.listing_price_month, price));
 
             holder.ivImage.setImageResource(android.R.drawable.ic_menu_gallery);
             if (!imageUrl.isEmpty()) {

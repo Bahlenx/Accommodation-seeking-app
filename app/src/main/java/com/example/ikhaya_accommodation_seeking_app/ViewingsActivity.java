@@ -268,12 +268,34 @@ public class ViewingsActivity extends AppCompatActivity {
             LinearLayout.LayoutParams contactParams = new LinearLayout.LayoutParams(0, dpToPx(40), 1.0f);
             btnContact.setLayoutParams(contactParams);
             btnContact.setOnClickListener(v -> {
-                if (!landlordPhone.isEmpty()) {
-                    Intent callIntent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + landlordPhone));
-                    startActivity(callIntent);
-                } else {
-                    Toast.makeText(this, "Connecting to host in messages...", Toast.LENGTH_SHORT).show();
+                String landlordUid = item.optString("landlord_uid", "");
+                if (landlordUid.isEmpty()) {
+                    landlordUid = item.optString("landlord_id", "");
                 }
+                if (landlordUid.isEmpty()) {
+                    landlordUid = item.optString("host_uid", "");
+                }
+                String landlordName = item.optString("landlord_name", "Landlord");
+                String propertyTitle = item.optString("property_name", "Accommodation");
+
+                if (landlordUid.isEmpty()) {
+                    if (!landlordPhone.isEmpty()) {
+                        Intent callIntent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + landlordPhone));
+                        startActivity(callIntent);
+                    } else {
+                        Toast.makeText(ViewingsActivity.this, "Landlord contact information unavailable.", Toast.LENGTH_SHORT).show();
+                    }
+                    return;
+                }
+
+                // Launch ChatActivity directly with the viewing's host
+                Intent chatIntent = new Intent(ViewingsActivity.this, ChatActivity.class);
+                chatIntent.putExtra("RECEIVER_ID", landlordUid);
+                chatIntent.putExtra("receiver_id", landlordUid);
+                chatIntent.putExtra("RECEIVER_NAME", landlordName);
+                chatIntent.putExtra("receiver_name", landlordName);
+                chatIntent.putExtra("PROPERTY_TITLE", propertyTitle);
+                startActivity(chatIntent);
             });
             actions.addView(btnContact);
 

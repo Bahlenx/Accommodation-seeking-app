@@ -241,9 +241,9 @@ public class SavedListingsActivity extends AppCompatActivity {
                 "cover_image", "photo"
         );
 
-        if (name.isEmpty()) name = "Accommodation";
-        if (location.isEmpty()) location = "Location not available";
-        if (price.isEmpty()) price = "Price not available";
+        if (name.isEmpty()) name = getString(R.string.accommodation);
+        if (location.isEmpty()) location = getString(R.string.location_not_available);
+        if (price.isEmpty()) price = getString(R.string.price_not_available);
 
         CardView card = new CardView(this);
         LinearLayout.LayoutParams cardParams = new LinearLayout.LayoutParams(
@@ -261,7 +261,7 @@ public class SavedListingsActivity extends AppCompatActivity {
         int pad = dpToPx(14);
         content.setPadding(pad, pad, pad, pad);
 
-        // Property Thumbnail
+        // Thumbnail
         ImageView image = new ImageView(this);
         LinearLayout.LayoutParams imgParams = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, dpToPx(160)
@@ -297,7 +297,7 @@ public class SavedListingsActivity extends AppCompatActivity {
         locRow.setLayoutParams(locParams);
 
         TextView tvLocation = new TextView(this);
-        tvLocation.setText("📍 " + location);
+        tvLocation.setText(getString(R.string.listing_location_pin, location));
         tvLocation.setTextSize(13);
         tvLocation.setTextColor(Color.parseColor("#8C7A70"));
         locRow.addView(tvLocation);
@@ -313,7 +313,7 @@ public class SavedListingsActivity extends AppCompatActivity {
         ));
 
         TextView tvPrice = new TextView(this);
-        tvPrice.setText(price.startsWith("R") ? price : "R " + price + " / month");
+        tvPrice.setText(getString(R.string.listing_price_month, price));
         tvPrice.setTextSize(15);
         tvPrice.setTextColor(Color.parseColor("#BA5536"));
         tvPrice.setTypeface(null, Typeface.BOLD);
@@ -325,7 +325,7 @@ public class SavedListingsActivity extends AppCompatActivity {
 
         if (!rooms.isEmpty()) {
             TextView tvRooms = new TextView(this);
-            tvRooms.setText(rooms + " rooms");
+            tvRooms.setText(getString(R.string.listing_rooms_tag, rooms));
             tvRooms.setTextSize(12);
             tvRooms.setTextColor(Color.parseColor("#1F1614"));
             tvRooms.setBackgroundColor(Color.parseColor("#F5EFEB"));
@@ -334,20 +334,20 @@ public class SavedListingsActivity extends AppCompatActivity {
         }
         content.addView(priceRow);
 
-        // Actions Row: View Property & Remove Favorite
+        // Action Buttons
         LinearLayout actions = new LinearLayout(this);
         actions.setOrientation(LinearLayout.HORIZONTAL);
         actions.setGravity(Gravity.CENTER_VERTICAL);
         actions.setPadding(0, dpToPx(12), 0, 0);
 
         Button viewButton = new Button(this);
-        viewButton.setText("View property");
+        viewButton.setText(R.string.view_property);
         viewButton.setAllCaps(false);
         viewButton.setTextColor(Color.WHITE);
         viewButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#BA5536")));
 
         Button removeButton = new Button(this);
-        removeButton.setText("Remove");
+        removeButton.setText(R.string.remove);
         removeButton.setAllCaps(false);
         removeButton.setTextColor(Color.parseColor("#BA5536"));
         removeButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#F4ECE9")));
@@ -378,10 +378,10 @@ public class SavedListingsActivity extends AppCompatActivity {
 
         removeButton.setOnClickListener(v ->
                 new AlertDialog.Builder(this)
-                        .setTitle("Remove favorite?")
-                        .setMessage("Remove \"" + finalName + "\" from your saved listings?")
-                        .setNegativeButton("Cancel", null)
-                        .setPositiveButton("Remove", (dialog, which) ->
+                        .setTitle(R.string.remove_favorite_title)
+                        .setMessage(getString(R.string.remove_favorite_message, finalName))
+                        .setNegativeButton(R.string.cancel, null)
+                        .setPositiveButton(R.string.remove, (dialog, which) ->
                                 removeFavorite(listingId, savedRowId, userId)
                         )
                         .show()

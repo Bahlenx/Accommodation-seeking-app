@@ -1,4 +1,3 @@
-
 package com.example.ikhaya_accommodation_seeking_app;
 
 import android.graphics.Color;
@@ -68,7 +67,7 @@ public class ChatActivity extends AppCompatActivity {
         editMessage = findViewById(R.id.editMessage);
         btnSend = findViewById(R.id.btnSendMessage);
 
-        Button btnBack = findViewById(R.id.btnBackChat);
+        View btnBack = findViewById(R.id.btnBackChat);
         TextView txtTitle = findViewById(R.id.txtChatTitle);
         TextView txtSubtitle = findViewById(R.id.txtChatSubtitle);
 
@@ -255,6 +254,17 @@ public class ChatActivity extends AppCompatActivity {
         }
 
         messagesContainer.removeAllViews();
+
+        if (messages.length() == 0) {
+            TextView txtEmptyChat = new TextView(this);
+            txtEmptyChat.setText("No messages yet. Say hello!");
+            txtEmptyChat.setTextColor(Color.parseColor("#8C7A70"));
+            txtEmptyChat.setTextSize(14f);
+            txtEmptyChat.setGravity(Gravity.CENTER);
+            txtEmptyChat.setPadding(0, dpToPx(32), 0, dpToPx(32));
+            messagesContainer.addView(txtEmptyChat);
+            return;
+        }
 
         for (int i = 0; i < messages.length(); i++) {
             JSONObject message = messages.optJSONObject(i);

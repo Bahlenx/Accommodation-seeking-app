@@ -41,7 +41,7 @@
                 android:id="@+id/txtChatTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Chat"
+                android:text="@string/title_chat"
                 android:textColor="#212529"
                 android:textSize="18sp"
                 android:textStyle="bold" />
@@ -50,7 +50,7 @@
                 android:id="@+id/txtChatSubtitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Active"
+                android:text="@string/status_active"
                 android:textColor="#4CAF50"
                 android:textSize="12sp" />
         </LinearLayout>
@@ -92,7 +92,7 @@
             android:layout_height="50dp"
             android:layout_weight="1"
             android:background="@drawable/custom_input"
-            android:hint="Type a message..."
+            android:hint="@string/hint_type_a_message"
             android:inputType="textCapSentences|textMultiLine"
             android:maxLines="3"
             android:paddingStart="16dp"
@@ -107,7 +107,7 @@
             android:layout_marginStart="10dp"
             android:background="@drawable/selector_regular_button"
             app:backgroundTint="@null"
-            android:text="Send"
+            android:text="@string/btn_send"
             android:textAllCaps="false" />
     </LinearLayout>
 

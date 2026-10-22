@@ -47,13 +47,18 @@ public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.View
         holder.tvUserName.setText(user.getName());
         holder.tvUserRole.setText(user.getRole().toUpperCase());
 
-        // Anti-Self-Destruction Check
+        // Anti-Self-Destruction & Admin Protection Check
         if (user.getUserId().equals(currentAdminId)) {
             holder.btnSuspendUser.setText("YOU");
             holder.btnSuspendUser.setBackgroundColor(Color.parseColor("#6C757D")); // Gray disabled color
             holder.btnSuspendUser.setEnabled(false);
             holder.tvUserName.setTextColor(Color.parseColor("#5E72E4")); // Highlight own name in blue
-            return; // Skip attaching the click listener entirely
+            return; 
+        } else if ("admin".equalsIgnoreCase(user.getRole())) {
+            holder.btnSuspendUser.setText("ADMIN");
+            holder.btnSuspendUser.setBackgroundColor(Color.parseColor("#6C757D")); // Gray disabled color
+            holder.btnSuspendUser.setEnabled(false);
+            return; 
         }
 
         holder.btnSuspendUser.setEnabled(true);

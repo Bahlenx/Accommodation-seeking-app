@@ -45,7 +45,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentStart="true"
-                    android:text="Messages &amp; Community"
+                    android:text="@string/title_messages_community"
                     android:textColor="#212529"
                     android:textSize="24sp"
                     android:textStyle="bold" />
@@ -72,7 +72,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Chat with the community or search users"
+                android:text="@string/desc_chat_community"
                 android:textSize="14sp"
                 android:textColor="#6C757D"
                 android:layout_marginBottom="16dp" />
@@ -85,7 +85,7 @@
                 android:layout_marginBottom="24dp"
                 android:background="@drawable/selector_regular_button"
                 app:backgroundTint="@null"
-                android:text="View Chat Requests / Alerts"
+                android:text="@string/btn_view_chat_alerts"
                 android:textAllCaps="false" />
 
             <!-- PINNED COMMUNITY CHAT CARD -->
@@ -109,7 +109,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="iKhaya Community Group"
+                        android:text="@string/title_ikhaya_community"
                         android:textSize="18sp"
                         android:textStyle="bold"
                         android:textColor="#D9480F" />
@@ -117,7 +117,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Public room for all tenants &amp; landlords • Tap to join"
+                        android:text="@string/desc_community_room"
                         android:textSize="13sp"
                         android:textColor="#495057"
                         android:layout_marginTop="4dp" />
@@ -128,7 +128,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Search Users"
+                android:text="@string/title_search_users"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:textColor="#212529"
@@ -146,7 +146,7 @@
                     android:layout_height="50dp"
                     android:layout_weight="1"
                     android:background="@drawable/custom_input"
-                    android:hint="Type name to search..."
+                    android:hint="@string/hint_type_name_search"
                     android:paddingStart="16dp"
                     android:paddingEnd="16dp"
                     android:inputType="textPersonName"
@@ -160,7 +160,7 @@
                     android:layout_marginStart="8dp"
                     android:background="@drawable/selector_regular_button"
                     app:backgroundTint="@null"
-                    android:text="Search"
+                    android:text="@string/search"
                     android:textAllCaps="false" />
             </LinearLayout>
 
@@ -175,7 +175,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Direct Messages"
+                android:text="@string/title_direct_messages"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:textColor="#212529"
@@ -217,7 +217,7 @@
         android:padding="0dp"
         android:weightSum="4">
 
-        <!-- Tab 1: Discover -->
+        <!-- Tab 1: Discover / Dashboard -->
         <LinearLayout
             android:id="@+id/navHome"
             android:layout_width="0dp"
@@ -228,6 +228,7 @@
             android:orientation="vertical">
 
             <ImageView
+                android:id="@+id/imgNavHome"
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:contentDescription="@string/nav_discover"
@@ -235,6 +236,7 @@
                 app:tint="#FFD8CC" />
 
             <TextView
+                android:id="@+id/tvNavHome"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
@@ -244,7 +246,7 @@
                 android:textSize="10.5sp" />
         </LinearLayout>
 
-        <!-- Tab 2: Favorites -->
+        <!-- Tab 2: Favorites / Listings -->
         <LinearLayout
             android:id="@+id/navFavorites"
             android:layout_width="0dp"
@@ -255,6 +257,7 @@
             android:orientation="vertical">
 
             <ImageView
+                android:id="@+id/imgNavFavorites"
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:contentDescription="@string/nav_favorites"
@@ -262,6 +265,7 @@
                 app:tint="#FFD8CC" />
 
             <TextView
+                android:id="@+id/tvNavFavorites"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
@@ -271,7 +275,7 @@
                 android:textSize="10.5sp" />
         </LinearLayout>
 
-        <!-- Tab 3: Viewings -->
+        <!-- Tab 3: Viewings / Add -->
         <LinearLayout
             android:id="@+id/navViewings"
             android:layout_width="0dp"
@@ -282,6 +286,7 @@
             android:orientation="vertical">
 
             <ImageView
+                android:id="@+id/imgNavViewings"
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:contentDescription="@string/nav_viewings"
@@ -289,6 +294,7 @@
                 app:tint="#FFD8CC" />
 
             <TextView
+                android:id="@+id/tvNavViewings"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"

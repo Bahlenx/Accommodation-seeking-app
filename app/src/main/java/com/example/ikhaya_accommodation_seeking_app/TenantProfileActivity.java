@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -22,7 +23,7 @@ public class TenantProfileActivity extends AppCompatActivity {
 
         txtUserName = findViewById(R.id.txtUserName);
 
-        Button btnBack = findViewById(R.id.btnBack);
+        View btnBack = findViewById(R.id.btnBack);
         Button btnPersonalInfo = findViewById(R.id.btnPersonalInfo);
         Button btnChangeLanguage = findViewById(R.id.btnChangeLanguage);
         Button btnSavedListings = findViewById(R.id.btnSavedListings);

@@ -21,7 +21,7 @@ public class PaymentHistoryActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_payment_history);
 
-        Button btnBack = findViewById(R.id.btnBack);
+        View btnBack = findViewById(R.id.btnBack);
         txtNoPayments = findViewById(R.id.txtNoPayments);
 
         btnBack.setOnClickListener(v -> finish());

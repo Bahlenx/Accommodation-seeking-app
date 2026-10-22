@@ -2,9 +2,11 @@
 package com.example.ikhaya_accommodation_seeking_app;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -20,7 +22,7 @@ public class ChangePasswordActivity extends AppCompatActivity {
     private EditText edtNewPassword;
     private EditText edtConfirmPassword;
 
-    private Button btnBack;
+    private View btnBack;
     private Button btnChangePassword;
 
     private final ExecutorService executor =
@@ -230,7 +232,7 @@ public class ChangePasswordActivity extends AppCompatActivity {
                     });
 
                 } else {
-                    android.util.Log.e(
+                    Log.e(
                             "ChangePassword",
                             "Supabase password update failed: "
                                     + updateCode
@@ -244,7 +246,7 @@ public class ChangePasswordActivity extends AppCompatActivity {
                 }
 
             } catch (Exception e) {
-                android.util.Log.e(
+                Log.e(
                         "ChangePassword",
                         "Password update error",
                         e

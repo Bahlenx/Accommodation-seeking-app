@@ -1,17 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
 
-    <!-- Stelsel teks -->
+    <!-- Stelselteks en Handelsmerk -->
     <string name="app_name">iKhaya</string>
-    <string name="app_description">iKhaya Verblyf-toepassing</string>
+    <string name="app_description">iKhaya Verblyf Toepassing</string>
     <string name="app_title">iKhaya</string>
-    <string name="slogan">Vind jou tuiste, eenvoudig</string>
+    <string name="slogan">Vind jou huis, eenvoudig</string>
     <string name="home_icon">🏠</string>
+    <string name="desc_app_logo">iKhaya Kenteken</string>
     <string name="choose_language">KIES TAAL</string>
     <string name="change_language">Verander Taal</string>
+    <string name="submit_for_review">Dien in vir Hersiening</string>
+    <string name="submit_changes_for_review">Dien Wysigings in vir Hersiening</string>
+    <string name="edit_accommodation">Wysig Verblyf</string>
+    <string name="drop_move_pin">Plaas / Verskuif Pen</string>
+    <string name="use_my_gps">Gebruik My GPS</string>
+    <string name="no_pin_dropped">Geen pen geplaas nie. Soek of plaas \'n pen.</string>
+    <string name="search_location_hint">Soek voorstad, dorp, sone of baken</string>
+    <string name="drag_map_pin_instruction">Sleep kaart om pen te posisioneer</string>
+    <string name="confirm_location_pin">Bevestig Liggingpen</string>
+    <string name="desc_map_pin">Kaartpen</string>
+    <string name="listing_purpose">Noteringsdoel</string>
+    <string name="for_rent">Te Huur</string>
+    <string name="for_sale">Te Koop</string>
+    <string name="total_selling_price_r">Totale Verkoopprys (R)</string>
+    <string name="desc_choose_language">Kies die taal wat jy in die toepassing wil gebruik.</string>
 
-    <!-- Welkom / Registrasie / Inteken -->
+    <!-- Welkom / Registrasie / Aanteken -->
     <string name="get_started_btn">Begin Nou</string>
+    <string name="get_started">Begin Nou</string>
     <string name="register_text">Registreer</string>
     <string name="register_login">Registreer / Teken In</string>
     <string name="resident_radio_option">Inwoner</string>
@@ -23,21 +40,25 @@
     <string name="existing_user">Het jy reeds \'n rekening?</string>
     <string name="existing_user_login">Het jy reeds \'n rekening? Teken In</string>
     <string name="existing_user_btn">Teken In</string>
+    <string name="logged_out_successfully">Suksesvol uitgeteken.</string>
 
-    <!-- Invoervelde & Wenke -->
+    <!-- Invoervelde en Wenke -->
     <string name="username_text">Naam</string>
     <string name="username_hint">Voer jou naam in</string>
     <string name="usersurname_text">Van</string>
     <string name="usersurname_hint">Voer jou van in</string>
     <string name="full_name">Volle naam</string>
+    <string name="hint_full_name">Voer volle naam in</string>
     <string name="email_text">E-pos</string>
-    <string name="email_hint">Voer jou e-pos in</string>
-    <string name="email_placeholder">voorbeeld@epos.com</string>
-    <string name="phone_text">Selfoonnommer</string>
-    <string name="Phone_hint">Voer jou selfoonnommer in</string>
-    <string name="phone_number">Selfoonnommer</string>
+    <string name="email_hint">Voer jou e-posadres in</string>
+    <string name="email_placeholder">voorbeeld@epos.co.za</string>
+    <string name="email_address">E-posadres</string>
+    <string name="phone_text">Telefoonnommer</string>
+    <string name="Phone_hint">Voer jou telefoonnommer in</string>
+    <string name="phone_number">Telefoonnommer</string>
     <string name="phone_placeholder">012 345 6789</string>
 
+    <!-- Wagwoorde en Validering -->
     <string name="password_title">Voer asseblief \'n Sterk Wagwoord in</string>
     <string name="password_warning">Gebruik asseblief</string>
     <string name="password_hint">Wagwoord</string>
@@ -47,18 +68,31 @@
     <string name="confirm_new_password">Bevestig nuwe wagwoord</string>
     <string name="change_password">Verander Wagwoord</string>
     <string name="forgot_password">Wagwoord vergeet?</string>
-
+    <string name="show_password">Wys wagwoord</string>
+    <string name="update_your_password_to_help_keep_your_account_secure">Dateer jou wagwoord op om jou rekening veilig te hou.</string>
+    <string name="password_screen_error">Die wagwoordskerm kon nie gelaai word nie.</string>
+    <string name="password_fill_all_fields">Voltooi asseblief alle wagwoordvelde.</string>
+    <string name="password_minimum_length">Jou nuwe wagwoord moet ten minste 8 karakters bevat.</string>
+    <string name="passwords_do_not_match">Die nuwe wagwoorde stem nie ooreen nie.</string>
+    <string name="password_must_be_different">Jou nuwe wagwoord moet verskil van jou huidige wagwoord.</string>
+    <string name="password_email_missing">Jou rekening e-pos kon nie gevind word nie. Teken asseblief weer in.</string>
+    <string name="password_current_incorrect">Jou huidige wagwoord is verkeerd.</string>
+    <string name="password_session_missing">Kon nie jou rekeningsessie verifieer nie. Probeer asseblief weer.</string>
+    <string name="password_changed_successfully">Jou wagwoord is suksesvol verander.</string>
+    <string name="password_update_failed">Kon nie jou wagwoord opdateer nie. Probeer asseblief weer.</string>
+    <string name="password_connection_error">\'n Verbindingsfout het voorgekom. Probeer asseblief weer.</string>
     <string name="uppercase_checker">Hoofletter</string>
     <string name="lowercase_checker">Kleinletter</string>
     <string name="number_checker">Nommer</string>
     <string name="special_character">Spesiale Karakter</string>
     <string name="password_checker">Wagwoordsterkte</string>
 
+    <!-- Identifikasie en Ligging -->
     <string name="id_hint">Voer jou ID-nommer in</string>
+    <string name="hint_id_number">Voer ID-nommer in</string>
     <string name="id_text">ID-nommer / Paspoort</string>
     <string name="id_title">ID-nommer</string>
-    <string name="id_warning">Jou ID-nommer word veilig geënkripteer en slegs gebruik vir identiteitsverifikasie en huurkwalifikasie. Ons deel nooit jou data nie.</string>
-
+    <string name="id_warning">Jou ID-nommer word veilig geënkripteer en uitsluitlik vir identiteitsverifikasie gebruik.</string>
     <string name="province_text">Provinsie</string>
     <string name="province_hint">Voer jou Provinsie in</string>
     <string name="city_text">Stad</string>
@@ -66,231 +100,192 @@
     <string name="suburb_text">Voorstad</string>
     <string name="suburb_hint">Voer jou Voorstad in</string>
     <string name="gps_btn">Kry GPS-ligging</string>
-    <string name="town_village_preferred">Voorkeurdorp / woongebied</string>
-    <string name="we_will_use_your_phone_number_to_verify_your_account">Ons sal jou foonnommer gebruik om jou rekening te verifieer.</string>
+    <string name="town_village_preferred">Dorp / omgewing verkies</string>
+    <string name="we_will_use_your_phone_number_to_verify_your_account">Ons sal jou telefoonnommer gebruik om jou rekening te verifieer.</string>
 
     <!-- OTP -->
-    <string name="otp_button">Stuur Verifikasie-SMS</string>
-    <string name="otp_warning">Ons sal \'n gratis SMS-OTP stuur om jou foonnommer te verifieer. Geen lugtyd of data nodig nie.</string>
+    <string name="otp_button">Stuur Verifikasie SMS</string>
+    <string name="otp_warning">Ons sal \'n gratis SMS OTP-kode stuur om jou nommer te verifieer.</string>
     <string name="otp_text">OTP-verifikasie</string>
-    <string name="otp_hint">Voer die kode in wat per SMS aan jou gestuur is</string>
+    <string name="otp_hint">Voer asseblief die kode in wat per SMS gestuur is</string>
     <string name="verify_otp_btn">Verifieer OTP</string>
     <string name="verify">Verifieer</string>
-    <string name="verify_location_hint">Voer \'n dorp of voorstad in en tik Verifieer</string>
-    <string name="otp_digit_1">Eerste syfer van OTP</string>
-    <string name="otp_digit_2">Tweede syfer van OTP</string>
-    <string name="otp_digit_3">Derde syfer van OTP</string>
-    <string name="otp_digit_4">Vierde syfer van OTP</string>
-    <string name="otp_digit_5">Vyfde syfer van OTP</string>
+    <string name="verify_location_hint">Voer \'n dorp, voorstad of baken in en tik Verifieer</string>
 
-    <!-- Paneelbord / Tuisskerm -->
+    <!-- Tuisblad en Paneelbord -->
     <string name="welcome_dashboard">Welkom by iKhaya!</string>
     <string name="subtitle_dashboard">Jou paneelbord sal binnekort hier laai.</string>
     <string name="welcome_to_ikhaya">Welkom by iKhaya 👋</string>
     <string name="home">Tuis</string>
-    <string name="search">Soek</string>
-    <string name="find_accommodation_in_your_area">Vind verblyf in jou area</string>
-    <string name="search_village_town_or_area">Soek dorp, voorstad of gebied</string>
-    <string name="search_area_or_village">Soek gebied of dorp</string>
-    <string name="search_results">Soekresultate</string>
-    <string name="search_location">Soek ligging</string>
-    <string name="filters">Filters</string>
-    <string name="popular_areas">Gewilde Areas</string>
-    <string name="mthatha">Mthatha</string>
-    <string name="giyani">Giyani</string>
+    <string name="home_greeting_default">Goeiedag!\nVertel ons waar jy wil bly</string>
+    <string name="home_greeting_personalized">Goeiedag, %1$s!\nVertel ons waar jy wil bly</string>
+    <string name="title_most_popular">Gewildste Plekke</string>
+    <string name="title_explore_new_area">Verken Nuwe Gebiede</string>
+    <string name="popular_areas">Gewilde Gebiede</string>
 
-    <!-- Profiel / Persoonlike Inligting -->
+    <!-- Navigasie -->
+    <string name="nav_discover">Verken</string>
+    <string name="nav_favorites">Gunstelinge</string>
+    <string name="nav_viewings">Besigtigings</string>
+    <string name="nav_messages">Boodskappe</string>
+    <string name="messages">Boodskappe en Gemeenskap</string>
+    <string name="messages_community_chat">Boodskappe &amp; Gemeenskapsklets</string>
+    <string name="chat_with_us">Gesels met ons</string>
+
+    <!-- Profiele en Algemeen -->
     <string name="profile">Profiel</string>
     <string name="my_profile">My Profiel</string>
     <string name="tenant">Huurder</string>
     <string name="tenant_name">Huurder Naam</string>
-    <string name="tenant_profile">Huurder Profiel</string>
+    <string name="tenant_profile">Huurderprofiel</string>
     <string name="landlord">Verhuurder</string>
     <string name="landlord_name">Verhuurder Naam</string>
     <string name="landlord_dashboard">Verhuurder Paneelbord</string>
-    <string name="landlord_profile">Verhuurder Profiel</string>
+    <string name="landlord_profile">Verhuurderprofiel</string>
     <string name="personal_information">Persoonlike Inligting</string>
-    <string name="i_am_a">Ek is \'n:</string>
-    <string name="name_tenant_name">Naam: Huurder Naam</string>
-    <string name="email_example_email_com">E-pos: voorbeeld@epos.com</string>
-    <string name="phone_000_000_0000">Foon: 000 000 0000</string>
     <string name="log_out">Teken Uit</string>
     <string name="back">Terug</string>
+    <string name="desc_back_button">Navigeer Terug</string>
     <string name="desc_go_back">Gaan terug na vorige skerm</string>
-
-    <!-- Navigasie / Algemene Aksies -->
-    <string name="chat_with_us">Gesels met ons</string>
     <string name="report_a_problem">Rapporteer \'n Probleem</string>
     <string name="submit_report">Dien Verslag In</string>
     <string name="describe_the_problem">Beskryf die probleem</string>
 
-    <!-- Verblyf / Inskrywings -->
-    <string name="accommodation_types">Verblyf Tipes</string>
+    <!-- Eiendomme en Lyste -->
+    <string name="accommodation">Verblyf</string>
+    <string name="accommodation_types">Verblyftipes</string>
     <string name="rooms">Kamers</string>
-    <string name="_2_rooms">2 Kamers</string>
-    <string name="shared_accommodation">Gedeelde Verblyf</string>
     <string name="houses">Huise</string>
-    <string name="featured_accommodation">Uitgesoekte Verblyf</string>
-    <string name="available_accommodation">Beskikbare Verblyf</string>
+    <string name="shared_accommodation">Gedeelde Verblyf</string>
     <string name="add_accommodation">Voeg Verblyf By</string>
-    <string name="add_new_listing">Voeg Nuwe Inskrywing By</string>
-    <string name="submit_listing">Dien Inskrywing In</string>
-    <string name="save_listing">♡ Stoor Inskrywing</string>
-    <string name="property_name">Eiendomsnaam</string>
+    <string name="add_new_listing">Voeg Nuwe Lys By</string>
+    <string name="submit_listing">Dien Lys In</string>
+    <string name="save_listing">♡ Stoor Lys</string>
+    <string name="save_accommodation">Stoor Verblyf</string>
+    <string name="property_name">Eiendomnaam</string>
     <string name="location">Ligging</string>
     <string name="location_hint">Ligging</string>
     <string name="price_per_month">Prys per maand</string>
     <string name="price">Prys</string>
     <string name="type">Tipe</string>
     <string name="number_of_rooms">Aantal kamers</string>
-    <string name="accommodation_description">Verblyf beskrywing</string>
-    <string name="description_hint">Gee \'n kort opsomming van die kamer, nabyheid aan vervoer, ens.</string>
-    <string name="property_information">Eiendomsinligting</string>
-    <string name="upload_property_image">Kies Foto\'s</string>
-    <string name="property_image">Eiendomsfoto</string>
-    <string name="property_photo">Eiendomsfoto</string>
-    <string name="listings">Inskrywings</string>
-    <string name="my_listings">My Inskrywings</string>
-    <string name="saved_listings">Gestoorde Plekke</string>
-    <string name="favourite_saved_listings">Gunsteling / Gestoorde Plekke</string>
-    <string name="manage_your_accommodation_listings">Bestuur jou verblyf-inskrywings</string>
-    <string name="listing_overview">Inskrywing Oorsig</string>
+    <string name="accommodation_description">Verblyfbeskrywing</string>
+    <string name="listings">Lyste</string>
+    <string name="my_listings">My Lyste</string>
+    <string name="saved_listings">Gestoorde Lyste</string>
+    <string name="favourite_saved_listings">Gunsteling / Gestoorde Lyste</string>
     <string name="contact_owner">Kontak Eienaar</string>
-    <string name="add">Voeg by</string>
-    <string name="edit">Wysig</string>
-    <string name="delete">Verwyder</string>
     <string name="view_details">Sien Besonderhede</string>
     <string name="pending">Hangende</string>
     <string name="available">Beskikbaar</string>
     <string name="total">Totaal</string>
-    <string name="_0">0</string>
-
-    <!-- Kaart & Vertaling -->
-    <string name="get_directions">Kry Aanwysings</string>
-    <string name="location_on_map">Ligging op Kaart</string>
-    <string name="view_on_map">Sien op kaart</string>
-    <string name="open_google_maps">Maak Google Maps oop</string>
-    <string name="description">Beskrywing</string>
-    <string name="translate">Vertaal</string>
-
-    <!-- Geriewe & Reëls -->
-    <string name="amenities_header">Geriewe</string>
-    <string name="rules_header">Reëls &amp; Beskikbaarheid</string>
-    <string name="amenity_water">Munisipale / Tenkwater</string>
-    <string name="amenity_electricity">Voorafbetaalde Krag</string>
-    <string name="amenity_parking">Veilige Parkering</string>
-    <string name="amenity_wifi">Wi-Fi Ingesluit</string>
-    <string name="amenity_borehole">Boorgatwater</string>
-    <string name="rule_available_now">Onmiddellik Beskikbaar</string>
-    <string name="rule_deposit_req">Deposito Vereis</string>
-    <string name="rule_no_pets">Geen Troeteldiere</string>
-    <string name="rule_fenced">Omhein met Hek</string>
-
-    <!-- Leë State & Kennisgewings -->
-    <string name="no_listings_yet">Nog geen inskrywings nie</string>
-    <string name="no_saved_listings_yet">Nog geen gestoorde inskrywings nie.</string>
-    <string name="accommodation_you_have_saved_will_appear_here">Verblyf wat jy gestoor het, sal hier verskyn.</string>
-    <string name="no_payment_history_available">Geen betalingsgeskiedenis beskikbaar nie.</string>
-    <string name="no_applications_yet">Jy het nog geen aansoeke nie.</string>
-    <string name="no_new_notifications">Geen nuwe kennisgewings nie.</string>
-    <string name="no_enquiries">Nog geen navrae nie.</string>
-    <string name="no_payments_received">Geen betalings ontvang nie.</string>
-
+    <string name="property_type">Eiendomstipe</string>
+    <string name="rental_applications">Huuransoeke</string>
     <string name="my_applications">My Aansoeke</string>
-    <string name="listing_enquiries">Inskrywing Navrae</string>
     <string name="enquiries">Navrae</string>
-    <string name="payments_received">Betalings Ontvang</string>
-    <string name="payment_history">Betalingsgeskiedenis</string>
     <string name="notifications">Kennisgewings</string>
 
-    <!-- Tale -->
-    <string name="language_selection">Kies jou voorkeurtaal</string>
-    <string name="english_btn">English</string>
-    <string name="isiZulu_btn">isiZulu</string>
-    <string name="isiXhosa_btn">isiXhosa</string>
-    <string name="sepedi_btn">Sepedi</string>
-    <string name="sesotho_btn">Sesotho</string>
-    <string name="afrikaans_btn">Afrikaans</string>
-
-    <!-- Aansoekvorm -->
-    <string name="apply_title">Huurder Aansoek</string>
-    <string name="label_full_name">Volle Naam</string>
-    <string name="label_id_number">RSA ID / Paspoortnommer</string>
-    <string name="label_contact_phone">Kontaknommer</string>
-    <string name="label_emergency_contact">Noodkontak / Borg</string>
-    <string name="label_occupation_status">Beroepstatus</string>
-    <string name="label_move_in_date">Voorkeur Intrekdatum</string>
-    <string name="label_lease_duration">Huurtermyn</string>
-    <string name="label_occupants">Aantal Inwoners</string>
-    <string name="label_special_notes">Bykomende Notas / Boodskap</string>
-    <string name="label_agreement_checkbox">Ek bevestig hierdie besonderhede is akkuraat en stem in tot die reëls.</string>
-    <string name="btn_submit_application">Dien Aansoek In</string>
-
-    <!-- Foutboodskappe -->
-    <string name="err_enter_name">Voer asseblief jou volle naam in</string>
-    <string name="err_enter_id">Voer asseblief \'n geldige 13-syfer ID-nommer in</string>
-    <string name="err_enter_phone">Voer asseblief \'n geldige 10-syfer foonnommer in</string>
-    <string name="err_enter_emergency">Voer asseblief \'n geldige noodkontaknommer in</string>
-    <string name="err_accept_terms">Stem asseblief in tot die riglyne om voort te gaan.</string>
-    <string name="msg_toast_applied">Aansoek gestuur aan verhuurder!</string>
-
-    <string name="btn_apply_to_rent">Doen Aansoek om te Huur</string>
-    <string name="btn_pending_review">Aansoek Hangende Hersiening</string>
-    <string name="status_pending">Status: HANGENDE</string>
-    <string name="status_approved">Status: GOEDGEKEUR</string>
-    <string name="status_declined">Status: VAN DIE HAND GEWYS</string>
-
-    <string name="contact_landlord">Kontak verhuurder</string>
-    <string name="description_not_available">Geen beskrywing beskikbaar nie.</string>
-    <string name="translate_to_language">Vertaal na %1$s</string>
-    <string name="show_original">Wys oorspronklike</string>
-    <string name="translation_failed">Vertaling het misluk: %1$s</string>
-    <string name="location_not_available">Ligging nie beskikbaar nie.</string>
-    <string name="could_not_open_maps">Kon nie Maps oopmaak nie.</string>
-    <string name="please_log_in_to_save">Teken asseblief in om te stoor.</string>
-    <string name="accommodation_saved">Verblyf gestoor.</string>
-    <string name="already_saved">Reeds gestoor.</string>
-    <string name="could_not_save_accommodation">Kon nie verblyf stoor nie.</string>
-    <string name="enquiry_sent">Navraag gestuur aan verhuurder.</string>
-
-    <!-- Navigasiebalk -->
-    <string name="nav_discover">Ontdek</string>
-    <string name="nav_favorites">Gunstelinge</string>
-    <string name="nav_viewings">Besigtigings</string>
-    <string name="nav_messages">Boodskappe</string>
-
-    <!-- Nuwe Dribbble & Eiendomsetikette -->
-    <string name="home_greeting_default">Haai daar!\nVertel ons waar jy wil bly</string>
-    <string name="hint_search_places">Soek Plekke</string>
-    <string name="title_most_popular">Gewildste Plekke</string>
-    <string name="title_explore_new_area">Verken Nuwe Area</string>
+    <!-- Gestoorde Plekke -->
     <string name="title_saved_listings">Gestoorde Plekke</string>
     <string name="empty_saved_title">Nog geen gestoorde plekke nie</string>
-    <string name="empty_saved_subtitle">Tik die hartjie-ikoon op enige kamer of huis om dit hier te stoor.</string>
+    <string name="empty_saved_subtitle">Tik die hartjie-ikoon op enige kamer of huis om dit hier te stoor vir later.</string>
     <string name="btn_explore_now">Verken Verblyf</string>
+    <string name="view_property">Sien eiendom</string>
+    <string name="remove">Verwyder</string>
+    <string name="remove_favorite_title">Verwyder gunsteling?</string>
+    <string name="remove_favorite_message">Verwyder \"%1$s\" uit jou gestoorde lyste?</string>
+    <string name="favorite_removed">Gunsteling verwyder.</string>
+    <string name="loading_favorites">Laai jou gunstelinge…</string>
+
+    <!-- Soek en Filters -->
+    <string name="search">Soek</string>
+    <string name="title_search">Soek</string>
+    <string name="search_hint">Soek volgens eiendomnaam of ligging</string>
+    <string name="filters">Filters</string>
+    <string name="filter_sheet_title">Filters</string>
+    <string name="filter_reset">Herstel</string>
+    <string name="filter_price_range">Maandelikse Huur (ZAR)</string>
+    <string name="filter_price_under_1500">Onder R1,500</string>
+    <string name="filter_price_1500_2500">R1,500 – R2,500</string>
+    <string name="filter_price_2500_4000">R2,500 – R4,000</string>
+    <string name="filter_price_above_4000">R4,000+</string>
+    <string name="filter_btn_apply">Pas Filters Toe</string>
+    <string name="search_no_results">Geen verblyf pas by jou soektog en filters nie.</string>
+
+    <!-- Besigtigings -->
     <string name="title_viewings">Geskeduleerde Besigtigings</string>
     <string name="empty_viewings_title">Geen besigtigings geskeduleer nie</string>
-    <string name="empty_viewings_subtitle">Wanneer jy vra om \'n eiendom te besigtig, sal jou afspraakbesonderhede hier verskyn.</string>
+    <string name="empty_viewings_subtitle">Wanneer jy versoek om \'n eiendom persoonlik te besigtig, sal jou afspraakbesonderhede hier verskyn.</string>
     <string name="btn_schedule_viewing">Vind \'n Plek om te Besigtig</string>
-
-    <!-- Eiendom Prys & Koop vs Huur -->
-    <string name="property_verified_badge">Geverifieerde Verblyf</string>
-    <string name="contact_host_caretaker">Kontak Gasheer / Opsigter</string>
-    <string name="what_this_place_offers_header">Wat hierdie plek bied</string>
-    <string name="about_property_header">Oor hierdie verblyf</string>
-    <string name="rent_terms_subtitle">Per maand • Standaard deposito</string>
     <string name="btn_schedule_viewing_action">Skeduleer Besigtiging</string>
-    <string name="get_directions_maps">Kry Aanwysings op Kaart</string>
-    <string name="price_per_month_value">R %1$s / md</string>
+    <string name="btn_book_site_visit">Bespreek Perseelinspeksie</string>
+    <string name="btn_make_offer">Maak \'n Aanbod om te Koop</string>
+    <string name="btn_apply_to_rent">Doen Aansoek om te Huur</string>
+    <string name="contact_caretaker">Kontak Opsigter / Verhuurder</string>
+    <string name="contact_seller">Kontak Verkoper / Agent</string>
+    <string name="price_per_month_value">R %1$s / mnd</string>
     <string name="price_for_sale_value">R %1$s</string>
     <string name="terms_rent_subtitle">Per maand • Standaard deposito</string>
     <string name="terms_sale_subtitle">Eenmalige aankoop • Titelakte</string>
-
-    <string name="btn_book_site_visit">Bespreek Terreininspeksie</string>
-    <string name="btn_make_offer">Maak \'n Koopaanbod</string>
-    <string name="contact_caretaker">Kontak Opsigter / Verhuurder</string>
-    <string name="contact_seller">Kontak Verkoper / Agent</string>
     <string name="verified_rental_badge">Geverifieerde Verblyf</string>
     <string name="verified_property_badge">Geverifieerde Eiendom / Titelakte</string>
+
+    <!-- Huur Aansoek Vorm -->
+    <string name="apply_title">Huurderaansoek</string>
+    <string name="label_full_name">Volle Naam</string>
+    <string name="label_id_number">RSA ID-nommer / Paspoort</string>
+    <string name="label_contact_phone">Kontaknommer</string>
+    <string name="label_emergency_contact">Noodkontak / Borg</string>
+    <string name="label_occupation_status">Beroepstatus</string>
+    <string name="label_move_in_date">Verkose Intrekdatum</string>
+    <string name="label_lease_duration">Huurooreenkoms Tydperk</string>
+    <string name="label_occupants">Aantal Bewoners</string>
+    <string name="label_special_notes">Bykomende Notas / Boodskap</string>
+    <string name="label_agreement_checkbox">Ek bevestig hierdie inligting is akkuraat en stem in tot die huurriglyne.</string>
+    <string name="btn_submit_application">Dien Aansoek In</string>
+    <string name="msg_toast_applied">Aansoek gestuur na verhuurder!</string>
+    <string name="err_enter_name">Voer asseblief jou volle naam in</string>
+    <string name="err_enter_id">Voer asseblief \'n geldige 13-syfer RSA ID-nommer in</string>
+    <string name="err_enter_phone">Voer asseblief \'n geldige 10-syfer Suid-Afrikaanse foonnommer in</string>
+    <string name="err_enter_emergency">Voer asseblief \'n geldige 10-syfer noodkontaknommer in</string>
+    <string name="err_accept_terms">Stem asseblief in tot die riglyne om voort te gaan.</string>
+
+    <!-- Klets en Kennisgewings -->
+    <string name="no_messages_yet">Nog geen boodskappe nie. Sê hallo!</string>
+    <string name="tap_to_message">Tik om te gesels</string>
+    <string name="request_chat">Versoek Klets</string>
+    <string name="chat_request_message">%1$s (%2$s) wil \'n gesprek met jou begin.</string>
+    <string name="chat_request_accepted">Kletsversoek aanvaar!</string>
+    <string name="chat_request_declined">Kletsversoek van die hand gewys.</string>
+    <string name="accept">Aanvaar</string>
+    <string name="decline">Wys van die hand</string>
+    <string name="new_enquiries">Nuwe navrae</string>
+    <string name="unseen_enquiries_count">%1$d nuwe navrae — tik om te sien</string>
+
+    <!-- Dinamiese Formateerders -->
+    <string name="listing_location_pin">📍 %1$s</string>
+    <string name="listing_price_month">R %1$s / mnd</string>
+    <string name="listing_rooms_tag">%1$s kamers</string>
+    <string name="photos_selected_count">%1$d foto(s) gekies</string>
+    <string name="change_selected_photos">Verander Gekose Foto\'s</string>
+    <string name="checking_location">Kontroleer ligging…</string>
+    <string name="location_verified_success">Ligging suksesvol geverifieer.</string>
+    <string name="location_not_found">Ligging nie gevind nie. Gaan die adres na en probeer weer.</string>
+    <string name="location_verify_failed">Kon nie ligging verifieer nie. Kontroleer jou verbinding.</string>
+    <string name="listing_published_success">Lys gepubliseer met %1$d foto(s).</string>
+    <string name="dialog_done">Klaar</string>
+    <string name="cancel">Kanselleer</string>
+
+    <!-- Geriewe dialoog -->
+    <string name="amenity_wifi_label">Wi-Fi</string>
+    <string name="amenity_parking_label">Parkering</string>
+    <string name="amenity_security_label">Sekuriteit</string>
+    <string name="amenity_furnished_label">Gemeubileer</string>
+    <string name="amenity_water_inc_label">Water ingesluit</string>
+    <string name="amenity_elec_inc_label">Elektrisiteit ingesluit</string>
+    <string name="amenity_deposit_req_label">Deposito vereis</string>
+    <string name="amenity_no_smoking_label">Rook verbode</string>
+    <string name="amenity_kitchen_label">Gedeelde kombuis</string>
+    <string name="amenity_laundry_label">Wasgeriewe</string>
 
 </resources>

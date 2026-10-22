@@ -29,7 +29,6 @@
                 android:layout_alignParentStart="true"
                 android:layout_centerVertical="true"
                 android:background="@drawable/bg_circle_white"
-                android:contentDescription="@string/desc_back_button"
                 android:elevation="1dp"
                 android:padding="7dp"
                 android:scaleType="fitCenter"
@@ -42,12 +41,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
-                android:text="@string/title_search"
+                android:text="Search"
                 android:textColor="#1F1614"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
-            <!-- Circular Filter Action Button -->
+            <!-- NEW FUNNEL FILTER BUTTON -->
             <ImageButton
                 android:id="@+id/btnFilterOptions"
                 android:layout_width="38dp"
@@ -55,11 +54,10 @@
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
                 android:background="@drawable/bg_circle_white"
-                android:contentDescription="@string/desc_filter"
                 android:elevation="1dp"
                 android:padding="9dp"
                 android:scaleType="fitCenter"
-                android:src="@android:drawable/ic_menu_sort_by_size"
+                android:src="@drawable/funnel"
                 app:tint="#1F1614" />
         </RelativeLayout>
 

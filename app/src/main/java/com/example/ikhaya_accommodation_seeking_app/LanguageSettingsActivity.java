@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.widget.Button;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -21,7 +22,7 @@ public class LanguageSettingsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_language_settings);
 
-        Button btnBack = findViewById(R.id.btnBack);
+        View btnBack = findViewById(R.id.btnBack);
         Button btnApply = findViewById(R.id.btnApplyLanguage);
         RadioGroup radioGroup = findViewById(R.id.radioGroupLanguages);
 

@@ -1,152 +1,516 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
 
-    <!-- Tsamaiso -->
+    <!-- System text & Branding -->
     <string name="app_name">iKhaya</string>
-    <string name="app_description">Tsamaiso ea Bolulo ea iKhaya</string>
+    <string name="app_description">Tshebediso ya Bodulo ya iKhaya</string>
     <string name="app_title">iKhaya</string>
     <string name="slogan">Fumana lehae la hao, habonolo</string>
     <string name="home_icon">🏠</string>
+    <string name="desc_app_logo">Letshwao la iKhaya</string>
     <string name="choose_language">KHETHA PUO</string>
     <string name="change_language">Fetola Puo</string>
+    <string name="submit_for_review">Romella bakeng sa Tlhahlobo</string>
+    <string name="submit_changes_for_review">Romella Liphetoho bakeng sa Tlhahlobo</string>
+    <string name="edit_accommodation">Fetola Bodulo</string>
+    <string name="drop_move_pin">Baya / Tlosa Phini</string>
+    <string name="use_my_gps">Sebelisa GPS ya Ka</string>
+    <string name="no_pin_dropped">Ha ho phini e beiloeng. Batla kapa o behe phini.</string>
+    <string name="search_location_hint">Batla motse, toropo, sebaka kapa mohlala</string>
+    <string name="drag_map_pin_instruction">Goga mmapa ho beha phini</string>
+    <string name="confirm_location_pin">Tshehetsa Phini ya Sebaka</string>
+    <string name="desc_map_pin">Phini ya Mmapa</string>
+    <string name="listing_purpose">Sepoho sa ho Kenya</string>
+    <string name="for_rent">E a Hirisoa</string>
+    <string name="for_sale">E a Rekisoa</string>
+    <string name="total_selling_price_r">Theko kaofela ya ho rekisa (R)</string>
 
-    <!-- Kamohelo / Ngoliso / Kena -->
+    <!-- Welcome / Registration / Login Flow -->
     <string name="get_started_btn">Qala Hona Joale</string>
+    <string name="get_started">Qala Hona Joale</string>
     <string name="register_text">Ingolise</string>
     <string name="register_login">Ingolise / Kena</string>
-    <string name="resident_radio_option">Moahi (Mohlokomedi/Mohiri)</string>
-    <string name="landlord_radio_option">Mong\'a matlo</string>
+    <string name="resident_radio_option">Moahi</string>
+    <string name="landlord_radio_option">Mong-a-ntlo</string>
     <string name="login_text">Kena</string>
     <string name="login_btn">Kena</string>
     <string name="register_btn">Ingolise</string>
-    <string name="create_account">Theha Akhaonto</string>
-    <string name="existing_user">Na u se u na le akhaonto?</string>
-    <string name="existing_user_login">Na u se u na le akhaonto? Kena</string>
+    <string name="create_account">Bopa Akhaonto</string>
+    <string name="existing_user">Na o se o na le akhaonto?</string>
+    <string name="existing_user_login">Na o se o na le akhaonto? Kena</string>
     <string name="existing_user_btn">Kena</string>
+    <string name="logged_out_successfully">O tswile ka katleho.</string>
 
-    <!-- Boitsebiso -->
+    <!-- Input Fields & Hints -->
     <string name="username_text">Lebitso</string>
     <string name="username_hint">Kenya lebitso la hao</string>
     <string name="usersurname_text">Fane</string>
-    <string name="usersurname_hint">Kenya fane ea hao</string>
-    <string name="full_name">Lebitso le fane ka botlalo</string>
+    <string name="usersurname_hint">Kenya fane ya hao</string>
+    <string name="full_name">Lebitso le feletseng</string>
+    <string name="hint_full_name">Kenya lebitso le feletseng</string>
     <string name="email_text">Imeile</string>
-    <string name="email_hint">Kenya imeile ea hao</string>
+    <string name="email_hint">Kenya imeile ya hao</string>
     <string name="email_placeholder">mohlala@imeile.com</string>
-    <string name="phone_text">Nomoro ea mohala</string>
-    <string name="Phone_hint">Kenya nomoro ea hao ea mohala</string>
-    <string name="phone_number">Nomoro ea mohala</string>
-    <string name="phone_placeholder">072 123 4567</string>
+    <string name="email_address">Aterese ya imeile</string>
+    <string name="phone_text">Nomoro ya mohala</string>
+    <string name="Phone_hint">Kenya nomoro ya mohala</string>
+    <string name="phone_number">Nomoro ya mohala</string>
+    <string name="phone_placeholder">012 345 6789</string>
 
+    <!-- Passwords & Validation -->
     <string name="password_title">Ka kopo kenya Phasewete e Matla</string>
-    <string name="password_warning">Ka kopo sebelisa</string>
+    <string name="password_warning">Ka kopo sebedisa</string>
     <string name="password_hint">Phasewete</string>
     <string name="password_fieldText">Phasewete</string>
-    <string name="current_password">Phasewete ea hajoale</string>
+    <string name="current_password">Phasewete ya hajoale</string>
     <string name="new_password">Phasewete e ncha</string>
     <string name="confirm_new_password">Netefatsa phasewete e ncha</string>
     <string name="change_password">Fetola Phasewete</string>
-    <string name="forgot_password">U lebetse phasewete?</string>
+    <string name="forgot_password">O lebetse Phasewete?</string>
+    <string name="show_password">Bontsha phasewete</string>
+    <string name="update_your_password_to_help_keep_your_account_secure">Ntlafatsa phasewete ya hao ho boloka akhaonto ya hao e sireletsehile.</string>
+    <string name="password_screen_error">Sekirini sa phasewete se sitilwe ke ho laolwa.</string>
+    <string name="password_fill_all_fields">Ka kopo tlatsa dikarolo tsohle tsa phasewete.</string>
+    <string name="password_minimum_length">Phasewete ya hao e ncha e tlameha ho ba le ditlhaku tse bonyane tse robedi (8).</string>
+    <string name="passwords_do_not_match">Diphasewete tse ncha ha di tsamaisane.</string>
+    <string name="password_must_be_different">Phasewete e ncha e tlameha ho fapana le eo o e sebedisang hajoale.</string>
+    <string name="password_email_missing">Imeile ya akhaonto ya hao ha e a fumanwa. Ka kopo kena hape.</string>
+    <string name="password_current_incorrect">Phasewete ya hao ya hajoale ha e nepahele.</string>
+    <string name="password_session_missing">Tshebediso ya akhaonto ya hao ha e a netefatswa. Ka kopo leka hape.</string>
+    <string name="password_changed_successfully">Phasewete ya hao e fetotswe ka katleho.</string>
+    <string name="password_update_failed">Ho ntlafatsa phasewete ho hlolehile. Ka kopo leka hape.</string>
+    <string name="password_connection_error">Ho bile le phoso ya kgokahanyo. Ka kopo leka hape.</string>
 
-    <string name="id_hint">Kenya nomoro ea hao ea boitsebiso (ID)</string>
-    <string name="id_text">Nomoro ea ID / Phasepoto</string>
-    <string name="id_title">Nomoro ea ID</string>
-    <string name="id_warning">Nomoro ea hao ea ID e sirelelitsoe ka botlalo ebile e sebelisetsoa feela ho netefatsa boitsebiso le ho hira. Ha re arolelane litaba tsa hao.</string>
+    <string name="uppercase_checker">Tlhaku e kgolo</string>
+    <string name="lowercase_checker">Tlhaku e nyane</string>
+    <string name="number_checker">Nomoro</string>
+    <string name="special_character">Letshwao le kgethehileng</string>
+    <string name="password_checker">Matla a Phasewete</string>
 
-    <string name="province_text">Profense</string>
-    <string name="province_hint">Kenya Profense ea hao</string>
+    <!-- Identification & Location Inputs -->
+    <string name="id_hint">Kenya nomoro ya boitsebiso</string>
+    <string name="hint_id_number">Kenya nomoro ya boitsebiso</string>
+    <string name="id_text">Nomoro ya Boitsebiso / Pasepoto</string>
+    <string name="id_title">Nomoro ya Boitsebiso</string>
+    <string name="id_warning">Nomoro ya hao ya boitsebiso e sireletsehile mme e sebedisetswa feela ho netefatsa boitsebiso ba hao le tokelo ya ho hira. Ha re arolelane lesedi la hao ho hang.</string>
+
+    <string name="province_text">Porofense</string>
+    <string name="province_hint">Kenya Porofense ya hao</string>
     <string name="city_text">Toropo</string>
-    <string name="city_hint">Kenya Toropo ea hao</string>
-    <string name="suburb_text">Sebaka / Motse</string>
-    <string name="suburb_hint">Kenya motse oa hao</string>
+    <string name="city_hint">Kenya Toropo ya hao</string>
+    <string name="suburb_text">Tikoloho</string>
+    <string name="suburb_hint">Kenya Tikoloho ya hao</string>
     <string name="gps_btn">Fumana Sebaka ka GPS</string>
+    <string name="town_village_preferred">Toropo / motse oo o o ratang</string>
+    <string name="we_will_use_your_phone_number_to_verify_your_account">Re tla sebedisa nomoro ya hao ya mohala ho netefatsa akhaonto ya hao.</string>
 
-    <!-- OTP -->
-    <string name="otp_button">Romela SMS ea Netefatso</string>
-    <string name="otp_warning">Re tla romela khoutu ea mahala ea OTP ka SMS ho netefatsa mohala oa hao.</string>
-    <string name="otp_text">Netefatso ea OTP</string>
-    <string name="otp_hint">Kenya khoutu eo u e rometsoeng ka SMS</string>
+    <!-- OTP Flow -->
+    <string name="otp_button">Romela SMS ya Netefatso</string>
+    <string name="otp_warning">Re tla romela khoutu ya mahala ya SMS OTP ho netefatsa nomoro ya hao. Ha ho hlokehe airtime kapa data.</string>
+    <string name="otp_text">Netefatso ya OTP</string>
+    <string name="otp_hint">Ka kopo kenya khoutu eo o e rometsweng ka SMS</string>
     <string name="verify_otp_btn">Netefatsa OTP</string>
     <string name="verify">Netefatsa</string>
+    <string name="verify_location_hint">Kenya toropo kapa tikoloho o tobetse Netefatsa</string>
+    <string name="otp_digit_1">Nomoro ya pele ya OTP</string>
+    <string name="otp_digit_2">Nomoro ya bobedi ya OTP</string>
+    <string name="otp_digit_3">Nomoro ya boraro ya OTP</string>
+    <string name="otp_digit_4">Nomoro ya bone ya OTP</string>
+    <string name="otp_digit_5">Nomoro ya bohlano ya OTP</string>
 
-    <!-- Lehae / Dashboard -->
-    <string name="welcome_dashboard">Re u amohela ho iKhaya!</string>
-    <string name="welcome_to_ikhaya">U amohetsoe ho iKhaya 👋</string>
+    <!-- Dashboard & Home Screen -->
+    <string name="welcome_dashboard">Re a o amohela ho iKhaya!</string>
+    <string name="subtitle_dashboard">Deshbothe ya hao e tla hlaha mona haufinyane.</string>
+    <string name="welcome_to_ikhaya">Re a o amohela ho iKhaya 👋</string>
     <string name="home">Hae</string>
-    <string name="search">Batla</string>
-    <string name="find_accommodation_in_your_area">Fumana bolulo sebakeng sa heno</string>
-    <string name="search_village_town_or_area">Batla motse, toropo kapa sebaka</string>
-    <string name="search_results">Liphetho tsa ho Batla</string>
-    <string name="filters">Lisebelisoa tsa ho Khetha</string>
-    <string name="popular_areas">Libaka tse Tummeng</string>
+    <string name="home_greeting_default">Dumela!\nRe bolelle moo o ratang ho dula teng</string>
+    <string name="home_greeting_personalized">Dumela, %1$s!\nRe bolelle moo o ratang ho dula teng</string>
+    <string name="desc_location_icon">Letshwao la Sebaka</string>
+    <string name="default_location">Mthatha</string>
+    <string name="desc_my_profile">Porofaele ya Ka</string>
+    <string name="desc_search_icon">Batla</string>
+    <string name="hint_search_places">Batla Libaka</string>
+    <string name="desc_filter_options">Kgetho ya ho Hlotla le ho Rala</string>
+    <string name="title_most_popular">Libaka Tse Ratwang Haholo</string>
+    <string name="title_explore_new_area">Hlahloba Libaka Tse Ncha</string>
+    <string name="popular_areas">Libaka Tse Tummeng</string>
     <string name="mthatha">Mthatha</string>
     <string name="giyani">Giyani</string>
 
-    <!-- Litaba tsa Bolulo -->
-    <string name="accommodation_types">Mefuta ea Bolulo</string>
-    <string name="rooms">Liphaposi</string>
+    <!-- Navigation Bar Tabs -->
+    <string name="nav_discover">Utulla</string>
+    <string name="nav_favorites">Tse Ratwang</string>
+    <string name="nav_viewings">Dipontsho</string>
+    <string name="nav_messages">Melaetsa</string>
+    <string name="messages">Melaetsa le Puisano ya Sechaba</string>
+    <string name="messages_community_chat">Melaetsa le Puisano ya Sechaba</string>
+    <string name="chat_with_us">Bua le rona</string>
+
+    <!-- Profiles & General Actions -->
+    <string name="profile">Porofaele</string>
+    <string name="my_profile">Porofaele ya Ka</string>
+    <string name="tenant">Mohiri</string>
+    <string name="tenant_name">Lebitso la Mohiri</string>
+    <string name="tenant_profile">Porofaele ya Mohiri</string>
+    <string name="landlord">Mong-a-ntlo</string>
+    <string name="landlord_name">Lebitso la Mong-a-ntlo</string>
+    <string name="landlord_dashboard">Deshbothe ya Mong-a-ntlo</string>
+    <string name="landlord_profile">Porofaele ya Mong-a-ntlo</string>
+    <string name="personal_information">Lesedi la Botho</string>
+    <string name="i_am_a">Ke nna:</string>
+    <string name="name_tenant_name">Lebitso: Lebitso la Mohiri</string>
+    <string name="email_example_email_com">Imeile: mohlala@imeile.com</string>
+    <string name="phone_000_000_0000">Mohala: 000 000 0000</string>
+    <string name="log_out">Tswa</string>
+    <string name="back">Morao</string>
+    <string name="desc_back_button">Kutela Morao</string>
+    <string name="desc_go_back">Kutela sekirining se fetileng</string>
+    <string name="report_a_problem">Tlaleha Bothata</string>
+    <string name="submit_report">Romela Tlaleho</string>
+    <string name="describe_the_problem">Hlalosa bothata boo o kopaneng le bona</string>
+
+    <!-- Accommodation, Listings & Form Management -->
+    <string name="accommodation_types">Mefuta ya Bodulo</string>
+    <string name="rooms">Dikamore</string>
+    <string name="_2_rooms">Dikamore tse 2</string>
+    <string name="shared_accommodation">Bodulo ba ho Arolelana</string>
     <string name="houses">Matlo</string>
-    <string name="available_accommodation">Bolulo bo Teng</string>
-    <string name="add_new_listing">Kenya Sebaka se Secha</string>
-    <string name="property_name">Lebitso la sebaka</string>
+    <string name="featured_accommodation">Libaka Tse Kgethehileng</string>
+    <string name="available_accommodation">Libaka Tse Fumanehang</string>
+    <string name="add_accommodation">Kenya Bodulo</string>
+    <string name="add_new_listing">Kenya Bodulo bo Bocha</string>
+    <string name="submit_listing">Romela Bodulo</string>
+    <string name="save_listing">♡ Boloka Bodulo</string>
+    <string name="save_accommodation">Boloka Bodulo</string>
+    <string name="property_name">Lebitso la bodulo</string>
     <string name="location">Sebaka</string>
-    <string name="price_per_month">Theko ka khoeli</string>
+    <string name="location_hint">Sebaka</string>
+    <string name="price_per_month">Theko ka kgwedi</string>
     <string name="price">Theko</string>
     <string name="type">Mofuta</string>
-    <string name="number_of_rooms">Palo ea liphaposi</string>
-    <string name="description">Tlhaloso</string>
-    <string name="translate">Fetolela puong ea hao</string>
+    <string name="number_of_rooms">Palo ya dikamore</string>
+    <string name="accommodation_description">Tlhaloso ya bodulo</string>
+    <string name="description_hint">Fana ka tlhaloso e kgutshwane ya kamore, dipalangwang tse haufi, jwalalo.</string>
+    <string name="property_information">Lesedi ka Sebaka</string>
+    <string name="upload_property_image">Kgetha Ditshwantsho tsa Bodulo</string>
+    <string name="property_image">Setshwantsho sa bodulo</string>
+    <string name="property_photo">Setshwantsho sa Sebaka</string>
+    <string name="property_photos">Ditshwantsho tsa sebaka</string>
+    <string name="listings">Matlo</string>
+    <string name="my_listings">Matlo a Ka</string>
+    <string name="saved_listings">Matlo a Bolokilweng</string>
+    <string name="favourite_saved_listings">Tse Ratwang / Matlo a Bolokilweng</string>
+    <string name="manage_your_accommodation_listings">Laola mananeo a hao a bodulo</string>
+    <string name="listing_overview">Kakaretso ya Sebaka</string>
+    <string name="contact_owner">Ikgokahanye le Mong-a-ntlo</string>
+    <string name="add">Kenya</string>
+    <string name="edit">Fetola</string>
+    <string name="delete">Hlakola</string>
+    <string name="view_details">Bona Dintlha</string>
+    <string name="pending">Ho sa emetswe</string>
+    <string name="available">E a fumaneha</string>
+    <string name="total">Kakaretso</string>
+    <string name="_0">0</string>
+    <string name="zero">0</string>
+    <string name="count_zero">0</string>
+    <string name="arrow_right">›</string>
+    <string name="view_all">Bona kaofela</string>
 
-    <!-- Lisebelisoa & Melao -->
-    <string name="amenities_header">Lisebelisoa le Melemo</string>
-    <string name="rules_header">Melao le Tšebeliso</string>
+    <string name="section_property_type">Mofuta wa Sebaka</string>
+    <string name="section_amenities">Ditshebeletso</string>
+    <string name="section_rules">Melao le ho Fumaneha</string>
+    <string name="hint_property_type">Mofuta wa Sebaka</string>
+    <string name="hint_water_infra">Ditshebeletso tsa Metsi</string>
+    <string name="hint_power_infra">Motlakase le Matla</string>
+    <string name="hint_sanitation_infra">Ntloana le Tsamaiso ya Tshila</string>
+    <string name="select_features_rules">Kgetha Dikarolo le Melao</string>
+    <string name="btn_add_extra_features">+ Kgetha Dikarolo Tse Ding</string>
+
+    <string name="amenities_header">Ditshebeletso</string>
+    <string name="rules_header">Melao le ho Fumaneha</string>
     <string name="amenity_water">Metsi a Masepala / Tanka</string>
-    <string name="amenity_electricity">Mohlakase oa Prepaid</string>
-    <string name="amenity_parking">Sebaka se Sireletsehileng sa ho Paka</string>
-    <string name="amenity_wifi">Wi-Fi e Teng</string>
-    <string name="amenity_borehole">Metsi a Borehole</string>
-    <string name="rule_available_now">E Bulehile Hona Joale</string>
-    <string name="rule_deposit_req">Dipepente ea Hlokahala</string>
-    <string name="rule_no_pets">Ha ho Liphoofolo tse Lumelloang</string>
-    <string name="rule_fenced">E Hakeletsoe ka Heke</string>
+    <string name="amenity_electricity">Motlakase wa Prepaid</string>
+    <string name="amenity_parking">Sebaka sa ho Paka se Sireletsehileng</string>
+    <string name="amenity_wifi">Wi-Fi e Kenyeleditswe</string>
+    <string name="amenity_borehole">Metsi a Seliba (Borehole)</string>
+    <string name="rule_available_now">E Fumaneha Hona Joale</string>
+    <string name="rule_deposit_req">Dipepositi e a Hlokahala</string>
+    <string name="rule_no_pets">Diphoofolo Ha di Dumellwe</string>
+    <string name="rule_fenced">E Hlahletswe ka Terata &amp; Kereiti</string>
 
-    <!-- Libaka tsa Lehae -->
-    <string name="home_greeting_default">Lumela!\nRe bolelle moo u batlang ho lula teng</string>
-    <string name="hint_search_places">Batla Libaka</string>
-    <string name="title_most_popular">Libaka tse Ratwang Haholo</string>
-    <string name="title_explore_new_area">Hlahloba Sebaka se Secha</string>
-    <string name="title_saved_listings">Libaka tse Bolokiloeng</string>
-    <string name="empty_saved_title">Ha ho libaka tse bolokiloeng hajoale</string>
-    <string name="empty_saved_subtitle">Tobetsa lets\'oao la pelo ho phaposi kapa ntlo efe kapa efe ho e boloka mona.</string>
-    <string name="btn_explore_now">Batla Bolulo</string>
-    <string name="title_viewings">Litlhahlobo tse Reriloeng</string>
-    <string name="empty_viewings_title">Ha ho litlhahlobo tse hlophisitsoeng</string>
-    <string name="empty_viewings_subtitle">Ha u kopa ho bona bolulo ka mahlo, litaba tsa hao li tla hlaha mona.</string>
-    <string name="btn_schedule_viewing">Fumana Sebaka seo u tla se Bona</string>
+    <string name="publish_listing">Phatlalatsa Bodulo</string>
+    <string name="choose_property_photos">Kgetha Ditshwantsho tsa Sebaka</string>
+    <string name="you_can_select_more_than_one_photo_the_first_photo_will_be_the_main_listing_photo">O ka kgetha ditshwantsho tse fetang se le seng. Setshwantsho sa pele e tla ba se seholo.</string>
+    <string name="enter_property_name">Kenya lebitso la bodulo</string>
+    <string name="property_location">Sebaka seo e leng ho sona</string>
+    <string name="street_suburb_town_or_municipality">Seterata, tikoloho, toropo kapa masepala</string>
+    <string name="verify_property_location">Netefatsa Sebaka sa Bodulo</string>
+    <string name="location_has_not_been_verified_yet">Sebaka ha se e-s\'o netefatsoe hajoale.</string>
+    <string name="monthly_rental_price_r">Theko ya rente ka kgwedi (R)</string>
+    <string name="select_sanitation_type">Kgetha mofuta wa ntlwana</string>
+    <string name="property_description">Tlhaloso ya sebaka</string>
+    <string name="describe_the_property_and_rental_conditions">Hlalosa sebaka le maemo a rente</string>
+    <string name="additional_features_and_rules">Dintlha tse ding le melao</string>
+    <string name="select_features_such_as_wi_fi_parking_security_or_deposit_requirements">Kgetha dintlha tse kang Wi-Fi, ho paka, tshireletso kapa dipepositi.</string>
+    <string name="select_features_and_rules">Kgetha Dintlha le Melao</string>
+    <string name="no_photos_selected">Ha ho ditshwantsho tse kgethilweng</string>
+    <string name="preview_of_selected_property_photos">Ponelo-pele ya ditshwantsho tse kgethilweng</string>
+    <string name="edit_listing">Fetola Bodulo</string>
+    <string name="describe_the_accommodation">Hlalosa bodulo</string>
+    <string name="save_changes">Boloka Diphetoho</string>
+    <string name="e_g_room_apartment_house">mhl. Kamore, Folete, Ntlo</string>
+    <string name="enter_number_of_rooms">Kenya palo ya dikamore</string>
+    <string name="enter_monthly_price">Kenya theko ya kgwedi</string>
+    <string name="monthly_price_r">Theko ya kgwedi (R)</string>
+    <string name="enter_location">Kenya sebaka</string>
+    <string name="choose_the_water_source">Kgetha mohloli wa metsi</string>
+    <string name="select_water_source">Kgetha mohloli wa metsi</string>
+    <string name="choose_the_electricity_supply">Kgetha phepelo ya motlakase</string>
+    <string name="choose_sanitation_and_toilet_facilities">Kgetha ditshebeletso tsa ntloana</string>
+    <string name="select_electricity_supply">Kgetha phepelo ya motlakase</string>
+    <string name="select_accommodation_type">Kgetha mofuta wa bodulo</string>
+    <string name="choose_type_of_accommodation">Kgetha mofuta wa bodulo</string>
+    <string name="number_of_available_rooms">Palo ya dikamore tse fumanehang</string>
+    <string name="delete_listing_title">Hlakola bodulo?</string>
+    <string name="cancel">Hlakola</string>
+    <string name="listing_deleted">Bodulo bo hlakotswe.</string>
+    <string name="listing_id_missing">ID ya bodulo ha e fumanehe.</string>
+    <string name="could_not_load_your_listings">Re sitilwe ke ho laolla matlo a hao.</string>
+    <string name="loading_your_listings">E laolla matlo a hao…</string>
+    <string name="could_not_load_listings">Re sitilwe ke ho laolla matlo. Ka kopo leka hape.</string>
+    <string name="could_not_delete_listing">Re sitilwe ke ho hlakola bodulo. Ka kopo leka hape.</string>
+    <string name="not_specified">Ha e a hlaloswa</string>
+    <string name="property_fallback">Sebaka</string>
+    <string name="monthly_price_format">R%1\$s / kgwedi</string>
+    <string name="rooms_format">%1\$s dikamore</string>
+    <string name="accommodation">Bodulo</string>
+    <string name="price_not_available">Theko ha e fumanehe</string>
+    <string name="listing_summary_format">%1\$s\n%2$s\n%3$s</string>
+    <string name="location_not_provided">Sebaka ha se a fanwa</string>
+    <string name="price_not_provided">Theko ha e a fanwa</string>
+    <string name="available_status">E a fumaneha</string>
+    <string name="listing_location_format">Sebaka: %1\$s</string>
+    <string name="listing_status_format">Boemo: %1\$s</string>
+    <string name="rand_price_format">R%1\$s</string>
+    <string name="property_image_description">Setshwantsho sa bodulo</string>
+    <string name="property_name_placeholder">Lebitso la bodulo</string>
+    <string name="location_placeholder">Sebaka</string>
+    <string name="monthly_price_placeholder">R0 / kgwedi</string>
+    <string name="rooms_placeholder">Dikamore</string>
 
-    <string name="nav_discover">Sibolla</string>
-    <string name="nav_favorites">Tse Ratwang</string>
-    <string name="nav_viewings">Litlhahlobo</string>
-    <string name="nav_messages">Melaetsa</string>
+    <!-- Empty States & User Activity -->
+    <string name="no_listings_yet">Ha ho matlo hajoale</string>
+    <string name="no_saved_listings_yet">Ha ho libaka tse bolokilweng hajoale.</string>
+    <string name="accommodation_you_have_saved_will_appear_here">Bodulo boo o bo bolokileng bo tla hlaha mona.</string>
+    <string name="properties_you_save_will_appear_here">Libaka tseo o di bolokang di tla hlaha mona.</string>
+    <string name="no_payment_history_available">Ha ho nalane ya ditefo e fumanehang.</string>
+    <string name="no_applications_yet">Ha o na dikopo hajoale.</string>
+    <string name="no_new_notifications">Ha ho ditsebiso tse ncha.</string>
+    <string name="no_enquiries">Ha ho dipotso hajoale.</string>
+    <string name="no_enquiries_yet">Ha ho dipotso hajoale.</string>
+    <string name="no_payments_received">Ha ho ditefo tse amohetsweng hajoale.</string>
+    <string name="no_payments_received_yet">Ha ho ditefo tse amohetsweng hajoale.</string>
+    <string name="no_payments_to_display">Ha ho ditefo tse ka bontshwang.</string>
+    <string name="my_applications">Dikopo tsa Ka</string>
+    <string name="listing_enquiries">Dipotso tsa Bodulo</string>
+    <string name="enquiries">Dipotso</string>
+    <string name="payments_received">Ditefo Tse Amohetsweng</string>
+    <string name="payment_history">Nalane ya Ditefo</string>
+    <string name="notifications">Ditsebiso</string>
+    <string name="applications">Dikopo</string>
 
-    <!-- Theko le Thekiso ea Mobu -->
-    <string name="property_verified_badge">Bolulo bo Netefalitsoeng</string>
-    <string name="contact_host_caretaker">Ikopanye le Mong\'a Ntlo / Mohlokomedi</string>
-    <string name="what_this_place_offers_header">Se fumanehang sebakeng sena</string>
-    <string name="about_property_header">Mabapi le bolulo bona</string>
-    <string name="rent_terms_subtitle">Ka khoeli • Dipepente e tloaelehileng</string>
-    <string name="btn_schedule_viewing_action">Rera ho Bona Bolulo</string>
-    <string name="get_directions_maps">Fumana Tsela Mepeng</string>
-    <string name="price_per_month_value">R %1$s / khoeli</string>
-    <string name="price_for_sale_value">R %1$s</string>
-    <string name="terms_rent_subtitle">Ka khoeli • Dipepente e tloaelehileng</string>
-    <string name="terms_sale_subtitle">Theko ea hang • Lengolo la Bopaki (Title Deed)</string>
+    <!-- Saved Listings Screen Elements -->
+    <string name="title_saved_listings">Libaka Tse Bolokilweng</string>
+    <string name="empty_saved_title">Ha ho libaka tse bolokilweng hajoale</string>
+    <string name="empty_saved_subtitle">Tobetsa letshwao la pelo hodima kamore kapa ntlo ha o ntse o batla ho e boloka mona hamorao.</string>
+    <string name="btn_explore_now">Hlahloba Bodulo</string>
 
-    <string name="btn_book_site_visit">Buka ho Hlahloba Mobu</string>
-    <string name="btn_make_offer">Etsa Kopo ea ho Reka</string>
-    <string name="contact_caretaker">Ikopanye le Mohlokomedi / Mong\'a hae</string>
-    <string name="contact_seller">Ikopanye le Morekisi / Moemeli</string>
-    <string name="verified_rental_badge">Bolulo bo Netefalitsoeng</string>
-    <string name="verified_property_badge">Polasi / Mobu o Netefalitsoeng</string>
+    <!-- Search & Filter Controls -->
+    <string name="search">Batla</string>
+    <string name="title_search">Batla</string>
+    <string name="find_accommodation_in_your_area">Fumana bodulo sebakeng sa heno</string>
+    <string name="search_village_town_or_area">Batla motse, toropo kapa tikoloho</string>
+    <string name="search_area_or_village">Batla tikoloho kapa motse</string>
+    <string name="search_results">Diphetho tsa ho Batla</string>
+    <string name="search_results_title">Diphetho tsa bodulo</string>
+    <string name="search_location">Batla sebaka</string>
+    <string name="filters">Dihlotlo</string>
+    <string name="filter_results">Hlotla diphetho</string>
+    <string name="search_hint">Batla ka lebitso la sebaka kapa tikoloho</string>
+    <string name="search_by_property_name_or_location">Batla ka lebitso la sebaka kapa tikoloho</string>
+    <string name="find_accommodation">Fumana Bodulo</string>
+    <string name="search_again">Batla</string>
+    <string name="search_filters_title">Dihlotlo</string>
+    <string name="search_max_price_hint">Theko e hodimo ka ho fetisisa ya kgwedi (R)</string>
+    <string name="search_min_rooms_hint">Palo e tlase ka ho fetisisa ya dikamore</string>
+    <string name="search_apply_filters">Sebedisa dihlotlo</string>
+    <string name="search_no_results">Ha ho bodulo bo tsamaisanang le patlo le dihlotlo tsa hao.</string>
+    <string name="search_screen_no_results">Ha ho bodulo bo fumanweng bo tsamaisanang le patlo ya hao.</string>
+    <string name="no_accommodation_matches_your_search_and_filters">Ha ho bodulo bo tsamaisanang le patlo le dihlotlo tsa hao.</string>
+    <string name="no_listings_found">Ha ho matlo a fumanweng</string>
+    <string name="search_view_details">Bona Dintlha</string>
+    <string name="search_listing_unavailable">Bodulo ha bo fumanehe.</string>
+    <string name="search_login_again">Ka kopo kena hape.</string>
+    <string name="search_load_failed">Re sitilwe ke ho laolla bodulo.</string>
+    <string name="search_load_error">Phoso ha ho laollwa bodulo.</string>
+    <string name="search_unnamed_property">Bodulo</string>
+    <string name="search_price_per_month">R%1\$s ka kgwedi</string>
+    <string name="search_rooms_count">%1\$s dikamore</string>
+    <string name="search_any_type">Mofuta ofe kapa ofe wa sebaka</string>
+    <string name="apply_filters">Sebedisa Dihlotlo</string>
+    <string name="any">Efe kapa efe</string>
+    <string name="min_rooms">Dikamore tse tlase</string>
+    <string name="no_limit">Ha ho moeli</string>
+    <string name="max_price_r">Theko e phahameng (R)</string>
+
+    <string name="desc_close">Kwala Patlo</string>
+    <string name="desc_filter">Dikgetho tsa Dihlotlo</string>
+    <string name="filter_chip_all">Mefuta Yohle</string>
+    <string name="filter_chip_rooms">Dikamore</string>
+    <string name="filter_chip_shared">Tse Arolelanwang</string>
+    <string name="filter_chip_houses">Matlo</string>
+
+    <!-- Filter Bottom Sheet -->
+    <string name="filter_sheet_title">Dihlotlo</string>
+    <string name="filter_reset">Seta botjha</string>
+    <string name="filter_price_range">Theko ya ho Hira ka Kgwedi (ZAR)</string>
+    <string name="filter_price_under_1500">Ka tlase ho R1,500</string>
+    <string name="filter_price_1500_2500">R1,500 – R2,500</string>
+    <string name="filter_price_2500_4000">R2,500 – R4,000</string>
+    <string name="filter_price_above_4000">R4,000+</string>
+    <string name="filter_room_type">Tlhophiso ya Kamore</string>
+    <string name="filter_type_single">Kamore e le Nngwe</string>
+    <string name="filter_type_shared">Ho Arolelana</string>
+    <string name="filter_type_bachelor">Bachelor / Khotheje</string>
+    <string name="filter_type_house">Ntlo e Feletseng</string>
+    <string name="filter_utilities">Ditshebeletso tsa Bohlokwa</string>
+    <string name="filter_util_wifi">WiFi e Kenyeleditswe</string>
+    <string name="filter_util_water">Metsi a Kenyeleditswe</string>
+    <string name="filter_util_prepaid">Mithara ya Prepaid</string>
+    <string name="filter_util_backup_power">Motlakase wa Tlatsetso / Solar</string>
+    <string name="filter_util_jojo">Tanka ya JoJo / Metsi a Polokelo</string>
+    <string name="filter_btn_apply">Sebedisa Dihlotlo</string>
+
+    <!-- Viewings Screen -->
+    <string name="title_viewings">Dipontsho Tse Rulagantsweng</string>
+    <string name="empty_viewings_title">Ha ho dipontsho tse rulagantsweng</string>
+    <string name="empty_viewings_subtitle">Ha o kopa ho bona kamore kapa ntlo ka boyena, dintlha tsa nako ya hao di tla hlaha mona.</string>
+    <string name="btn_schedule_viewing">Fumana Bodulo boo o ka bo Bonang</string>
+    <string name="status_confirmed">Netefaditswe</string>
+    <string name="viewing_status_pending">Ho Emetsoe Mong-a-ntlo</string>
+    <string name="action_directions">Taelo ya Tsela</string>
+    <string name="action_contact_landlord">Shaya / Bua</string>
+
+    <!-- Property Details, Location & Actions -->
+    <string name="get_directions">Fumana Taelo ya Tsela</string>
+    <string name="get_directions_maps">Fumana Ditaelo Dimmapeng</string>
+    <string name="location_on_map">Sebaka Mmepeng</string>
+    <string name="view_on_map">Bona mmepeng</string>
+    <string name="open_google_maps">Bula Google Maps</string>
+    <string name="description">Tlhaloso</string>
+    <string name="translate">Fetolela</string>
+    <string name="contact_landlord">Ikgokahanye le mong-a-ntlo</string>
+    <string name="description_not_available">Ha ho tlhaloso e kentsweng bakeng sa bodulo bona.</string>
+    <string name="translate_to_language">Fetolela ho %1\$s</string>
+    <string name="show_original">Bontsha ya mathomo</string>
+    <string name="translation_failed">Phetolelo e hlolehile: %1\$s</string>
+    <string name="location_not_available">Sebaka ha se fumanehe.</string>
+    <string name="could_not_open_maps">Re sitilwe ke ho bula Dimmepe.</string>
+    <string name="please_log_in_to_save">Ka kopo kena pele o ka boloka.</string>
+    <string name="accommodation_saved">Bodulo bo bolokilwe.</string>
+    <string name="already_saved">O se o bo bolokile.</string>
+    <string name="could_not_save_accommodation">Re sitilwe ke ho boloka bodulo.</string>
+    <string name="please_log_in_to_contact_landlord">Ka kopo kena pele o ikgokahanya le mong-a-ntlo.</string>
+    <string name="enquiry_sent">Potsiso e rometswe ho mong-a-ntlo.</string>
+    <string name="could_not_send_enquiry">Re sitilwe ke ho romela potsiso.</string>
+    <string name="default_enquiry_message">Ke kgahlwa ke bodulo bona.</string>
+    <string name="property_rating_sample">★ 4.8</string>
+    <string name="property_verified_badge">Bodulo bo Netefaditsweng</string>
+    <string name="contact_host_caretaker">Ikgokahanye le Mohlokomedi / Mong-a-ntlo</string>
+    <string name="what_this_place_offers_header">Seo sebaka sena se fanang ka sona</string>
+    <string name="about_property_header">Mabapi le bodulo bona</string>
+    <string name="rent_terms_subtitle">Ka kgwedi • Dipepositi e tlwaelehileng</string>
+    <string name="btn_schedule_viewing_action">Rulaganya ho Bona Ntlo</string>
+    <string name="price_per_month_format">R %1\$s</string>
+
+    <!-- Location Picker & Area Constants -->
+    <string name="title_select_location">Kgetha Tikoloho / Toropo</string>
+    <string name="location_all_areas">Libaka Tsohle</string>
+    <string name="default_city">Mthatha</string>
+    <string name="desc_location_picker">Kgetha Toropo ya Hajoale</string>
+
+    <!-- Property Pricing & Offering Terms (Rent vs Buy) -->
+    <string name="price_per_month_value">R %1\$s / kgwedi</string>
+    <string name="price_for_sale_value">R %1\$s</string>
+    <string name="terms_rent_subtitle">Ka kgwedi • Dipepositi e tlwaelehileng</string>
+    <string name="terms_sale_subtitle">Theko ya hang feela • Lengolo la boitsebiso</string>
+
+    <!-- Offering Specific CTAs -->
+    <string name="btn_book_site_visit">Behela ho Etela Sebaka</string>
+    <string name="btn_make_offer">Etsa Tlhahiso ya ho Reka</string>
+    <string name="contact_caretaker">Ikgokahanye le Mohlokomedi / Mong-a-ntlo</string>
+    <string name="contact_seller">Ikgokahanye le Morekisi / Moemedi</string>
+    <string name="verified_rental_badge">Bodulo bo Netefaditsweng</string>
+    <string name="verified_property_badge">Lengolo / Sebaka se Netefaditsweng</string>
+
+    <!-- Rental Application Form & Verification -->
+    <string name="apply_title">Kopo ya ho Hira ya Mohiri</string>
+    <string name="label_full_name">Lebitso ka Botlalo</string>
+    <string name="label_id_number">Nomoro ya Boitsebiso ya RSA / Pasepoto</string>
+    <string name="label_contact_phone">Mohala wa Boikgokahanyo</string>
+    <string name="label_emergency_contact">Motho wa Maemo a Tshepahalang</string>
+    <string name="label_occupation_status">Maemo a Mosebetsi</string>
+    <string name="label_move_in_date">Letsatsi leo o le Ratang la ho Kena</string>
+    <string name="label_lease_duration">Nako ya ho Hira</string>
+    <string name="label_occupants">Palo ya Baahi</string>
+    <string name="label_special_notes">Melaetsa ya Tlatsetso</string>
+    <string name="label_agreement_checkbox">Ke netefatsa hore dintlha tsena di nepahetse mme ke dumela ho latela melao ya bodulo.</string>
+    <string name="btn_submit_application">Romela Kopo</string>
+    <string name="msg_toast_applied">Kopo e Rometswe ho Mong-a-ntlo!</string>
+    <string name="err_enter_name">Ka kopo kenya lebitso la hao le feletseng</string>
+    <string name="err_enter_id">Ka kopo kenya nomoro ya nnete ya boitsebiso ya RSA ya dinomoro tse 13</string>
+    <string name="err_enter_phone">Ka kopo kenya nomoro ya mohala ya Afrika Borwa ya dinomoro tse 10</string>
+    <string name="err_enter_emergency">Ka kopo kenya nomoro ya maemo a potlakileng e sebetsang</string>
+    <string name="err_accept_terms">Ka kopo dumellana le melao ya ho hira ho tswela pele.</string>
+
+    <!-- Landlord Decision Actions & Application States -->
+    <string name="btn_apply_to_rent">Kopela ho Hira</string>
+    <string name="btn_pending_review">Kopo e Emetse Tlhahlobo</string>
+    <string name="btn_approve_lease">Amohela Tumellano</string>
+    <string name="btn_decline_lease">Hana</string>
+    <string name="status_pending">Boemo: HO EMETSWE</string>
+    <string name="status_approved">Boemo: AMOHETSWE</string>
+    <string name="status_declined">Boemo: HANNWE</string>
+    <string name="msg_application_approved">Kopo e Amohetswe! Mohiri o tsebisitswe.</string>
+    <string name="msg_application_declined">Kopo e Hannwe</string>
+
+    <string name="application_dialog_title">%1$s • \%2$s</string>
+    <string name="default_move_in_date">01/11/2026</string>
+    <string name="default_occupation">Moithuti</string>
+    <string name="default_lease_duration">Likgwedi tse 12</string>
+    <string name="default_occupants">Motho a le mong</string>
+    <string name="default_tenant_note">Mohiri ya tshepahalang ya batlang bodulo.</string>
+    <string name="application_status_pending">HO EMETSWE</string>
+
+    <!-- Notifications & Chat Prototype Features -->
+    <string name="new_enquiries">Dipotso tse ncha</string>
+    <string name="new_enquiries_notification">Dipotso tse ncha</string>
+    <string name="notification_badge_text">!</string>
+    <string name="unseen_enquiries_count">dipotso tse ncha tse %1\$d — tobetsa ho bona</string>
+    <string name="error_loading_chat_requests">Re sitilwe ke ho laolla dikopo tsa puisano.</string>
+    <string name="pending_chat_requests">Dikopo tsa Puisano Tse Emetsweng</string>
+    <string name="notification_user">Mosebedisi</string>
+    <string name="notification_member">Setho</string>
+    <string name="chat_request_message">%1$s (\%2$s) o batla ho qala puisano le wena.</string>
+    <string name="accept">Amohela</string>
+    <string name="decline">Hana</string>
+    <string name="chat_request_accepted">Kopo ya puisano e amohetswe!</string>
+    <string name="chat_request_declined">Kopo ya puisano e hannwe.</string>
+    <string name="chat_request_update_failed">Re sitilwe ke ho ntlafatsa kopo ya puisano.</string>
+    <string name="could_not_load_notifications">Re sitilwe ke ho laolla ditsebiso.</string>
+    <string name="no_general_notifications">Ha ho ditsebiso tse ncha tsa kakaretso.</string>
+
+    <string name="rental_applications_loading">Ho laollwa dikopo tsa ho hira…</string>
+    <string name="rental_applications_load_failed">Re sitilwe ke ho laolla dikopo tsa ho hira. Ka kopo hlahloba kgokahanyo ya hao.</string>
 
 </resources>

@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,7 +18,7 @@ public class LandlordProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_landlord_profile);
 
-        Button back = findViewById(R.id.btnBack);
+        View back = findViewById(R.id.btnBack);
 
         if (back != null) {
             back.setOnClickListener(v -> finish());

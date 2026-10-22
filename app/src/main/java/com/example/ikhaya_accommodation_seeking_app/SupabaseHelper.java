@@ -106,6 +106,8 @@ public class SupabaseHelper {
 
         if (accessToken != null && accessToken.startsWith("ey")) {
             connection.setRequestProperty("Authorization", "Bearer " + accessToken);
+        } else {
+            connection.setRequestProperty("Authorization", "Bearer " + SUPABASE_KEY);
         }
 
         connection.setRequestProperty("Content-Type", "application/json");
@@ -141,6 +143,8 @@ public class SupabaseHelper {
 
         if (accessToken != null && accessToken.startsWith("ey")) {
             connection.setRequestProperty("Authorization", "Bearer " + accessToken);
+        } else {
+            connection.setRequestProperty("Authorization", "Bearer " + SUPABASE_KEY);
         }
 
         connection.setRequestProperty("Accept", "application/json");

@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -51,7 +52,7 @@ public class UserSelectionActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_selection);
 
-        Button btnBack = findViewById(R.id.btnBack);
+        View btnBack = findViewById(R.id.btnBack);
         if (btnBack != null) {
             btnBack.setOnClickListener(v -> finish());
         }
@@ -107,6 +108,10 @@ public class UserSelectionActivity extends AppCompatActivity {
         View userSelectionRoot = findViewById(R.id.userSelectionRoot);
         View floatingBottomNav = findViewById(R.id.floatingBottomNav);
 
+        SharedPreferences prefs = getSharedPreferences("iKhayaSession", MODE_PRIVATE);
+        String role = prefs.getString("USER_ROLE", "");
+        boolean isLandlord = getIntent().getBooleanExtra("isLandlord", "landlord".equalsIgnoreCase(role) || "ADMIN".equalsIgnoreCase(role));
+
         if (floatingBottomNav != null) {
             floatingBottomNav.setPadding(0, 0, 0, 0);
 
@@ -129,30 +134,81 @@ public class UserSelectionActivity extends AppCompatActivity {
                 });
             }
 
-            View navHome = findViewById(R.id.navHome);
-            if (navHome != null) {
-                navHome.setOnClickListener(v -> {
-                    Intent intent = new Intent(UserSelectionActivity.this, HomeActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                    startActivity(intent);
-                    finish();
-                });
-            }
+            if (isLandlord) {
+                // Landlord Navigation Setup
+                View navHome = findViewById(R.id.navHome);
+                ImageView imgNavHome = findViewById(R.id.imgNavHome);
+                TextView tvNavHome = findViewById(R.id.tvNavHome);
 
-            View navFavorites = findViewById(R.id.navFavorites);
-            if (navFavorites != null) {
-                navFavorites.setOnClickListener(v -> {
-                    startActivity(new Intent(UserSelectionActivity.this, SavedListingsActivity.class));
-                    finish();
-                });
-            }
+                if (imgNavHome != null) imgNavHome.setImageResource(R.drawable.layout_dashboard);
+                if (tvNavHome != null) tvNavHome.setText("Dashboard");
 
-            View navViewings = findViewById(R.id.navViewings);
-            if (navViewings != null) {
-                navViewings.setOnClickListener(v -> {
-                    startActivity(new Intent(UserSelectionActivity.this, ViewingsActivity.class));
-                    finish();
-                });
+                if (navHome != null) {
+                    navHome.setOnClickListener(v -> {
+                        Intent intent = new Intent(UserSelectionActivity.this, LandlordDashboardActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                        startActivity(intent);
+                        finish();
+                    });
+                }
+
+                View navFavorites = findViewById(R.id.navFavorites);
+                ImageView imgNavFavorites = findViewById(R.id.imgNavFavorites);
+                TextView tvNavFavorites = findViewById(R.id.tvNavFavorites);
+
+                if (imgNavFavorites != null) imgNavFavorites.setImageResource(R.drawable.book_user);
+                if (tvNavFavorites != null) tvNavFavorites.setText(R.string.listings);
+
+                if (navFavorites != null) {
+                    navFavorites.setOnClickListener(v -> {
+                        Intent intent = new Intent(UserSelectionActivity.this, MyListingsActivity.class);
+                        intent.putExtra("FILTER_STATUS", "ALL");
+                        startActivity(intent);
+                        finish();
+                    });
+                }
+
+                View navViewings = findViewById(R.id.navViewings);
+                ImageView imgNavViewings = findViewById(R.id.imgNavViewings);
+                TextView tvNavViewings = findViewById(R.id.tvNavViewings);
+
+                if (imgNavViewings != null) imgNavViewings.setImageResource(R.drawable.house);
+                if (tvNavViewings != null) tvNavViewings.setText(R.string.add);
+
+                if (navViewings != null) {
+                    navViewings.setOnClickListener(v -> {
+                        Intent intent = new Intent(UserSelectionActivity.this, AddListingActivity.class);
+                        startActivity(intent);
+                        finish();
+                    });
+                }
+            } else {
+                // Tenant Navigation Setup
+                View navHome = findViewById(R.id.navHome);
+                if (navHome != null) {
+                    navHome.setOnClickListener(v -> {
+                        Intent intent = new Intent(UserSelectionActivity.this, HomeActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                        startActivity(intent);
+                        finish();
+                    });
+                }
+
+                View navFavorites = findViewById(R.id.navFavorites);
+                if (navFavorites != null) {
+                    navFavorites.setOnClickListener(v -> {
+                        startActivity(new Intent(UserSelectionActivity.this, SavedListingsActivity.class));
+                        finish();
+                    });
+                }
+
+                View navViewings = findViewById(R.id.navViewings);
+                if (navViewings != null) {
+                    navViewings.setOnClickListener(v -> {
+                        startActivity(new Intent(UserSelectionActivity.this, ViewingsActivity.class));
+                        finish();
+                    });
+                }
             }
         }
     }
@@ -275,7 +331,7 @@ public class UserSelectionActivity extends AppCompatActivity {
         try {
             if (requestsArray.length() == 0) {
                 TextView emptyText = new TextView(this);
-                emptyText.setText("No active direct chats yet. Search for a user above to send a chat request.");
+                emptyText.setText(R.string.no_active_direct_chats);
                 emptyText.setTextColor(Color.parseColor("#6C757D"));
                 emptyText.setTextSize(14f);
                 emptyText.setPadding(0, 20, 0, 20);
@@ -300,7 +356,7 @@ public class UserSelectionActivity extends AppCompatActivity {
                     targetRole = reqObj.optString("sender_role", "Member");
                 }
 
-                addUserCard(targetUserId, targetName, targetRole, usersListContainer, "Tap to message");
+                addUserCard(targetUserId, targetName, targetRole, usersListContainer, getString(R.string.tap_to_message));
             }
         } catch (Exception e) {
             android.util.Log.e("UserSelection", "Could not display active chats", e);
@@ -383,7 +439,7 @@ public class UserSelectionActivity extends AppCompatActivity {
                 if (fullName.toLowerCase().contains(queryLower)) {
                     seenIds.add(userId);
                     found = true;
-                    addUserCard(userId, fullName, role, searchResultsContainer, "Request Chat");
+                    addUserCard(userId, fullName, role, searchResultsContainer, getString(R.string.request_chat));
                 }
             }
 
@@ -407,7 +463,7 @@ public class UserSelectionActivity extends AppCompatActivity {
                 if (fullName.toLowerCase().contains(queryLower)) {
                     seenIds.add(userId);
                     found = true;
-                    addUserCard(userId, fullName, role, searchResultsContainer, "Request Chat");
+                    addUserCard(userId, fullName, role, searchResultsContainer, getString(R.string.request_chat));
                 }
             }
 
@@ -453,7 +509,7 @@ public class UserSelectionActivity extends AppCompatActivity {
         card.addView(innerLayout);
 
         card.setOnClickListener(v -> {
-            if ("Request Chat".equals(actionText)) {
+            if (getString(R.string.request_chat).equals(actionText)) {
                 checkAndRequestChat(targetUserId, targetName, targetRole);
             } else {
                 openChat(targetUserId, targetName, false);

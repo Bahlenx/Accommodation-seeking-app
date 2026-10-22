@@ -8,6 +8,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
@@ -42,7 +43,7 @@ public class NotificationsActivity extends AppCompatActivity {
         notificationsListContainer =
                 findViewById(R.id.notificationsListContainer);
 
-        Button btnBack = findViewById(R.id.btnBack);
+        View btnBack = findViewById(R.id.btnBack);
 
         if (btnBack != null) {
             btnBack.setOnClickListener(v -> finish());

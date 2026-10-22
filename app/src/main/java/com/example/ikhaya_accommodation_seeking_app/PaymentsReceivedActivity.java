@@ -21,7 +21,7 @@ public class PaymentsReceivedActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_payments_received);
 
-        Button btnBack = findViewById(R.id.btnBack);
+        View btnBack = findViewById(R.id.btnBack);
         txtNoPayments = findViewById(R.id.txtNoPayments);
 
         btnBack.setOnClickListener(v -> finish());
