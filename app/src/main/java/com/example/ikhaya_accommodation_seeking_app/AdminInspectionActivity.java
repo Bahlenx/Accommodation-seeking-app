@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -112,7 +113,7 @@ public class AdminInspectionActivity extends AppCompatActivity {
         executor.execute(() -> {
             HttpURLConnection conn = null;
             try {
-                String endpoint = "/rest/v1/listings?select=*&id=eq." + URLEncoder.encode(listingId, "UTF-8") + "&limit=1";
+                String endpoint = "/rest/v1/listings?select=*&id=eq." + URLEncoder.encode(listingId, StandardCharsets.UTF_8.name()) + "&limit=1";
                 conn = SupabaseHelper.createConnection(endpoint, "GET", token);
 
                 if (conn.getResponseCode() >= 200 && conn.getResponseCode() < 300) {
@@ -227,11 +228,11 @@ public class AdminInspectionActivity extends AppCompatActivity {
                     if ("REJECTED".equals(newStatus)) {
                         String notifTitle = String.format(Locale.getDefault(), "%s: %s", getString(R.string.notif_title_action_required), propertyTitle);
                         String notifMsg = String.format(Locale.getDefault(), "%s: %s", getString(R.string.notif_msg_requires_updates_prefix), rejectionReason);
-                        sendLandlordNotification(token, notifTitle, notifMsg);
+                        SupabaseHelper.createNotification(landlordUid, notifTitle, notifMsg, token);
                     } else if ("APPROVED".equals(newStatus)) {
                         String notifTitle = String.format(Locale.getDefault(), "%s: %s", getString(R.string.notif_title_listing_approved), propertyTitle);
                         String notifMsg = getString(R.string.notif_msg_listing_approved_body);
-                        sendLandlordNotification(token, notifTitle, notifMsg);
+                        SupabaseHelper.createNotification(landlordUid, notifTitle, notifMsg, token);
                     }
                 }
 
@@ -253,23 +254,6 @@ public class AdminInspectionActivity extends AppCompatActivity {
                 });
             }
         });
-    }
-
-    private void sendLandlordNotification(String token, String title, String message) {
-        HttpURLConnection conn = null;
-        try {
-            conn = SupabaseHelper.createConnection("/rest/v1/notifications", "POST", token);
-            JSONObject notif = new JSONObject();
-            notif.put("user_uid", landlordUid);
-            notif.put("title", title);
-            notif.put("message", message);
-
-            SupabaseHelper.writeJson(conn, notif);
-            conn.getResponseCode();
-        } catch (Exception ignored) {
-        } finally {
-            if (conn != null) conn.disconnect();
-        }
     }
 
     @Override

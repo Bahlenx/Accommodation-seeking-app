@@ -1,7 +1,9 @@
 package com.example.ikhaya_accommodation_seeking_app;
 
 import android.content.Context;
+import android.util.Log;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -12,6 +14,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
 
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -55,7 +58,7 @@ public class SupabaseHelper {
                 .getString("user_id", null);
     }
 
-    private static final long THIRTY_DAYS_MS = 30L * 24 * 60 * 60 * 1000L;
+    private static final long THIRTY_DAYS_MS = 30L * 24L * 60L * 60L * 1000L;
 
     public static void saveSession(Context context, String accessToken, String refreshToken, String userId, String userName, String userRole) {
         android.content.SharedPreferences.Editor editor = context.getSharedPreferences("iKhayaSession", Context.MODE_PRIVATE).edit();
@@ -64,7 +67,7 @@ public class SupabaseHelper {
         if (userId != null) editor.putString("user_id", userId);
         if (userName != null) editor.putString("USER_NAME", userName);
         if (userRole != null) editor.putString("USER_ROLE", userRole);
-        
+
         long loginTimestamp = context.getSharedPreferences("iKhayaSession", Context.MODE_PRIVATE).getLong("login_timestamp", 0);
         if (loginTimestamp == 0 || accessToken != null) {
             editor.putLong("login_timestamp", System.currentTimeMillis());
@@ -119,10 +122,6 @@ public class SupabaseHelper {
                 .apply();
     }
 
-    /**
-     * Executes a true HTTP PATCH request using OkHttp.
-     * Safely handles developer bypass by omitting invalid Bearer headers when no user session exists.
-     */
     public static void patch(String endpoint, JSONObject body, String accessToken) throws Exception {
         String finalUrl = endpoint.startsWith("http")
                 ? endpoint
@@ -137,7 +136,6 @@ public class SupabaseHelper {
                 .addHeader("Prefer", "return=minimal")
                 .patch(requestBody);
 
-        // Only send Authorization header if we have a real JWT session token (starts with 'ey')
         if (accessToken != null && accessToken.startsWith("ey")) {
             builder.addHeader("Authorization", "Bearer " + accessToken);
         }
@@ -276,5 +274,76 @@ public class SupabaseHelper {
         } catch (Exception e) {
             return value;
         }
+    }
+
+    public static void createNotification(String targetUid, String title, String message, String token) {
+        java.util.concurrent.Executors.newSingleThreadExecutor().execute(() -> {
+            HttpURLConnection conn = null;
+            try {
+                conn = createConnection("/rest/v1/notifications", "POST", token);
+                conn.setRequestProperty("Prefer", "return=minimal");
+
+                JSONObject body = new JSONObject();
+                body.put("user_uid", targetUid);
+                body.put("title", title);
+                body.put("message", message);
+
+                writeJson(conn, body);
+                int code = conn.getResponseCode();
+                if (code >= 200 && code < 300) {
+                    Log.d("SupabaseHelper", "Notification created successfully for: " + targetUid);
+                } else {
+                    String err = readResponse(conn);
+                    Log.e("SupabaseHelper", "Failed to insert notification. HTTP " + code + ": " + err);
+                }
+            } catch (Exception e) {
+                Log.e("SupabaseHelper", "Failed to send notification", e);
+            } finally {
+                if (conn != null) conn.disconnect();
+            }
+        });
+    }
+
+    public static void notifyAdmins(String title, String message, String token) {
+        java.util.concurrent.Executors.newSingleThreadExecutor().execute(() -> {
+            HttpURLConnection conn = null;
+            try {
+                // Case-insensitive check on profiles
+                conn = createConnection("/rest/v1/profiles?select=firebase_uid&role=ilike.admin", "GET", token);
+                int code = conn.getResponseCode();
+
+                HashSet<String> adminUids = new HashSet<>();
+
+                if (code >= 200 && code < 300) {
+                    String response = readResponse(conn);
+                    JSONArray admins = new JSONArray(response);
+                    for (int i = 0; i < admins.length(); i++) {
+                        String uid = admins.optJSONObject(i).optString("firebase_uid", "");
+                        if (!uid.isEmpty()) adminUids.add(uid);
+                    }
+                }
+                conn.disconnect();
+
+                // Fallback check on Users table if empty
+                if (adminUids.isEmpty()) {
+                    conn = createConnection("/rest/v1/Users?select=id&user_role=ilike.admin", "GET", token);
+                    if (conn.getResponseCode() >= 200 && conn.getResponseCode() < 300) {
+                        JSONArray legacyAdmins = new JSONArray(readResponse(conn));
+                        for (int i = 0; i < legacyAdmins.length(); i++) {
+                            String uid = legacyAdmins.optJSONObject(i).optString("id", "");
+                            if (!uid.isEmpty()) adminUids.add(uid);
+                        }
+                    }
+                }
+
+                for (String adminUid : adminUids) {
+                    createNotification(adminUid, title, message, token);
+                }
+            } catch (Exception e) {
+                Log.e("SupabaseHelper", "Failed to notify admins", e);
+            } finally {
+                if (conn != null) conn.disconnect();
+            }
+        });
     }
 }

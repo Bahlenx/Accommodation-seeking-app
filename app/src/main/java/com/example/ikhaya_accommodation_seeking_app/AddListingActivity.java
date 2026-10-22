@@ -629,6 +629,19 @@ public class AddListingActivity extends AppCompatActivity {
 
                 updateListingImagePath(accessToken, listingId, uploadedUrls.get(0));
 
+                SupabaseHelper.createNotification(
+                        userId,
+                        "Listing Under Review",
+                        "Your listing '" + propertyName + "' has been submitted and is pending admin approval.",
+                        accessToken
+                );
+
+                SupabaseHelper.notifyAdmins(
+                        "New Listing Submitted",
+                        "A landlord has submitted '" + propertyName + "'. It requires review.",
+                        accessToken
+                );
+
                 runOnUiThread(() -> {
                     if (isFinishing() || isDestroyed()) return;
                     Toast.makeText(

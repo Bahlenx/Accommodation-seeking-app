@@ -81,17 +81,17 @@ public class AdminDashboardActivity extends AppCompatActivity {
         setContentView(R.layout.activity_admin_dashboard);
 
         tvStatPending = findViewById(R.id.tvStatPending);
-        tvTrendPending = findViewById(R.id.tvTrendPending);
+        // tvTrendPending = findViewById(R.id.tvTrendPending);
         tvStatActive = findViewById(R.id.tvStatActive);
         tvStatUsers = findViewById(R.id.tvStatUsers);
         tvStatTotalProperties = findViewById(R.id.tvStatTotalProperties);
         tvStatReports = findViewById(R.id.tvStatReports);
-        tvTrendReports = findViewById(R.id.tvTrendReports);
+        // tvTrendReports = findViewById(R.id.tvTrendReports);
         tvClearancePercent = findViewById(R.id.tvClearancePercent);
         pbApprovalRatio = findViewById(R.id.pbApprovalRatio);
 
         View btnAdminLogout = findViewById(R.id.btnAdminLogout);
-        View btnAdminExit = findViewById(R.id.btnAdminExit);
+        // View btnAdminExit = findViewById(R.id.btnAdminExit);
         TextView tvAdminGreeting = findViewById(R.id.tvAdminGreeting);
 
         SharedPreferences prefs = getSharedPreferences("iKhayaSession", MODE_PRIVATE);
@@ -103,12 +103,20 @@ public class AdminDashboardActivity extends AppCompatActivity {
         if (tvAdminGreeting != null) {
             String firstName = adminName.trim().split("\\s+")[0];
             tvAdminGreeting.setText(String.format(Locale.getDefault(), "%s, %s", getString(R.string.greeting_welcome), firstName));
+            tvAdminGreeting.setOnClickListener(v ->
+                    startActivity(new Intent(this, NotificationsActivity.class))
+            );
         }
 
         if (btnAdminLogout != null) {
             btnAdminLogout.setOnClickListener(v -> performLogout());
-        } else if (btnAdminExit != null) {
-            btnAdminExit.setOnClickListener(v -> performLogout());
+        }
+
+        View btnNotificationsAdmin = findViewById(R.id.btnNotificationsAdmin);
+        if (btnNotificationsAdmin != null) {
+            btnNotificationsAdmin.setOnClickListener(v ->
+                    startActivity(new Intent(this, NotificationsActivity.class))
+            );
         }
 
         setupActionCards();
@@ -226,13 +234,12 @@ public class AdminDashboardActivity extends AppCompatActivity {
 
         View cardReports = findViewById(R.id.cardReports);
         if (cardReports != null) {
-            cardReports.setOnClickListener(v -> showProblemReportsDialog());
+            cardReports.setOnClickListener(v ->
+                    startActivity(new Intent(this, AdminReportsActivity.class))
+            );
         }
 
-        View cardProblemReports = findViewById(R.id.cardProblemReports);
-        if (cardProblemReports != null) {
-            cardProblemReports.setOnClickListener(v -> showProblemReportsDialog());
-        }
+        // View cardProblemReports = findViewById(R.id.cardProblemReports);
 
         View rowSupabaseEngine = findViewById(R.id.rowSupabaseEngine);
         if (rowSupabaseEngine != null) {

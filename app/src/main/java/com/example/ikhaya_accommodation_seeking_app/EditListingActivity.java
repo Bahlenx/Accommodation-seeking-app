@@ -82,9 +82,6 @@ public class EditListingActivity extends AppCompatActivity {
 
         nameInput = findViewById(R.id.edtEditPropertyName);
         locationInput = findViewById(R.id.autoCompleteLocationEdit);
-        if (locationInput == null) {
-            locationInput = findViewById(R.id.edtEditLocation);
-        }
 
         priceInput = findViewById(R.id.edtEditPrice);
         roomsInput = findViewById(R.id.edtEditRooms);
@@ -306,6 +303,20 @@ public class EditListingActivity extends AppCompatActivity {
 
                     if (code >= 200 && code < 300) {
                         Toast.makeText(EditListingActivity.this, R.string.msg_listing_updated_success, Toast.LENGTH_SHORT).show();
+
+                        SupabaseHelper.createNotification(
+                                userId,
+                                "Listing Under Review",
+                                "Your listing '" + name + "' has been submitted and is pending admin approval.",
+                                accessToken
+                        );
+
+                        SupabaseHelper.notifyAdmins(
+                                "New Listing Edit",
+                                "A landlord has updated '" + name + "'. It requires review.",
+                                accessToken
+                        );
+
                         setResult(RESULT_OK);
                         finish();
                     } else {

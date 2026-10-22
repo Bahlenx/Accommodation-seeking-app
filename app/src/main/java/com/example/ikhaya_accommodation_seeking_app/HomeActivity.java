@@ -145,13 +145,7 @@ public class HomeActivity extends AppCompatActivity {
             );
         }
 
-        View btnFilter = findViewById(R.id.btnSearchSubmit);
-        if (btnFilter != null) {
-            btnFilter.setOnClickListener(v -> {
-                FilterBottomSheetDialog filterSheet = new FilterBottomSheetDialog();
-                filterSheet.show(getSupportFragmentManager(), "FilterBottomSheetDialog");
-            });
-        }
+
 
         EditText searchAccommodation = findViewById(R.id.etSearchPlace);
         if (searchAccommodation != null) {

@@ -65,7 +65,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Landlord Hub"
+                            android:text="@string/landlord_hub"
                             android:textColor="#BA5536"
                             android:textSize="11sp"
                             android:textStyle="bold" />
@@ -91,12 +91,13 @@
                         android:clickable="true"
                         android:focusable="true"
                         android:elevation="1dp"
-                        android:contentDescription="Notifications">
+                        android:contentDescription="@string/notifications">
 
                         <ImageView
                             android:layout_width="20dp"
                             android:layout_height="20dp"
                             android:layout_gravity="center"
+                            android:contentDescription="@string/notifications"
                             android:src="@android:drawable/ic_popup_reminder"
                             app:tint="#1F1614" />
 
@@ -132,7 +133,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="24dp"
-                android:text="Welcome, Landlord"
+                android:text="@string/welcome_landlord"
                 android:textColor="#1F1614"
                 android:textSize="26sp"
                 android:textStyle="bold" />
@@ -169,7 +170,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Total Listings"
+                            android:text="@string/total_listings"
                             android:textColor="#8C7A70"
                             android:textSize="13sp"
                             android:textStyle="bold" />
@@ -180,7 +181,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
                             android:layout_marginBottom="8dp"
-                            android:text="0"
+                            android:text="@string/count_zero"
                             android:textColor="#1F1614"
                             android:textSize="26sp"
                             android:textStyle="bold" />
@@ -188,7 +189,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="● All properties"
+                            android:text="@string/bullet_all_properties"
                             android:textColor="#8C7A70"
                             android:textSize="11sp" />
                     </LinearLayout>
@@ -217,7 +218,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Available"
+                            android:text="@string/available"
                             android:textColor="#8C7A70"
                             android:textSize="13sp"
                             android:textStyle="bold" />
@@ -228,7 +229,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
                             android:layout_marginBottom="8dp"
-                            android:text="0"
+                            android:text="@string/count_zero"
                             android:textColor="#1F1614"
                             android:textSize="26sp"
                             android:textStyle="bold" />
@@ -236,7 +237,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="● Live on platform"
+                            android:text="@string/bullet_live_on_platform"
                             android:textColor="#2DCE89"
                             android:textSize="11sp" />
                     </LinearLayout>
@@ -274,7 +275,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Pending Review"
+                            android:text="@string/pending_review"
                             android:textColor="#8C7A70"
                             android:textSize="13sp"
                             android:textStyle="bold" />
@@ -285,7 +286,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
                             android:layout_marginBottom="8dp"
-                            android:text="0"
+                            android:text="@string/count_zero"
                             android:textColor="#1F1614"
                             android:textSize="26sp"
                             android:textStyle="bold" />
@@ -293,7 +294,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="● Awaiting admin"
+                            android:text="@string/bullet_awaiting_admin"
                             android:textColor="#F5A623"
                             android:textSize="11sp" />
                     </LinearLayout>
@@ -322,7 +323,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Unread Messages"
+                            android:text="@string/unread_messages"
                             android:textColor="#8C7A70"
                             android:textSize="13sp"
                             android:textStyle="bold" />
@@ -333,7 +334,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
                             android:layout_marginBottom="8dp"
-                            android:text="0"
+                            android:text="@string/count_zero"
                             android:textColor="#1F1614"
                             android:textSize="26sp"
                             android:textStyle="bold" />
@@ -341,7 +342,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="● Needs reply"
+                            android:text="@string/bullet_needs_reply"
                             android:textColor="#BA5536"
                             android:textSize="11sp" />
                     </LinearLayout>
@@ -353,7 +354,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
-                android:text="Activity"
+                android:text="@string/activity_header"
                 android:textColor="#1F1614"
                 android:textSize="19sp"
                 android:textStyle="bold" />
@@ -382,6 +383,7 @@
                         android:layout_height="22dp"
                         android:layout_alignParentStart="true"
                         android:layout_centerVertical="true"
+                        android:contentDescription="@string/tenant_enquiries"
                         android:src="@drawable/ic_viewings"
                         app:tint="#BA5536" />
 
@@ -396,7 +398,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Tenant Enquiries"
+                            android:text="@string/tenant_enquiries"
                             android:textColor="#1F1614"
                             android:textSize="15sp"
                             android:textStyle="bold" />
@@ -404,7 +406,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="View messages &amp; questions"
+                            android:text="@string/view_messages_questions"
                             android:textColor="#8C7A70"
                             android:textSize="12sp" />
                     </LinearLayout>
@@ -425,7 +427,7 @@
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true"
-                        android:text="›"
+                        android:text="@string/arrow_right"
                         android:textColor="#BA5536"
                         android:textSize="26sp" />
                 </RelativeLayout>
@@ -455,6 +457,7 @@
                         android:layout_height="22dp"
                         android:layout_alignParentStart="true"
                         android:layout_centerVertical="true"
+                        android:contentDescription="@string/rental_applications"
                         android:src="@drawable/heart"
                         app:tint="#BA5536" />
 
@@ -469,7 +472,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Rental Applications"
+                            android:text="@string/rental_applications"
                             android:textColor="#1F1614"
                             android:textSize="15sp"
                             android:textStyle="bold" />
@@ -477,7 +480,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Approve or decline offers"
+                            android:text="@string/approve_decline_offers"
                             android:textColor="#8C7A70"
                             android:textSize="12sp" />
                     </LinearLayout>
@@ -498,7 +501,7 @@
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true"
-                        android:text="›"
+                        android:text="@string/arrow_right"
                         android:textColor="#BA5536"
                         android:textSize="26sp" />
                 </RelativeLayout>
@@ -528,6 +531,7 @@
                         android:layout_height="22dp"
                         android:layout_alignParentStart="true"
                         android:layout_centerVertical="true"
+                        android:contentDescription="@string/viewing_requests"
                         android:src="@drawable/ic_viewings"
                         app:tint="#BA5536" />
 
@@ -542,7 +546,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Viewing Requests"
+                            android:text="@string/viewing_requests"
                             android:textColor="#1F1614"
                             android:textSize="15sp"
                             android:textStyle="bold" />
@@ -550,7 +554,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Manage booking appointments"
+                            android:text="@string/manage_booking_appointments"
                             android:textColor="#8C7A70"
                             android:textSize="12sp" />
                     </LinearLayout>
@@ -571,7 +575,7 @@
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true"
-                        android:text="›"
+                        android:text="@string/arrow_right"
                         android:textColor="#BA5536"
                         android:textSize="26sp" />
                 </RelativeLayout>
@@ -658,6 +662,7 @@
             <ImageView
                 android:layout_width="20dp"
                 android:layout_height="20dp"
+                android:contentDescription="@string/nav_dashboard"
                 android:src="@drawable/layout_dashboard"
                 app:tint="#FFFFFF" />
 
@@ -667,7 +672,7 @@
                 android:layout_marginTop="3dp"
                 android:includeFontPadding="false"
                 android:singleLine="true"
-                android:text="Dashboard"
+                android:text="@string/nav_dashboard"
                 android:textColor="#FFFFFF"
                 android:textSize="10sp"
                 android:textStyle="bold" />
@@ -686,6 +691,7 @@
             <ImageView
                 android:layout_width="20dp"
                 android:layout_height="20dp"
+                android:contentDescription="@string/listings"
                 android:src="@drawable/book_user"
                 app:tint="#FFD8CC" />
 
@@ -710,15 +716,12 @@
             android:gravity="center"
             android:orientation="vertical">
 
-            <TextView
-                android:layout_width="22dp"
-                android:layout_height="22dp"
-                android:gravity="center"
-                android:includeFontPadding="false"
-                android:text="+"
-                android:textColor="#FFD8CC"
-                android:textSize="22sp"
-                android:textStyle="bold" />
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:contentDescription="@string/add"
+                android:src="@drawable/ic_plus_circle"
+                app:tint="#FFD8CC" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -749,6 +752,7 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:layout_gravity="center"
+                    android:contentDescription="@string/nav_messages"
                     android:src="@drawable/messages_circle"
                     app:tint="#FFD8CC" />
 
@@ -767,7 +771,7 @@
                 android:layout_marginTop="3dp"
                 android:includeFontPadding="false"
                 android:singleLine="true"
-                android:text="Messages"
+                android:text="@string/nav_messages"
                 android:textColor="#FFD8CC"
                 android:textSize="10sp" />
         </LinearLayout>

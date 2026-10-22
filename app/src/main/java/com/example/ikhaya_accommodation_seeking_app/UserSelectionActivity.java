@@ -178,7 +178,7 @@ public class UserSelectionActivity extends AppCompatActivity {
                 ImageView imgNavViewings = findViewById(R.id.imgNavViewings);
                 TextView tvNavViewings = findViewById(R.id.tvNavViewings);
 
-                if (imgNavViewings != null) imgNavViewings.setImageResource(R.drawable.house);
+                if (imgNavViewings != null) imgNavViewings.setImageResource(R.drawable.ic_plus_circle);
                 if (tvNavViewings != null) tvNavViewings.setText(R.string.add);
 
                 if (navViewings != null) {

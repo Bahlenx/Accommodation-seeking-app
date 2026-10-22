@@ -64,7 +64,6 @@ public class AdminReportsActivity extends AppCompatActivity {
         executor.execute(() -> {
             HttpURLConnection conn = null;
             try {
-                // Filters out resolved or dismissed tickets so the queue stays clean
                 conn = SupabaseHelper.createConnection("/rest/v1/reports?select=*&status=in.(OPEN,open,PENDING,pending)&order=created_at.desc", "GET", token);
                 int code = conn.getResponseCode();
                 String response = SupabaseHelper.readResponse(conn);
@@ -166,19 +165,18 @@ public class AdminReportsActivity extends AppCompatActivity {
         layout.addView(tvDesc);
         layout.addView(tvStatus);
 
-        // Action Buttons Row
         LinearLayout actionRow = new LinearLayout(this);
         actionRow.setOrientation(LinearLayout.HORIZONTAL);
         actionRow.setPadding(0, 16, 0, 0);
 
         Button btnResolve = new Button(this);
         btnResolve.setText("Resolve");
-        btnResolve.setOnClickListener(v -> showResponseDialog(ticketId, "RESOLVED", "Resolution Message", card));
+        btnResolve.setOnClickListener(v -> showResponseDialog(ticketId, reporterUid, reason, "RESOLVED", "Resolution Message", card));
         actionRow.addView(btnResolve);
 
         Button btnDismiss = new Button(this);
         btnDismiss.setText("Dismiss");
-        btnDismiss.setOnClickListener(v -> showResponseDialog(ticketId, "DISMISSED", "Reason for Dismissal", card));
+        btnDismiss.setOnClickListener(v -> showResponseDialog(ticketId, reporterUid, reason, "DISMISSED", "Reason for Dismissal", card));
         actionRow.addView(btnDismiss);
 
         layout.addView(actionRow);
@@ -187,22 +185,23 @@ public class AdminReportsActivity extends AppCompatActivity {
         reportsContainer.addView(card);
     }
 
-    private void showResponseDialog(String ticketId, String newStatus, String prompt, View cardView) {
+    private void showResponseDialog(String ticketId, String reporterUid, String ticketReason, String newStatus, String prompt, View cardView) {
         EditText input = new EditText(this);
         input.setHint("Enter response to the user");
+        input.setPadding(40, 40, 40, 40);
 
         new AlertDialog.Builder(this)
                 .setTitle(prompt)
                 .setView(input)
                 .setPositiveButton("Submit", (dialog, which) -> {
                     String responseText = input.getText().toString().trim();
-                    updateTicketStatus(ticketId, newStatus, responseText, cardView);
+                    updateTicketStatus(ticketId, reporterUid, ticketReason, newStatus, responseText, cardView);
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
     }
 
-    private void updateTicketStatus(String ticketId, String newStatus, String adminResponse, View cardView) {
+    private void updateTicketStatus(String ticketId, String reporterUid, String ticketReason, String newStatus, String adminResponse, View cardView) {
         String token = SupabaseHelper.getAccessToken(this);
         if (token == null || ticketId.isEmpty()) return;
 
@@ -223,6 +222,17 @@ public class AdminReportsActivity extends AppCompatActivity {
 
                 int code = conn.getResponseCode();
                 if (code >= 200 && code < 300) {
+
+                    // Trigger the notification to the user who reported the problem
+                    if (!reporterUid.isEmpty()) {
+                        SupabaseHelper.createNotification(
+                                reporterUid,
+                                "Support Ticket Updated",
+                                "An admin has responded to your ticket regarding: " + ticketReason + ".",
+                                token
+                        );
+                    }
+
                     runOnUiThread(() -> {
                         Toast.makeText(this, "Ticket marked as " + newStatus, Toast.LENGTH_SHORT).show();
                         if (reportsContainer != null) {

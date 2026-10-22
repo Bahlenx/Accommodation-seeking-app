@@ -4,6 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     android:background="@color/appBackground">
 
     <LinearLayout
@@ -48,6 +49,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:fillViewport="true"
+        android:clipToPadding="false"
         app:layout_constraintTop_toBottomOf="@id/addListingHeader"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -59,7 +61,7 @@
             android:orientation="vertical"
             android:paddingHorizontal="24dp"
             android:paddingTop="8dp"
-            android:paddingBottom="48dp">
+            android:paddingBottom="100dp">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -90,7 +92,6 @@
                 android:textStyle="bold"
                 android:textSize="14sp" />
 
-            <!-- AutoComplete Input for Uber-style locality typing -->
             <AutoCompleteTextView
                 android:id="@+id/autoCompleteLocation"
                 android:layout_width="match_parent"
@@ -102,7 +103,6 @@
                 android:inputType="textCapSentences"
                 android:completionThreshold="3" />
 
-            <!-- Interactive Pin Action Row -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -135,7 +135,6 @@
                     app:strokeColor="#D1C7BD" />
             </LinearLayout>
 
-            <!-- Visual Status Pill -->
             <TextView
                 android:id="@+id/tvLocationCoords"
                 android:layout_width="match_parent"
@@ -146,7 +145,6 @@
                 android:textColor="#8C7A70"
                 android:textSize="13sp" />
 
-            <!-- Listing Purpose Toggle -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -179,7 +177,6 @@
                     android:text="@string/for_sale" />
             </com.google.android.material.chip.ChipGroup>
 
-            <!-- Price Label -->
             <TextView
                 android:id="@+id/tvPriceLabel"
                 android:layout_width="wrap_content"
@@ -200,7 +197,6 @@
                 android:inputType="numberDecimal"
                 android:singleLine="true" />
 
-            <!-- Rooms Label -->
             <TextView
                 android:id="@+id/tvRoomsLabel"
                 android:layout_width="wrap_content"
