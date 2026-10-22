@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -17,6 +18,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
@@ -34,6 +36,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -50,14 +53,25 @@ public class HomeActivity extends AppCompatActivity {
     private final Handler notificationHandler = new Handler(Looper.getMainLooper());
 
     private volatile boolean notificationLoading = false;
+    private boolean homeVisible = false;
+
     private JSONArray latestMessages;
     private JSONArray latestApplications;
     private JSONArray latestChatRequests;
+    private JSONArray latestViewings;
+    private JSONArray latestViewingNotificationKeys;
+
     private String notificationUserId;
+    private boolean hasUnreadLandlordMessages = false;
+    private boolean hasUnreadViewingDecisions = false;
+    private JSONObject newestLandlordMessage;
 
     private final Runnable notificationPoll = new Runnable() {
         @Override
         public void run() {
+            if (!homeVisible) {
+                return;
+            }
             refreshNotifications();
             notificationHandler.postDelayed(this, 10000);
         }
@@ -68,7 +82,6 @@ public class HomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
-        // 1. Inset handling: Pad root for status bar, dynamically offset floating bottom nav
         View homeRoot = findViewById(R.id.homeRoot);
         View floatingBottomNav = findViewById(R.id.floatingBottomNav);
 
@@ -85,7 +98,7 @@ public class HomeActivity extends AppCompatActivity {
 
                 if (floatingBottomNav != null && floatingBottomNav.getLayoutParams() instanceof CoordinatorLayout.LayoutParams) {
                     CoordinatorLayout.LayoutParams lp = (CoordinatorLayout.LayoutParams) floatingBottomNav.getLayoutParams();
-                    int baseMarginPx = (int) (16 * getResources().getDisplayMetrics().density);
+                    int baseMarginPx = Math.round(16f * getResources().getDisplayMetrics().density);
                     lp.bottomMargin = navBar.bottom + baseMarginPx;
                     floatingBottomNav.setLayoutParams(lp);
                     floatingBottomNav.setPadding(0, 0, 0, 0);
@@ -95,7 +108,6 @@ public class HomeActivity extends AppCompatActivity {
             });
         }
 
-        // 2. Horizontal Carousels Initialization
         rvPopularPlaces = findViewById(R.id.rvPopularPlaces);
         rvExploreNewArea = findViewById(R.id.rvExploreNewArea);
 
@@ -103,12 +115,14 @@ public class HomeActivity extends AppCompatActivity {
             rvPopularPlaces.setLayoutManager(
                     new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
             );
+            rvPopularPlaces.setNestedScrollingEnabled(false);
         }
 
         if (rvExploreNewArea != null) {
             rvExploreNewArea.setLayoutManager(
                     new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
             );
+            rvExploreNewArea.setNestedScrollingEnabled(false);
         }
 
         notificationDot = findViewById(R.id.notificationDot);
@@ -119,13 +133,9 @@ public class HomeActivity extends AppCompatActivity {
 
         setupPersonalizedGreeting();
 
-        // 3. Header Action Buttons
         View btnNotificationsHome = findViewById(R.id.btnNotificationsHome);
         if (btnNotificationsHome != null) {
-            btnNotificationsHome.setOnClickListener(v -> {
-                markAlertsChecked();
-                startActivity(new Intent(HomeActivity.this, NotificationsActivity.class));
-            });
+            btnNotificationsHome.setOnClickListener(v -> showHomeNotifications());
         }
 
         View btnProfile = findViewById(R.id.btnProfile);
@@ -135,9 +145,15 @@ public class HomeActivity extends AppCompatActivity {
             );
         }
 
-        // 4. Search and Filter triggers
-        EditText searchAccommodation = findViewById(R.id.etSearchPlace);
+        View btnFilter = findViewById(R.id.btnSearchSubmit);
+        if (btnFilter != null) {
+            btnFilter.setOnClickListener(v -> {
+                FilterBottomSheetDialog filterSheet = new FilterBottomSheetDialog();
+                filterSheet.show(getSupportFragmentManager(), "FilterBottomSheetDialog");
+            });
+        }
 
+        EditText searchAccommodation = findViewById(R.id.etSearchPlace);
         if (searchAccommodation != null) {
             searchAccommodation.setOnEditorActionListener((v, actionId, event) -> {
                 if (actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_DONE) {
@@ -156,6 +172,14 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        homeVisible = true;
+
+        View search = findViewById(R.id.etSearchPlace);
+        if (search != null) search.clearFocus();
+
+        View scroll = findViewById(R.id.homeScrollView);
+        if (scroll != null) scroll.post(scroll::requestLayout);
+
         setupPersonalizedGreeting();
         notificationHandler.removeCallbacks(notificationPoll);
         notificationHandler.post(notificationPoll);
@@ -163,6 +187,7 @@ public class HomeActivity extends AppCompatActivity {
 
     @Override
     protected void onPause() {
+        homeVisible = false;
         notificationHandler.removeCallbacks(notificationPoll);
         super.onPause();
     }
@@ -186,38 +211,63 @@ public class HomeActivity extends AppCompatActivity {
                 String encodedUid = SupabaseHelper.encode(uid);
 
                 JSONArray messages = fetchRows(
-                        "/rest/v1/messages?select=id&receiver_id=eq." + encodedUid + "&order=created_at.desc&limit=1000",
+                        "/rest/v1/messages?select=id,sender_id,sender_name,sender_role,message_text&receiver_id=eq."
+                                + encodedUid + "&order=created_at.desc&limit=1000",
                         token
                 );
 
                 JSONArray applications = fetchRows(
-                        "/rest/v1/rental_applications?select=id,status&tenant_uid=eq." + encodedUid + "&status=in.(APPROVED,DECLINED,approved,declined)&limit=1000",
+                        "/rest/v1/rental_applications?select=id,status&tenant_uid=eq."
+                                + encodedUid + "&status=in.(APPROVED,DECLINED,approved,declined)&limit=1000",
                         token
                 );
 
                 JSONArray chatRequests = fetchRows(
-                        "/rest/v1/chat_requests?select=id,status&receiver_id=eq." + encodedUid + "&status=eq.pending&limit=1000",
+                        "/rest/v1/chat_requests?select=id,status&receiver_id=eq."
+                                + encodedUid + "&status=eq.pending&limit=1000",
                         token
                 );
+
+                JSONArray viewings = fetchRows(
+                        "/rest/v1/viewings?select=id,property_name,viewing_date,status&tenant_uid=eq."
+                                + encodedUid + "&status=in.(Confirmed,Declined)&limit=1000",
+                        token
+                );
+
+                JSONArray viewingKeys = viewings == null ? null : createViewingNotificationKeys(viewings);
 
                 boolean unreadMessages = messages != null && TenantNotificationState.hasNew(this, uid, "messages", messages);
                 boolean unreadApplications = applications != null && TenantNotificationState.hasNew(this, uid, "applications", applications);
                 boolean unreadChatRequests = chatRequests != null && TenantNotificationState.hasNew(this, uid, "chat_requests", chatRequests);
-                boolean unreadAlerts = unreadApplications || unreadChatRequests;
+                boolean unreadViewings = viewingKeys != null && TenantNotificationState.hasNew(this, uid, "viewing_decisions", viewingKeys);
+
+                boolean unreadAlerts = unreadApplications || unreadChatRequests || unreadViewings;
 
                 runOnUiThread(() -> {
-                    if (isFinishing() || isDestroyed()) return;
+                    if (isFinishing() || isDestroyed() || !homeVisible) return;
 
                     notificationUserId = uid;
-                    if (messages != null) latestMessages = messages;
+
+                    if (messages != null) {
+                        latestMessages = messages;
+                        hasUnreadLandlordMessages = unreadMessages;
+                        newestLandlordMessage = messages.length() > 0 ? messages.optJSONObject(0) : null;
+                    }
+
                     if (applications != null) latestApplications = applications;
                     if (chatRequests != null) latestChatRequests = chatRequests;
+                    if (viewings != null) latestViewings = viewings;
+                    if (viewingKeys != null) {
+                        latestViewingNotificationKeys = viewingKeys;
+                        hasUnreadViewingDecisions = unreadViewings;
+                    }
 
                     if (messageDot != null) {
                         messageDot.setVisibility(unreadMessages ? View.VISIBLE : View.GONE);
                     }
+
                     if (notificationDot != null) {
-                        notificationDot.setVisibility(unreadAlerts ? View.VISIBLE : View.GONE);
+                        notificationDot.setVisibility((unreadAlerts || hasUnreadLandlordMessages) ? View.VISIBLE : View.GONE);
                     }
                 });
 
@@ -226,6 +276,25 @@ public class HomeActivity extends AppCompatActivity {
                 notificationLoading = false;
             }
         });
+    }
+
+    private JSONArray createViewingNotificationKeys(JSONArray viewings) {
+        JSONArray keys = new JSONArray();
+        for (int i = 0; i < viewings.length(); i++) {
+            JSONObject viewing = viewings.optJSONObject(i);
+            if (viewing == null) continue;
+
+            String id = viewing.optString("id", "");
+            String status = viewing.optString("status", "");
+            if (id.isEmpty() || status.isEmpty()) continue;
+
+            try {
+                JSONObject key = new JSONObject();
+                key.put("id", id + "_" + status.toLowerCase(Locale.getDefault()));
+                keys.put(key);
+            } catch (Exception ignored) {}
+        }
+        return keys;
     }
 
     private void markAlertsChecked() {
@@ -238,9 +307,18 @@ public class HomeActivity extends AppCompatActivity {
         if (latestChatRequests != null) {
             TenantNotificationState.markSeen(this, uid, "chat_requests", latestChatRequests);
         }
-        if (notificationDot != null) {
-            notificationDot.setVisibility(View.GONE);
-        }
+
+        markViewingDecisionsSeen();
+        updateNotificationDots();
+    }
+
+    private void markViewingDecisionsSeen() {
+        String uid = notificationUserId;
+        if (uid == null || uid.isEmpty() || latestViewingNotificationKeys == null) return;
+
+        TenantNotificationState.markSeen(this, uid, "viewing_decisions", latestViewingNotificationKeys);
+        hasUnreadViewingDecisions = false;
+        updateNotificationDots();
     }
 
     private void markMessagesChecked() {
@@ -250,9 +328,115 @@ public class HomeActivity extends AppCompatActivity {
         if (latestMessages != null) {
             TenantNotificationState.markSeen(this, uid, "messages", latestMessages);
         }
+
+        hasUnreadLandlordMessages = false;
         if (messageDot != null) {
             messageDot.setVisibility(View.GONE);
         }
+        updateNotificationDots();
+    }
+
+    private void updateNotificationDots() {
+        String uid = notificationUserId;
+        if (uid == null || uid.isEmpty()) return;
+
+        boolean otherAlerts = false;
+        if (latestApplications != null) {
+            otherAlerts = TenantNotificationState.hasNew(this, uid, "applications", latestApplications);
+        }
+        if (latestChatRequests != null) {
+            otherAlerts = otherAlerts || TenantNotificationState.hasNew(this, uid, "chat_requests", latestChatRequests);
+        }
+        if (latestViewingNotificationKeys != null) {
+            otherAlerts = otherAlerts || TenantNotificationState.hasNew(this, uid, "viewing_decisions", latestViewingNotificationKeys);
+        }
+
+        if (notificationDot != null) {
+            notificationDot.setVisibility((otherAlerts || hasUnreadLandlordMessages) ? View.VISIBLE : View.GONE);
+        }
+
+        if (messageDot != null) {
+            messageDot.setVisibility(hasUnreadLandlordMessages ? View.VISIBLE : View.GONE);
+        }
+    }
+
+    private void showHomeNotifications() {
+        String senderName = getString(R.string.role_landlord);
+        if (newestLandlordMessage != null) {
+            String name = newestLandlordMessage.optString("sender_name", "").trim();
+            if (!name.isEmpty() && !name.equalsIgnoreCase("null")) {
+                senderName = name;
+            }
+        }
+
+        StringBuilder notificationText = new StringBuilder();
+
+        if (hasUnreadViewingDecisions && latestViewings != null) {
+            for (int i = 0; i < latestViewings.length(); i++) {
+                JSONObject viewing = latestViewings.optJSONObject(i);
+                if (viewing == null) continue;
+
+                String propertyName = viewing.optString("property_name", getString(R.string.accommodation));
+                String viewingDate = viewing.optString("viewing_date", "");
+                String status = viewing.optString("status", "");
+
+                if ("Confirmed".equalsIgnoreCase(status)) {
+                    notificationText.append(getString(R.string.notif_viewing_approved_header)).append("\n\n");
+                    notificationText.append(getString(R.string.notif_viewing_approved_body_prefix))
+                            .append(" ")
+                            .append(propertyName)
+                            .append(" ")
+                            .append(getString(R.string.notif_viewing_approved_body_suffix));
+
+                    if (!viewingDate.isEmpty()) {
+                        notificationText.append("\n").append(getString(R.string.label_date)).append(": ").append(viewingDate);
+                    }
+                    notificationText.append("\n\n");
+
+                } else if ("Declined".equalsIgnoreCase(status)) {
+                    notificationText.append(getString(R.string.notif_viewing_declined_header)).append("\n\n");
+                    notificationText.append(getString(R.string.notif_viewing_declined_body_prefix))
+                            .append(" ")
+                            .append(propertyName)
+                            .append(" ")
+                            .append(getString(R.string.notif_viewing_declined_body_suffix));
+
+                    if (!viewingDate.isEmpty()) {
+                        notificationText.append("\n").append(getString(R.string.label_requested_date)).append(": ").append(viewingDate);
+                    }
+                    notificationText.append("\n\n");
+                }
+            }
+        }
+
+        if (hasUnreadLandlordMessages) {
+            notificationText.append(getString(R.string.notif_new_message_header)).append("\n\n");
+            notificationText.append(getString(R.string.notif_new_message_from_prefix))
+                    .append(" ")
+                    .append(senderName)
+                    .append(".\n\n");
+        }
+
+        if (notificationText.length() == 0) {
+            notificationText.append(getString(R.string.notif_no_new_viewings_or_messages));
+        }
+
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this)
+                .setTitle(R.string.notifications_title)
+                .setMessage(notificationText.toString().trim())
+                .setNegativeButton(R.string.btn_close, (d, which) -> markViewingDecisionsSeen());
+
+        dialog.setPositiveButton(R.string.btn_my_viewings, (d, which) -> {
+            markViewingDecisionsSeen();
+            startActivity(new Intent(HomeActivity.this, ViewingsActivity.class));
+        });
+
+        dialog.setNeutralButton(R.string.btn_other_notifications, (d, which) -> {
+            markAlertsChecked();
+            startActivity(new Intent(HomeActivity.this, NotificationsActivity.class));
+        });
+
+        dialog.show();
     }
 
     private JSONArray fetchRows(String endpoint, String token) {
@@ -296,7 +480,6 @@ public class HomeActivity extends AppCompatActivity {
         new Thread(() -> {
             HttpURLConnection conn = null;
             try {
-                // Filter feed to only show APPROVED listings
                 conn = SupabaseHelper.createConnection(
                         "/rest/v1/listings?select=*&status=eq.APPROVED&order=created_at.desc&limit=20",
                         "GET",
@@ -362,9 +545,10 @@ public class HomeActivity extends AppCompatActivity {
 
         View navViewings = findViewById(R.id.navViewings);
         if (navViewings != null) {
-            navViewings.setOnClickListener(v ->
-                    startActivity(new Intent(HomeActivity.this, ViewingsActivity.class))
-            );
+            navViewings.setOnClickListener(v -> {
+                markViewingDecisionsSeen();
+                startActivity(new Intent(HomeActivity.this, ViewingsActivity.class));
+            });
         }
 
         View navMessages = findViewById(R.id.navMessages);
@@ -407,30 +591,30 @@ public class HomeActivity extends AppCompatActivity {
             float density = getResources().getDisplayMetrics().density;
 
             CardView card = new CardView(HomeActivity.this);
-            LinearLayout.LayoutParams cardParams = new LinearLayout.LayoutParams(
-                    Math.round(230 * density),
+            RecyclerView.LayoutParams cardParams = new RecyclerView.LayoutParams(
+                    Math.round(230f * density),
                     ViewGroup.LayoutParams.WRAP_CONTENT
             );
-            cardParams.setMarginEnd(Math.round(14 * density));
+            cardParams.setMarginEnd(Math.round(14f * density));
             card.setLayoutParams(cardParams);
-            card.setRadius(Math.round(18 * density));
-            card.setCardElevation(Math.round(2 * density));
+            card.setRadius(Math.round(18f * density));
+            card.setCardElevation(Math.round(2f * density));
             card.setUseCompatPadding(true);
             card.setCardBackgroundColor(Color.WHITE);
 
             LinearLayout root = new LinearLayout(HomeActivity.this);
             root.setOrientation(LinearLayout.VERTICAL);
             root.setPadding(
-                    Math.round(10 * density),
-                    Math.round(10 * density),
-                    Math.round(10 * density),
-                    Math.round(14 * density)
+                    Math.round(10f * density),
+                    Math.round(10f * density),
+                    Math.round(10f * density),
+                    Math.round(14f * density)
             );
 
             ImageView image = new ImageView(HomeActivity.this);
             LinearLayout.LayoutParams imgParams = new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
-                    Math.round(130 * density)
+                    Math.round(130f * density)
             );
             image.setLayoutParams(imgParams);
             image.setScaleType(ImageView.ScaleType.CENTER_CROP);
@@ -440,31 +624,31 @@ public class HomeActivity extends AppCompatActivity {
             TextView title = new TextView(HomeActivity.this);
             title.setTextSize(14.5f);
             title.setTextColor(Color.parseColor("#1F1614"));
-            title.setTypeface(null, android.graphics.Typeface.BOLD);
+            title.setTypeface(null, Typeface.BOLD);
             title.setSingleLine(true);
             LinearLayout.LayoutParams titleParams = new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT
             );
-            titleParams.topMargin = Math.round(8 * density);
+            titleParams.topMargin = Math.round(8f * density);
             title.setLayoutParams(titleParams);
             root.addView(title);
 
             TextView location = new TextView(HomeActivity.this);
-            location.setTextSize(12);
+            location.setTextSize(12f);
             location.setTextColor(Color.parseColor("#8C7A70"));
             location.setSingleLine(true);
             root.addView(location);
 
             TextView price = new TextView(HomeActivity.this);
-            price.setTextSize(14);
+            price.setTextSize(14f);
             price.setTextColor(Color.parseColor("#BA5536"));
-            price.setTypeface(null, android.graphics.Typeface.BOLD);
+            price.setTypeface(null, Typeface.BOLD);
             LinearLayout.LayoutParams priceParams = new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT
             );
-            priceParams.topMargin = Math.round(6 * density);
+            priceParams.topMargin = Math.round(6f * density);
             price.setLayoutParams(priceParams);
             root.addView(price);
 
@@ -477,7 +661,7 @@ public class HomeActivity extends AppCompatActivity {
             JSONObject item = items.get(position);
             String id = item.optString("id", "");
             String name = item.optString("property_name", getString(R.string.accommodation));
-            String location = item.optString("location", "South Africa");
+            String location = item.optString("location", getString(R.string.default_country_location));
             String price = item.optString("price", "0");
             String imageUrl = item.optString("image_url", "");
 
@@ -515,6 +699,7 @@ public class HomeActivity extends AppCompatActivity {
                             Bitmap bmp = BitmapFactory.decodeStream(in);
                             if (bmp != null) {
                                 runOnUiThread(() -> {
+                                    if (isFinishing() || isDestroyed()) return;
                                     imageView.setImageBitmap(bmp);
                                     imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
                                 });

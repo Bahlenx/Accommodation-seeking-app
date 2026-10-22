@@ -1,6 +1,5 @@
 package com.example.ikhaya_accommodation_seeking_app;
 
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -21,14 +20,19 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class AdminInspectionActivity extends AppCompatActivity {
 
     private ImageView ivInspectImage;
-    private TextView tvInspectTitle, tvInspectDetails, tvInspectLandlord, tvInspectDescription;
-    private Button btnRequireChanges, btnApprove;
+    private TextView tvInspectTitle;
+    private TextView tvInspectDetails;
+    private TextView tvInspectLandlord;
+    private TextView tvInspectDescription;
+    private Button btnRequireChanges;
+    private Button btnApprove;
 
     private String listingId = "";
     private String landlordUid = "";
@@ -43,7 +47,7 @@ public class AdminInspectionActivity extends AppCompatActivity {
 
         listingId = getIntent().getStringExtra("LISTING_ID");
         if (listingId == null || listingId.isEmpty()) {
-            Toast.makeText(this, "Error: Missing Listing ID", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.error_missing_listing_id, Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
@@ -57,24 +61,46 @@ public class AdminInspectionActivity extends AppCompatActivity {
         btnRequireChanges = findViewById(R.id.btnRequireChanges);
         btnApprove = findViewById(R.id.btnApprove);
 
-        findViewById(R.id.btnBackInspection).setOnClickListener(v -> finish());
+        View btnBack = findViewById(R.id.btnBackInspection);
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> finish());
+        }
+
+        // Apply fast intent extras if supplied
+        String passedTitle = getIntent().getStringExtra("LISTING_TITLE");
+        if (passedTitle != null && !passedTitle.isEmpty()) {
+            tvInspectTitle.setText(passedTitle);
+        }
+
+        String passedDetails = getIntent().getStringExtra("LISTING_DETAILS");
+        if (passedDetails != null && !passedDetails.isEmpty()) {
+            tvInspectDetails.setText(passedDetails);
+        }
+
+        String passedLandlord = getIntent().getStringExtra("LANDLORD_NAME");
+        if (passedLandlord != null && !passedLandlord.isEmpty()) {
+            tvInspectLandlord.setText(String.format(Locale.getDefault(), "%s: %s", getString(R.string.label_submitted_by), passedLandlord));
+        }
 
         String status = getIntent().getStringExtra("LISTING_STATUS");
 
         if ("APPROVED".equalsIgnoreCase(status)) {
-            // Hide the Approve button since it's already live
-            btnApprove.setVisibility(View.GONE);
-
-            // Change the text and action of the red button to "Revoke"
-            btnRequireChanges.setText("Revoke Live Status");
-            btnRequireChanges.setOnClickListener(v -> showComplianceDialog());
+            if (btnApprove != null) {
+                btnApprove.setVisibility(View.GONE);
+            }
+            if (btnRequireChanges != null) {
+                btnRequireChanges.setText(R.string.btn_revoke_live_status);
+                btnRequireChanges.setOnClickListener(v -> showComplianceDialog());
+            }
         } else {
-            // Standard Pending View
-            btnRequireChanges.setText("Require Fixes");
-            btnApprove.setVisibility(View.VISIBLE);
-
-            btnApprove.setOnClickListener(v -> submitModerationDecision("APPROVED", null));
-            btnRequireChanges.setOnClickListener(v -> showComplianceDialog());
+            if (btnRequireChanges != null) {
+                btnRequireChanges.setText(R.string.btn_require_fixes);
+                btnRequireChanges.setOnClickListener(v -> showComplianceDialog());
+            }
+            if (btnApprove != null) {
+                btnApprove.setVisibility(View.VISIBLE);
+                btnApprove.setOnClickListener(v -> submitModerationDecision("APPROVED", null));
+            }
         }
 
         fetchFullListingDetails();
@@ -94,20 +120,24 @@ public class AdminInspectionActivity extends AppCompatActivity {
                     if (arr.length() > 0) {
                         JSONObject listing = arr.getJSONObject(0);
 
-                        propertyTitle = listing.optString("property_name", "Untitled Property");
+                        propertyTitle = listing.optString("property_name", getString(R.string.default_untitled_property));
                         landlordUid = listing.optString("landlord_uid", "");
 
                         String price = listing.optString("price", "0");
-                        String loc = listing.optString("location", "Unknown Location");
-                        String type = listing.optString("property_type", "Room");
+                        String loc = listing.optString("location", getString(R.string.default_unknown_location));
+                        String type = listing.optString("property_type", getString(R.string.filter_chip_rooms));
                         String rooms = listing.optString("rooms", "1");
-                        String desc = listing.optString("description", "No description provided.");
+                        String desc = listing.optString("description", getString(R.string.default_no_description));
                         String imageUrl = listing.optString("image_url", "");
 
-                        String detailsStr = type + " • " + rooms + " Room(s)\n" + loc + " • R " + price;
-                        String landlordStr = "Submitted by: Landlord (" + (landlordUid.length() > 8 ? landlordUid.substring(0, 8) : landlordUid) + "...)";
+                        String detailsStr = String.format(Locale.getDefault(), "%s • %s %s\n%s • R %s",
+                                type, rooms, getString(R.string.label_rooms_count), loc, price);
+                        String landlordShortId = landlordUid.length() > 8 ? landlordUid.substring(0, 8) : landlordUid;
+                        String landlordStr = String.format(Locale.getDefault(), "%s: %s (%s...)",
+                                getString(R.string.label_submitted_by), getString(R.string.role_landlord), landlordShortId);
 
                         runOnUiThread(() -> {
+                            if (isFinishing() || isDestroyed()) return;
                             tvInspectTitle.setText(propertyTitle);
                             tvInspectDetails.setText(detailsStr);
                             tvInspectLandlord.setText(landlordStr);
@@ -120,7 +150,10 @@ public class AdminInspectionActivity extends AppCompatActivity {
                     }
                 }
             } catch (Exception e) {
-                runOnUiThread(() -> Toast.makeText(this, "Failed to load listing data.", Toast.LENGTH_SHORT).show());
+                runOnUiThread(() -> {
+                    if (isFinishing() || isDestroyed()) return;
+                    Toast.makeText(this, R.string.error_failed_load_listing_data, Toast.LENGTH_SHORT).show();
+                });
             } finally {
                 if (conn != null) conn.disconnect();
             }
@@ -139,7 +172,10 @@ public class AdminInspectionActivity extends AppCompatActivity {
                     try (InputStream in = conn.getInputStream()) {
                         Bitmap bmp = BitmapFactory.decodeStream(in);
                         if (bmp != null) {
-                            runOnUiThread(() -> ivInspectImage.setImageBitmap(bmp));
+                            runOnUiThread(() -> {
+                                if (isFinishing() || isDestroyed()) return;
+                                ivInspectImage.setImageBitmap(bmp);
+                            });
                         }
                     }
                 }
@@ -150,29 +186,29 @@ public class AdminInspectionActivity extends AppCompatActivity {
 
     private void showComplianceDialog() {
         EditText input = new EditText(this);
-        input.setHint("e.g. Please upload clear photos and fix the address.");
+        input.setHint(R.string.hint_compliance_reason);
         input.setPadding(40, 40, 40, 40);
 
         new AlertDialog.Builder(this)
-                .setTitle("Require Changes")
-                .setMessage("Force the landlord to correct this listing. Provide the exact reason/instructions:")
+                .setTitle(R.string.title_require_changes)
+                .setMessage(R.string.msg_require_changes_instructions)
                 .setView(input)
-                .setPositiveButton("Send Back", (dialog, which) -> {
+                .setPositiveButton(R.string.btn_send_back, (dialog, which) -> {
                     String reason = input.getText().toString().trim();
                     if (reason.isEmpty()) {
-                        Toast.makeText(this, "You must provide instructions to the landlord.", Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, R.string.error_must_provide_instructions, Toast.LENGTH_LONG).show();
                         return;
                     }
                     submitModerationDecision("REJECTED", reason);
                 })
-                .setNegativeButton("Cancel", null)
+                .setNegativeButton(R.string.btn_cancel, null)
                 .show();
     }
 
     private void submitModerationDecision(String newStatus, String rejectionReason) {
         String token = SupabaseHelper.getAccessToken(this);
-        btnApprove.setEnabled(false);
-        btnRequireChanges.setEnabled(false);
+        if (btnApprove != null) btnApprove.setEnabled(false);
+        if (btnRequireChanges != null) btnRequireChanges.setEnabled(false);
 
         executor.execute(() -> {
             try {
@@ -187,25 +223,33 @@ public class AdminInspectionActivity extends AppCompatActivity {
 
                 SupabaseHelper.patch(endpoint, body, token);
 
-                // Notify Landlord for BOTH Approval and Rejection
                 if (!landlordUid.isEmpty()) {
                     if ("REJECTED".equals(newStatus)) {
-                        sendLandlordNotification(token, "Action Required: " + propertyTitle, "Your listing requires updates. Admin notes: " + rejectionReason);
+                        String notifTitle = String.format(Locale.getDefault(), "%s: %s", getString(R.string.notif_title_action_required), propertyTitle);
+                        String notifMsg = String.format(Locale.getDefault(), "%s: %s", getString(R.string.notif_msg_requires_updates_prefix), rejectionReason);
+                        sendLandlordNotification(token, notifTitle, notifMsg);
                     } else if ("APPROVED".equals(newStatus)) {
-                        sendLandlordNotification(token, "Listing Approved: " + propertyTitle, "Congratulations! Your property is now live on the platform.");
+                        String notifTitle = String.format(Locale.getDefault(), "%s: %s", getString(R.string.notif_title_listing_approved), propertyTitle);
+                        String notifMsg = getString(R.string.notif_msg_listing_approved_body);
+                        sendLandlordNotification(token, notifTitle, notifMsg);
                     }
                 }
 
                 runOnUiThread(() -> {
-                    Toast.makeText(this, "Listing " + newStatus.toLowerCase(), Toast.LENGTH_SHORT).show();
-                    finish(); // Return to queue
+                    if (isFinishing() || isDestroyed()) return;
+                    String statusLabel = "APPROVED".equals(newStatus)
+                            ? getString(R.string.status_approved_lower)
+                            : getString(R.string.status_rejected_lower);
+                    Toast.makeText(this, String.format(Locale.getDefault(), "%s %s", getString(R.string.listing_prefix), statusLabel), Toast.LENGTH_SHORT).show();
+                    finish();
                 });
 
             } catch (Exception e) {
                 runOnUiThread(() -> {
-                    Toast.makeText(this, "Action failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                    btnApprove.setEnabled(true);
-                    btnRequireChanges.setEnabled(true);
+                    if (isFinishing() || isDestroyed()) return;
+                    Toast.makeText(this, String.format(Locale.getDefault(), "%s: %s", getString(R.string.action_failed_prefix), e.getMessage()), Toast.LENGTH_LONG).show();
+                    if (btnApprove != null) btnApprove.setEnabled(true);
+                    if (btnRequireChanges != null) btnRequireChanges.setEnabled(true);
                 });
             }
         });
@@ -222,8 +266,8 @@ public class AdminInspectionActivity extends AppCompatActivity {
 
             SupabaseHelper.writeJson(conn, notif);
             conn.getResponseCode();
-        } catch (Exception ignored) { }
-        finally {
+        } catch (Exception ignored) {
+        } finally {
             if (conn != null) conn.disconnect();
         }
     }

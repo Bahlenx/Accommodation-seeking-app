@@ -1,10 +1,10 @@
 package com.example.ikhaya_accommodation_seeking_app;
 
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -13,8 +13,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
-
-import android.preference.PreferenceManager;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -33,6 +31,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class EditListingActivity extends AppCompatActivity {
+
+    private static final String TAG = "EditListing";
 
     private EditText nameInput;
     private EditText locationInput;
@@ -57,13 +57,16 @@ public class EditListingActivity extends AppCompatActivity {
     private Uri selectedImageUri = null;
     private String currentImageUrl = "";
 
-    // Image Picker Launcher
     private final ActivityResultLauncher<String> imagePicker =
             registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
                 if (uri != null) {
                     selectedImageUri = uri;
-                    imagePreview.setImageURI(uri);
-                    uploadImageButton.setText(R.string.photos_selected_count);
+                    if (imagePreview != null) {
+                        imagePreview.setImageURI(uri);
+                    }
+                    if (uploadImageButton != null) {
+                        uploadImageButton.setText(R.string.btn_change_selected_photos);
+                    }
                 }
             });
 
@@ -79,6 +82,10 @@ public class EditListingActivity extends AppCompatActivity {
 
         nameInput = findViewById(R.id.edtEditPropertyName);
         locationInput = findViewById(R.id.autoCompleteLocationEdit);
+        if (locationInput == null) {
+            locationInput = findViewById(R.id.edtEditLocation);
+        }
+
         priceInput = findViewById(R.id.edtEditPrice);
         roomsInput = findViewById(R.id.edtEditRooms);
         descriptionInput = findViewById(R.id.edtEditDescription);
@@ -110,13 +117,18 @@ public class EditListingActivity extends AppCompatActivity {
         accessToken = SupabaseHelper.getAccessToken(this);
 
         if (listingId == null || listingId.trim().isEmpty() || userId == null || accessToken == null) {
-            Toast.makeText(this, "Missing credentials or listing ID.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, R.string.error_missing_credentials_or_listing, Toast.LENGTH_LONG).show();
             finish();
             return;
         }
 
-        uploadImageButton.setOnClickListener(v -> imagePicker.launch("image/*"));
-        saveButton.setOnClickListener(v -> saveChanges());
+        if (uploadImageButton != null) {
+            uploadImageButton.setOnClickListener(v -> imagePicker.launch("image/*"));
+        }
+
+        if (saveButton != null) {
+            saveButton.setOnClickListener(v -> saveChanges());
+        }
 
         loadListing();
     }
@@ -151,24 +163,30 @@ public class EditListingActivity extends AppCompatActivity {
                         currentImageUrl = listing.optString("image_url", "");
 
                         runOnUiThread(() -> {
-                            nameInput.setText(listing.optString("property_name", ""));
-                            locationInput.setText(listing.optString("location", ""));
-                            priceInput.setText(listing.optString("price", ""));
-                            roomsInput.setText(listing.optString("rooms", ""));
+                            if (isFinishing() || isDestroyed()) return;
+
+                            if (nameInput != null) nameInput.setText(listing.optString("property_name", ""));
+                            if (locationInput != null) locationInput.setText(listing.optString("location", ""));
+                            if (priceInput != null) priceInput.setText(listing.optString("price", ""));
+                            if (roomsInput != null) roomsInput.setText(listing.optString("rooms", ""));
                             if (typeInput != null) typeInput.setText(listing.optString("property_type", ""), false);
                             if (waterInput != null) waterInput.setText(listing.optString("water_source", ""), false);
                             if (electricityInput != null) electricityInput.setText(listing.optString("electricity", ""), false);
                             if (sanitationInput != null) sanitationInput.setText(listing.optString("sanitation", ""), false);
-                            descriptionInput.setText(listing.optString("description", ""));
+                            if (descriptionInput != null) descriptionInput.setText(listing.optString("description", ""));
                         });
 
                         if (!currentImageUrl.isEmpty()) {
                             loadExistingImage(currentImageUrl);
                         }
+                    } else {
+                        showMessage(getString(R.string.error_listing_not_found_permission));
                     }
+                } else {
+                    showMessage(getString(R.string.error_could_not_load_listing) + " " + response);
                 }
             } catch (Exception e) {
-                showMessage("Could not load listing details.");
+                showMessage(getString(R.string.error_could_not_load_listing_general));
             } finally {
                 if (connection != null) connection.disconnect();
             }
@@ -185,24 +203,30 @@ public class EditListingActivity extends AppCompatActivity {
                 InputStream in = conn.getInputStream();
                 Bitmap bitmap = BitmapFactory.decodeStream(in);
                 if (bitmap != null) {
-                    runOnUiThread(() -> imagePreview.setImageBitmap(bitmap));
+                    runOnUiThread(() -> {
+                        if (isFinishing() || isDestroyed()) return;
+                        if (imagePreview != null) {
+                            imagePreview.setImageBitmap(bitmap);
+                        }
+                    });
                 }
+                conn.disconnect();
             } catch (Exception e) {
-                Log.e("EditListing", "Failed to load existing image", e);
+                Log.e(TAG, "Failed to load existing image", e);
             }
         });
     }
 
     private void saveChanges() {
-        String name = nameInput.getText().toString().trim();
-        String location = locationInput.getText().toString().trim();
-        String price = priceInput.getText().toString().trim();
-        String rooms = roomsInput.getText().toString().trim();
-        String type = typeInput.getText().toString().trim();
-        String description = descriptionInput.getText().toString().trim();
+        String name = nameInput != null ? nameInput.getText().toString().trim() : "";
+        String location = locationInput != null ? locationInput.getText().toString().trim() : "";
+        String price = priceInput != null ? priceInput.getText().toString().trim() : "";
+        String rooms = roomsInput != null ? roomsInput.getText().toString().trim() : "";
+        String type = typeInput != null ? typeInput.getText().toString().trim() : "";
+        String description = descriptionInput != null ? descriptionInput.getText().toString().trim() : "";
 
         if (name.isEmpty() || location.isEmpty() || price.isEmpty() || rooms.isEmpty() || type.isEmpty() || description.isEmpty()) {
-            Toast.makeText(this, R.string.password_fill_all_fields, Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.error_complete_required_fields, Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -212,18 +236,23 @@ public class EditListingActivity extends AppCompatActivity {
         try {
             parsedPrice = Double.parseDouble(price);
             parsedRooms = Integer.parseInt(rooms);
+            if (parsedPrice < 0 || parsedRooms < 0) {
+                Toast.makeText(this, R.string.error_price_rooms_negative, Toast.LENGTH_SHORT).show();
+                return;
+            }
         } catch (NumberFormatException e) {
-            Toast.makeText(this, "Enter valid numbers for price and rooms.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.error_invalid_price_or_rooms, Toast.LENGTH_SHORT).show();
             return;
         }
 
-        saveButton.setEnabled(false);
-        saveButton.setText("Saving changes...");
+        if (saveButton != null) {
+            saveButton.setEnabled(false);
+            saveButton.setText(R.string.btn_saving_changes_in_progress);
+        }
 
         executor.execute(() -> {
             String finalImageUrl = currentImageUrl;
 
-            // 1. Upload new image if the user picked one
             if (selectedImageUri != null) {
                 String imagePath = userId + "/" + listingId + "/property_edit_" + System.currentTimeMillis() + ".jpg";
                 boolean uploaded = uploadImageToStorage(selectedImageUri, imagePath);
@@ -231,11 +260,10 @@ public class EditListingActivity extends AppCompatActivity {
                 if (uploaded) {
                     finalImageUrl = SupabaseHelper.getPublicStorageUrl("property-images", imagePath);
                 } else {
-                    showMessage("Image upload failed. Saving text changes only.");
+                    showMessage(getString(R.string.warn_image_upload_failed_saving_text));
                 }
             }
 
-            // 2. Patch the database row
             HttpURLConnection connection = null;
             try {
                 String endpoint = "/rest/v1/listings?id=eq." + encode(listingId) + "&landlord_uid=eq." + encode(userId);
@@ -258,7 +286,6 @@ public class EditListingActivity extends AppCompatActivity {
                 if (!electricity.isEmpty()) body.put("electricity", electricity);
                 if (!sanitation.isEmpty()) body.put("sanitation", sanitation);
 
-                // Force the listing back into the moderation queue
                 body.put("status", "PENDING");
                 body.put("availability", "Pending");
 
@@ -270,23 +297,31 @@ public class EditListingActivity extends AppCompatActivity {
                 int code = connection.getResponseCode();
 
                 runOnUiThread(() -> {
-                    saveButton.setEnabled(true);
-                    saveButton.setText(R.string.save_changes);
+                    if (isFinishing() || isDestroyed()) return;
+
+                    if (saveButton != null) {
+                        saveButton.setEnabled(true);
+                        saveButton.setText(R.string.save_changes);
+                    }
 
                     if (code >= 200 && code < 300) {
-                        Toast.makeText(EditListingActivity.this, "Listing updated successfully.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(EditListingActivity.this, R.string.msg_listing_updated_success, Toast.LENGTH_SHORT).show();
                         setResult(RESULT_OK);
                         finish();
                     } else {
-                        Toast.makeText(EditListingActivity.this, "Update failed (HTTP " + code + ")", Toast.LENGTH_LONG).show();
+                        Toast.makeText(EditListingActivity.this, getString(R.string.error_update_failed_http) + " " + code, Toast.LENGTH_LONG).show();
                     }
                 });
 
             } catch (Exception e) {
                 runOnUiThread(() -> {
-                    saveButton.setEnabled(true);
-                    saveButton.setText(R.string.save_changes);
-                    Toast.makeText(EditListingActivity.this, "Network error updating listing.", Toast.LENGTH_LONG).show();
+                    if (isFinishing() || isDestroyed()) return;
+
+                    if (saveButton != null) {
+                        saveButton.setEnabled(true);
+                        saveButton.setText(R.string.save_changes);
+                    }
+                    Toast.makeText(EditListingActivity.this, R.string.error_network_updating_listing, Toast.LENGTH_LONG).show();
                 });
             } finally {
                 if (connection != null) connection.disconnect();
@@ -316,7 +351,7 @@ public class EditListingActivity extends AppCompatActivity {
             int code = connection.getResponseCode();
             return code >= 200 && code < 300;
         } catch (Exception e) {
-            Log.e("EditListing", "Image upload failed", e);
+            Log.e(TAG, "Image upload failed", e);
             return false;
         } finally {
             if (connection != null) connection.disconnect();
@@ -328,7 +363,10 @@ public class EditListingActivity extends AppCompatActivity {
     }
 
     private void showMessage(String message) {
-        runOnUiThread(() -> Toast.makeText(EditListingActivity.this, message, Toast.LENGTH_LONG).show());
+        runOnUiThread(() -> {
+            if (isFinishing() || isDestroyed()) return;
+            Toast.makeText(EditListingActivity.this, message, Toast.LENGTH_LONG).show();
+        });
     }
 
     @Override

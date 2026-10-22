@@ -29,6 +29,7 @@
                 android:layout_alignParentStart="true"
                 android:layout_centerVertical="true"
                 android:background="@drawable/bg_circle_white"
+                android:contentDescription="@string/desc_back_button"
                 android:elevation="1dp"
                 android:padding="7dp"
                 android:scaleType="fitCenter"
@@ -41,12 +42,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
-                android:text="Search"
+                android:text="@string/search_results_title"
                 android:textColor="#1F1614"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
-            <!-- NEW FUNNEL FILTER BUTTON -->
+            <!-- Filter Options Button -->
             <ImageButton
                 android:id="@+id/btnFilterOptions"
                 android:layout_width="38dp"
@@ -54,6 +55,7 @@
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
                 android:background="@drawable/bg_circle_white"
+                android:contentDescription="@string/search_filters_title"
                 android:elevation="1dp"
                 android:padding="9dp"
                 android:scaleType="fitCenter"
@@ -65,7 +67,7 @@
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="52dp"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="14dp"
             app:cardBackgroundColor="#FFFFFF"
             app:cardCornerRadius="26dp"
             app:cardElevation="2dp">
@@ -105,7 +107,7 @@
                     android:layout_width="36dp"
                     android:layout_height="36dp"
                     android:background="@drawable/bg_circle_terracotta"
-                    android:contentDescription="@string/desc_search_icon"
+                    android:contentDescription="@string/search_again"
                     android:padding="9dp"
                     android:scaleType="fitCenter"
                     android:src="@drawable/search"
@@ -117,7 +119,7 @@
         <HorizontalScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="18dp"
+            android:layout_marginBottom="14dp"
             android:scrollbars="none">
 
             <LinearLayout
@@ -192,12 +194,84 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
+                <!-- DETAILED FILTERS CONTAINER (Preserved from Right Branch) -->
+                <LinearLayout
+                    android:id="@+id/layoutFilterSection"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    android:orientation="vertical"
+                    android:visibility="gone"
+                    tools:visibility="visible">
+
+                    <TextView
+                        android:id="@+id/txtFiltersTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:text="@string/search_filters_title"
+                        android:textColor="#1F1614"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
+                        android:id="@+id/filterRow"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <EditText
+                            android:id="@+id/filterMaxPrice"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:layout_marginBottom="8dp"
+                            android:background="@drawable/custom_input"
+                            android:hint="@string/search_max_price_hint"
+                            android:inputType="numberDecimal"
+                            android:paddingHorizontal="12dp"
+                            android:textColor="#1F1614"
+                            android:textColorHint="#9E8F87"
+                            android:textSize="14sp" />
+
+                        <EditText
+                            android:id="@+id/filterMinRooms"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:layout_marginBottom="8dp"
+                            android:background="@drawable/custom_input"
+                            android:hint="@string/search_min_rooms_hint"
+                            android:inputType="number"
+                            android:paddingHorizontal="12dp"
+                            android:textColor="#1F1614"
+                            android:textColorHint="#9E8F87"
+                            android:textSize="14sp" />
+
+                        <Spinner
+                            android:id="@+id/filterPropertyType"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:background="@drawable/custom_input"
+                            android:paddingHorizontal="8dp" />
+                    </LinearLayout>
+
+                    <Button
+                        android:id="@+id/btnApplyFilters"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:layout_marginTop="8dp"
+                        android:background="@drawable/selector_regular_button"
+                        app:backgroundTint="@null"
+                        android:text="@string/search_apply_filters"
+                        android:textAllCaps="false"
+                        android:textColor="#FFFFFF" />
+                </LinearLayout>
+
                 <!-- Empty State Message -->
                 <TextView
                     android:id="@+id/txtNoResults"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="40dp"
+                    android:layout_marginTop="32dp"
                     android:gravity="center"
                     android:text="@string/search_no_results"
                     android:textColor="#8C7A70"

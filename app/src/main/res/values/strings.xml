@@ -10,20 +10,20 @@
     <string name="desc_app_logo">iKhaya Logo</string>
     <string name="choose_language">CHOOSE LANGUAGE</string>
     <string name="change_language">Change Language</string>
+    <string name="desc_choose_language">Choose the language you want to use in the app.</string>
     <string name="submit_for_review">Submit for Review</string>
+    <string name="btn_submit_for_review">Submit for Review</string>
     <string name="submit_changes_for_review">Submit Changes for Review</string>
     <string name="edit_accommodation">Edit Listing</string>
-    <string name="drop_move_pin">Drop / Move Pin</string>
-    <string name="use_my_gps">Use My GPS</string>
-    <string name="no_pin_dropped">No pin dropped yet. Search or drop a pin.</string>
-    <string name="search_location_hint">Search suburb, town, zone, or landmark</string>
-    <string name="drag_map_pin_instruction">Drag map to position pin</string>
-    <string name="confirm_location_pin">Confirm Location Pin</string>
-    <string name="desc_map_pin">Map Pin</string>
     <string name="listing_purpose">Listing Purpose</string>
     <string name="for_rent">For Rent</string>
     <string name="for_sale">For Sale</string>
     <string name="total_selling_price_r">Total Selling Price (R)</string>
+    <string name="monthly_rental_price_r">Monthly Rental Price (R)</string>
+    <string name="loading_text">Loading…</string>
+    <string name="label_not_provided">Not provided</string>
+    <string name="language_updated_successfully">Language updated successfully.</string>
+    <string name="press_back_again_to_exit">Press back again to exit iKhaya</string>
 
     <!-- Welcome / Registration / Login Flow -->
     <string name="get_started_btn">Get Started</string>
@@ -40,6 +40,8 @@
     <string name="existing_user_login">Already have an account? Log In</string>
     <string name="existing_user_btn">Login</string>
     <string name="logged_out_successfully">Logged out successfully.</string>
+    <string name="please_log_in_again">Please log in again.</string>
+    <string name="session_expired_login_again">Your session has expired. Please log in again.</string>
 
     <!-- Input Fields & Hints -->
     <string name="username_text">Name</string>
@@ -104,9 +106,35 @@
     <string name="town_village_preferred">Town / village preferred</string>
     <string name="we_will_use_your_phone_number_to_verify_your_account">We will use your phone number to verify your account.</string>
 
+    <!-- Map & GPS Verification -->
+    <string name="drop_move_pin">Drop / Move Pin</string>
+    <string name="use_my_gps">Use My GPS</string>
+    <string name="no_pin_dropped">No pin dropped yet. Search or drop a pin.</string>
+    <string name="search_location_hint">Search suburb, town, zone, or landmark</string>
+    <string name="drag_map_pin_instruction">Drag map to position pin</string>
+    <string name="confirm_location_pin">Confirm Location Pin</string>
+    <string name="desc_map_pin">Map Pin</string>
+    <string name="checking_location">Checking location…</string>
+    <string name="location_verified_success">Location verified successfully.</string>
+    <string name="location_not_found">Location not found. Check the address and try again.</string>
+    <string name="location_verify_failed">Could not verify location. Check your connection.</string>
+    <string name="acquiring_satellite_lock">Acquiring satellite lock...</string>
+    <string name="format_gps_captured">GPS Captured: %.5f, %.5f (Verified)</string>
+    <string name="format_pinned_coords">Pinned: %.5f, %.5f (Verified)</string>
+    <string name="gps_signal_weak">GPS signal weak. Try stepping outside or drop a pin manually.</string>
+    <string name="searching_gps_signal">Searching for GPS signal...</string>
+    <string name="permission_location_denied_map_fallback">Permission denied. You can still drop a pin on the map.</string>
+    <string name="get_directions">Get Directions</string>
+    <string name="get_directions_maps">Get Directions on Maps</string>
+    <string name="location_on_map">Location on Map</string>
+    <string name="view_on_map">View on map</string>
+    <string name="open_google_maps">Open Google Maps</string>
+    <string name="could_not_open_maps">Could not open Maps.</string>
+    <string name="location_not_available">Location is not available.</string>
+
     <!-- OTP Flow -->
     <string name="otp_button">Send Verification SMS</string>
-    <string name="otp_warning">We will send a free SMS OTP code to verify your phone number. No airtime or data needed</string>
+    <string name="otp_warning">We will send a free SMS OTP code to verify your phone number. No airtime or data needed.</string>
     <string name="otp_text">OTP Verification</string>
     <string name="otp_hint">Please enter the code sent to you by SMS</string>
     <string name="verify_otp_btn">Verify OTP</string>
@@ -123,7 +151,7 @@
     <string name="subtitle_dashboard">Your dashboard will load here soon.</string>
     <string name="welcome_to_ikhaya">Welcome to iKhaya 👋</string>
     <string name="home">Home</string>
-    <string name="home_greeting_default">Hey there!\nTell us where you want to stay</string>
+    <string name="home_greeting_default">Find your perfect stay</string>
     <string name="home_greeting_personalized">Hey, %1$s!\nTell us where you want to stay</string>
     <string name="desc_location_icon">Location Icon</string>
     <string name="default_location">Mthatha</string>
@@ -142,6 +170,7 @@
     <string name="nav_favorites">Favorites</string>
     <string name="nav_viewings">Viewings</string>
     <string name="nav_messages">Messages</string>
+    <string name="nav_dashboard">Dashboard</string>
     <string name="messages">Messages &amp; Community Chat</string>
     <string name="messages_community_chat">Messages &amp; Community Chat</string>
     <string name="chat_with_us">Chat with us</string>
@@ -168,8 +197,26 @@
     <string name="report_a_problem">Report a Problem</string>
     <string name="submit_report">Submit Report</string>
     <string name="describe_the_problem">Describe the problem</string>
+    <string name="error_describe_problem">Please describe the problem</string>
+    <string name="btn_submitting_ticket">Submitting ticket…</string>
+    <string name="msg_ticket_submitted">Ticket submitted. Our team will review it.</string>
+    <string name="error_could_not_submit_ticket">Could not submit ticket</string>
+    <string name="error_rls_check_failed">RLS policy check failed in Supabase.</string>
+    <string name="error_network_submitting_ticket">Network error submitting ticket.</string>
+    <string name="no_tickets_submitted">You haven\'t submitted any tickets.</string>
+    <string name="default_issue_reason">Issue</string>
+    <string name="prefix_you">You</string>
+    <string name="prefix_admin">Admin</string>
 
-    <!-- Accommodation, Listings & Form Management -->
+    <!-- Problem Categories -->
+    <string name="report_category_fraud">Listing Issue / Fraud</string>
+    <string name="report_category_bug">Technical Bug / Crash</string>
+    <string name="report_category_payment">Payment / Fee Dispute</string>
+    <string name="report_category_conduct">Landlord / Resident Conduct</string>
+    <string name="report_category_account">Account / Login Problem</string>
+    <string name="report_category_other">Other Support Inquiry</string>
+
+    <!-- Accommodation & Listing Form Management -->
     <string name="accommodation_types">Accommodation Types</string>
     <string name="rooms">Rooms</string>
     <string name="_2_rooms">2 Rooms</string>
@@ -215,6 +262,15 @@
     <string name="count_zero">0</string>
     <string name="arrow_right">›</string>
     <string name="view_all">View all</string>
+    <string name="property_type">Property Type</string>
+    <string name="rental_applications">Rental Applications</string>
+    <string name="my_applications">My Applications</string>
+    <string name="listing_enquiries">Listing Enquiries</string>
+    <string name="enquiries">Enquiries</string>
+    <string name="payments_received">Payments Received</string>
+    <string name="payment_history">Payment History</string>
+    <string name="notifications">Notifications</string>
+    <string name="applications">Applications</string>
 
     <string name="section_property_type">Property Type</string>
     <string name="section_amenities">Amenities</string>
@@ -226,18 +282,6 @@
     <string name="select_features_rules">Select Features &amp; Rules</string>
     <string name="btn_add_extra_features">+ Select Additional Features</string>
 
-    <string name="amenities_header">Amenities</string>
-    <string name="rules_header">Rules &amp; Availability</string>
-    <string name="amenity_water">Municipal / Tank Water</string>
-    <string name="amenity_electricity">Prepaid Electricity</string>
-    <string name="amenity_parking">Secure Yard Parking</string>
-    <string name="amenity_wifi">Wi-Fi Included</string>
-    <string name="amenity_borehole">Borehole Water</string>
-    <string name="rule_available_now">Available Immediately</string>
-    <string name="rule_deposit_req">Deposit Required</string>
-    <string name="rule_no_pets">No Pets Allowed</string>
-    <string name="rule_fenced">Fenced &amp; Gated</string>
-
     <string name="publish_listing">Publish Listing</string>
     <string name="choose_property_photos">Choose Property Photos</string>
     <string name="you_can_select_more_than_one_photo_the_first_photo_will_be_the_main_listing_photo">You can select more than one photo. The first photo will be the main listing photo.</string>
@@ -246,7 +290,6 @@
     <string name="street_suburb_town_or_municipality">Street, suburb, town or municipality</string>
     <string name="verify_property_location">Verify Property Location</string>
     <string name="location_has_not_been_verified_yet">Location has not been verified yet.</string>
-    <string name="monthly_rental_price_r">Monthly rental price (R)</string>
     <string name="select_sanitation_type">Select sanitation type</string>
     <string name="property_description">Property description</string>
     <string name="describe_the_property_and_rental_conditions">Describe the property and rental conditions</string>
@@ -298,6 +341,52 @@
     <string name="monthly_price_placeholder">R0 / month</string>
     <string name="rooms_placeholder">Rooms</string>
 
+    <!-- Listing Management, State & Modification -->
+    <string name="photo_selected_singular">photo selected</string>
+    <string name="photo_selected_plural">photos selected</string>
+    <string name="photos_selected_toast">photo(s) selected</string>
+    <string name="photos_selected_count">%1$d photo(s) selected</string>
+    <string name="btn_change_selected_photos">Change Selected Photos</string>
+    <string name="change_selected_photos">Change Selected Photos</string>
+    <string name="error_select_photo_first">Please select at least one property photo.</string>
+    <string name="error_no_photos_uploaded">The listing was created, but no photos uploaded successfully.</string>
+    <string name="listing_submitted_success_prefix">Listing submitted for review with</string>
+    <string name="listing_submitted_success_suffix">photo(s).</string>
+    <string name="error_complete_required_fields">Please complete all required fields.</string>
+    <string name="error_verify_location_first">Verify the property location before publishing.</string>
+    <string name="error_invalid_price_or_rooms">Enter a valid price and number of rooms.</string>
+    <string name="error_price_greater_zero">Price must be greater than zero.</string>
+    <string name="error_price_rooms_greater_zero">Price and rooms must be greater than zero.</string>
+    <string name="error_check_supabase_permissions">Could not create listing. Check your Supabase table permissions.</string>
+    <string name="error_listing_not_returned">The listing was not returned by Supabase.</string>
+    <string name="error_adding_listing_general">Error adding listing. Please try again.</string>
+    <string name="listing_published_success">Listing published with %1$d photo(s).</string>
+    <string name="error_missing_credentials_or_listing">Missing credentials or listing ID.</string>
+    <string name="error_listing_not_found_permission">Listing not found or you do not have permission to edit it.</string>
+    <string name="error_could_not_load_listing">Could not load listing.</string>
+    <string name="error_could_not_load_listing_general">Could not load listing details.</string>
+    <string name="error_price_rooms_negative">Price and rooms cannot be negative.</string>
+    <string name="btn_saving_changes_in_progress">Saving changes…</string>
+    <string name="warn_image_upload_failed_saving_text">Image upload failed. Saving text changes only.</string>
+    <string name="msg_listing_updated_success">Listing updated successfully.</string>
+    <string name="error_update_failed_http">Update failed (HTTP</string>
+    <string name="error_network_updating_listing">Network error updating listing.</string>
+    <string name="loading_listings">Loading your listings…</string>
+    <string name="no_listings_for_category">No listings found for this category.</string>
+    <string name="status_in_review">In Review</string>
+    <string name="status_requires_fixes">Requires Fixes</string>
+    <string name="status_live">Live</string>
+    <string name="dialog_title_delete_listing">Delete listing?</string>
+    <string name="dialog_msg_delete_listing_confirm">Delete</string>
+    <string name="msg_listing_deleted">Listing deleted.</string>
+    <string name="error_could_not_delete_listing">Could not delete listing. Error:</string>
+    <string name="error_delete_listing_general">Could not delete listing. Please try again.</string>
+    <string name="label_price_not_provided">Price not provided</string>
+    <string name="label_rooms_not_specified">Rooms not specified</string>
+    <string name="label_rooms_count">Room(s)</string>
+    <string name="default_unknown_location">Unknown Location</string>
+    <string name="default_country_location">South Africa</string>
+
     <!-- Empty States & User Activity -->
     <string name="no_listings_yet">No listings yet</string>
     <string name="no_saved_listings_yet">No saved listings yet.</string>
@@ -311,19 +400,18 @@
     <string name="no_payments_received">No payments received yet.</string>
     <string name="no_payments_received_yet">No payments received yet.</string>
     <string name="no_payments_to_display">No payments to display.</string>
-    <string name="my_applications">My Applications</string>
-    <string name="listing_enquiries">Listing Enquiries</string>
-    <string name="enquiries">Enquiries</string>
-    <string name="payments_received">Payments Received</string>
-    <string name="payment_history">Payment History</string>
-    <string name="notifications">Notifications</string>
-    <string name="applications">Applications</string>
 
     <!-- Saved Listings Screen Elements -->
     <string name="title_saved_listings">Saved Places</string>
     <string name="empty_saved_title">No saved places yet</string>
     <string name="empty_saved_subtitle">Tap the heart icon on any room or house while exploring to save it here for later.</string>
     <string name="btn_explore_now">Explore Accommodation</string>
+    <string name="view_property">View property</string>
+    <string name="remove">Remove</string>
+    <string name="remove_favorite_title">Remove favorite?</string>
+    <string name="remove_favorite_message">Remove \"%1$s\" from your saved listings?</string>
+    <string name="favorite_removed">Favorite removed.</string>
+    <string name="loading_favorites">Loading your favorites…</string>
 
     <!-- Search & Filter Controls -->
     <string name="search">Search</string>
@@ -349,8 +437,8 @@
     <string name="no_accommodation_matches_your_search_and_filters">No accommodation matches your search and filters.</string>
     <string name="no_listings_found">No listings found</string>
     <string name="search_view_details">View Details</string>
-    <string name="search_listing_unavailable">Listing unavailable.</string>
-    <string name="search_login_again">Please log in again.</string>
+    <string name="search_listing_unavailable">Listing details currently unavailable.</string>
+    <string name="search_login_again">Please log in again to search listings.</string>
     <string name="search_load_failed">Could not load accommodation.</string>
     <string name="search_load_error">Error loading accommodation.</string>
     <string name="search_unnamed_property">Accommodation</string>
@@ -362,13 +450,14 @@
     <string name="min_rooms">Min rooms</string>
     <string name="no_limit">No limit</string>
     <string name="max_price_r">Max price (R)</string>
-
     <string name="desc_close">Close Search</string>
     <string name="desc_filter">Filter Options</string>
     <string name="filter_chip_all">All Types</string>
     <string name="filter_chip_rooms">Rooms</string>
     <string name="filter_chip_shared">Shared</string>
     <string name="filter_chip_houses">Houses</string>
+    <string name="error_unable_to_load_listings">Unable to load listings right now.</string>
+    <string name="error_network_listings">Network error. Please check your connection.</string>
 
     <!-- Filter Bottom Sheet -->
     <string name="filter_sheet_title">Filters</string>
@@ -400,13 +489,18 @@
     <string name="viewing_status_pending">Pending Host</string>
     <string name="action_directions">Directions</string>
     <string name="action_contact_landlord">Call / Chat</string>
+    <string name="error_viewings_init_failed">Viewings screen could not be initialized.</string>
+    <string name="error_could_not_load_viewings_http">Could not load viewings (HTTP</string>
+    <string name="error_network_loading_viewings">Network error loading your viewings.</string>
+    <string name="default_viewing_property_title">Accommodation Viewing</string>
+    <string name="label_date_not_provided">Date not provided</string>
+    <string name="status_pending_host">Pending Host</string>
+    <string name="btn_viewing_directions">Directions</string>
+    <string name="btn_contact_host">Contact Host</string>
+    <string name="error_location_unavailable">Property location is not available.</string>
+    <string name="error_cannot_open_dialer">Could not open the phone dialer.</string>
 
     <!-- Property Details, Location & Actions -->
-    <string name="get_directions">Get Directions</string>
-    <string name="get_directions_maps">Get Directions on Maps</string>
-    <string name="location_on_map">Location on Map</string>
-    <string name="view_on_map">View on map</string>
-    <string name="open_google_maps">Open Google Maps</string>
     <string name="description">Description</string>
     <string name="translate">Translate</string>
     <string name="contact_landlord">Contact landlord</string>
@@ -414,8 +508,6 @@
     <string name="translate_to_language">Translate to %1$s</string>
     <string name="show_original">Show original</string>
     <string name="translation_failed">Translation failed: %1$s</string>
-    <string name="location_not_available">Location is not available.</string>
-    <string name="could_not_open_maps">Could not open Maps.</string>
     <string name="please_log_in_to_save">Please log in to save.</string>
     <string name="accommodation_saved">Accommodation saved.</string>
     <string name="already_saved">Already saved.</string>
@@ -432,20 +524,16 @@
     <string name="rent_terms_subtitle">Per month • Standard deposit</string>
     <string name="btn_schedule_viewing_action">Schedule Viewing</string>
     <string name="price_per_month_format">R %1$s</string>
-
-    <!-- Location Picker & Area Constants -->
     <string name="title_select_location">Select Area / Town</string>
     <string name="location_all_areas">All Locations</string>
     <string name="default_city">Mthatha</string>
     <string name="desc_location_picker">Select Current City</string>
 
-    <!-- Property Pricing & Offering Terms (Rent vs Buy) -->
+    <!-- Pricing & Terms (Rent vs Buy) -->
     <string name="price_per_month_value">R %1$s / mo</string>
     <string name="price_for_sale_value">R %1$s</string>
     <string name="terms_rent_subtitle">Per month • Standard deposit</string>
     <string name="terms_sale_subtitle">Once-off purchase • Title deed</string>
-
-    <!-- Offering Specific CTAs -->
     <string name="btn_book_site_visit">Book Site Inspection</string>
     <string name="btn_make_offer">Make an Offer to Buy</string>
     <string name="contact_caretaker">Contact Caretaker / Landlord</string>
@@ -453,7 +541,7 @@
     <string name="verified_rental_badge">Verified Accommodation</string>
     <string name="verified_property_badge">Verified Property / Deed</string>
 
-    <!-- Rental Application Form & Verification -->
+    <!-- Rental Application Form -->
     <string name="apply_title">Tenant Rental Application</string>
     <string name="label_full_name">Full Name</string>
     <string name="label_id_number">RSA ID / Passport Number</string>
@@ -466,14 +554,16 @@
     <string name="label_special_notes">Additional Notes / Message</string>
     <string name="label_agreement_checkbox">I confirm these details are accurate and agree to abide by the property guidelines upon approval.</string>
     <string name="btn_submit_application">Submit Application</string>
+    <string name="dialog_discard_title">Discard Application?</string>
+    <string name="dialog_discard_message">Exiting now will discard the details you have entered.</string>
+    <string name="dialog_btn_discard">Discard</string>
+    <string name="dialog_btn_continue">Continue Applying</string>
     <string name="msg_toast_applied">Application Sent to Landlord!</string>
     <string name="err_enter_name">Please enter your full name</string>
     <string name="err_enter_id">Please enter a valid 13-digit RSA ID Number</string>
     <string name="err_enter_phone">Please enter a valid 10-digit South African phone number</string>
     <string name="err_enter_emergency">Please enter a valid 10-digit emergency contact number</string>
     <string name="err_accept_terms">Please agree to the property lease guidelines to continue.</string>
-
-    <!-- Landlord Decision Actions & Application States -->
     <string name="btn_apply_to_rent">Apply to Rent</string>
     <string name="btn_pending_review">Application Pending Review</string>
     <string name="btn_approve_lease">Approve Lease</string>
@@ -483,7 +573,6 @@
     <string name="status_declined">Status: DECLINED</string>
     <string name="msg_application_approved">Application Approved! Tenant notified.</string>
     <string name="msg_application_declined">Application Declined</string>
-
     <string name="application_dialog_title">%1$s • %2$s</string>
     <string name="default_move_in_date">01/11/2026</string>
     <string name="default_occupation">Student</string>
@@ -491,8 +580,64 @@
     <string name="default_occupants">1 Person</string>
     <string name="default_tenant_note">Responsible tenant seeking accommodation.</string>
     <string name="application_status_pending">PENDING</string>
+    <string name="rental_applications_loading">Loading rental applications…</string>
+    <string name="rental_applications_load_failed">Could not load rental applications. Check your connection.</string>
+    <string name="rental_application_missing_details">Could not submit: sign in and reload the property.</string>
+    <string name="rental_application_sent">Rental application sent to the landlord.</string>
+    <string name="rental_application_send_failed">Could not submit the application. Please try again.</string>
+    <string name="rental_application_update_failed">Could not update the application.</string>
+    <string name="rental_application_for_listing">Property application • %1$s</string>
+    <string name="rental_application_card_details">Applicant: %1$s\nMove-in: %2$s\nDuration: %3$s\nOccupants: %4$s\nPhone: %5$s</string>
+    <string name="rental_application_status">Status: %1$s</string>
+    <string name="view_rental_property">View Rental Details &amp; Map</string>
 
-    <!-- Notifications & Chat Prototype Features -->
+    <!-- Chat, Notifications & Direct Messaging -->
+    <string name="title_messages_community">Messages &amp; Community</string>
+    <string name="desc_chat_community">Chat with the community or search users</string>
+    <string name="btn_view_chat_alerts">View Chat Requests / Alerts</string>
+    <string name="title_ikhaya_community">iKhaya Community Group</string>
+    <string name="desc_community_room">Public room for all tenants &amp; landlords • Tap to join</string>
+    <string name="title_search_users">Search Users</string>
+    <string name="hint_type_name_search">Type name to search…</string>
+    <string name="title_direct_messages">Direct Messages</string>
+    <string name="title_chat">Chat</string>
+    <string name="status_active">Active</string>
+    <string name="btn_send">Send</string>
+    <string name="hint_type_a_message">Type a message…</string>
+    <string name="no_active_direct_chats">No active direct chats yet. Search for a user above to send a chat request.</string>
+    <string name="tap_to_message">Tap to message</string>
+    <string name="request_chat">Request Chat</string>
+    <string name="default_chat_user_name">iKhaya User</string>
+    <string name="default_chat_member_role">Member</string>
+    <string name="title_chat_fallback">Chat</string>
+    <string name="subtitle_community_room">Public Community Room (All Users)</string>
+    <string name="subtitle_direct_message">Direct Message</string>
+    <string name="menu_delete_chat_messages">Delete Chat Messages</string>
+    <string name="menu_delete_contact_and_chat">Delete Contact &amp; Chat</string>
+    <string name="dialog_title_delete_messages">Delete Messages</string>
+    <string name="dialog_msg_delete_messages_confirm">Delete all messages with this user?</string>
+    <string name="dialog_title_delete_contact">Delete Contact</string>
+    <string name="dialog_msg_delete_contact_confirm">Delete this contact and all chat history?</string>
+    <string name="btn_delete">Delete</string>
+    <string name="attach_option_picture">Send Picture</string>
+    <string name="attach_option_pdf">Send PDF Document</string>
+    <string name="dialog_title_attach_file">Attach File</string>
+    <string name="error_sign_in_for_chat">Please sign in to use chat.</string>
+    <string name="error_load_messages_http">Failed to load messages (HTTP</string>
+    <string name="msg_no_messages_say_hello">No messages yet. Say hello!</string>
+    <string name="no_messages_yet">No messages yet. Say hello!</string>
+    <string name="date_label_today">Today</string>
+    <string name="date_label_yesterday">Yesterday</string>
+    <string name="placeholder_image_missing">[Image missing]</string>
+    <string name="default_document_filename">Document.pdf</string>
+    <string name="label_tap_to_open">Tap to open</string>
+    <string name="toast_opening_pdf">Opening PDF:</string>
+    <string name="dialog_title_delete_single_message">Delete Message</string>
+    <string name="dialog_msg_delete_single_message">Delete this message?</string>
+    <string name="toast_chat_deleted">Chat deleted</string>
+    <string name="error_failed_to_attach_file">Failed to attach file</string>
+    <string name="error_send_failed_http">Send failed (HTTP</string>
+    <string name="error_sending_message_prefix">Error sending message:</string>
     <string name="new_enquiries">New enquiries</string>
     <string name="new_enquiries_notification">New enquiries</string>
     <string name="notification_badge_text">!</string>
@@ -509,24 +654,153 @@
     <string name="chat_request_update_failed">Could not update the chat request.</string>
     <string name="could_not_load_notifications">Could not load notifications.</string>
     <string name="no_general_notifications">No new general notifications.</string>
+    <string name="notifications_title">Notifications</string>
+    <string name="btn_my_viewings">My Viewings</string>
+    <string name="btn_other_notifications">Other Notifications</string>
+    <string name="btn_view_all_notifications">View all notifications</string>
+    <string name="btn_open_messages">Open Messages</string>
+    <string name="notif_viewing_approved_header">VIEWING APPROVED</string>
+    <string name="notif_viewing_approved_body_prefix">Your viewing request for</string>
+    <string name="notif_viewing_approved_body_suffix">has been approved by the landlord.</string>
+    <string name="notif_viewing_declined_header">VIEWING DECLINED</string>
+    <string name="notif_viewing_declined_body_prefix">Your viewing request for</string>
+    <string name="notif_viewing_declined_body_suffix">has been declined by the landlord.</string>
+    <string name="label_requested_date">Requested date</string>
+    <string name="notif_new_message_header">NEW MESSAGE</string>
+    <string name="notif_new_message_from_prefix">You have a new message from</string>
+    <string name="notif_new_message_from_resident_prefix">You have a new message from resident</string>
+    <string name="notif_you_have_prefix">You have</string>
+    <string name="notif_new_messages_total_suffix">new messages in total.</string>
+    <string name="notif_no_new_viewings_or_messages">You have no new viewing decisions or direct messages.</string>
+    <string name="notif_no_new_direct_messages">You have no new direct messages.</string>
+    <string name="label_resident">Resident</string>
+    <string name="searching_users_toast">Searching…</string>
+    <string name="error_during_search_prefix">Error during search:</string>
+    <string name="no_matching_users_found">No matching users found.</string>
+    <string name="error_failed_to_delete_contact">Failed to delete contact.</string>
+    <string name="toast_checking_request_status">Checking request status…</string>
+    <string name="toast_request_already_pending">A chat request with this user is already pending.</string>
+    <string name="dialog_title_send_chat_request">Send Chat Request?</string>
+    <string name="dialog_msg_send_chat_request">Send a chat request to %1$s (%2$s)? They must accept your request in Alerts before you can message each other.</string>
+    <string name="btn_send_request">Send Request</string>
+    <string name="toast_chat_request_sent">Chat request sent!</string>
 
-    <string name="rental_applications_loading">Loading rental applications…</string>
-    <string name="rental_applications_load_failed">Could not load rental applications. Check your connection.</string>
-    <string name="rental_application_missing_details">Could not submit: sign in and reload the property.</string>
-    <string name="rental_application_sent">Rental application sent to the landlord.</string>
-    <string name="rental_application_send_failed">Could not submit the application. Please try again.</string>
-    <string name="rental_application_update_failed">Could not update the application.</string>
-    <string name="rental_application_for_listing">Property application • %1$s</string>
-    <string name="rental_application_card_details">Applicant: %1$s\nMove-in: %2$s\nDuration: %3$s\nOccupants: %4$s\nPhone: %5$s</string>
-    <string name="rental_application_status">Status: %1$s</string>
-    <string name="view_rental_property">View Rental Details &amp; Map</string>
+    <!-- Payment Records -->
+    <string name="payment_records_found_suffix">payment record(s) found.</string>
+    <string name="no_payment_records_found">No payment records found.</string>
+    <string name="error_could_not_load_payment_history">Could not load payment history.</string>
+    <string name="payments_found_suffix">payment(s) found.</string>
+    <string name="no_payments_received_found">No payments received yet.</string>
+    <string name="error_could_not_load_payments">Could not load payments.</string>
+
+    <!-- Admin Moderation & Operations -->
+    <string name="admin_dashboard">Dashboard</string>
+    <string name="admin_logged_in">Logged in: Admin</string>
+    <string name="admin_exit">EXIT</string>
+    <string name="member_role">MEMBER</string>
+    <string name="admin_active_listings">Active Platform Listings</string>
+    <string name="admin_no_active_listings">No active listings found.</string>
+    <string name="admin_pending_listings">Pending Approvals</string>
+    <string name="admin_no_pending_listings">No pending listings found.</string>
+    <string name="admin_user_directory">User Directory</string>
+    <string name="admin_property_inspection">Property Inspection</string>
+    <string name="admin_status_pending_review">Requires review</string>
+    <string name="admin_active_live_properties">Live properties</string>
+    <string name="admin_users_registered">Registered accounts</string>
+    <string name="admin_total_assets">TOTAL ASSETS</string>
+    <string name="admin_across_platform">Across platform</string>
+    <string name="admin_no_users">No users found.</string>
+    <string name="hint_search_users_admin">Search by name…</string>
+    <string name="hint_search_property_landlord">Search property or landlord…</string>
+    <string name="hint_search_live_properties">Search live properties…</string>
+    <string name="admin_status_suspended">Suspended</string>
+    <string name="admin_sort_newest">Newest First</string>
+    <string name="admin_sort_oldest">Oldest First (Urgent)</string>
+    <string name="admin_filter_all">All</string>
+    <string name="unauthorized_admin_access">Unauthorized Access! Admin privileges required.</string>
+    <string name="default_admin_title">Administrator</string>
+    <string name="greeting_welcome">Welcome</string>
+    <string name="reports_pending_suffix">pending reports</string>
+    <string name="no_issues_reported">No issues reported</string>
+    <string name="title_user_problem_reports">User Problem Reports</string>
+    <string name="msg_no_problem_reports">No problem reports submitted yet.</string>
+    <string name="btn_ok">OK</string>
+    <string name="btn_close">Close</string>
+    <string name="unknown_reporter_uid">Unknown UID</string>
+    <string name="no_report_description">No description</string>
+    <string name="label_date">Date</string>
+    <string name="label_reporter">Reporter</string>
+    <string name="clearance_complete_percent">100%</string>
+    <string name="trend_awaiting_review">awaiting review</string>
+    <string name="trend_all_caught_up">All caught up</string>
+
+    <string name="error_missing_listing_id">Error: Missing Listing ID</string>
+    <string name="label_submitted_by">Submitted by</string>
+    <string name="btn_revoke_live_status">Revoke Live Status</string>
+    <string name="btn_require_fixes">Require Fixes</string>
+    <string name="default_untitled_property">Untitled Property</string>
+    <string name="default_no_description">No description provided.</string>
+    <string name="role_landlord">Landlord</string>
+    <string name="error_failed_load_listing_data">Failed to load listing data.</string>
+    <string name="hint_compliance_reason">e.g. Please upload clear photos and fix the address.</string>
+    <string name="title_require_changes">Require Changes</string>
+    <string name="msg_require_changes_instructions">Force the landlord to correct this listing. Provide the exact reason/instructions:</string>
+    <string name="btn_send_back">Send Back</string>
+    <string name="error_must_provide_instructions">You must provide instructions to the landlord.</string>
+    <string name="notif_title_action_required">Action Required</string>
+    <string name="notif_msg_requires_updates_prefix">Your listing requires updates. Admin notes</string>
+    <string name="notif_title_listing_approved">Listing Approved</string>
+    <string name="notif_msg_listing_approved_body">Congratulations! Your property is now live on the platform.</string>
+    <string name="listing_prefix">Listing</string>
+    <string name="status_approved_lower">approved</string>
+    <string name="status_rejected_lower">rejected</string>
+    <string name="action_failed_prefix">Action failed</string>
+
+    <!-- Amenities & Features Dialog -->
+    <string name="title_select_features_and_rules">Select Features and Rules</string>
+    <string name="btn_done">Done</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="dialog_done">Done</string>
+    <string name="amenity_wifi">Wi-Fi</string>
+    <string name="amenity_parking">Parking</string>
+    <string name="amenity_security">Security</string>
+    <string name="amenity_furnished">Furnished</string>
+    <string name="amenity_water_included">Water included</string>
+    <string name="amenity_electricity_included">Electricity included</string>
+    <string name="amenity_deposit_required">Deposit required</string>
+    <string name="amenity_no_smoking">No smoking</string>
+    <string name="amenity_shared_kitchen">Shared kitchen</string>
+    <string name="amenity_laundry_facilities">Laundry facilities</string>
+    <string name="amenity_wifi_label">Wi-Fi</string>
+    <string name="amenity_parking_label">Parking</string>
+    <string name="amenity_security_label">Security</string>
+    <string name="amenity_furnished_label">Furnished</string>
+    <string name="amenity_water_inc_label">Water included</string>
+    <string name="amenity_elec_inc_label">Electricity included</string>
+    <string name="amenity_deposit_req_label">Deposit required</string>
+    <string name="amenity_no_smoking_label">No smoking</string>
+    <string name="amenity_kitchen_label">Shared kitchen</string>
+    <string name="amenity_laundry_label">Laundry facilities</string>
+    <string name="amenities_header">Amenities</string>
+    <string name="rules_header">Rules &amp; Availability</string>
+    <string name="amenity_water">Municipal / Tank Water</string>
+    <string name="amenity_electricity">Prepaid Electricity</string>
+    <string name="amenity_borehole">Borehole Water</string>
+    <string name="rule_available_now">Available Immediately</string>
+    <string name="rule_deposit_req">Deposit Required</string>
+    <string name="rule_no_pets">No Pets Allowed</string>
+    <string name="rule_fenced">Fenced &amp; Gated</string>
+
+    <!-- Dynamic Formatters -->
+    <string name="listing_location_pin">📍 %1$s</string>
+    <string name="listing_price_month">R %1$s / mo</string>
+    <string name="listing_rooms_tag">%1$s rooms</string>
 
     <!-- General Errors & Utilities -->
     <string name="error_opening_screen">Could not open this screen.</string>
     <string name="could_not_refresh_dashboard">Could not refresh dashboard.</string>
-    <string name="please_log_in_again">Please log in again.</string>
 
-    <!-- Official South African Languages -->
+    <!-- Languages -->
     <string name="language_selection">Choose your preferred language</string>
     <string name="english_btn">English</string>
     <string name="isiZulu_btn">isiZulu</string>
@@ -534,7 +808,6 @@
     <string name="sepedi_btn">Sepedi</string>
     <string name="sesotho_btn">Sesotho</string>
     <string name="afrikaans_btn">Afrikaans</string>
-
     <string name="english">English</string>
     <string name="isizulu">isiZulu</string>
     <string name="isixhosa">isiXhosa</string>
@@ -622,54 +895,7 @@
     <string name="error_phone">Enter a valid SA number (e.g., 082 123 4567)</string>
     <string name="error_email">Please enter a valid email address</string>
 
-    <!-- Dummy Fallback Accommodation Data -->
-    <string name="affordable_room">Affordable Room</string>
-    <string name="affordable_room_10_mthatha_10_r950_month_10_available">Affordable room\nMthatha\nR950 / month\nAvailable</string>
-    <string name="affordable_room_10_10_mthatha_eastern_cape_10_r950_month_10_2_rooms_10_available">Affordable Room\n\nMthatha, Eastern Cape\nR950 / month\n2 Rooms\nAvailable</string>
-    <string name="family_house_10_10_mthatha_eastern_cape_10_r1_500_month_10_3_bedrooms_10_available">Family House\n\nMthatha, Eastern Cape\nR1,500 / month\n3 Bedrooms\nAvailable</string>
-    <string name="shared_accommodation_10_10_mthatha_eastern_cape_10_r750_month_10_1_room_10_available">Shared Accommodation\n\nMthatha, Eastern Cape\nR750 / month\n1 Room\nAvailable</string>
-    <string name="r950_month">R950 / month</string>
-    <string name="r1_500_month">R1 500 / month</string>
-    <string name="mthatha_eastern_cape">Mthatha, Eastern Cape</string>
-    <string name="_2_rooms_10_water_available_10_electricity_available_10_parking_available_10_available_now">2 Rooms\nWater available\nElectricity available\nParking available\nAvailable now</string>
-    <string name="affordable_accommodation_located_in_a_convenient_area_of_mthatha_suitable_for_individuals_looking_for_accessible_and_affordable_housing">Affordable accommodation located in a convenient area of Mthatha. Suitable for individuals looking for accessible and affordable housing.</string>
-
-    <string name="property_type">Property Type</string>
-    <string name="rental_applications">Rental Applications</string>
-    <!-- Chat & User Selection -->
-    <string name="title_messages_community">Messages &amp; Community</string>
-    <string name="desc_chat_community">Chat with the community or search users</string>
-    <string name="btn_view_chat_alerts">View Chat Requests / Alerts</string>
-    <string name="title_ikhaya_community">iKhaya Community Group</string>
-    <string name="desc_community_room">Public room for all tenants &amp; landlords • Tap to join</string>
-    <string name="title_search_users">Search Users</string>
-    <string name="hint_type_name_search">Type name to search…</string>
-    <string name="title_direct_messages">Direct Messages</string>
-    <string name="title_chat">Chat</string>
-    <string name="status_active">Active</string>
-    <string name="btn_send">Send</string>
-    <string name="hint_type_a_message">Type a message…</string>
-    <string name="no_active_direct_chats">No active direct chats yet. Search for a user above to send a chat request.</string>
-    <string name="tap_to_message">Tap to message</string>
-    <string name="request_chat">Request Chat</string>
-
-    <!-- Admin & Misc -->
-    <string name="desc_choose_language">Choose the language you want to use in the app.</string>
-    <string name="btn_apply">Apply</string>
-    <string name="status_loading">Loading…</string>
-    <string name="btn_select_date">Select Date 📅</string>
-    <string name="admin_dashboard">Dashboard</string>
-    <string name="admin_logged_in">Logged in: Admin</string>
-    <string name="admin_exit">EXIT</string>
-
-    <string name="member_role">MEMBER</string>
-
-    <string name="dialog_discard_title">Discard Application?</string>
-    <string name="dialog_discard_message">Exiting now will discard the details you have entered.</string>
-    <string name="dialog_btn_discard">Discard</string>
-    <string name="dialog_btn_continue">Continue</string>
-
-    <!-- Apply Rental Dialog Fields -->
+    <!-- Sale & Purchase Dialogue Extras -->
     <string name="hint_full_name_example">e.g. John Doe</string>
     <string name="hint_rsa_id">13-digit RSA ID Number</string>
     <string name="hint_phone_example_1">072 000 0000</string>
@@ -678,57 +904,6 @@
     <string name="dialog_apply_title_sale">Offer / Purchase Enquiry</string>
     <string name="btn_submit_offer">Submit Purchase Offer</string>
     <string name="msg_toast_offer_submitted">Offer submitted to seller!</string>
-    <string name="admin_active_listings">Active Platform Listings</string>
-    <string name="admin_no_active_listings">No active listings found.</string>
-    <string name="admin_pending_listings">Pending Approvals</string>
-    <string name="admin_no_pending_listings">No pending listings found.</string>
-    <string name="admin_user_directory">User Directory</string>
-    <string name="admin_property_inspection">Property Inspection</string>
-    <string name="admin_status_pending_review">Requires review</string>
-    <string name="admin_active_live_properties">Live properties</string>
-    <string name="admin_users_registered">Registered accounts</string>
-    <string name="admin_total_assets">TOTAL ASSETS</string>
-    <string name="admin_across_platform">Across platform</string>
-    <string name="admin_no_users">No users found.</string>
-    <string name="hint_search_users_admin">Search by name…</string>
-    <string name="hint_search_property_landlord">Search property or landlord…</string>
-    <string name="hint_search_live_properties">Search live properties…</string>
-    <string name="admin_status_suspended">Suspended</string>
-    <string name="admin_sort_newest">Newest First</string>
-    <string name="admin_sort_oldest">Oldest First (Urgent)</string>
-    <string name="admin_filter_all">All</string>
     <string name="hint_start_conversation">No messages yet. Send a message to start the conversation!</string>
-
-    <!-- Dynamic Formatters -->
-    <string name="listing_location_pin">📍 %1$s</string>
-    <string name="listing_price_month">R %1$s / mo</string>
-    <string name="listing_rooms_tag">%1$s rooms</string>
-    <string name="view_property">View property</string>
-    <string name="remove">Remove</string>
-    <string name="remove_favorite_title">Remove favorite?</string>
-    <string name="remove_favorite_message">Remove \"%1$s\" from your saved listings?</string>
-    <string name="favorite_removed">Favorite removed.</string>
-    <string name="loading_favorites">Loading your favorites…</string>
-    <string name="no_messages_yet">No messages yet. Say hello!</string>
-
-    <!-- Amenities Dialog Items -->
-    <string name="amenity_wifi_label">Wi-Fi</string>
-    <string name="amenity_parking_label">Parking</string>
-    <string name="amenity_security_label">Security</string>
-    <string name="amenity_furnished_label">Furnished</string>
-    <string name="amenity_water_inc_label">Water included</string>
-    <string name="amenity_elec_inc_label">Electricity included</string>
-    <string name="amenity_deposit_req_label">Deposit required</string>
-    <string name="amenity_no_smoking_label">No smoking</string>
-    <string name="amenity_kitchen_label">Shared kitchen</string>
-    <string name="amenity_laundry_label">Laundry facilities</string>
-    <string name="dialog_done">Done</string>
-    <string name="photos_selected_count">%1$d photo(s) selected</string>
-    <string name="change_selected_photos">Change Selected Photos</string>
-    <string name="checking_location">Checking location…</string>
-    <string name="location_verified_success">Location verified successfully.</string>
-    <string name="location_not_found">Location not found. Check the address and try again.</string>
-    <string name="location_verify_failed">Could not verify location. Check your connection.</string>
-    <string name="listing_published_success">Listing published with %1$d photo(s).</string>
 
 </resources>

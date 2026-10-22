@@ -1,12 +1,11 @@
-
 package com.example.ikhaya_accommodation_seeking_app;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -18,6 +17,8 @@ import java.util.concurrent.Executors;
 
 public class ChangePasswordActivity extends AppCompatActivity {
 
+    private static final String TAG = "ChangePassword";
+
     private EditText edtCurrentPassword;
     private EditText edtNewPassword;
     private EditText edtConfirmPassword;
@@ -25,8 +26,7 @@ public class ChangePasswordActivity extends AppCompatActivity {
     private View btnBack;
     private Button btnChangePassword;
 
-    private final ExecutorService executor =
-            Executors.newSingleThreadExecutor();
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     private boolean changingPassword = false;
 
@@ -35,19 +35,11 @@ public class ChangePasswordActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_change_password);
 
-        edtCurrentPassword =
-                findViewById(R.id.edtCurrentPassword);
-
-        edtNewPassword =
-                findViewById(R.id.edtNewPassword);
-
-        edtConfirmPassword =
-                findViewById(R.id.edtConfirmPassword);
-
+        edtCurrentPassword = findViewById(R.id.edtCurrentPassword);
+        edtNewPassword = findViewById(R.id.edtNewPassword);
+        edtConfirmPassword = findViewById(R.id.edtConfirmPassword);
         btnBack = findViewById(R.id.btnBack);
-
-        btnChangePassword =
-                findViewById(R.id.btnChangePassword);
+        btnChangePassword = findViewById(R.id.btnChangePassword);
 
         if (edtCurrentPassword == null
                 || edtNewPassword == null
@@ -55,21 +47,13 @@ public class ChangePasswordActivity extends AppCompatActivity {
                 || btnBack == null
                 || btnChangePassword == null) {
 
-            Toast.makeText(
-                    this,
-                    R.string.password_screen_error,
-                    Toast.LENGTH_LONG
-            ).show();
-
+            Toast.makeText(this, R.string.password_screen_error, Toast.LENGTH_LONG).show();
             finish();
             return;
         }
 
         btnBack.setOnClickListener(v -> finish());
-
-        btnChangePassword.setOnClickListener(
-                v -> changePassword()
-        );
+        btnChangePassword.setOnClickListener(v -> changePassword());
     }
 
     private void changePassword() {
@@ -77,14 +61,9 @@ public class ChangePasswordActivity extends AppCompatActivity {
             return;
         }
 
-        String currentPassword =
-                edtCurrentPassword.getText().toString();
-
-        String newPassword =
-                edtNewPassword.getText().toString();
-
-        String confirmPassword =
-                edtConfirmPassword.getText().toString();
+        String currentPassword = edtCurrentPassword.getText().toString();
+        String newPassword = edtNewPassword.getText().toString();
+        String confirmPassword = edtConfirmPassword.getText().toString();
 
         if (currentPassword.trim().isEmpty()
                 || newPassword.trim().isEmpty()
@@ -120,16 +99,11 @@ public class ChangePasswordActivity extends AppCompatActivity {
             if (email == null || email.trim().isEmpty()) {
                 changingPassword = false;
                 btnChangePassword.setEnabled(true);
-
                 showMessage(R.string.password_email_missing);
                 return;
             }
 
-            performPasswordChange(
-                    email.trim(),
-                    currentPassword,
-                    newPassword
-            );
+            performPasswordChange(email.trim(), currentPassword, newPassword);
         });
     }
 
@@ -143,74 +117,47 @@ public class ChangePasswordActivity extends AppCompatActivity {
             HttpURLConnection updateConnection = null;
 
             try {
-                verifyConnection =
-                        SupabaseHelper.createConnection(
-                                "/auth/v1/token?grant_type=password",
-                                "POST",
-                                null
-                        );
+                verifyConnection = SupabaseHelper.createConnection(
+                        "/auth/v1/token?grant_type=password",
+                        "POST",
+                        null
+                );
 
                 JSONObject verifyBody = new JSONObject();
-
                 verifyBody.put("email", email);
                 verifyBody.put("password", currentPassword);
 
-                SupabaseHelper.writeJson(
-                        verifyConnection,
-                        verifyBody
-                );
+                SupabaseHelper.writeJson(verifyConnection, verifyBody);
 
-                int verifyCode =
-                        verifyConnection.getResponseCode();
-
-                String verifyResponse =
-                        SupabaseHelper.readResponse(
-                                verifyConnection
-                        );
+                int verifyCode = verifyConnection.getResponseCode();
+                String verifyResponse = SupabaseHelper.readResponse(verifyConnection);
 
                 if (verifyCode < 200 || verifyCode >= 300) {
-                    showMessage(
-                            R.string.password_current_incorrect
-                    );
+                    showMessage(R.string.password_current_incorrect);
                     return;
                 }
 
-                JSONObject session =
-                        new JSONObject(verifyResponse);
-
-                String accessToken =
-                        session.optString("access_token", "");
+                JSONObject session = new JSONObject(verifyResponse);
+                String accessToken = session.optString("access_token", "");
 
                 if (accessToken.isEmpty()) {
-                    showMessage(
-                            R.string.password_session_missing
-                    );
+                    showMessage(R.string.password_session_missing);
                     return;
                 }
 
-                updateConnection =
-                        SupabaseHelper.createConnection(
-                                "/auth/v1/user",
-                                "PUT",
-                                accessToken
-                        );
-
-                JSONObject updateBody = new JSONObject();
-
-                updateBody.put("password", newPassword);
-
-                SupabaseHelper.writeJson(
-                        updateConnection,
-                        updateBody
+                updateConnection = SupabaseHelper.createConnection(
+                        "/auth/v1/user",
+                        "PUT",
+                        accessToken
                 );
 
-                int updateCode =
-                        updateConnection.getResponseCode();
+                JSONObject updateBody = new JSONObject();
+                updateBody.put("password", newPassword);
 
-                String updateResponse =
-                        SupabaseHelper.readResponse(
-                                updateConnection
-                        );
+                SupabaseHelper.writeJson(updateConnection, updateBody);
+
+                int updateCode = updateConnection.getResponseCode();
+                String updateResponse = SupabaseHelper.readResponse(updateConnection);
 
                 if (updateCode >= 200 && updateCode < 300) {
                     runOnUiThread(() -> {
@@ -232,29 +179,13 @@ public class ChangePasswordActivity extends AppCompatActivity {
                     });
 
                 } else {
-                    Log.e(
-                            "ChangePassword",
-                            "Supabase password update failed: "
-                                    + updateCode
-                                    + " "
-                                    + updateResponse
-                    );
-
-                    showMessage(
-                            R.string.password_update_failed
-                    );
+                    Log.e(TAG, "Supabase password update failed: " + updateCode + " " + updateResponse);
+                    showMessage(R.string.password_update_failed);
                 }
 
             } catch (Exception e) {
-                Log.e(
-                        "ChangePassword",
-                        "Password update error",
-                        e
-                );
-
-                showMessage(
-                        R.string.password_connection_error
-                );
+                Log.e(TAG, "Password update error", e);
+                showMessage(R.string.password_connection_error);
 
             } finally {
                 if (verifyConnection != null) {
@@ -267,7 +198,6 @@ public class ChangePasswordActivity extends AppCompatActivity {
 
                 runOnUiThread(() -> {
                     changingPassword = false;
-
                     if (!isFinishing() && !isDestroyed()) {
                         btnChangePassword.setEnabled(true);
                     }
@@ -279,11 +209,7 @@ public class ChangePasswordActivity extends AppCompatActivity {
     private void showMessage(int messageResource) {
         runOnUiThread(() -> {
             if (!isFinishing() && !isDestroyed()) {
-                Toast.makeText(
-                        this,
-                        messageResource,
-                        Toast.LENGTH_LONG
-                ).show();
+                Toast.makeText(this, messageResource, Toast.LENGTH_LONG).show();
             }
         });
     }

@@ -43,10 +43,72 @@ public class SupabaseHelper {
                 .getString("access_token", null);
     }
 
+    public static String getRefreshToken(Context context) {
+        return context
+                .getSharedPreferences("iKhayaSession", Context.MODE_PRIVATE)
+                .getString("refresh_token", null);
+    }
+
     public static String getUserId(Context context) {
         return context
                 .getSharedPreferences("iKhayaSession", Context.MODE_PRIVATE)
                 .getString("user_id", null);
+    }
+
+    private static final long THIRTY_DAYS_MS = 30L * 24 * 60 * 60 * 1000L;
+
+    public static void saveSession(Context context, String accessToken, String refreshToken, String userId, String userName, String userRole) {
+        android.content.SharedPreferences.Editor editor = context.getSharedPreferences("iKhayaSession", Context.MODE_PRIVATE).edit();
+        if (accessToken != null) editor.putString("access_token", accessToken);
+        if (refreshToken != null) editor.putString("refresh_token", refreshToken);
+        if (userId != null) editor.putString("user_id", userId);
+        if (userName != null) editor.putString("USER_NAME", userName);
+        if (userRole != null) editor.putString("USER_ROLE", userRole);
+        
+        long loginTimestamp = context.getSharedPreferences("iKhayaSession", Context.MODE_PRIVATE).getLong("login_timestamp", 0);
+        if (loginTimestamp == 0 || accessToken != null) {
+            editor.putLong("login_timestamp", System.currentTimeMillis());
+        }
+        editor.apply();
+    }
+
+    public static boolean isSessionWithinThirtyDays(Context context) {
+        long loginTimestamp = context.getSharedPreferences("iKhayaSession", Context.MODE_PRIVATE).getLong("login_timestamp", 0);
+        return (System.currentTimeMillis() - loginTimestamp) < THIRTY_DAYS_MS;
+    }
+
+    public static String refreshAccessToken(Context context) {
+        String refreshToken = getRefreshToken(context);
+        if (refreshToken == null || refreshToken.isEmpty()) {
+            return getAccessToken(context);
+        }
+
+        try {
+            HttpURLConnection connection = createConnection("/auth/v1/token?grant_type=refresh_token", "POST", null);
+            JSONObject body = new JSONObject();
+            body.put("refresh_token", refreshToken);
+            writeJson(connection, body);
+
+            int responseCode = connection.getResponseCode();
+            String response = readResponse(connection);
+            connection.disconnect();
+
+            if (responseCode >= 200 && responseCode < 300) {
+                JSONObject data = new JSONObject(response);
+                String newAccessToken = data.optString("access_token", "");
+                String newRefreshToken = data.optString("refresh_token", "");
+                if (!newAccessToken.isEmpty()) {
+                    context.getSharedPreferences("iKhayaSession", Context.MODE_PRIVATE)
+                            .edit()
+                            .putString("access_token", newAccessToken)
+                            .putString("refresh_token", newRefreshToken)
+                            .apply();
+                    return newAccessToken;
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        return getAccessToken(context);
     }
 
     public static void clearSession(Context context) {

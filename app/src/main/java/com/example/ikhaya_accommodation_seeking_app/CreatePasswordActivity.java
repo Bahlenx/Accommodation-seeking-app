@@ -15,6 +15,9 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import org.json.JSONObject;
+
+import java.net.HttpURLConnection;
 import java.util.regex.Pattern;
 
 public class CreatePasswordActivity extends AppCompatActivity {
@@ -85,6 +88,7 @@ public class CreatePasswordActivity extends AppCompatActivity {
             return;
         }
 
+        registerBtn.setText("Proceed to OTP Verification");
         registerBtn.setEnabled(false);
         passwordStrengthProgressbar.setMax(4);
 
@@ -148,6 +152,15 @@ public class CreatePasswordActivity extends AppCompatActivity {
         registerBtn.setOnClickListener(v -> continueRegistration());
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (registerBtn != null) {
+            registerBtn.setEnabled(true);
+            registerBtn.setText("Proceed to OTP Verification");
+        }
+    }
+
     private void continueRegistration() {
         String username = getIntent().getStringExtra("USER_NAME");
         String surname = getIntent().getStringExtra("USER_SURNAME");
@@ -179,17 +192,77 @@ public class CreatePasswordActivity extends AppCompatActivity {
             return;
         }
 
-        Intent nextIntent =
-                new Intent(CreatePasswordActivity.this, PersonalActivity.class);
+        String normalizedRole = "landlord".equalsIgnoreCase(role) ? "landlord" : "tenant";
+        
+        registerBtn.setEnabled(false);
+        registerBtn.setText("Creating account & sending OTP...");
 
-        nextIntent.putExtra("USER_NAME", username);
-        nextIntent.putExtra("USER_SURNAME", surname);
-        nextIntent.putExtra("USER_PHONE", phone);
-        nextIntent.putExtra("USER_EMAIL", email);
-        nextIntent.putExtra("USER_ROLE", role);
-        nextIntent.putExtra("USER_PASSWORD", password);
+        new Thread(() -> {
+            try {
+                HttpURLConnection connection = SupabaseHelper.createConnection("/auth/v1/otp", "POST", null);
+                JSONObject body = new JSONObject();
+                body.put("email", email);
+                body.put("create_user", true);
+                
+                JSONObject metadata = new JSONObject();
+                metadata.put("first_name", username);
+                metadata.put("surname", surname);
+                metadata.put("phone", phone);
+                metadata.put("role", normalizedRole);
+                body.put("data", metadata);
+                
+                SupabaseHelper.writeJson(connection, body);
+                int code = connection.getResponseCode();
+                connection.disconnect();
 
-        startActivity(nextIntent);
+                if (code >= 400) {
+                    // Fallback to signup then resend
+                    connection = SupabaseHelper.createConnection("/auth/v1/signup", "POST", null);
+                    body.put("password", password);
+                    SupabaseHelper.writeJson(connection, body);
+                    connection.getResponseCode();
+                    connection.disconnect();
+                    
+                    connection = SupabaseHelper.createConnection("/auth/v1/resend", "POST", null);
+                    JSONObject resendBody = new JSONObject();
+                    resendBody.put("type", "signup");
+                    resendBody.put("email", email);
+                    SupabaseHelper.writeJson(connection, resendBody);
+                    code = connection.getResponseCode();
+                    connection.disconnect();
+                }
+
+                final int finalCode = code;
+
+                if (finalCode >= 200 && finalCode < 300) {
+                    runOnUiThread(() -> {
+                        registerBtn.setEnabled(true);
+                        registerBtn.setText("Proceed to OTP Verification");
+                        Intent nextIntent = new Intent(CreatePasswordActivity.this, OtpActivity.class);
+                        nextIntent.putExtra("USER_NAME", username);
+                        nextIntent.putExtra("USER_SURNAME", surname);
+                        nextIntent.putExtra("USER_PHONE", phone);
+                        nextIntent.putExtra("USER_EMAIL", email);
+                        nextIntent.putExtra("USER_ROLE", normalizedRole);
+                        nextIntent.putExtra("USER_PASSWORD", password);
+                        nextIntent.putExtra("INITIAL_OTP_SENT", true);
+                        startActivity(nextIntent);
+                    });
+                } else {
+                    runOnUiThread(() -> {
+                        registerBtn.setEnabled(true);
+                        registerBtn.setText("Proceed to OTP Verification");
+                        Toast.makeText(this, "Failed to create account (HTTP " + finalCode + ")", Toast.LENGTH_LONG).show();
+                    });
+                }
+            } catch (Exception e) {
+                runOnUiThread(() -> {
+                    registerBtn.setEnabled(true);
+                    registerBtn.setText("Proceed to OTP Verification");
+                    Toast.makeText(this, "Network error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
+            }
+        }).start();
     }
 
     private void updateRequirementUI(

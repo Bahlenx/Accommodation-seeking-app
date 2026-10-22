@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Permissions for OpenStreetMap, Gemini API, and Location -->
+    <!-- Permissions for OpenStreetMap, Hardware GPS, and Supabase Network -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -40,7 +40,7 @@
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
 
-        <!-- Dashboards -->
+        <!-- Dashboards & Moderation Flow -->
         <activity android:name=".LandlordDashboardActivity" android:exported="false" />
         <activity android:name=".AdminDashboardActivity" android:exported="false" />
         <activity android:name=".AdminInspectionActivity" android:exported="false" />
@@ -49,7 +49,7 @@
         <activity android:name=".AdminActiveListingsActivity" android:exported="false" />
         <activity android:name=".AdminReportsActivity" android:exported="false" />
 
-        <!-- Listing Management -->
+        <!-- Listing Management & Landlord Actions -->
         <activity
             android:name=".AddListingActivity"
             android:exported="false"
@@ -61,6 +61,7 @@
         <activity android:name=".MyListingsActivity" android:exported="false" />
         <activity android:name=".ApplicationsActivity" android:exported="false" />
         <activity android:name=".EnquiriesActivity" android:exported="false" />
+        <activity android:name=".LandlordViewingsActivity" android:exported="false" />
 
         <!-- Auth & Onboarding Flow -->
         <activity android:name=".RegistrationActivity" android:exported="false" />

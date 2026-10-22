@@ -23,25 +23,19 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
+import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class ReportProblemActivity extends AppCompatActivity {
+
+    private static final String TAG = "ReportProblem";
 
     private AutoCompleteTextView dropdownCategory;
     private EditText edtProblem;
     private Button btnSubmitProblem;
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
-
-    private final String[] categories = {
-            "Listing Issue / Fraud",
-            "Technical Bug / Crash",
-            "Payment / Fee Dispute",
-            "Landlord / Resident Conduct",
-            "Account / Login Problem",
-            "Other Support Inquiry"
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +63,15 @@ public class ReportProblemActivity extends AppCompatActivity {
     private void setupCategoryDropdown() {
         if (dropdownCategory == null) return;
 
+        String[] categories = {
+                getString(R.string.report_category_fraud),
+                getString(R.string.report_category_bug),
+                getString(R.string.report_category_payment),
+                getString(R.string.report_category_conduct),
+                getString(R.string.report_category_account),
+                getString(R.string.report_category_other)
+        };
+
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_dropdown_item_1line,
@@ -85,12 +88,14 @@ public class ReportProblemActivity extends AppCompatActivity {
     }
 
     private void submitReport() {
-        String category = dropdownCategory.getText().toString().trim();
-        String description = edtProblem.getText().toString().trim();
+        String category = dropdownCategory != null ? dropdownCategory.getText().toString().trim() : "";
+        String description = edtProblem != null ? edtProblem.getText().toString().trim() : "";
 
         if (TextUtils.isEmpty(description)) {
-            edtProblem.setError("Please describe the problem");
-            edtProblem.requestFocus();
+            if (edtProblem != null) {
+                edtProblem.setError(getString(R.string.error_describe_problem));
+                edtProblem.requestFocus();
+            }
             return;
         }
 
@@ -106,11 +111,13 @@ public class ReportProblemActivity extends AppCompatActivity {
             accessToken = SupabaseHelper.getSupabaseKey();
         }
 
-        String userName = prefs.getString("USER_NAME", "User");
+        String userName = prefs.getString("USER_NAME", getString(R.string.notification_user));
         String userRole = prefs.getString("USER_ROLE", "tenant");
 
-        btnSubmitProblem.setEnabled(false);
-        btnSubmitProblem.setText("Submitting ticket...");
+        if (btnSubmitProblem != null) {
+            btnSubmitProblem.setEnabled(false);
+            btnSubmitProblem.setText(R.string.btn_submitting_ticket);
+        }
 
         String finalUserId = userId;
         String finalAccessToken = accessToken;
@@ -135,22 +142,26 @@ public class ReportProblemActivity extends AppCompatActivity {
                 String errorResponse = "";
                 if (responseCode >= 400) {
                     errorResponse = SupabaseHelper.readResponse(connection);
-                    Log.e("ReportProblem", "HTTP " + responseCode + " - " + errorResponse);
+                    Log.e(TAG, "HTTP " + responseCode + " - " + errorResponse);
                 }
 
                 final String finalErr = errorResponse;
                 runOnUiThread(() -> {
-                    btnSubmitProblem.setEnabled(true);
-                    btnSubmitProblem.setText(R.string.submit_report);
+                    if (isFinishing() || isDestroyed()) return;
+
+                    if (btnSubmitProblem != null) {
+                        btnSubmitProblem.setEnabled(true);
+                        btnSubmitProblem.setText(R.string.submit_report);
+                    }
 
                     if (responseCode >= 200 && responseCode < 300) {
-                        Toast.makeText(ReportProblemActivity.this, "Ticket submitted. Our team will review it.", Toast.LENGTH_LONG).show();
-                        edtProblem.setText("");
+                        Toast.makeText(ReportProblemActivity.this, R.string.msg_ticket_submitted, Toast.LENGTH_LONG).show();
+                        if (edtProblem != null) edtProblem.setText("");
                         loadMyTickets();
                     } else {
-                        String userMsg = "Could not submit ticket (HTTP " + responseCode + ").";
+                        String userMsg = getString(R.string.error_could_not_submit_ticket) + " (HTTP " + responseCode + ").";
                         if (finalErr.contains("row-level security") || finalErr.contains("42501")) {
-                            userMsg += "\nRLS policy check failed in Supabase.";
+                            userMsg += "\n" + getString(R.string.error_rls_check_failed);
                         }
                         Toast.makeText(ReportProblemActivity.this, userMsg, Toast.LENGTH_LONG).show();
                     }
@@ -158,9 +169,13 @@ public class ReportProblemActivity extends AppCompatActivity {
 
             } catch (Exception e) {
                 runOnUiThread(() -> {
-                    btnSubmitProblem.setEnabled(true);
-                    btnSubmitProblem.setText(R.string.submit_report);
-                    Toast.makeText(ReportProblemActivity.this, "Network error submitting ticket.", Toast.LENGTH_SHORT).show();
+                    if (isFinishing() || isDestroyed()) return;
+
+                    if (btnSubmitProblem != null) {
+                        btnSubmitProblem.setEnabled(true);
+                        btnSubmitProblem.setText(R.string.submit_report);
+                    }
+                    Toast.makeText(ReportProblemActivity.this, R.string.error_network_submitting_ticket, Toast.LENGTH_SHORT).show();
                 });
             } finally {
                 if (connection != null) {
@@ -178,14 +193,14 @@ public class ReportProblemActivity extends AppCompatActivity {
         String accessToken = SupabaseHelper.getAccessToken(this);
 
         if (userId == null || userId.isEmpty() || accessToken == null || accessToken.isEmpty()) {
-            return; // Can't fetch tickets if not logged in
+            return;
         }
 
         executor.execute(() -> {
             HttpURLConnection conn = null;
             try {
                 conn = SupabaseHelper.createConnection(
-                        "/rest/v1/reports?reporter_uid=eq." + userId + "&order=created_at.desc",
+                        "/rest/v1/reports?reporter_uid=eq." + SupabaseHelper.encode(userId) + "&order=created_at.desc",
                         "GET",
                         accessToken
                 );
@@ -194,10 +209,13 @@ public class ReportProblemActivity extends AppCompatActivity {
 
                 if (code >= 200 && code < 300) {
                     JSONArray arr = new JSONArray(response);
-                    runOnUiThread(() -> displayMyTickets(arr, myTicketsContainer));
+                    runOnUiThread(() -> {
+                        if (isFinishing() || isDestroyed()) return;
+                        displayMyTickets(arr, myTicketsContainer);
+                    });
                 }
             } catch (Exception e) {
-                Log.e("ReportProblem", "Error fetching tickets: " + e.getMessage());
+                Log.e(TAG, "Error fetching tickets: " + e.getMessage());
             } finally {
                 if (conn != null) conn.disconnect();
             }
@@ -208,7 +226,7 @@ public class ReportProblemActivity extends AppCompatActivity {
         container.removeAllViews();
         if (arr.length() == 0) {
             TextView emptyMsg = new TextView(this);
-            emptyMsg.setText("You haven't submitted any tickets.");
+            emptyMsg.setText(R.string.no_tickets_submitted);
             emptyMsg.setTextColor(Color.parseColor("#8C7A70"));
             container.addView(emptyMsg);
             return;
@@ -217,9 +235,9 @@ public class ReportProblemActivity extends AppCompatActivity {
         for (int i = 0; i < arr.length(); i++) {
             try {
                 JSONObject obj = arr.getJSONObject(i);
-                String reason = obj.optString("reason", "Issue");
+                String reason = obj.optString("reason", getString(R.string.default_issue_reason));
                 String desc = obj.optString("description", "");
-                String status = obj.optString("status", "OPEN").toUpperCase();
+                String status = obj.optString("status", "OPEN").toUpperCase(Locale.getDefault());
                 String adminResponse = obj.optString("admin_response", "");
 
                 CardView card = new CardView(this);
@@ -227,17 +245,16 @@ public class ReportProblemActivity extends AppCompatActivity {
                         LinearLayout.LayoutParams.MATCH_PARENT,
                         LinearLayout.LayoutParams.WRAP_CONTENT
                 );
-                cardParams.setMargins(0, 0, 0, 24);
+                cardParams.setMargins(0, 0, 0, dpToPx(12));
                 card.setLayoutParams(cardParams);
-                card.setRadius(16f);
-                card.setCardElevation(2f);
+                card.setRadius(dpToPx(12));
+                card.setCardElevation(dpToPx(2));
                 card.setCardBackgroundColor(Color.WHITE);
 
                 LinearLayout layout = new LinearLayout(this);
                 layout.setOrientation(LinearLayout.VERTICAL);
-                layout.setPadding(32, 28, 32, 28);
+                layout.setPadding(dpToPx(16), dpToPx(14), dpToPx(16), dpToPx(14));
 
-                // Header Row
                 RelativeLayout header = new RelativeLayout(this);
                 TextView tvReason = new TextView(this);
                 tvReason.setText(reason);
@@ -256,11 +273,11 @@ public class ReportProblemActivity extends AppCompatActivity {
                 );
                 statusParams.addRule(RelativeLayout.ALIGN_PARENT_END);
                 tvStatus.setLayoutParams(statusParams);
-                
-                if (status.equalsIgnoreCase("RESOLVED")) {
+
+                if ("RESOLVED".equalsIgnoreCase(status)) {
                     tvStatus.setTextColor(Color.parseColor("#007749"));
                     tvStatus.setBackgroundColor(Color.parseColor("#E6F4EA"));
-                } else if (status.equalsIgnoreCase("DISMISSED")) {
+                } else if ("DISMISSED".equalsIgnoreCase(status)) {
                     tvStatus.setTextColor(Color.parseColor("#1F1614"));
                     tvStatus.setBackgroundColor(Color.parseColor("#EAEAEA"));
                 } else {
@@ -269,28 +286,26 @@ public class ReportProblemActivity extends AppCompatActivity {
                 header.addView(tvStatus);
                 layout.addView(header);
 
-                // Original Description
                 TextView tvDesc = new TextView(this);
-                tvDesc.setText("You: " + desc);
+                tvDesc.setText(String.format(Locale.getDefault(), "%s: %s", getString(R.string.prefix_you), desc));
                 tvDesc.setTextColor(Color.parseColor("#495057"));
                 tvDesc.setTextSize(13f);
-                tvDesc.setPadding(0, 8, 0, 8);
+                tvDesc.setPadding(0, dpToPx(4), 0, dpToPx(4));
                 layout.addView(tvDesc);
 
-                // Admin Response (if exists)
-                if (!adminResponse.isEmpty() && !adminResponse.equals("null")) {
+                if (!adminResponse.isEmpty() && !"null".equalsIgnoreCase(adminResponse)) {
                     View divider = new View(this);
                     LinearLayout.LayoutParams divParams = new LinearLayout.LayoutParams(
                             LinearLayout.LayoutParams.MATCH_PARENT,
-                            2 // 2px or 1dp
+                            dpToPx(1)
                     );
-                    divParams.setMargins(0, 12, 0, 12);
+                    divParams.setMargins(0, dpToPx(6), 0, dpToPx(6));
                     divider.setLayoutParams(divParams);
                     divider.setBackgroundColor(Color.parseColor("#F0EBE6"));
                     layout.addView(divider);
 
                     TextView tvResponse = new TextView(this);
-                    tvResponse.setText("Admin: " + adminResponse);
+                    tvResponse.setText(String.format(Locale.getDefault(), "%s: %s", getString(R.string.prefix_admin), adminResponse));
                     tvResponse.setTextColor(Color.parseColor("#1F1614"));
                     tvResponse.setTextSize(13f);
                     tvResponse.setTypeface(null, Typeface.ITALIC);
@@ -300,9 +315,13 @@ public class ReportProblemActivity extends AppCompatActivity {
                 card.addView(layout);
                 container.addView(card);
             } catch (Exception e) {
-                e.printStackTrace();
+                Log.e(TAG, "Error rendering ticket card", e);
             }
         }
+    }
+
+    private int dpToPx(int dp) {
+        return Math.round(dp * getResources().getDisplayMetrics().density);
     }
 
     @Override

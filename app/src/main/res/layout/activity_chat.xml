@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F8F9FA">
+    android:background="#FAF7F5">
 
     <!-- TOP CHAT HEADER -->
     <LinearLayout
@@ -23,7 +23,7 @@
             android:layout_width="38dp"
             android:layout_height="38dp"
             android:background="@drawable/bg_circle_white"
-            android:contentDescription="@string/desc_back_button"
+            android:contentDescription="Back"
             android:elevation="1dp"
             android:padding="7dp"
             android:scaleType="fitCenter"
@@ -41,8 +41,8 @@
                 android:id="@+id/txtChatTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/title_chat"
-                android:textColor="#212529"
+                android:text="Chat"
+                android:textColor="#1F1614"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
@@ -50,10 +50,31 @@
                 android:id="@+id/txtChatSubtitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/status_active"
-                android:textColor="#4CAF50"
+                android:text="Active"
+                android:textColor="#2DCE89"
                 android:textSize="12sp" />
         </LinearLayout>
+
+        <TextView
+            android:id="@+id/btnClearChat"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Delete Chat"
+            android:textColor="#DC2626"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:padding="8dp" />
+
+        <TextView
+            android:id="@+id/btnChatOptions"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:text="⋮"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:textColor="#1F1614"
+            android:background="?attr/selectableItemBackgroundBorderless" />
     </LinearLayout>
 
     <!-- MESSAGES SCROLL AREA -->
@@ -86,29 +107,62 @@
         android:orientation="horizontal"
         android:padding="12dp">
 
+        <Button
+            android:id="@+id/btnAttachFile"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:text="+"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="#BA5536"
+            android:background="@drawable/selector_regular_button"
+            android:layout_marginEnd="8dp" />
+
         <EditText
             android:id="@+id/editMessage"
             android:layout_width="0dp"
-            android:layout_height="50dp"
+            android:layout_height="wrap_content"
+            android:minHeight="50dp"
+            android:maxHeight="120dp"
             android:layout_weight="1"
             android:background="@drawable/custom_input"
-            android:hint="@string/hint_type_a_message"
+            android:hint="Type a message..."
             android:inputType="textCapSentences|textMultiLine"
-            android:maxLines="3"
+            android:scrollbars="vertical"
+            android:scrollHorizontally="false"
+            android:maxLength="3000"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
-            android:textColor="#212529"
-            android:textColorHint="#6C757D" />
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:textColor="#1F1614"
+            android:textColorHint="#8C7A70" />
 
-        <Button
-            android:id="@+id/btnSendMessage"
+        <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="50dp"
-            android:layout_marginStart="10dp"
-            android:background="@drawable/selector_regular_button"
-            app:backgroundTint="@null"
-            android:text="@string/btn_send"
-            android:textAllCaps="false" />
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_marginStart="10dp">
+
+            <TextView
+                android:id="@+id/txtCharCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0/1000"
+                android:textSize="10sp"
+                android:textColor="#8C7A70"
+                android:layout_marginBottom="2dp" />
+
+            <Button
+                android:id="@+id/btnSendMessage"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:background="@drawable/selector_regular_button"
+                app:backgroundTint="@null"
+                android:text="Send"
+                android:textAllCaps="false" />
+        </LinearLayout>
     </LinearLayout>
 
 </RelativeLayout>

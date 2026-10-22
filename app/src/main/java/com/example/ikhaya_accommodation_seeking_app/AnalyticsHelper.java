@@ -1,32 +1,22 @@
 package com.example.ikhaya_accommodation_seeking_app;
 
 import android.content.Context;
-import android.os.Bundle;
-import com.google.firebase.analytics.FirebaseAnalytics;
+import android.util.Log;
 
 public class AnalyticsHelper {
 
-    private static FirebaseAnalytics mFirebaseAnalytics;
+    private static final String TAG = "iKhayaAnalytics";
 
     public static void init(Context context) {
-        if (mFirebaseAnalytics == null) {
-            mFirebaseAnalytics = FirebaseAnalytics.getInstance(context);
-        }
+        // Initialization no longer requires Firebase, but signature is kept intact.
+        Log.d(TAG, "Analytics initialized.");
     }
 
     public static void logLogin(Context context, String role) {
-        init(context);
-        Bundle bundle = new Bundle();
-        bundle.putString("user_role", role);
-        bundle.putString(FirebaseAnalytics.Param.METHOD, "Supabase");
-        mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.LOGIN, bundle);
+        Log.d(TAG, "Event: LOGIN, role: " + role + ", method: Supabase");
     }
 
     public static void logAdminAction(Context context, String actionType, String propertyTitle) {
-        init(context);
-        Bundle bundle = new Bundle();
-        bundle.putString("action_type", actionType); // e.g., "approved", "rejected", "revoked"
-        bundle.putString("property", propertyTitle);
-        mFirebaseAnalytics.logEvent("admin_moderation", bundle);
+        Log.d(TAG, "Event: admin_moderation, action_type: " + actionType + ", property: " + propertyTitle);
     }
 }

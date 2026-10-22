@@ -333,21 +333,29 @@ public class PersonalActivity extends AppCompatActivity {
         registerBtn.setEnabled(false);
 
         final String finalRole =
-                "Landlord".equalsIgnoreCase(role)
+                "landlord".equalsIgnoreCase(role)
                         ? "landlord"
                         : "tenant";
 
-        createSupabaseAccount(
-                email,
-                password,
-                firstName,
-                surname,
-                phone,
-                finalRole,
-                province,
-                city,
-                suburb
-        );
+        String existingToken = SupabaseHelper.getAccessToken(this);
+        String existingUserId = SupabaseHelper.getUserId(this);
+        boolean isOtpVerified = getIntent().getBooleanExtra("OTP_VERIFIED", false);
+
+        if (isOtpVerified && existingToken != null && !existingToken.isEmpty() && existingUserId != null && !existingUserId.isEmpty()) {
+            saveProfile(existingToken, existingUserId, finalRole, firstName, surname, phone);
+        } else {
+            createSupabaseAccount(
+                    email,
+                    password,
+                    firstName,
+                    surname,
+                    phone,
+                    finalRole,
+                    province,
+                    city,
+                    suburb
+            );
+        }
     }
 
     private void createSupabaseAccount(
@@ -368,12 +376,12 @@ public class PersonalActivity extends AppCompatActivity {
 
             try {
 
-                connection =
-                        SupabaseHelper.createConnection(
-                                "/auth/v1/signup",
-                                "POST",
-                                null
-                        );
+                String existingToken = SupabaseHelper.getAccessToken(PersonalActivity.this);
+                if (existingToken != null && !existingToken.isEmpty()) {
+                    connection = SupabaseHelper.createConnection("/auth/v1/user", "PUT", existingToken);
+                } else {
+                    connection = SupabaseHelper.createConnection("/auth/v1/signup", "POST", null);
+                }
 
                 connection.setDoOutput(true);
 
@@ -521,24 +529,7 @@ public class PersonalActivity extends AppCompatActivity {
                         return;
                     }
 
-                    getSharedPreferences(
-                            "iKhayaSession",
-                            MODE_PRIVATE
-                    )
-                            .edit()
-                            .putString(
-                                    "access_token",
-                                    accessToken
-                            )
-                            .putString(
-                                    "refresh_token",
-                                    refreshToken
-                            )
-                            .putString(
-                                    "user_id",
-                                    userId
-                            )
-                            .apply();
+                    SupabaseHelper.saveSession(PersonalActivity.this, accessToken, refreshToken, userId, null, null);
 
                     saveProfile(
                             accessToken,
@@ -598,14 +589,14 @@ public class PersonalActivity extends AppCompatActivity {
 
                 connection =
                         SupabaseHelper.createConnection(
-                                "/rest/v1/profiles",
+                                "/rest/v1/profiles?on_conflict=firebase_uid",
                                 "POST",
                                 accessToken
                         );
 
                 connection.setRequestProperty(
                         "Prefer",
-                        "return=minimal"
+                        "resolution=merge-duplicates,return=minimal"
                 );
 
                 connection.setDoOutput(true);
@@ -654,11 +645,7 @@ public class PersonalActivity extends AppCompatActivity {
 
                     runOnUiThread(() -> {
 
-                        getSharedPreferences("iKhayaSession", MODE_PRIVATE)
-                                .edit()
-                                .putString("USER_NAME", fullName)
-                                .putString("USER_ROLE", role)
-                                .apply();
+                        SupabaseHelper.saveSession(PersonalActivity.this, null, null, null, fullName, role);
 
                         Toast.makeText(
                                 PersonalActivity.this,

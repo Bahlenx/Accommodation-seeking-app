@@ -7,7 +7,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.view.LayoutInflater;
+import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
@@ -15,6 +15,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,6 +34,8 @@ import java.util.concurrent.Executors;
 
 public class SearchResultsActivity extends AppCompatActivity {
 
+    private static final String TAG = "SearchResults";
+
     private EditText searchBox;
     private TextView txtSearchResultsTitle;
     private TextView txtNoResults;
@@ -43,9 +46,15 @@ public class SearchResultsActivity extends AppCompatActivity {
     private Button chipShared;
     private Button chipHouses;
 
+    // Optional inline filter bindings
+    private EditText filterMaxPrice;
+    private EditText filterMinRooms;
+    private Spinner filterPropertyType;
+    private View btnApplyFilters;
+
     private String currentSearchQuery = "";
     private String currentPropertyType = "";
-    
+
     // Filter State Variables
     private double minPrice = 0;
     private double maxPrice = 5000000;
@@ -61,9 +70,9 @@ public class SearchResultsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_search_results);
 
         // 1. Bind Layout Views
-        ImageButton btnBack = findViewById(R.id.btnBack);
-        ImageButton btnFilterOptions = findViewById(R.id.btnFilterOptions);
-        ImageButton btnSearchAgain = findViewById(R.id.btnSearchAgain);
+        View btnBack = findViewById(R.id.btnBack);
+        View btnFilterOptions = findViewById(R.id.btnFilterOptions);
+        View btnSearchAgain = findViewById(R.id.btnSearchAgain);
 
         txtSearchResultsTitle = findViewById(R.id.txtSearchResultsTitle);
         searchBox = findViewById(R.id.searchBox);
@@ -74,6 +83,11 @@ public class SearchResultsActivity extends AppCompatActivity {
         chipRooms = findViewById(R.id.chipRooms);
         chipShared = findViewById(R.id.chipShared);
         chipHouses = findViewById(R.id.chipHouses);
+
+        filterMaxPrice = findViewById(R.id.filterMaxPrice);
+        filterMinRooms = findViewById(R.id.filterMinRooms);
+        filterPropertyType = findViewById(R.id.filterPropertyType);
+        btnApplyFilters = findViewById(R.id.btnApplyFilters);
 
         // 2. Read Incoming Intent Data
         currentSearchQuery = getIntent().getStringExtra("SEARCH_QUERY");
@@ -104,6 +118,20 @@ public class SearchResultsActivity extends AppCompatActivity {
                     executeSearch();
                 });
                 filterSheet.show(getSupportFragmentManager(), "FilterBottomSheetDialog");
+            });
+        }
+
+        if (btnApplyFilters != null) {
+            btnApplyFilters.setOnClickListener(v -> {
+                if (filterMaxPrice != null && !filterMaxPrice.getText().toString().trim().isEmpty()) {
+                    try {
+                        this.maxPrice = Double.parseDouble(filterMaxPrice.getText().toString().trim());
+                    } catch (NumberFormatException ignored) {}
+                }
+                if (filterPropertyType != null && filterPropertyType.getSelectedItem() != null) {
+                    this.currentPropertyType = filterPropertyType.getSelectedItem().toString().trim();
+                }
+                executeSearch();
             });
         }
 
@@ -194,14 +222,12 @@ public class SearchResultsActivity extends AppCompatActivity {
             HttpURLConnection conn = null;
             try {
                 StringBuilder endpoint = new StringBuilder("/rest/v1/listings?select=*");
-                endpoint.append("&status=neq.pending");
+                endpoint.append("&status=eq.APPROVED");
 
-                // 1. Rent vs Sale
                 if (currentOfferType != null && !currentOfferType.isEmpty()) {
                     endpoint.append("&offer_type=ilike.").append(currentOfferType);
                 }
 
-                // 2. Price Filtering
                 if (minPrice > 0) {
                     endpoint.append("&price=gte.").append((int) minPrice);
                 }
@@ -209,17 +235,14 @@ public class SearchResultsActivity extends AppCompatActivity {
                     endpoint.append("&price=lte.").append((int) maxPrice);
                 }
 
-                // 3. Property Type
                 if (currentPropertyType != null && !currentPropertyType.isEmpty()) {
                     endpoint.append("&property_type=ilike.*").append(SupabaseHelper.encode(currentPropertyType)).append("*");
                 }
 
-                // 4. Room Arrangement
                 if (currentArrangement != null && !currentArrangement.isEmpty()) {
                     endpoint.append("&description=ilike.*").append(SupabaseHelper.encode(currentArrangement)).append("*");
                 }
 
-                // 5. Utilities
                 if (currentUtilities != null && !currentUtilities.isEmpty()) {
                     for (String utility : currentUtilities) {
                         endpoint.append("&amenities=ilike.*").append(SupabaseHelper.encode(utility)).append("*");
@@ -245,7 +268,10 @@ public class SearchResultsActivity extends AppCompatActivity {
                         if (isFinishing() || isDestroyed()) return;
 
                         if (results.length() == 0) {
-                            if (txtNoResults != null) txtNoResults.setVisibility(View.VISIBLE);
+                            if (txtNoResults != null) {
+                                txtNoResults.setText(R.string.search_no_results);
+                                txtNoResults.setVisibility(View.VISIBLE);
+                            }
                         } else {
                             if (txtNoResults != null) txtNoResults.setVisibility(View.GONE);
                             for (int i = 0; i < results.length(); i++) {
@@ -259,7 +285,7 @@ public class SearchResultsActivity extends AppCompatActivity {
                 } else {
                     runOnUiThread(() -> {
                         if (txtNoResults != null) {
-                            txtNoResults.setText("Unable to load listings right now.");
+                            txtNoResults.setText(R.string.error_unable_to_load_listings);
                             txtNoResults.setVisibility(View.VISIBLE);
                         }
                     });
@@ -267,7 +293,7 @@ public class SearchResultsActivity extends AppCompatActivity {
             } catch (Exception e) {
                 runOnUiThread(() -> {
                     if (txtNoResults != null) {
-                        txtNoResults.setText("Network error. Please check your connection.");
+                        txtNoResults.setText(R.string.error_network_listings);
                         txtNoResults.setVisibility(View.VISIBLE);
                     }
                 });
@@ -316,8 +342,8 @@ public class SearchResultsActivity extends AppCompatActivity {
         details.setPadding(dpToPx(16), dpToPx(14), dpToPx(16), dpToPx(16));
 
         String listingId = listing.optString("id", "");
-        String name = listing.optString("property_name", "Accommodation");
-        String location = listing.optString("location", "South Africa");
+        String name = listing.optString("property_name", getString(R.string.accommodation));
+        String location = listing.optString("location", getString(R.string.default_country_location));
         String price = listing.optString("price", "0");
         String imageUrl = listing.optString("image_url", "");
 
@@ -330,7 +356,7 @@ public class SearchResultsActivity extends AppCompatActivity {
         details.addView(title);
 
         TextView loc = new TextView(this);
-        loc.setText("📍 " + location);
+        loc.setText(getString(R.string.listing_location_pin, location));
         loc.setTextSize(13f);
         loc.setTextColor(Color.parseColor("#8C7A70"));
         loc.setSingleLine(true);
@@ -343,7 +369,7 @@ public class SearchResultsActivity extends AppCompatActivity {
         details.addView(loc);
 
         TextView priceTv = new TextView(this);
-        priceTv.setText("R " + price + " / month");
+        priceTv.setText(getString(R.string.listing_price_month, price));
         priceTv.setTextSize(15f);
         priceTv.setTextColor(Color.parseColor("#BA5536"));
         priceTv.setTypeface(null, Typeface.BOLD);
@@ -362,10 +388,9 @@ public class SearchResultsActivity extends AppCompatActivity {
             loadListingImageAsync(imageUrl, img);
         }
 
-        // Click to view property details
         card.setOnClickListener(v -> {
             if (listingId.isEmpty()) {
-                Toast.makeText(this, "Listing details currently unavailable.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.search_listing_unavailable, Toast.LENGTH_SHORT).show();
                 return;
             }
             Intent intent = new Intent(SearchResultsActivity.this, PropertyDetailsActivity.class);
@@ -389,6 +414,7 @@ public class SearchResultsActivity extends AppCompatActivity {
                         Bitmap bmp = BitmapFactory.decodeStream(in);
                         if (bmp != null) {
                             runOnUiThread(() -> {
+                                if (isFinishing() || isDestroyed()) return;
                                 imageView.setImageBitmap(bmp);
                                 imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
                             });

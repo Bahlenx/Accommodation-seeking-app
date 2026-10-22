@@ -62,6 +62,38 @@
                 android:textStyle="bold"
                 app:drawableStartCompat="@drawable/ic_otp" />
 
+            <RadioGroup
+                android:id="@+id/rgOtpMethod"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="vertical">
+
+                <RadioButton
+                    android:id="@+id/rbEmailOtp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Email OTP"
+                    android:checked="true" />
+
+                <RadioButton
+                    android:id="@+id/rbSmsOtp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    android:text="SMS OTP" />
+
+            </RadioGroup>
+
+            <Button
+                android:id="@+id/btnSendOtp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/selector_regular_button"
+                android:text="Send OTP Code"
+                app:backgroundTint="@null" />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -134,9 +166,22 @@
                     android:layout_width="0dp"
                     android:layout_height="65dp"
                     android:layout_weight="1"
+                    android:layout_marginHorizontal="4dp"
+                    android:background="@drawable/custom_input"
+                    android:importantForAutofill="no"
+                    android:inputType="number"
+                    android:maxLength="1"
+                    android:gravity="center"
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
+
+                <EditText
+                    android:id="@+id/otp_num_6"
+                    android:layout_width="0dp"
+                    android:layout_height="65dp"
+                    android:layout_weight="1"
                     android:layout_marginStart="4dp"
                     android:background="@drawable/custom_input"
-                    android:contentDescription="@string/otp_digit_5"
                     android:importantForAutofill="no"
                     android:inputType="number"
                     android:maxLength="1"

@@ -13,13 +13,17 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -29,18 +33,23 @@ public class AdminDashboardActivity extends AppCompatActivity {
     private static final String TAG = "AdminDashboard";
 
     private TextView tvStatPending;
+    private TextView tvTrendPending;
     private TextView tvStatActive;
     private TextView tvStatUsers;
     private TextView tvStatTotalProperties;
+    private TextView tvStatReports;
+    private TextView tvTrendReports;
     private TextView tvClearancePercent;
     private ProgressBar pbApprovalRatio;
 
     private int pendingCount = 0;
     private int activeCount = 0;
 
+    private JSONArray problemReportsCache = new JSONArray();
+
     private final ExecutorService executor = Executors.newFixedThreadPool(3);
-    
-    private Handler refreshHandler = new Handler(Looper.getMainLooper());
+
+    private final Handler refreshHandler = new Handler(Looper.getMainLooper());
     private boolean isDashboardVisible = false;
 
     private final Runnable dataPoll = new Runnable() {
@@ -48,7 +57,7 @@ public class AdminDashboardActivity extends AppCompatActivity {
         public void run() {
             if (isDashboardVisible) {
                 loadAllDashboardCounts();
-                refreshHandler.postDelayed(this, 10000); // Check every 10 seconds
+                refreshHandler.postDelayed(this, 10000);
             }
         }
     };
@@ -64,7 +73,7 @@ public class AdminDashboardActivity extends AppCompatActivity {
         }
 
         if (!"ADMIN".equalsIgnoreCase(userRole)) {
-            Toast.makeText(this, "Unauthorized Access! Admin privileges required.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, R.string.unauthorized_admin_access, Toast.LENGTH_LONG).show();
             finish();
             return;
         }
@@ -72,27 +81,34 @@ public class AdminDashboardActivity extends AppCompatActivity {
         setContentView(R.layout.activity_admin_dashboard);
 
         tvStatPending = findViewById(R.id.tvStatPending);
+        tvTrendPending = findViewById(R.id.tvTrendPending);
         tvStatActive = findViewById(R.id.tvStatActive);
         tvStatUsers = findViewById(R.id.tvStatUsers);
         tvStatTotalProperties = findViewById(R.id.tvStatTotalProperties);
+        tvStatReports = findViewById(R.id.tvStatReports);
+        tvTrendReports = findViewById(R.id.tvTrendReports);
         tvClearancePercent = findViewById(R.id.tvClearancePercent);
         pbApprovalRatio = findViewById(R.id.pbApprovalRatio);
 
         View btnAdminLogout = findViewById(R.id.btnAdminLogout);
+        View btnAdminExit = findViewById(R.id.btnAdminExit);
         TextView tvAdminGreeting = findViewById(R.id.tvAdminGreeting);
 
         SharedPreferences prefs = getSharedPreferences("iKhayaSession", MODE_PRIVATE);
         String adminName = getIntent().getStringExtra("USER_NAME");
         if (adminName == null || adminName.isEmpty() || "Admin Preview".equalsIgnoreCase(adminName)) {
-            adminName = prefs.getString("USER_NAME", "Administrator");
+            adminName = prefs.getString("USER_NAME", getString(R.string.default_admin_title));
         }
 
         if (tvAdminGreeting != null) {
             String firstName = adminName.trim().split("\\s+")[0];
-            tvAdminGreeting.setText("Welcome, " + firstName);
+            tvAdminGreeting.setText(String.format(Locale.getDefault(), "%s, %s", getString(R.string.greeting_welcome), firstName));
         }
+
         if (btnAdminLogout != null) {
             btnAdminLogout.setOnClickListener(v -> performLogout());
+        } else if (btnAdminExit != null) {
+            btnAdminExit.setOnClickListener(v -> performLogout());
         }
 
         setupActionCards();
@@ -159,7 +175,6 @@ public class AdminDashboardActivity extends AppCompatActivity {
     }
 
     private void setupActionCards() {
-        // Top 4 Metrics Cards
         View cardMetricPending = findViewById(R.id.cardMetricPending);
         if (cardMetricPending != null) {
             cardMetricPending.setOnClickListener(v ->
@@ -188,7 +203,6 @@ public class AdminDashboardActivity extends AppCompatActivity {
             );
         }
 
-        // Moderation Queues Section Cards
         View cardPending = findViewById(R.id.cardPending);
         if (cardPending != null) {
             cardPending.setOnClickListener(v ->
@@ -212,12 +226,14 @@ public class AdminDashboardActivity extends AppCompatActivity {
 
         View cardReports = findViewById(R.id.cardReports);
         if (cardReports != null) {
-            cardReports.setOnClickListener(v ->
-                    startActivity(new Intent(this, AdminReportsActivity.class))
-            );
+            cardReports.setOnClickListener(v -> showProblemReportsDialog());
         }
 
-        // External Link to Supabase Web Console
+        View cardProblemReports = findViewById(R.id.cardProblemReports);
+        if (cardProblemReports != null) {
+            cardProblemReports.setOnClickListener(v -> showProblemReportsDialog());
+        }
+
         View rowSupabaseEngine = findViewById(R.id.rowSupabaseEngine);
         if (rowSupabaseEngine != null) {
             rowSupabaseEngine.setOnClickListener(v -> {
@@ -234,6 +250,7 @@ public class AdminDashboardActivity extends AppCompatActivity {
         loadPendingCount();
         loadActiveCount();
         loadLiveUsersCount();
+        loadReportsCount();
     }
 
     private void loadPendingCount() {
@@ -289,6 +306,7 @@ public class AdminDashboardActivity extends AppCompatActivity {
                     }
                     final int count = uniqueIds.size();
                     runOnUiThread(() -> {
+                        if (isFinishing() || isDestroyed()) return;
                         if (tvStatUsers != null) tvStatUsers.setText(String.valueOf(count));
                     });
                 }
@@ -297,6 +315,94 @@ public class AdminDashboardActivity extends AppCompatActivity {
             } finally {
                 if (conn != null) conn.disconnect();
             }
+        });
+    }
+
+    private void loadReportsCount() {
+        String token = SupabaseHelper.getAccessToken(this);
+        executor.execute(() -> {
+            HttpURLConnection conn = null;
+            try {
+                conn = SupabaseHelper.createConnection("/rest/v1/reports?select=*&order=created_at.desc", "GET", token);
+                if (conn.getResponseCode() >= 200 && conn.getResponseCode() < 300) {
+                    JSONArray arr = new JSONArray(SupabaseHelper.readResponse(conn));
+                    problemReportsCache = arr;
+                    final int count = arr.length();
+                    runOnUiThread(() -> {
+                        if (isFinishing() || isDestroyed()) return;
+                        if (tvStatReports != null) tvStatReports.setText(String.valueOf(count));
+                        if (tvTrendReports != null) {
+                            if (count > 0) {
+                                tvTrendReports.setText(String.format(Locale.getDefault(), "%d %s", count, getString(R.string.reports_pending_suffix)));
+                                tvTrendReports.setTextColor(Color.parseColor("#FB6340"));
+                            } else {
+                                tvTrendReports.setText(R.string.no_issues_reported);
+                                tvTrendReports.setTextColor(Color.parseColor("#2DCE89"));
+                            }
+                        }
+                    });
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Error loading reports", e);
+            } finally {
+                if (conn != null) conn.disconnect();
+            }
+        });
+    }
+
+    private void showProblemReportsDialog() {
+        if (problemReportsCache.length() == 0) {
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.title_user_problem_reports)
+                    .setMessage(R.string.msg_no_problem_reports)
+                    .setPositiveButton(R.string.btn_ok, null)
+                    .show();
+            return;
+        }
+
+        executor.execute(() -> {
+            String token = SupabaseHelper.getAccessToken(this);
+            HashMap<String, String> userMap = new HashMap<>();
+            HttpURLConnection conn = null;
+            try {
+                conn = SupabaseHelper.createConnection("/rest/v1/profiles?select=firebase_uid,full_name,role", "GET", token);
+                if (conn.getResponseCode() >= 200 && conn.getResponseCode() < 300) {
+                    JSONArray profiles = new JSONArray(SupabaseHelper.readResponse(conn));
+                    for (int i = 0; i < profiles.length(); i++) {
+                        JSONObject p = profiles.getJSONObject(i);
+                        userMap.put(p.optString("firebase_uid"), p.optString("full_name") + " (" + p.optString("role") + ")");
+                    }
+                }
+            } catch (Exception ignored) {
+            } finally {
+                if (conn != null) conn.disconnect();
+            }
+
+            runOnUiThread(() -> {
+                if (isFinishing() || isDestroyed()) return;
+
+                String[] items = new String[problemReportsCache.length()];
+                for (int i = 0; i < problemReportsCache.length(); i++) {
+                    JSONObject report = problemReportsCache.optJSONObject(i);
+                    if (report == null) continue;
+
+                    String uid = report.optString("reporter_uid", getString(R.string.unknown_reporter_uid));
+                    String reporterInfo = userMap.containsKey(uid) ? userMap.get(uid) : uid;
+                    String date = report.optString("created_at", "").split("T")[0];
+                    String desc = report.optString("description", getString(R.string.no_report_description));
+
+                    items[i] = String.format(Locale.getDefault(), "%s: %s\n%s: %s\n\n%s",
+                            getString(R.string.label_date), date,
+                            getString(R.string.label_reporter), reporterInfo,
+                            desc);
+                }
+
+                new AlertDialog.Builder(this)
+                        .setTitle(R.string.title_user_problem_reports)
+                        .setItems(items, null)
+                        .setPositiveButton(R.string.btn_close, null)
+                        .show();
+            });
         });
     }
 
@@ -312,19 +418,31 @@ public class AdminDashboardActivity extends AppCompatActivity {
         if (totalProperties > 0) {
             int rate = (int) Math.round(((double) activeCount / totalProperties) * 100);
             if (pbApprovalRatio != null) pbApprovalRatio.setProgress(rate);
-            if (tvClearancePercent != null) tvClearancePercent.setText(rate + "%");
+            if (tvClearancePercent != null) {
+                tvClearancePercent.setText(String.format(Locale.getDefault(), "%d%%", rate));
+            }
         } else {
             if (pbApprovalRatio != null) pbApprovalRatio.setProgress(100);
-            if (tvClearancePercent != null) tvClearancePercent.setText("100%");
+            if (tvClearancePercent != null) {
+                tvClearancePercent.setText(R.string.clearance_complete_percent);
+            }
+        }
+
+        if (tvTrendPending != null) {
+            if (pendingCount > 0) {
+                tvTrendPending.setText(String.format(Locale.getDefault(), "%d %s", pendingCount, getString(R.string.trend_awaiting_review)));
+                tvTrendPending.setTextColor(Color.parseColor("#FB6340"));
+            } else {
+                tvTrendPending.setText(R.string.trend_all_caught_up);
+                tvTrendPending.setTextColor(Color.parseColor("#2DCE89"));
+            }
         }
     }
 
     private void performLogout() {
-        // Clear cached Supabase credentials
         SharedPreferences prefs = getSharedPreferences("iKhayaSession", MODE_PRIVATE);
         prefs.edit().clear().apply();
 
-        // Redirect to LoginActivity and clear back stack
         Intent intent = new Intent(this, LoginActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);

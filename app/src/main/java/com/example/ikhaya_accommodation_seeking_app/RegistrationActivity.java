@@ -296,6 +296,8 @@ public class RegistrationActivity extends AppCompatActivity {
 
         otpButton.setOnClickListener(v -> {
 
+            SupabaseHelper.clearSession(this);
+
             String firstName =
                     editFirstName.getText()
                             .toString()
@@ -321,13 +323,13 @@ public class RegistrationActivity extends AppCompatActivity {
 
             String role =
                     checkedId == R.id.radioLandlord
-                            ? "Landlord"
-                            : "Resident";
+                            ? "landlord"
+                            : "tenant";
 
             Intent intent =
                     new Intent(
                             RegistrationActivity.this,
-                            OtpActivity.class
+                            CreatePasswordActivity.class
                     );
 
             intent.putExtra(
