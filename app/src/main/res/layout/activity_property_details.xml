@@ -22,7 +22,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- 1. HERO IMAGE WITH FLOATING ACTION BUTTONS -->
+            <!-- HERO IMAGE -->
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="360dp">
@@ -43,7 +43,56 @@
                         android:src="@android:drawable/ic_menu_gallery" />
                 </androidx.cardview.widget.CardView>
 
-                <!-- Floating Top Bar Controls -->
+                <!-- Multiple Photo Navigation -->
+                <LinearLayout
+                    android:id="@+id/propertyGalleryControls"
+                    android:layout_width="wrap_content"
+                    android:layout_height="48dp"
+                    android:layout_gravity="bottom|center_horizontal"
+                    android:layout_marginBottom="16dp"
+                    android:background="@drawable/bg_circle_white"
+                    android:elevation="6dp"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="10dp"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:id="@+id/btnPreviousPhoto"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:contentDescription="Previous property photo"
+                        android:gravity="center"
+                        android:paddingHorizontal="10dp"
+                        android:text="‹ Previous"
+                        android:textColor="#1F1614"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvPhotoCounter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:paddingHorizontal="8dp"
+                        android:text="1 / 1"
+                        android:textColor="#BA5536"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:id="@+id/btnNextPhoto"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:contentDescription="Next property photo"
+                        android:gravity="center"
+                        android:paddingHorizontal="10dp"
+                        android:text="Next ›"
+                        android:textColor="#1F1614"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <!-- Floating Top Controls -->
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -78,7 +127,7 @@
                 </RelativeLayout>
             </FrameLayout>
 
-            <!-- 2. DETAILS BODY -->
+            <!-- PROPERTY DETAILS -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -86,7 +135,6 @@
                 android:paddingHorizontal="22dp"
                 android:paddingTop="20dp">
 
-                <!-- Title -->
                 <TextView
                     android:id="@+id/propertyName"
                     android:layout_width="match_parent"
@@ -125,14 +173,13 @@
                         android:textStyle="bold" />
                 </LinearLayout>
 
-                <!-- Location & Contact Info Cluster -->
+                <!-- Location and Contact -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:orientation="vertical">
 
-                    <!-- Location Row -->
                     <LinearLayout
                         android:id="@+id/layoutLocationAction"
                         android:layout_width="match_parent"
@@ -167,7 +214,6 @@
                             android:textStyle="bold" />
                     </LinearLayout>
 
-                    <!-- Contact Host Row -->
                     <LinearLayout
                         android:id="@+id/btnContactLandlord"
                         android:layout_width="wrap_content"
@@ -196,14 +242,13 @@
                     </LinearLayout>
                 </LinearLayout>
 
-                <!-- Divider -->
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:layout_marginVertical="20dp"
                     android:background="#EFEBE4" />
 
-                <!-- 3. AMENITIES SECTION -->
+                <!-- Amenities -->
                 <TextView
                     android:id="@+id/tvAmenitiesHeader"
                     android:layout_width="wrap_content"
@@ -221,14 +266,13 @@
                     app:chipSpacingHorizontal="8dp"
                     app:chipSpacingVertical="4dp" />
 
-                <!-- Divider -->
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:layout_marginVertical="20dp"
                     android:background="#EFEBE4" />
 
-                <!-- 4. ABOUT SECTION & TRANSLATION -->
+                <!-- About Property -->
                 <TextView
                     android:id="@+id/descriptionHeader"
                     android:layout_width="wrap_content"
@@ -271,7 +315,7 @@
                     android:layout_marginTop="4dp"
                     android:visibility="gone" />
 
-                <!-- 5. LOCATION MAP CARD -->
+                <!-- Location Map -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -294,7 +338,6 @@
                         android:layout_height="match_parent" />
                 </androidx.cardview.widget.CardView>
 
-                <!-- Clean Directions Button -->
                 <Button
                     android:id="@+id/btnGetDirections"
                     android:layout_width="match_parent"
@@ -308,12 +351,12 @@
                     android:textSize="13sp"
                     app:cornerRadius="23dp" />
 
-                <!-- Dedicated Bottom Clearance Spacer (Guarantees Nothing Gets Covered) -->
+                <!-- Bottom Clearance -->
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="110dp" />
 
-                <!-- Hidden/Compatibility Views -->
+                <!-- Hidden Compatibility Views -->
                 <Button
                     android:id="@+id/btnOpenFullMap"
                     android:layout_width="0dp"
@@ -341,7 +384,7 @@
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <!-- 6. FLOATING BOTTOM BOOKING / BUYING PILL (Fixed Height, Centered Content) -->
+    <!-- Floating Booking Bar -->
     <LinearLayout
         android:id="@+id/floatingBookingBar"
         android:layout_width="match_parent"
@@ -358,7 +401,7 @@
         android:paddingHorizontal="18dp"
         android:paddingVertical="0dp">
 
-        <!-- Left: Price & Terms -->
+        <!-- Price and Terms -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -387,7 +430,7 @@
                 android:textSize="11sp" />
         </LinearLayout>
 
-        <!-- Right: Primary CTA Action Button -->
+        <!-- Primary Action -->
         <Button
             android:id="@+id/btnApplyToRent"
             android:layout_width="wrap_content"
