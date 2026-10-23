@@ -303,7 +303,7 @@ public class LoginActivity extends AppCompatActivity {
      */
     private void fallbackToUsersTable(String userId, String accessToken) {
         try {
-            String encodedUserId = URLEncoder.encode(userId, StandardCharsets.UTF_8);
+            String encodedUserId = URLEncoder.encode(userId, java.nio.charset.StandardCharsets.UTF_8.name());
             String endpoint = "/rest/v1/Users?select=user_role,firstName,surname,is_suspended&id=eq." + encodedUserId + "&limit=1";
 
             HttpURLConnection conn = SupabaseHelper.createConnection(endpoint, "GET", accessToken);

@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/enquiriesRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#FAF7F5"
+    android:background="#F7F7F7"
     android:padding="20dp">
 
     <!-- Circular Back Button -->
@@ -27,29 +26,18 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:text="@string/enquiries"
-        android:textColor="#1F1614"
+        android:textColor="#222222"
         android:textSize="24sp"
         android:textStyle="bold" />
-
-    <TextView
-        android:id="@+id/txtEnquiriesSubtitle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:layout_marginBottom="12dp"
-        android:text="Review and respond to resident enquiries."
-        android:textColor="#756763"
-        android:textSize="14sp" />
 
     <TextView
         android:id="@+id/txtNoEnquiries"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
+        android:padding="20dp"
         android:gravity="center"
-        android:padding="32dp"
         android:text="@string/no_enquiries_yet"
-        android:textColor="#756763"
+        android:textColor="#777777"
         android:textSize="15sp"
         android:visibility="gone" />
 
@@ -58,7 +46,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="12dp"
         android:fillViewport="true">
 
         <LinearLayout

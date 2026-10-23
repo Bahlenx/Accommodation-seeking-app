@@ -27,6 +27,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -47,8 +48,6 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
@@ -60,12 +59,6 @@ public class PropertyDetailsActivity extends AppCompatActivity {
     private static final String TAG = "PropertyDetails";
 
     private ImageView propertyImage;
-    private TextView galleryCounter;
-    private View galleryControls;
-    private final ArrayList<String> galleryUrls = new ArrayList<>();
-    private int galleryIndex = 0;
-    private int galleryRequestId = 0;
-
     private TextView txtPropertyName;
     private TextView txtPropertyPrice;
     private TextView txtPropertyLocation;
@@ -98,7 +91,7 @@ public class PropertyDetailsActivity extends AppCompatActivity {
     private boolean viewingSubmitting = false;
 
     private final ExecutorService executor =
-            Executors.newFixedThreadPool(3);
+            Executors.newFixedThreadPool(2);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -117,7 +110,47 @@ public class PropertyDetailsActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_property_details);
 
-        setupWindowInsets();
+        View detailsRoot =
+                findViewById(R.id.propertyDetailsRoot);
+
+        View floatingBookingBar =
+                findViewById(R.id.floatingBookingBar);
+
+        if (floatingBookingBar != null) {
+            floatingBookingBar.setPadding(
+                    dpToPx(18), 0, dpToPx(18), 0
+            );
+
+            if (detailsRoot != null) {
+                ViewCompat.setOnApplyWindowInsetsListener(
+                        detailsRoot,
+                        (v, insets) -> {
+                            Insets navBar = insets.getInsets(
+                                    WindowInsetsCompat.Type.navigationBars()
+                            );
+
+                            if (floatingBookingBar.getLayoutParams()
+                                    instanceof CoordinatorLayout.LayoutParams) {
+
+                                CoordinatorLayout.LayoutParams lp =
+                                        (CoordinatorLayout.LayoutParams)
+                                                floatingBookingBar.getLayoutParams();
+
+                                lp.bottomMargin =
+                                        navBar.bottom + dpToPx(16);
+
+                                floatingBookingBar.setLayoutParams(lp);
+
+                                floatingBookingBar.setPadding(
+                                        dpToPx(18), 0, dpToPx(18), 0
+                                );
+                            }
+
+                            return WindowInsetsCompat.CONSUMED;
+                        }
+                );
+            }
+        }
 
         listingId = getIntent().getStringExtra("LISTING_ID");
 
@@ -127,9 +160,11 @@ public class PropertyDetailsActivity extends AppCompatActivity {
 
         if (getIntent().hasExtra("latitude")
                 && getIntent().hasExtra("longitude")) {
+
             verifiedLatitude = getIntent().getDoubleExtra(
                     "latitude", Double.NaN
             );
+
             verifiedLongitude = getIntent().getDoubleExtra(
                     "longitude", Double.NaN
             );
@@ -149,44 +184,6 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                     "Property ID is missing.",
                     Toast.LENGTH_LONG
             ).show();
-        }
-    }
-
-    private void setupWindowInsets() {
-        View root = findViewById(R.id.propertyDetailsRoot);
-        View bookingBar = findViewById(R.id.floatingBookingBar);
-
-        if (bookingBar == null) {
-            return;
-        }
-
-        bookingBar.setPadding(
-                dpToPx(18), 0, dpToPx(18), 0
-        );
-
-        if (root != null) {
-            ViewCompat.setOnApplyWindowInsetsListener(
-                    root,
-                    (view, insets) -> {
-                        Insets navigation = insets.getInsets(
-                                WindowInsetsCompat.Type.navigationBars()
-                        );
-
-                        if (bookingBar.getLayoutParams()
-                                instanceof CoordinatorLayout.LayoutParams) {
-                            CoordinatorLayout.LayoutParams params =
-                                    (CoordinatorLayout.LayoutParams)
-                                            bookingBar.getLayoutParams();
-
-                            params.bottomMargin =
-                                    navigation.bottom + dpToPx(16);
-
-                            bookingBar.setLayoutParams(params);
-                        }
-
-                        return insets;
-                    }
-            );
         }
     }
 
@@ -211,221 +208,6 @@ public class PropertyDetailsActivity extends AppCompatActivity {
         if (btnBack != null) {
             btnBack.setOnClickListener(v -> finish());
         }
-
-        setupImageGalleryControls();
-    }
-
-    private void setupImageGalleryControls() {
-        galleryCounter = findViewById(R.id.tvPhotoCounter);
-        galleryControls = findViewById(
-                R.id.propertyGalleryControls
-        );
-
-        View previous = findViewById(R.id.btnPreviousPhoto);
-        View next = findViewById(R.id.btnNextPhoto);
-
-        if (previous != null) {
-            previous.setOnClickListener(
-                    v -> showGalleryImage(galleryIndex - 1)
-            );
-        }
-
-        if (next != null) {
-            next.setOnClickListener(
-                    v -> showGalleryImage(galleryIndex + 1)
-            );
-        }
-
-        if (propertyImage != null) {
-            propertyImage.setOnClickListener(
-                    v -> showGalleryImage(galleryIndex + 1)
-            );
-        }
-
-        if (galleryControls != null) {
-            galleryControls.setVisibility(View.GONE);
-        }
-    }
-
-    private void loadListingGallery(
-            String accessToken,
-            String coverUrl
-    ) {
-        executor.execute(() -> {
-            ArrayList<String> urls = new ArrayList<>();
-
-            String cleanedCover = clean(coverUrl);
-
-            if (!cleanedCover.isEmpty()) {
-                urls.add(cleanedCover);
-            }
-
-            HttpURLConnection connection = null;
-
-            try {
-                String endpoint =
-                        "/rest/v1/listing_images"
-                                + "?select=image_url"
-                                + "&listing_id=eq."
-                                + URLEncoder.encode(
-                                listingId,
-                                StandardCharsets.UTF_8
-                        ).replace("+", "%20");
-
-                connection = SupabaseHelper.createConnection(
-                        endpoint,
-                        "GET",
-                        accessToken
-                );
-
-                int responseCode =
-                        connection.getResponseCode();
-
-                String response =
-                        SupabaseHelper.readResponse(connection);
-
-                if (responseCode >= 200
-                        && responseCode < 300) {
-                    JSONArray images = new JSONArray(response);
-
-                    for (int i = 0; i < images.length(); i++) {
-                        JSONObject image = images.optJSONObject(i);
-
-                        if (image == null) {
-                            continue;
-                        }
-
-                        String url = clean(
-                                image.optString("image_url", "")
-                        );
-
-                        if (!url.isEmpty() && !urls.contains(url)) {
-                            urls.add(url);
-                        }
-                    }
-                } else {
-                    Log.w(
-                            TAG,
-                            "Gallery request failed: HTTP "
-                                    + responseCode
-                                    + " "
-                                    + response
-                    );
-                }
-
-            } catch (Exception e) {
-                Log.e(TAG, "Error loading gallery", e);
-
-            } finally {
-                if (connection != null) {
-                    connection.disconnect();
-                }
-            }
-
-            runOnUiThread(() -> {
-                if (isFinishing() || isDestroyed()) {
-                    return;
-                }
-
-                galleryUrls.clear();
-                galleryUrls.addAll(urls);
-                galleryIndex = 0;
-
-                if (galleryControls != null) {
-                    galleryControls.setVisibility(
-                            galleryUrls.size() > 1
-                                    ? View.VISIBLE
-                                    : View.GONE
-                    );
-                }
-
-                if (!galleryUrls.isEmpty()) {
-                    showGalleryImage(0);
-                } else if (galleryCounter != null) {
-                    galleryCounter.setText("0 / 0");
-                }
-            });
-        });
-    }
-
-    private void showGalleryImage(int requestedIndex) {
-        if (galleryUrls.isEmpty()) {
-            return;
-        }
-
-        int size = galleryUrls.size();
-
-        galleryIndex =
-                ((requestedIndex % size) + size) % size;
-
-        if (galleryCounter != null) {
-            galleryCounter.setText(
-                    (galleryIndex + 1) + " / " + size
-            );
-        }
-
-        loadPropertyImage(galleryUrls.get(galleryIndex));
-    }
-
-    private void loadPropertyImage(String imageUrl) {
-        if (imageUrl == null || imageUrl.trim().isEmpty()) {
-            return;
-        }
-
-        final int requestId = ++galleryRequestId;
-
-        executor.execute(() -> {
-            HttpURLConnection connection = null;
-
-            try {
-                connection = (HttpURLConnection)
-                        new URL(imageUrl).openConnection();
-
-                connection.setConnectTimeout(15000);
-                connection.setReadTimeout(20000);
-
-                int responseCode =
-                        connection.getResponseCode();
-
-                if (responseCode >= 200
-                        && responseCode < 300) {
-                    try (InputStream stream =
-                                 connection.getInputStream()) {
-
-                        Bitmap bitmap =
-                                BitmapFactory.decodeStream(stream);
-
-                        if (bitmap != null) {
-                            runOnUiThread(() -> {
-                                if (isFinishing()
-                                        || isDestroyed()
-                                        || requestId != galleryRequestId
-                                        || propertyImage == null) {
-                                    return;
-                                }
-
-                                propertyImage.setImageBitmap(bitmap);
-                                propertyImage.setScaleType(
-                                        ImageView.ScaleType.CENTER_CROP
-                                );
-                            });
-                        }
-                    }
-                }
-
-            } catch (Exception e) {
-                Log.w(
-                        TAG,
-                        "Could not load photo: " + imageUrl,
-                        e
-                );
-
-            } finally {
-                if (connection != null) {
-                    connection.disconnect();
-                }
-            }
-        });
     }
 
     private void setupChipsAndDescription() {
@@ -441,113 +223,112 @@ public class PropertyDetailsActivity extends AppCompatActivity {
             propertyDescription.setText("");
         }
 
-        Locale locale =
+        Locale currentLocale =
                 getResources().getConfiguration().getLocales().get(0);
 
-        String language = locale.getLanguage();
+        String currentLang = currentLocale.getLanguage();
 
-        if (btnTranslate == null) {
-            return;
-        }
+        if (btnTranslate != null) {
+            btnTranslate.setVisibility(View.GONE);
 
-        btnTranslate.setVisibility(View.GONE);
-
-        btnTranslate.setOnClickListener(v -> {
-            if (originalDescription.trim().isEmpty()) {
-                showFormError(R.string.description_not_available);
-                return;
-            }
-
-            if (isTranslated) {
-                if (txtPropertyName != null) {
-                    txtPropertyName.setText(propertyName);
+            btnTranslate.setOnClickListener(v -> {
+                if (originalDescription.trim().isEmpty()) {
+                    showFormError(R.string.description_not_available);
+                    return;
                 }
 
-                if (propertyDescription != null) {
-                    propertyDescription.setText(
-                            originalDescription
-                    );
-                }
-
-                btnTranslate.setText(
-                        getString(
-                                R.string.translate_to_language,
-                                getLanguageDisplayName(language)
-                        )
-                );
-
-                isTranslated = false;
-                return;
-            }
-
-            if (!cachedTranslatedDescription.isEmpty()) {
-                displayTranslation(
-                        cachedTranslatedDescription
-                );
-                return;
-            }
-
-            if (progressTranslate != null) {
-                progressTranslate.setVisibility(View.VISIBLE);
-            }
-
-            btnTranslate.setEnabled(false);
-
-            String text =
-                    propertyName + " ::: " + originalDescription;
-
-            GeminiTranslator.translate(
-                    text,
-                    language,
-                    new GeminiTranslator.TranslationCallback() {
-                        @Override
-                        public void onSuccess(String result) {
-                            runOnUiThread(() -> {
-                                if (isFinishing() || isDestroyed()) {
-                                    return;
-                                }
-
-                                if (progressTranslate != null) {
-                                    progressTranslate.setVisibility(
-                                            View.GONE
-                                    );
-                                }
-
-                                btnTranslate.setEnabled(true);
-                                cachedTranslatedDescription = result;
-
-                                displayTranslation(result);
-                            });
-                        }
-
-                        @Override
-                        public void onError(String message) {
-                            runOnUiThread(() -> {
-                                if (isFinishing() || isDestroyed()) {
-                                    return;
-                                }
-
-                                if (progressTranslate != null) {
-                                    progressTranslate.setVisibility(
-                                            View.GONE
-                                    );
-                                }
-
-                                btnTranslate.setEnabled(true);
-
-                                Toast.makeText(
-                                        PropertyDetailsActivity.this,
-                                        getString(
-                                                R.string.translation_failed,
-                                                message
-                                        ),
-                                        Toast.LENGTH_SHORT
-                                ).show();
-                            });
-                        }
+                if (isTranslated) {
+                    if (txtPropertyName != null) {
+                        txtPropertyName.setText(propertyName);
                     }
-            );
-        });
+
+                    if (propertyDescription != null) {
+                        propertyDescription.setText(
+                                originalDescription
+                        );
+                    }
+
+                    btnTranslate.setText(
+                            getString(
+                                    R.string.translate_to_language,
+                                    getLanguageDisplayName(currentLang)
+                            )
+                    );
+
+                    isTranslated = false;
+                    return;
+                }
+
+                if (!cachedTranslatedDescription.isEmpty()) {
+                    displayTranslation(
+                            cachedTranslatedDescription
+                    );
+
+                    return;
+                }
+
+                if (progressTranslate != null) {
+                    progressTranslate.setVisibility(View.VISIBLE);
+                }
+
+                btnTranslate.setEnabled(false);
+
+                String textToTranslate =
+                        propertyName + " ::: " + originalDescription;
+
+                GeminiTranslator.translate(
+                        textToTranslate,
+                        currentLang,
+                        new GeminiTranslator.TranslationCallback() {
+                            @Override
+                            public void onSuccess(String result) {
+                                runOnUiThread(() -> {
+                                    if (isFinishing() || isDestroyed()) {
+                                        return;
+                                    }
+
+                                    if (progressTranslate != null) {
+                                        progressTranslate.setVisibility(
+                                                View.GONE
+                                        );
+                                    }
+
+                                    btnTranslate.setEnabled(true);
+                                    cachedTranslatedDescription = result;
+
+                                    displayTranslation(result);
+                                });
+                            }
+
+                            @Override
+                            public void onError(String errorMessage) {
+                                runOnUiThread(() -> {
+                                    if (isFinishing() || isDestroyed()) {
+                                        return;
+                                    }
+
+                                    if (progressTranslate != null) {
+                                        progressTranslate.setVisibility(
+                                                View.GONE
+                                        );
+                                    }
+
+                                    btnTranslate.setEnabled(true);
+
+                                    Toast.makeText(
+                                            PropertyDetailsActivity.this,
+                                            getString(
+                                                    R.string.translation_failed,
+                                                    errorMessage
+                                            ),
+                                            Toast.LENGTH_SHORT
+                                    ).show();
+                                });
+                            }
+                        }
+                );
+            });
+        }
     }
 
     private void displayTranslation(String result) {
@@ -561,7 +342,6 @@ public class PropertyDetailsActivity extends AppCompatActivity {
             if (propertyDescription != null) {
                 propertyDescription.setText(parts[1].trim());
             }
-
         } else if (propertyDescription != null) {
             propertyDescription.setText(result);
         }
@@ -591,15 +371,17 @@ public class PropertyDetailsActivity extends AppCompatActivity {
             for (int i = 0; i < values.length(); i++) {
                 addChip(group, values.optString(i, ""));
             }
-        } else {
-            String raw = clean(String.valueOf(rawValues));
 
-            if (raw.isEmpty()) {
+        } else {
+            String raw = String.valueOf(rawValues).trim();
+
+            if (raw.isEmpty()
+                    || "null".equalsIgnoreCase(raw)) {
                 return;
             }
 
-            for (String value : raw.split(",")) {
-                addChip(group, value);
+            for (String part : raw.split(",")) {
+                addChip(group, part);
             }
         }
     }
@@ -614,17 +396,22 @@ public class PropertyDetailsActivity extends AppCompatActivity {
         chip.setText(value.trim());
         chip.setClickable(false);
         chip.setCheckable(false);
+
         chip.setChipBackgroundColor(
                 ColorStateList.valueOf(Color.WHITE)
         );
-        chip.setTextColor(Color.parseColor("#1F1614"));
+
+        chip.setTextColor(
+                Color.parseColor("#1F1614")
+        );
+
         chip.setTextSize(12);
 
         group.addView(chip);
     }
 
     private void setupButtons() {
-        View btnGetDirections =
+        Button btnGetDirections =
                 findViewById(R.id.btnGetDirections);
 
         View btnOpenMap =
@@ -665,7 +452,7 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                 false
         );
 
-        View btnContact =
+        View btnContactLandlord =
                 findViewById(R.id.btnContactLandlord);
 
         Button btnEditListing =
@@ -675,8 +462,8 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                 findViewById(R.id.btnApplyToRent);
 
         if (isLandlord) {
-            if (btnContact != null) {
-                btnContact.setVisibility(View.GONE);
+            if (btnContactLandlord != null) {
+                btnContactLandlord.setVisibility(View.GONE);
             }
 
             if (btnApplyToRent != null) {
@@ -701,8 +488,8 @@ public class PropertyDetailsActivity extends AppCompatActivity {
             }
 
         } else {
-            if (btnContact != null) {
-                btnContact.setVisibility(View.VISIBLE);
+            if (btnContactLandlord != null) {
+                btnContactLandlord.setVisibility(View.VISIBLE);
             }
 
             if (btnEditListing != null) {
@@ -818,11 +605,13 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                 || listingId == null
                 || listingId.trim().isEmpty()
                 || landlordUid.trim().isEmpty()) {
+
             Toast.makeText(
                     this,
                     "Property or landlord information is not ready.",
                     Toast.LENGTH_LONG
             ).show();
+
             return;
         }
 
@@ -832,12 +621,13 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                     "Your viewing request is being submitted.",
                     Toast.LENGTH_SHORT
             ).show();
+
             return;
         }
 
         Calendar calendar = Calendar.getInstance();
 
-        DatePickerDialog picker = new DatePickerDialog(
+        DatePickerDialog datePicker = new DatePickerDialog(
                 this,
                 (view, year, month, dayOfMonth) -> {
                     String selectedDate = String.format(
@@ -855,15 +645,15 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                 calendar.get(Calendar.DAY_OF_MONTH)
         );
 
-        picker.getDatePicker().setMinDate(
+        datePicker.getDatePicker().setMinDate(
                 System.currentTimeMillis() - 1000
         );
 
-        picker.show();
+        datePicker.show();
     }
 
     private void showTimeSlotPicker(String viewingDate) {
-        String[] slots = {
+        String[] timeSlots = {
                 "Morning (09:00 - 11:00)",
                 "Midday (11:00 - 13:00)",
                 "Afternoon (14:00 - 16:00)",
@@ -876,9 +666,9 @@ public class PropertyDetailsActivity extends AppCompatActivity {
 
         new AlertDialog.Builder(this)
                 .setTitle(title)
-                .setItems(slots, (dialog, which) -> {
+                .setItems(timeSlots, (dialog, which) -> {
                     String selectedSlot =
-                            viewingDate + " " + slots[which];
+                            viewingDate + " " + timeSlots[which];
 
                     submitViewingToSupabase(selectedSlot);
                 })
@@ -893,17 +683,20 @@ public class PropertyDetailsActivity extends AppCompatActivity {
         }
 
         String userId = SupabaseHelper.getUserId(this);
+
         String accessToken =
                 SupabaseHelper.getAccessToken(this);
 
         if (userId == null || userId.trim().isEmpty()
                 || accessToken == null
                 || accessToken.trim().isEmpty()) {
+
             Toast.makeText(
                     this,
                     "Please log in to schedule a viewing.",
                     Toast.LENGTH_LONG
             ).show();
+
             return;
         }
 
@@ -911,11 +704,13 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                 || listingId == null
                 || listingId.trim().isEmpty()
                 || landlordUid.trim().isEmpty()) {
+
             Toast.makeText(
                     this,
                     "Property information is not ready yet.",
                     Toast.LENGTH_LONG
             ).show();
+
             return;
         }
 
@@ -925,6 +720,7 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                     "You cannot book a viewing of your own property.",
                     Toast.LENGTH_LONG
             ).show();
+
             return;
         }
 
@@ -980,6 +776,7 @@ public class PropertyDetailsActivity extends AppCompatActivity {
 
                     if (responseCode >= 200
                             && responseCode < 300) {
+
                         String successMessage = isForSale
                                 ? "Your site inspection request was sent successfully."
                                 : "Your viewing request was sent successfully.";
@@ -988,12 +785,16 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                                 .setTitle("Request Sent")
                                 .setMessage(
                                         successMessage
-                                                + "\n\nProperty: "
+                                                + "\n\n"
+                                                + "Property: "
                                                 + propertyName
-                                                + "\nViewing: "
+                                                + "\n"
+                                                + "Viewing: "
                                                 + formattedViewingTime
-                                                + "\nStatus: Pending Host"
-                                                + "\n\nYou can track this request in My Viewings."
+                                                + "\n"
+                                                + "Status: Pending Host"
+                                                + "\n\n"
+                                                + "You can track this request in My Viewings."
                                 )
                                 .setNegativeButton(
                                         "Stay Here",
@@ -1006,6 +807,7 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                                                     PropertyDetailsActivity.this,
                                                     ViewingsActivity.class
                                             );
+
                                             startActivity(intent);
                                         }
                                 )
@@ -1023,18 +825,24 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                 });
 
             } catch (Exception e) {
-                Log.e(TAG, "Viewing submission failed", e);
+                Log.e(
+                        TAG,
+                        "Viewing submission failed",
+                        e
+                );
 
                 runOnUiThread(() -> {
                     viewingSubmitting = false;
 
-                    if (!isFinishing() && !isDestroyed()) {
-                        Toast.makeText(
-                                this,
-                                "Network error requesting appointment.",
-                                Toast.LENGTH_LONG
-                        ).show();
+                    if (isFinishing() || isDestroyed()) {
+                        return;
                     }
+
+                    Toast.makeText(
+                            this,
+                            "Network error requesting appointment.",
+                            Toast.LENGTH_LONG
+                    ).show();
                 });
 
             } finally {
@@ -1165,7 +973,7 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                         ? etApplicantName.getText().toString().trim()
                         : "";
 
-                String idNumber = etIdNumber != null
+                String idNum = etIdNumber != null
                         ? etIdNumber.getText().toString().trim()
                         : "";
 
@@ -1182,7 +990,7 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                     return;
                 }
 
-                if (idNumber.length() != 13) {
+                if (idNum.length() != 13) {
                     showFormError(R.string.err_enter_id);
                     return;
                 }
@@ -1261,7 +1069,9 @@ public class PropertyDetailsActivity extends AppCompatActivity {
             String occupants,
             String note
     ) {
-        String tenantUid = SupabaseHelper.getUserId(this);
+        String tenantUid =
+                SupabaseHelper.getUserId(this);
+
         String accessToken =
                 SupabaseHelper.getAccessToken(this);
 
@@ -1271,11 +1081,13 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                 || listingId == null
                 || listingId.trim().isEmpty()
                 || landlordUid.trim().isEmpty()) {
+
             Toast.makeText(
                     this,
                     R.string.rental_application_missing_details,
                     Toast.LENGTH_LONG
             ).show();
+
             return;
         }
 
@@ -1330,6 +1142,7 @@ public class PropertyDetailsActivity extends AppCompatActivity {
 
                     if (responseCode >= 200
                             && responseCode < 300) {
+
                         dialog.dismiss();
 
                         Toast.makeText(
@@ -1344,6 +1157,7 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                             );
 
                             btnApplyToRent.setEnabled(false);
+
                             btnApplyToRent.setBackgroundTintList(
                                     ColorStateList.valueOf(Color.GRAY)
                             );
@@ -1351,6 +1165,7 @@ public class PropertyDetailsActivity extends AppCompatActivity {
 
                     } else {
                         btnSubmit.setEnabled(true);
+
                         btnSubmit.setText(
                                 isForSale
                                         ? "Submit Purchase Offer"
@@ -1380,6 +1195,7 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                     }
 
                     btnSubmit.setEnabled(true);
+
                     btnSubmit.setText(
                             isForSale
                                     ? "Submit Purchase Offer"
@@ -1434,6 +1250,7 @@ public class PropertyDetailsActivity extends AppCompatActivity {
 
         if (!Double.isNaN(verifiedLatitude)
                 && !Double.isNaN(verifiedLongitude)) {
+
             plotMarkerOnMap(
                     verifiedLatitude,
                     verifiedLongitude
@@ -1500,11 +1317,13 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                 longitude
         );
 
+        mapView.getController().setCenter(point);
         mapView.getOverlays().clear();
 
         Marker marker = new Marker(mapView);
 
         marker.setPosition(point);
+
         marker.setAnchor(
                 Marker.ANCHOR_CENTER,
                 Marker.ANCHOR_BOTTOM
@@ -1518,77 +1337,105 @@ public class PropertyDetailsActivity extends AppCompatActivity {
 
         marker.setSnippet(locationText);
 
+        marker.setIcon(
+                ContextCompat.getDrawable(
+                        this,
+                        org.osmdroid.library.R.drawable.marker_default
+                )
+        );
+
         mapView.getOverlays().add(marker);
-        mapView.getController().setCenter(point);
-        mapView.getController().setZoom(16.0);
         mapView.invalidate();
     }
 
     private void launchTurnByTurnNavigation() {
-        if (!Double.isNaN(verifiedLatitude)
-                && !Double.isNaN(verifiedLongitude)
-                && !Double.isInfinite(verifiedLatitude)
-                && !Double.isInfinite(verifiedLongitude)) {
+        if (Double.isNaN(verifiedLatitude)
+                || Double.isNaN(verifiedLongitude)
+                || Double.isInfinite(verifiedLatitude)
+                || Double.isInfinite(verifiedLongitude)) {
 
-            Uri uri = Uri.parse(
-                    "google.navigation:q="
-                            + verifiedLatitude
-                            + ","
-                            + verifiedLongitude
-                            + "&mode=d"
-            );
-
-            Intent intent = new Intent(
-                    Intent.ACTION_VIEW,
-                    uri
-            );
-
-            intent.setPackage("com.google.android.apps.maps");
-
-            try {
-                startActivity(intent);
-                return;
-            } catch (Exception ignored) {
-                // Use browser-based maps below.
-            }
+            openLocationInMaps(true);
+            return;
         }
 
-        openLocationInMaps(true);
+        Uri navigationUri = Uri.parse(
+                "google.navigation:q="
+                        + verifiedLatitude
+                        + ","
+                        + verifiedLongitude
+                        + "&mode=d"
+        );
+
+        Intent navigationIntent = new Intent(
+                Intent.ACTION_VIEW,
+                navigationUri
+        );
+
+        navigationIntent.setPackage(
+                "com.google.android.apps.maps"
+        );
+
+        try {
+            if (navigationIntent.resolveActivity(
+                    getPackageManager()
+            ) != null) {
+
+                startActivity(navigationIntent);
+
+            } else {
+                Uri fallbackUri = Uri.parse(
+                        "https://www.google.com/maps/dir/?api=1"
+                                + "&destination="
+                                + verifiedLatitude
+                                + ","
+                                + verifiedLongitude
+                );
+
+                startActivity(
+                        new Intent(
+                                Intent.ACTION_VIEW,
+                                fallbackUri
+                        )
+                );
+            }
+
+        } catch (Exception e) {
+            Toast.makeText(
+                    this,
+                    "Could not open navigation.",
+                    Toast.LENGTH_SHORT
+            ).show();
+        }
     }
 
     private void openLocationInMaps(boolean directions) {
-        String destination;
+        if (locationText == null
+                || locationText.trim().isEmpty()) {
 
-        if (!Double.isNaN(verifiedLatitude)
-                && !Double.isNaN(verifiedLongitude)) {
-            destination =
-                    verifiedLatitude + "," + verifiedLongitude;
-        } else {
-            destination = locationText;
-        }
-
-        if (destination == null
-                || destination.trim().isEmpty()) {
             showFormError(R.string.location_not_available);
             return;
         }
 
-        String encoded = Uri.encode(destination);
+        String encodedLocation =
+                Uri.encode(locationText);
 
         Uri uri = directions
                 ? Uri.parse(
                 "https://www.google.com/maps/dir/?api=1"
-                        + "&destination=" + encoded
+                        + "&destination="
+                        + encodedLocation
         )
                 : Uri.parse(
                 "https://www.google.com/maps/search/?api=1"
-                        + "&query=" + encoded
+                        + "&query="
+                        + encodedLocation
         );
 
         try {
             startActivity(
                     new Intent(Intent.ACTION_VIEW, uri)
             );
+
         } catch (Exception e) {
             showFormError(R.string.could_not_open_maps);
         }
@@ -1600,11 +1447,13 @@ public class PropertyDetailsActivity extends AppCompatActivity {
 
         if (accessToken == null
                 || accessToken.trim().isEmpty()) {
+
             Toast.makeText(
                     this,
                     "Please log in again.",
                     Toast.LENGTH_LONG
             ).show();
+
             return;
         }
 
@@ -1616,7 +1465,7 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                         "/rest/v1/listings?select=*&id=eq."
                                 + URLEncoder.encode(
                                 listingId,
-                                StandardCharsets.UTF_8
+                                "UTF-8"
                         ).replace("+", "%20")
                                 + "&limit=1";
 
@@ -1634,6 +1483,7 @@ public class PropertyDetailsActivity extends AppCompatActivity {
 
                 if (responseCode < 200
                         || responseCode >= 300) {
+
                     Log.e(
                             TAG,
                             "Could not load listing. HTTP "
@@ -1642,15 +1492,13 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                                     + response
                     );
 
-                    runOnUiThread(() -> {
-                        if (!isFinishing() && !isDestroyed()) {
+                    runOnUiThread(() ->
                             Toast.makeText(
                                     this,
                                     "Could not load property details.",
                                     Toast.LENGTH_LONG
-                            ).show();
-                        }
-                    });
+                            ).show()
+                    );
 
                     return;
                 }
@@ -1658,15 +1506,13 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                 JSONArray listings = new JSONArray(response);
 
                 if (listings.length() == 0) {
-                    runOnUiThread(() -> {
-                        if (!isFinishing() && !isDestroyed()) {
+                    runOnUiThread(() ->
                             Toast.makeText(
                                     this,
                                     "Property not found.",
                                     Toast.LENGTH_LONG
-                            ).show();
-                        }
-                    });
+                            ).show()
+                    );
 
                     return;
                 }
@@ -1715,12 +1561,15 @@ public class PropertyDetailsActivity extends AppCompatActivity {
 
                 if (price.trim().isEmpty()
                         || "null".equalsIgnoreCase(price.trim())) {
+
                     priceText = "";
+
                 } else if (isForSale) {
                     priceText = getString(
                             R.string.price_for_sale_value,
                             price
                     );
+
                 } else {
                     priceText = getString(
                             R.string.price_per_month_value,
@@ -1774,6 +1623,7 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                     if (btnTranslate != null
                             && !"en".equals(locale.getLanguage())
                             && !originalDescription.trim().isEmpty()) {
+
                         btnTranslate.setVisibility(View.VISIBLE);
 
                         btnTranslate.setText(
@@ -1787,31 +1637,32 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                     }
                 });
 
-                loadListingGallery(accessToken, imageUrl);
+                if (!clean(imageUrl).isEmpty()) {
+                    loadPropertyImage(imageUrl);
+                }
 
-                double latitude = listing.optDouble(
+                double dbLat = listing.optDouble(
                         "latitude",
                         Double.NaN
                 );
 
-                double longitude = listing.optDouble(
+                double dbLon = listing.optDouble(
                         "longitude",
                         Double.NaN
                 );
 
-                if (!Double.isNaN(latitude)
-                        && !Double.isNaN(longitude)) {
-                    verifiedLatitude = latitude;
-                    verifiedLongitude = longitude;
+                if (!Double.isNaN(dbLat)
+                        && !Double.isNaN(dbLon)) {
+
+                    verifiedLatitude = dbLat;
+                    verifiedLongitude = dbLon;
 
                     runOnUiThread(() -> {
                         if (!isFinishing() && !isDestroyed()) {
-                            plotMarkerOnMap(
-                                    latitude,
-                                    longitude
-                            );
+                            plotMarkerOnMap(dbLat, dbLon);
                         }
                     });
+
                 } else {
                     updateMapCoordinatesFromLocation(location);
                 }
@@ -1823,15 +1674,71 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                         e
                 );
 
-                runOnUiThread(() -> {
-                    if (!isFinishing() && !isDestroyed()) {
-                        Toast.makeText(
-                                this,
-                                "Network error loading property.",
-                                Toast.LENGTH_LONG
-                        ).show();
+            } finally {
+                if (connection != null) {
+                    connection.disconnect();
+                }
+            }
+        });
+    }
+
+    private void loadPropertyImage(String imageUrl) {
+        if (imageUrl == null
+                || imageUrl.trim().isEmpty()
+                || "null".equalsIgnoreCase(imageUrl.trim())) {
+            return;
+        }
+
+        executor.execute(() -> {
+            HttpURLConnection connection = null;
+
+            try {
+                connection =
+                        (HttpURLConnection)
+                                new URL(imageUrl.trim())
+                                        .openConnection();
+
+                connection.setConnectTimeout(15000);
+                connection.setReadTimeout(20000);
+                connection.setRequestMethod("GET");
+                connection.connect();
+
+                int responseCode =
+                        connection.getResponseCode();
+
+                if (responseCode >= 200
+                        && responseCode < 300) {
+
+                    try (InputStream input =
+                                 connection.getInputStream()) {
+
+                        Bitmap bitmap =
+                                BitmapFactory.decodeStream(input);
+
+                        if (bitmap != null) {
+                            runOnUiThread(() -> {
+                                if (isFinishing() || isDestroyed()) {
+                                    return;
+                                }
+
+                                if (propertyImage != null) {
+                                    propertyImage.setImageBitmap(bitmap);
+
+                                    propertyImage.setScaleType(
+                                            ImageView.ScaleType.CENTER_CROP
+                                    );
+                                }
+                            });
+                        }
                     }
-                });
+                }
+
+            } catch (Exception e) {
+                Log.e(
+                        TAG,
+                        "Could not display property image",
+                        e
+                );
 
             } finally {
                 if (connection != null) {
@@ -1843,12 +1750,14 @@ public class PropertyDetailsActivity extends AppCompatActivity {
 
     private void saveListing() {
         String userId = SupabaseHelper.getUserId(this);
+
         String accessToken =
                 SupabaseHelper.getAccessToken(this);
 
         if (userId == null || userId.isEmpty()
                 || accessToken == null
                 || accessToken.isEmpty()) {
+
             showFormError(R.string.please_log_in_to_save);
             return;
         }
@@ -1859,6 +1768,7 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                     "Property ID is missing.",
                     Toast.LENGTH_SHORT
             ).show();
+
             return;
         }
 
@@ -1900,6 +1810,7 @@ public class PropertyDetailsActivity extends AppCompatActivity {
 
                     if (responseCode >= 200
                             && responseCode < 300) {
+
                         showFormError(
                                 R.string.accommodation_saved
                         );
@@ -1917,14 +1828,6 @@ public class PropertyDetailsActivity extends AppCompatActivity {
             } catch (Exception e) {
                 Log.e(TAG, "Save listing error", e);
 
-                runOnUiThread(() -> {
-                    if (!isFinishing() && !isDestroyed()) {
-                        showFormError(
-                                R.string.could_not_save_accommodation
-                        );
-                    }
-                });
-
             } finally {
                 if (connection != null) {
                     connection.disconnect();
@@ -1935,34 +1838,30 @@ public class PropertyDetailsActivity extends AppCompatActivity {
 
     private void contactLandlord() {
         String userId = SupabaseHelper.getUserId(this);
+
         String accessToken =
                 SupabaseHelper.getAccessToken(this);
 
         if (userId == null || userId.isEmpty()
                 || accessToken == null
                 || accessToken.isEmpty()) {
+
             showFormError(
                     R.string.please_log_in_to_contact_landlord
             );
+
             return;
         }
 
         if (listingId == null || listingId.isEmpty()
                 || landlordUid.trim().isEmpty()) {
+
             Toast.makeText(
                     this,
                     "Landlord information is not available yet.",
                     Toast.LENGTH_LONG
             ).show();
-            return;
-        }
 
-        if (userId.equals(landlordUid)) {
-            Toast.makeText(
-                    this,
-                    "This is your own property.",
-                    Toast.LENGTH_SHORT
-            ).show();
             return;
         }
 
@@ -2010,7 +1909,9 @@ public class PropertyDetailsActivity extends AppCompatActivity {
 
                     if (responseCode >= 200
                             && responseCode < 300) {
+
                         showFormError(R.string.enquiry_sent);
+
                     } else {
                         showFormError(
                                 R.string.could_not_send_enquiry
@@ -2020,14 +1921,6 @@ public class PropertyDetailsActivity extends AppCompatActivity {
 
             } catch (Exception e) {
                 Log.e(TAG, "Contact landlord error", e);
-
-                runOnUiThread(() -> {
-                    if (!isFinishing() && !isDestroyed()) {
-                        showFormError(
-                                R.string.could_not_send_enquiry
-                        );
-                    }
-                });
 
             } finally {
                 if (connection != null) {
