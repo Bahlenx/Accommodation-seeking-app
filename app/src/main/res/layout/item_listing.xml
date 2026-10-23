@@ -21,7 +21,7 @@
             android:layout_width="match_parent"
             android:layout_height="190dp"
             android:background="#E9E3DE"
-            android:contentDescription="Property image"
+            android:contentDescription="@string/desc_property_image"
             android:scaleType="centerCrop"
             android:src="@android:drawable/ic_menu_gallery" />
 
@@ -30,7 +30,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:text="Property name"
+            android:text="@string/placeholder_property_name"
             android:textColor="#241A18"
             android:textSize="20sp"
             android:textStyle="bold" />
@@ -40,7 +40,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
-            android:text="Location"
+            android:text="@string/placeholder_location"
             android:textColor="#81736D"
             android:textSize="15sp" />
 
@@ -49,7 +49,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="R0 / month"
+            android:text="@string/placeholder_price"
             android:textColor="#B95737"
             android:textSize="18sp"
             android:textStyle="bold" />
@@ -59,7 +59,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:text="Rooms"
+            android:text="@string/label_rooms"
             android:textColor="#655A55"
             android:textSize="15sp" />
 
@@ -76,7 +76,7 @@
                 android:layout_marginEnd="6dp"
                 android:layout_weight="1"
                 android:backgroundTint="#B95737"
-                android:text="Edit"
+                android:text="@string/btn_edit_item"
                 android:textAllCaps="false"
                 android:textColor="#FFFFFF" />
 
@@ -87,7 +87,7 @@
                 android:layout_marginStart="6dp"
                 android:layout_weight="1"
                 android:backgroundTint="#F0E4DF"
-                android:text="Delete"
+                android:text="@string/btn_delete"
                 android:textAllCaps="false"
                 android:textColor="#9E3828" />
 

@@ -52,7 +52,7 @@ public class AdminReportsActivity extends AppCompatActivity {
         String token = SupabaseHelper.getAccessToken(this);
 
         if (token == null || token.isEmpty()) {
-            Toast.makeText(this, "Please log in again.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.please_log_in_again, Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
@@ -234,19 +234,19 @@ public class AdminReportsActivity extends AppCompatActivity {
                     }
 
                     runOnUiThread(() -> {
-                        Toast.makeText(this, "Ticket marked as " + newStatus, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, getString(R.string.msg_ticket_marked_as_prefix) + newStatus, Toast.LENGTH_SHORT).show();
                         if (reportsContainer != null) {
                             reportsContainer.removeView(cardView);
                         }
                     });
                 } else {
                     runOnUiThread(() ->
-                            Toast.makeText(this, "Failed to update ticket (HTTP " + code + ")", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this, getString(R.string.error_failed_update_ticket_http) + code + ")", Toast.LENGTH_SHORT).show()
                     );
                 }
             } catch (Exception e) {
                 runOnUiThread(() ->
-                        Toast.makeText(this, "Error connecting to server", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, R.string.password_connection_error, Toast.LENGTH_SHORT).show()
                 );
             } finally {
                 if (conn != null) conn.disconnect();

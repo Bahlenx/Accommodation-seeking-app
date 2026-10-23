@@ -73,7 +73,7 @@
                     android:id="@+id/rbEmailOtp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Email OTP"
+                    android:text="@string/tab_email_otp"
                     android:checked="true" />
 
                 <RadioButton
@@ -81,7 +81,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:visibility="gone"
-                    android:text="SMS OTP" />
+                    android:text="@string/tab_sms_otp" />
 
             </RadioGroup>
 
@@ -91,7 +91,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:background="@drawable/selector_regular_button"
-                android:text="Send OTP Code"
+                android:text="@string/btn_send_otp_code"
                 app:backgroundTint="@null" />
 
             <LinearLayout

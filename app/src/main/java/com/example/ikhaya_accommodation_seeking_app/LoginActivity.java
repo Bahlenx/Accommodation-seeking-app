@@ -97,7 +97,7 @@ public class LoginActivity extends AppCompatActivity {
                 }
 
                 loginBtn.setEnabled(false);
-                Toast.makeText(this, "Logging in...", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.msg_logging_in, Toast.LENGTH_SHORT).show();
                 signInWithSupabase(email, password);
             });
         }
@@ -209,8 +209,8 @@ public class LoginActivity extends AppCompatActivity {
 
                     if (responseCode >= 200 && responseCode < 300) {
                         new AlertDialog.Builder(LoginActivity.this)
-                                .setTitle("Check your email")
-                                .setMessage("If an account exists for this email, a password-reset email will be sent. Check your inbox and spam folder.")
+                                .setTitle(R.string.title_check_your_email)
+                                .setMessage(R.string.msg_password_reset_email_sent)
                                 .setPositiveButton("OK", null)
                                 .show();
                     } else {

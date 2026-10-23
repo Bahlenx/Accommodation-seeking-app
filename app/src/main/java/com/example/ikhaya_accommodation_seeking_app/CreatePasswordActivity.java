@@ -251,15 +251,15 @@ public class CreatePasswordActivity extends AppCompatActivity {
                 } else {
                     runOnUiThread(() -> {
                         registerBtn.setEnabled(true);
-                        registerBtn.setText("Proceed to OTP Verification");
-                        Toast.makeText(this, "Failed to create account (HTTP " + finalCode + ")", Toast.LENGTH_LONG).show();
+                        registerBtn.setText(R.string.btn_proceed_otp_verification);
+                        Toast.makeText(this, getString(R.string.error_create_account_failed_http) + finalCode + ")", Toast.LENGTH_LONG).show();
                     });
                 }
             } catch (Exception e) {
                 runOnUiThread(() -> {
                     registerBtn.setEnabled(true);
-                    registerBtn.setText("Proceed to OTP Verification");
-                    Toast.makeText(this, "Network error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    registerBtn.setText(R.string.btn_proceed_otp_verification);
+                    Toast.makeText(this, getString(R.string.error_network_prefix) + e.getMessage(), Toast.LENGTH_LONG).show();
                 });
             }
         }).start();

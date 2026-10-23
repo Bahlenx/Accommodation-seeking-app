@@ -47,7 +47,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:layout_marginBottom="24dp"
-                android:text="Submit an issue ticket to the iKhaya administrative team."
+                android:text="@string/subtitle_report_problem"
                 android:textColor="#8C7A70"
                 android:textSize="13sp" />
 
@@ -55,7 +55,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Issue Category"
+                android:text="@string/label_issue_category"
                 android:textColor="#1F1614"
                 android:textSize="14sp"
                 android:textStyle="bold" />
@@ -78,7 +78,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="52dp"
                     android:background="@drawable/custom_input"
-                    android:hint="Select category"
+                    android:hint="@string/hint_select_category"
                     android:inputType="none"
                     android:paddingHorizontal="14dp"
                     android:textColor="#1F1614"
@@ -90,7 +90,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Description"
+                android:text="@string/description"
                 android:textColor="#1F1614"
                 android:textSize="14sp"
                 android:textStyle="bold" />
@@ -133,7 +133,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
-                android:text="My Tickets"
+                android:text="@string/title_my_tickets"
                 android:textColor="#1F1614"
                 android:textSize="18sp"
                 android:textStyle="bold" />

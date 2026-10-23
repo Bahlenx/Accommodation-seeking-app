@@ -80,7 +80,7 @@ public class OtpActivity extends AppCompatActivity {
         verifyBtn.setOnClickListener(v -> verifyOtp());
         
         if (incomingIntent.getBooleanExtra("INITIAL_OTP_SENT", false)) {
-            Toast.makeText(this, "6-digit OTP sent to " + email + " (check Spam folder too)", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.msg_otp_sent_email_spam, email), Toast.LENGTH_LONG).show();
             startResendCooldown();
         } else {
             sendOtp();
@@ -143,20 +143,20 @@ public class OtpActivity extends AppCompatActivity {
 
                 runOnUiThread(() -> {
                     if (finalCode >= 200 && finalCode < 300) {
-                        Toast.makeText(this, "OTP Sent!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, R.string.msg_otp_sent, Toast.LENGTH_SHORT).show();
                     } else {
                         if (resendTimer != null) resendTimer.cancel();
                         btnSendOtp.setEnabled(true);
-                        btnSendOtp.setText("Send / Resend OTP Code");
-                        Toast.makeText(this, "Failed to send OTP: " + finalResponse, Toast.LENGTH_LONG).show();
+                        btnSendOtp.setText(R.string.btn_send_otp_code);
+                        Toast.makeText(this, getString(R.string.error_failed_send_otp_prefix) + finalResponse, Toast.LENGTH_LONG).show();
                     }
                 });
             } catch (Exception e) {
                 runOnUiThread(() -> {
                     if (resendTimer != null) resendTimer.cancel();
                     btnSendOtp.setEnabled(true);
-                    btnSendOtp.setText("Send / Resend OTP Code");
-                    Toast.makeText(this, "Error sending OTP: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    btnSendOtp.setText(R.string.btn_send_otp_code);
+                    Toast.makeText(this, getString(R.string.error_sending_otp_prefix) + e.getMessage(), Toast.LENGTH_LONG).show();
                 });
             }
         }).start();
@@ -171,7 +171,7 @@ public class OtpActivity extends AppCompatActivity {
                 otp6.getText().toString().trim();
 
         if (enteredCode.length() < 6) {
-            Toast.makeText(this, "Please enter all 6 digits", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.msg_enter_all_digits, Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -225,7 +225,7 @@ public class OtpActivity extends AppCompatActivity {
 
                             SupabaseHelper.saveSession(this, accessToken, refreshToken, userId, null, null);
 
-                            Toast.makeText(this, "Verified successfully!", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this, R.string.msg_verified_successfully, Toast.LENGTH_SHORT).show();
                             
                             if (password != null && !password.isEmpty() && !accessToken.isEmpty()) {
                                 new Thread(() -> {
@@ -257,16 +257,16 @@ public class OtpActivity extends AppCompatActivity {
                             startActivity(intent);
                             
                         } catch (Exception e) {
-                            Toast.makeText(this, "Failed to parse OTP response.", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this, R.string.error_parse_otp_response, Toast.LENGTH_SHORT).show();
                         }
                     } else {
-                        Toast.makeText(this, "Invalid OTP!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, R.string.msg_invalid_otp, Toast.LENGTH_SHORT).show();
                     }
                 });
             } catch (Exception e) {
                 runOnUiThread(() -> {
                     verifyBtn.setEnabled(true);
-                    Toast.makeText(this, "Error verifying OTP: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, getString(R.string.error_verifying_otp_prefix) + e.getMessage(), Toast.LENGTH_LONG).show();
                 });
             }
         }).start();

@@ -69,7 +69,7 @@
                     android:background="@drawable/bg_circle_white"
                     android:clickable="true"
                     android:focusable="true"
-                    android:contentDescription="Notifications">
+                    android:contentDescription="@string/desc_notifications_icon">
 
                     <ImageView
                         android:layout_width="20dp"

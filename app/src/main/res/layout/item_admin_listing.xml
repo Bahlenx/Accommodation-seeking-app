@@ -12,7 +12,7 @@
         android:id="@+id/tvListingTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Standard Single Room"
+        android:text="@string/placeholder_listing_title"
         android:textStyle="bold"
         android:textSize="16sp"
         android:textColor="#212529" />
@@ -21,7 +21,7 @@
         android:id="@+id/tvListingDetails"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Centurion, Gauteng • R 3,500 / month"
+        android:text="@string/placeholder_listing_sub"
         android:textSize="13sp"
         android:textColor="#495057"
         android:layout_marginTop="2dp" />
@@ -30,7 +30,7 @@
         android:id="@+id/tvLandlordInfo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Submitted by: Landlord Dave"
+        android:text="@string/label_submitted_by_placeholder"
         android:textSize="12sp"
         android:textColor="#6C757D"
         android:layout_marginTop="2dp" />
@@ -48,7 +48,7 @@
             android:layout_width="wrap_content"
             android:layout_height="36dp"
             android:backgroundTint="#E0E0E0"
-            android:text="Reject"
+            android:text="@string/btn_reject"
             android:textColor="#C82333"
             android:textSize="12sp"
             android:layout_marginEnd="8dp" />
@@ -58,7 +58,7 @@
             android:layout_width="wrap_content"
             android:layout_height="36dp"
             android:backgroundTint="#28A745"
-            android:text="Approve"
+            android:text="@string/btn_approve"
             android:textColor="#FFFFFF"
             android:textSize="12sp" />
     </LinearLayout>

@@ -54,7 +54,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="6dp"
-                        android:text="Log Out"
+                        android:text="@string/btn_log_out"
                         android:textColor="#BA5536"
                         android:textSize="12sp"
                         android:textStyle="bold" />
@@ -100,7 +100,7 @@
                     android:background="@drawable/bg_circle_white"
                     android:paddingHorizontal="14dp"
                     android:paddingVertical="7dp"
-                    android:text="ADMIN CONSOLE ●"
+                    android:text="@string/badge_admin_console"
                     android:textColor="#BA5536"
                     android:textSize="11sp"
                     android:textStyle="bold" />
@@ -111,7 +111,7 @@
                 android:id="@+id/tvAdminGreeting"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Welcome, System Admin"
+                android:text="@string/welcome_system_admin"
                 android:textColor="#1F1614"
                 android:textSize="26sp"
                 android:textStyle="bold" />
@@ -121,7 +121,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
                 android:layout_marginBottom="20dp"
-                android:text="Platform analytics, health and moderation controls"
+                android:text="@string/desc_admin_dashboard_sub"
                 android:textColor="#8C7A70"
                 android:textSize="13sp" />
 
@@ -156,7 +156,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Pending Queue"
+                            android:text="@string/label_pending_queue"
                             android:textColor="#8C7A70"
                             android:textSize="12.5sp"
                             android:textStyle="bold" />
@@ -167,7 +167,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="6dp"
                             android:layout_marginBottom="4dp"
-                            android:text="0"
+                            android:text="@string/default_zero"
                             android:textColor="#BA5536"
                             android:textSize="28sp"
                             android:textStyle="bold" />
@@ -175,7 +175,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="● Awaiting approval"
+                            android:text="@string/status_awaiting_approval"
                             android:textColor="#BA5536"
                             android:textSize="11sp" />
                     </LinearLayout>
@@ -204,7 +204,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Live Listings"
+                            android:text="@string/label_live_listings"
                             android:textColor="#8C7A70"
                             android:textSize="12.5sp"
                             android:textStyle="bold" />
@@ -215,7 +215,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="6dp"
                             android:layout_marginBottom="4dp"
-                            android:text="0"
+                            android:text="@string/default_zero"
                             android:textColor="#2DCE89"
                             android:textSize="28sp"
                             android:textStyle="bold" />
@@ -223,7 +223,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="● Published live"
+                            android:text="@string/status_published_live"
                             android:textColor="#2DCE89"
                             android:textSize="11sp" />
                     </LinearLayout>
@@ -261,7 +261,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Total Users"
+                            android:text="@string/label_total_users"
                             android:textColor="#8C7A70"
                             android:textSize="12.5sp"
                             android:textStyle="bold" />
@@ -272,7 +272,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="6dp"
                             android:layout_marginBottom="4dp"
-                            android:text="0"
+                            android:text="@string/default_zero"
                             android:textColor="#1F1614"
                             android:textSize="28sp"
                             android:textStyle="bold" />
@@ -280,7 +280,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="● Tenants &amp; landlords"
+                            android:text="@string/subtitle_tenants_landlords"
                             android:textColor="#8C7A70"
                             android:textSize="11sp" />
                     </LinearLayout>
@@ -309,7 +309,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Database Ingest"
+                            android:text="@string/label_database_ingest"
                             android:textColor="#8C7A70"
                             android:textSize="12.5sp"
                             android:textStyle="bold" />
@@ -320,7 +320,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="6dp"
                             android:layout_marginBottom="4dp"
-                            android:text="0"
+                            android:text="@string/default_zero"
                             android:textColor="#1F1614"
                             android:textSize="28sp"
                             android:textStyle="bold" />
@@ -328,7 +328,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="● Total listings saved"
+                            android:text="@string/subtitle_total_listings_saved"
                             android:textColor="#8C7A70"
                             android:textSize="11sp" />
                     </LinearLayout>
@@ -363,7 +363,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Platform Activity"
+                                android:text="@string/title_platform_activity"
                                 android:textColor="#1F1614"
                                 android:textSize="17sp"
                                 android:textStyle="bold" />
@@ -372,7 +372,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="2dp"
-                                android:text="Listing volume &amp; approval rate"
+                                android:text="@string/subtitle_platform_activity"
                                 android:textColor="#8C7A70"
                                 android:textSize="12sp" />
                         </LinearLayout>
@@ -384,7 +384,7 @@
                             android:background="@drawable/custom_input"
                             android:paddingHorizontal="10dp"
                             android:paddingVertical="5dp"
-                            android:text="This Week"
+                            android:text="@string/label_this_week"
                             android:textColor="#1F1614"
                             android:textSize="11sp"
                             android:textStyle="bold" />
@@ -401,7 +401,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Approval Clearance Rate"
+                            android:text="@string/label_approval_clearance_rate"
                             android:textColor="#1F1614"
                             android:textSize="13sp"
                             android:textStyle="bold" />
@@ -410,7 +410,7 @@
                             android:id="@+id/tvClearancePercent"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="100%"
+                            android:text="@string/val_hundred_percent"
                             android:textColor="#2DCE89"
                             android:textSize="13sp"
                             android:textStyle="bold" />
@@ -451,7 +451,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="4dp"
-                                android:text="M"
+                                android:text="@string/day_mon_short"
                                 android:textColor="#8C7A70"
                                 android:textSize="10.5sp" />
                         </LinearLayout>
@@ -472,7 +472,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="T"
+                                android:text="@string/day_tue_short"
                                 android:textColor="#8C7A70"
                                 android:textSize="10.5sp" />
                         </LinearLayout>
@@ -493,7 +493,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="W"
+                                android:text="@string/day_wed_short"
                                 android:textColor="#8C7A70"
                                 android:textSize="10.5sp" />
                         </LinearLayout>
@@ -515,7 +515,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="4dp"
-                                android:text="T"
+                                android:text="@string/day_thu_short"
                                 android:textColor="#8C7A70"
                                 android:textSize="10.5sp" />
                         </LinearLayout>
@@ -537,7 +537,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="4dp"
-                                android:text="F"
+                                android:text="@string/day_fri_short"
                                 android:textColor="#8C7A70"
                                 android:textSize="10.5sp" />
                         </LinearLayout>
@@ -559,7 +559,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="4dp"
-                                android:text="S"
+                                android:text="@string/day_sat_short"
                                 android:textColor="#8C7A70"
                                 android:textSize="10.5sp" />
                         </LinearLayout>
@@ -581,7 +581,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="4dp"
-                                android:text="S"
+                                android:text="@string/day_sun_short"
                                 android:textColor="#8C7A70"
                                 android:textSize="10.5sp" />
                         </LinearLayout>
@@ -594,7 +594,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
-                android:text="Moderation Queues"
+                android:text="@string/title_moderation_queues"
                 android:textColor="#1F1614"
                 android:textSize="18sp"
                 android:textStyle="bold" />
@@ -637,7 +637,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Review Pending Listings"
+                            android:text="@string/label_review_pending_listings"
                             android:textColor="#1F1614"
                             android:textSize="15sp"
                             android:textStyle="bold" />
@@ -645,7 +645,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Approve or decline submissions"
+                            android:text="@string/desc_review_pending_listings"
                             android:textColor="#8C7A70"
                             android:textSize="12sp" />
                     </LinearLayout>
@@ -655,7 +655,7 @@
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true"
-                        android:text="›"
+                        android:text="@string/symbol_arrow_right"
                         android:textColor="#BA5536"
                         android:textSize="26sp" />
                 </RelativeLayout>
@@ -699,7 +699,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Live Listings Directory"
+                            android:text="@string/label_live_listings_directory"
                             android:textColor="#1F1614"
                             android:textSize="15sp"
                             android:textStyle="bold" />
@@ -707,7 +707,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Inspect &amp; revoke active posts"
+                            android:text="@string/desc_live_listings_directory"
                             android:textColor="#8C7A70"
                             android:textSize="12sp" />
                     </LinearLayout>
@@ -717,7 +717,7 @@
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true"
-                        android:text="›"
+                        android:text="@string/symbol_arrow_right"
                         android:textColor="#BA5536"
                         android:textSize="26sp" />
                 </RelativeLayout>
@@ -761,7 +761,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="User Directory &amp; Accounts"
+                            android:text="@string/label_user_directory_accounts"
                             android:textColor="#1F1614"
                             android:textSize="15sp"
                             android:textStyle="bold" />
@@ -769,7 +769,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Manage roles &amp; suspensions"
+                            android:text="@string/desc_user_directory_accounts"
                             android:textColor="#8C7A70"
                             android:textSize="12sp" />
                     </LinearLayout>
@@ -779,7 +779,7 @@
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true"
-                        android:text="›"
+                        android:text="@string/symbol_arrow_right"
                         android:textColor="#BA5536"
                         android:textSize="26sp" />
                 </RelativeLayout>
@@ -829,7 +829,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Support &amp; Issue Tickets"
+                                android:text="@string/title_support_tickets"
                                 android:textColor="#1F1614"
                                 android:textSize="15sp"
                                 android:textStyle="bold" />
@@ -843,7 +843,7 @@
                                 android:background="@drawable/bg_circle_white"
                                 android:paddingHorizontal="8dp"
                                 android:paddingVertical="2dp"
-                                android:text="0"
+                                android:text="@string/default_zero"
                                 android:textColor="#BA5536"
                                 android:textSize="11sp"
                                 android:textStyle="bold" />
@@ -852,7 +852,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Review reported problems &amp; inquiries"
+                            android:text="@string/desc_support_tickets"
                             android:textColor="#8C7A70"
                             android:textSize="12sp" />
                     </LinearLayout>
@@ -862,7 +862,7 @@
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true"
-                        android:text="›"
+                        android:text="@string/symbol_arrow_right"
                         android:textColor="#BA5536"
                         android:textSize="26sp" />
                 </RelativeLayout>
@@ -873,7 +873,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
-                android:text="Engine Status"
+                android:text="@string/title_engine_status"
                 android:textColor="#1F1614"
                 android:textSize="18sp"
                 android:textStyle="bold" />
@@ -905,7 +905,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Supabase Cloud Engine ↗"
+                            android:text="@string/label_supabase_engine"
                             android:textColor="#BA5536"
                             android:textSize="13.5sp"
                             android:textStyle="bold" />
@@ -914,7 +914,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_alignParentEnd="true"
-                            android:text="Open Console ●"
+                            android:text="@string/status_open_console"
                             android:textColor="#2DCE89"
                             android:textSize="12sp"
                             android:textStyle="bold" />
@@ -928,7 +928,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="OpenStreetMap (OSMDroid)"
+                            android:text="@string/label_openstreetmap_engine"
                             android:textColor="#1F1614"
                             android:textSize="13.5sp"
                             android:textStyle="bold" />
@@ -936,7 +936,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_alignParentEnd="true"
-                            android:text="Active ●"
+                            android:text="@string/status_engine_active"
                             android:textColor="#2DCE89"
                             android:textSize="12sp"
                             android:textStyle="bold" />
@@ -949,7 +949,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Gemini Localization API"
+                            android:text="@string/label_gemini_engine"
                             android:textColor="#1F1614"
                             android:textSize="13.5sp"
                             android:textStyle="bold" />
@@ -957,7 +957,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_alignParentEnd="true"
-                            android:text="Ready ●"
+                            android:text="@string/status_engine_ready"
                             android:textColor="#2DCE89"
                             android:textSize="12sp"
                             android:textStyle="bold" />

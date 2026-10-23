@@ -77,13 +77,13 @@ public class AdminActiveListingAdapter extends RecyclerView.Adapter<AdminActiveL
             input.setPadding(40, 40, 40, 40);
 
             new AlertDialog.Builder(context)
-                    .setTitle("Revoke Live Listing")
+                    .setTitle(R.string.title_revoke_live_listing)
                     .setMessage("Pull '" + listing.getTitle() + "' offline immediately? Provide a reason:")
                     .setView(input)
                     .setPositiveButton("Revoke", (dialog, which) -> {
                         String reason = input.getText().toString().trim();
                         if (reason.isEmpty()) {
-                            Toast.makeText(context, "Reason required to revoke a listing.", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(context, R.string.msg_reason_required_revoke, Toast.LENGTH_SHORT).show();
                             return;
                         }
                         revokeListing(listing, reason, holder.getBindingAdapterPosition());
@@ -111,12 +111,12 @@ public class AdminActiveListingAdapter extends RecyclerView.Adapter<AdminActiveL
                         notifyItemRemoved(position);
                         notifyItemRangeChanged(position, activeListings.size());
                     }
-                    Toast.makeText(context, "Listing revoked and pulled offline.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, R.string.msg_listing_revoked_offline, Toast.LENGTH_SHORT).show();
                     AnalyticsHelper.logAdminAction(context, "revoked", listing.getTitle());
                     if (listener != null) listener.onListingRevoked();
                 });
             } catch (Exception e) {
-                mainHandler.post(() -> Toast.makeText(context, "Revoke failed: " + e.getMessage(), Toast.LENGTH_LONG).show());
+                mainHandler.post(() -> Toast.makeText(context, context.getString(R.string.error_revoke_failed_prefix) + e.getMessage(), Toast.LENGTH_LONG).show());
             }
         });
     }

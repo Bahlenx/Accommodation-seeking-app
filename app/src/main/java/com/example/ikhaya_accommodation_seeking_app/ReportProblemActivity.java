@@ -104,11 +104,9 @@ public class ReportProblemActivity extends AppCompatActivity {
         String userId = SupabaseHelper.getUserId(this);
         String accessToken = SupabaseHelper.getAccessToken(this);
 
-        if (userId == null || userId.isEmpty()) {
-            userId = prefs.getString("USER_ID", "guest_user");
-        }
-        if (accessToken == null || accessToken.isEmpty()) {
-            accessToken = SupabaseHelper.getSupabaseKey();
+        if (userId == null || userId.isEmpty() || accessToken == null || accessToken.isEmpty()) {
+            Toast.makeText(this, R.string.please_log_in_again, Toast.LENGTH_SHORT).show();
+            return;
         }
 
         String userName = prefs.getString("USER_NAME", getString(R.string.notification_user));

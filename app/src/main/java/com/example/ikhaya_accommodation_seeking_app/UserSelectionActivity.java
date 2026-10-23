@@ -76,10 +76,6 @@ public class UserSelectionActivity extends AppCompatActivity {
         accessToken = SupabaseHelper.getAccessToken(this);
         currentUserId = SupabaseHelper.getUserId(this);
 
-        if (currentUserId == null || currentUserId.isEmpty()) {
-            currentUserId = "guest_" + (System.currentTimeMillis() % 1000);
-        }
-
         SharedPreferences prefs = getSharedPreferences("iKhayaSession", MODE_PRIVATE);
         currentUserName = prefs.getString("USER_NAME", getString(R.string.default_chat_user_name));
         currentUserRole = prefs.getString("USER_ROLE", getString(R.string.default_chat_member_role));

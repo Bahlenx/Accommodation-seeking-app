@@ -18,7 +18,7 @@
             android:id="@+id/tvUserName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="John Doe"
+            android:text="@string/placeholder_user_name"
             android:textStyle="bold"
             android:textSize="16sp"
             android:textColor="#212529" />
@@ -27,7 +27,7 @@
             android:id="@+id/tvUserRole"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="LANDLORD"
+            android:text="@string/landlord_radio_option"
             android:textSize="12sp"
             android:textColor="#6C757D" />
     </LinearLayout>
@@ -37,7 +37,7 @@
         android:layout_width="wrap_content"
         android:layout_height="36dp"
         android:backgroundTint="#DC3545"
-        android:text="Suspend"
+        android:text="@string/btn_suspend"
         android:textColor="#FFFFFF"
         android:textSize="12sp" />
 </LinearLayout>

@@ -39,7 +39,7 @@ public class EnquiriesActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_enquiries);
 
-        View enquiriesRoot = findViewById(R.id.enquiriesRoot);
+        View enquiriesRoot = findViewById(android.R.id.content);
         if (enquiriesRoot != null) {
             ViewCompat.setOnApplyWindowInsetsListener(enquiriesRoot, (v, insets) -> {
                 Insets statusBar = insets.getInsets(WindowInsetsCompat.Type.statusBars());

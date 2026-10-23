@@ -134,7 +134,7 @@ public class AdminActiveListingsActivity extends AppCompatActivity implements Ad
                     });
                 }
             } catch (Exception e) {
-                runOnUiThread(() -> Toast.makeText(this, "Error loading queue: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                runOnUiThread(() -> Toast.makeText(this, getString(R.string.error_loading_queue_prefix) + e.getMessage(), Toast.LENGTH_SHORT).show());
             } finally {
                 if (conn != null) conn.disconnect();
             }

@@ -24,7 +24,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Filter Search"
+            android:text="@string/title_filter_search"
             android:textColor="#1F1614"
             android:textSize="20sp"
             android:textStyle="bold" />
@@ -47,7 +47,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="I am looking to..."
+                android:text="@string/label_i_am_looking_to"
                 android:textColor="#1F1614"
                 android:textSize="14sp"
                 android:textStyle="bold" />
@@ -65,14 +65,14 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:checked="true"
-                    android:text="Rent" />
+                    android:text="@string/opt_rent" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipOfferBuy"
                     style="@style/Widget.MaterialComponents.Chip.Choice"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Buy" />
+                    android:text="@string/opt_buy" />
             </com.google.android.material.chip.ChipGroup>
 
             <!-- 2. Price Range Slider -->
@@ -84,7 +84,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Price Range"
+                    android:text="@string/label_price_range"
                     android:textColor="#1F1614"
                     android:textSize="14sp"
                     android:textStyle="bold" />
@@ -94,7 +94,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
-                    android:text="R 0 - R 20,000"
+                    android:text="@string/default_price_range"
                     android:textColor="#BA5536"
                     android:textSize="13sp"
                     android:textStyle="bold" />
@@ -118,7 +118,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="Property Type"
+                android:text="@string/label_property_type"
                 android:textColor="#1F1614"
                 android:textSize="14sp"
                 android:textStyle="bold" />
@@ -135,21 +135,21 @@
                     style="@style/Widget.MaterialComponents.Chip.Choice"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="House / Apartment" />
+                    android:text="@string/opt_house_apartment" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipPropRoom"
                     style="@style/Widget.MaterialComponents.Chip.Choice"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Room" />
+                    android:text="@string/opt_room" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipPropLand"
                     style="@style/Widget.MaterialComponents.Chip.Choice"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Vacant Land" />
+                    android:text="@string/opt_vacant_land" />
             </com.google.android.material.chip.ChipGroup>
 
             <!-- 4. Room Arrangement -->
@@ -157,7 +157,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="Room Arrangement"
+                android:text="@string/label_room_arrangement"
                 android:textColor="#1F1614"
                 android:textSize="14sp"
                 android:textStyle="bold" />
@@ -174,21 +174,21 @@
                     style="@style/Widget.MaterialComponents.Chip.Choice"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Single" />
+                    android:text="@string/opt_single" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipArrShared"
                     style="@style/Widget.MaterialComponents.Chip.Choice"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Shared" />
+                    android:text="@string/opt_shared" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipArrBachelor"
                     style="@style/Widget.MaterialComponents.Chip.Choice"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Bachelor" />
+                    android:text="@string/opt_bachelor" />
             </com.google.android.material.chip.ChipGroup>
 
             <!-- 5. Utilities & Essentials (Multi-Select) -->
@@ -196,7 +196,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="Utilities &amp; Essentials"
+                android:text="@string/label_utilities_essentials"
                 android:textColor="#1F1614"
                 android:textSize="14sp"
                 android:textStyle="bold" />
@@ -212,21 +212,21 @@
                     style="@style/Widget.MaterialComponents.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Wi-Fi Included" />
+                    android:text="@string/opt_wifi_included" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipUtilWater"
                     style="@style/Widget.MaterialComponents.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Water Included" />
+                    android:text="@string/opt_water_included" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipUtilPower"
                     style="@style/Widget.MaterialComponents.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Backup Power / Solar" />
+                    android:text="@string/opt_backup_power" />
             </com.google.android.material.chip.ChipGroup>
 
         </LinearLayout>
@@ -247,7 +247,7 @@
             android:layout_height="50dp"
             android:layout_marginEnd="6dp"
             android:layout_weight="1"
-            android:text="Reset"
+            android:text="@string/btn_reset"
             android:textColor="#8C7A70" />
 
         <Button
@@ -257,7 +257,7 @@
             android:layout_marginStart="6dp"
             android:layout_weight="1"
             android:backgroundTint="#BA5536"
-            android:text="Apply"
+            android:text="@string/btn_apply"
             android:textAllCaps="false"
             android:textColor="#FFFFFF"
             android:textStyle="bold"

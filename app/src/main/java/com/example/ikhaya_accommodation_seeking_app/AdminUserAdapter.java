@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import org.json.JSONObject;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -83,13 +84,13 @@ public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.View
                         user.setSuspended(targetState);
                         holder.btnSuspendUser.setEnabled(true);
                         updateButtonUI(holder, targetState);
-                        Toast.makeText(context, user.getName() + " account " + (targetState ? "suspended" : "reactivated"), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context, String.format(Locale.getDefault(), context.getString(R.string.msg_account_status_updated), user.getName(), (targetState ? "suspended" : "reactivated")), Toast.LENGTH_SHORT).show();
                     });
 
                 } catch (Exception e) {
                     mainHandler.post(() -> {
                         holder.btnSuspendUser.setEnabled(true);
-                        Toast.makeText(context, "Account update failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        Toast.makeText(context, context.getString(R.string.error_account_update_failed) + e.getMessage(), Toast.LENGTH_LONG).show();
                     });
                 }
             });

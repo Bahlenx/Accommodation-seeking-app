@@ -184,7 +184,7 @@ public class AdminUsersActivity extends AppCompatActivity {
                     });
                 }
             } catch (Exception e) {
-                runOnUiThread(() -> Toast.makeText(this, "Error loading users: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                runOnUiThread(() -> Toast.makeText(this, getString(R.string.error_loading_users_prefix) + e.getMessage(), Toast.LENGTH_SHORT).show());
             } finally {
                 if (conn != null) conn.disconnect();
             }

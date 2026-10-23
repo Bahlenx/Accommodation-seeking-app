@@ -159,33 +159,23 @@ public class PropertyDetailsActivity extends AppCompatActivity {
             return;
         }
 
-        bookingBar.setPadding(
-                dpToPx(18), 0, dpToPx(18), 0
-        );
+        bookingBar.setPadding(dpToPx(18), 0, dpToPx(18), 0);
 
         if (root != null) {
-            ViewCompat.setOnApplyWindowInsetsListener(
-                    root,
-                    (view, insets) -> {
-                        Insets navigation = insets.getInsets(
-                                WindowInsetsCompat.Type.navigationBars()
-                        );
+            ViewCompat.setOnApplyWindowInsetsListener(root, (view, insets) -> {
+                Insets navigation = insets.getInsets(WindowInsetsCompat.Type.navigationBars());
 
-                        if (bookingBar.getLayoutParams()
-                                instanceof CoordinatorLayout.LayoutParams) {
-                            CoordinatorLayout.LayoutParams params =
-                                    (CoordinatorLayout.LayoutParams)
-                                            bookingBar.getLayoutParams();
+                if (bookingBar.getLayoutParams() instanceof CoordinatorLayout.LayoutParams) {
+                    CoordinatorLayout.LayoutParams params =
+                            (CoordinatorLayout.LayoutParams) bookingBar.getLayoutParams();
 
-                            params.bottomMargin =
-                                    navigation.bottom + dpToPx(16);
+                    params.bottomMargin = navigation.bottom + dpToPx(16);
+                    bookingBar.setLayoutParams(params);
+                    bookingBar.setPadding(dpToPx(18), 0, dpToPx(18), 0);
+                }
 
-                            bookingBar.setLayoutParams(params);
-                        }
-
-                        return insets;
-                    }
-            );
+                return WindowInsetsCompat.CONSUMED;
+            });
         }
     }
 
@@ -984,7 +974,7 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                                 : "Your viewing request was sent successfully.";
 
                         new AlertDialog.Builder(this)
-                                .setTitle("Request Sent")
+                                .setTitle(R.string.title_request_sent)
                                 .setMessage(
                                         successMessage
                                                 + "\n\nProperty: "

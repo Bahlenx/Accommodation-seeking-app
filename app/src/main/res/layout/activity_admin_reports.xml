@@ -31,7 +31,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:text="Support &amp; Issue Tickets"
+            android:text="@string/title_support_tickets"
             android:textColor="#FFFFFF"
             android:textSize="20sp"
             android:textStyle="bold" />
@@ -50,7 +50,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
         android:padding="16dp"
-        android:text="No support tickets or reported issues yet."
+        android:text="@string/msg_no_support_tickets"
         android:textAlignment="center"
         android:textColor="#8898AA"
         android:textSize="16sp"

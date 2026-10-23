@@ -1,5 +1,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <style name="Theme.IkhayaAccommodationSeekingApp" parent="Theme.MaterialComponents.Light.NoActionBar">
+    <style name="Theme.IkhayaAccommodationSeekingApp" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Keep your existing colors here -->
 
         <!-- Brand Colors -->

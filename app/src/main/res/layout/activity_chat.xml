@@ -23,7 +23,7 @@
             android:layout_width="38dp"
             android:layout_height="38dp"
             android:background="@drawable/bg_circle_white"
-            android:contentDescription="Back"
+            android:contentDescription="@string/desc_go_back"
             android:elevation="1dp"
             android:padding="7dp"
             android:scaleType="fitCenter"
@@ -41,7 +41,7 @@
                 android:id="@+id/txtChatTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Chat"
+                android:text="@string/title_chat"
                 android:textColor="#1F1614"
                 android:textSize="18sp"
                 android:textStyle="bold" />
@@ -50,7 +50,7 @@
                 android:id="@+id/txtChatSubtitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Active"
+                android:text="@string/status_active"
                 android:textColor="#2DCE89"
                 android:textSize="12sp" />
         </LinearLayout>
@@ -59,7 +59,7 @@
             android:id="@+id/btnClearChat"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Delete Chat"
+            android:text="@string/action_delete_chat"
             android:textColor="#DC2626"
             android:textSize="12sp"
             android:textStyle="bold"
@@ -69,7 +69,7 @@
             android:id="@+id/btnChatOptions"
             android:layout_width="38dp"
             android:layout_height="38dp"
-            android:text="⋮"
+            android:text="@string/symbol_kebab_menu"
             android:textSize="22sp"
             android:textStyle="bold"
             android:gravity="center"
@@ -111,7 +111,7 @@
             android:id="@+id/btnAttachFile"
             android:layout_width="42dp"
             android:layout_height="42dp"
-            android:text="+"
+            android:text="@string/symbol_plus"
             android:textSize="20sp"
             android:textStyle="bold"
             android:textColor="#BA5536"
@@ -126,7 +126,7 @@
             android:maxHeight="120dp"
             android:layout_weight="1"
             android:background="@drawable/custom_input"
-            android:hint="Type a message..."
+            android:hint="@string/hint_type_a_message"
             android:inputType="textCapSentences|textMultiLine"
             android:scrollbars="vertical"
             android:scrollHorizontally="false"
@@ -149,7 +149,7 @@
                 android:id="@+id/txtCharCount"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="0/1000"
+                android:text="@string/placeholder_char_count"
                 android:textSize="10sp"
                 android:textColor="#8C7A70"
                 android:layout_marginBottom="2dp" />
@@ -160,7 +160,7 @@
                 android:layout_height="50dp"
                 android:background="@drawable/selector_regular_button"
                 app:backgroundTint="@null"
-                android:text="Send"
+                android:text="@string/btn_send"
                 android:textAllCaps="false" />
         </LinearLayout>
     </LinearLayout>

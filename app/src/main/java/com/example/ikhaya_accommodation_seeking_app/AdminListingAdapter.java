@@ -69,7 +69,7 @@ public class AdminListingAdapter extends RecyclerView.Adapter<AdminListingAdapte
 
         holder.btnApproveListing.setOnClickListener(v -> {
             new AlertDialog.Builder(context)
-                    .setTitle("Approve Listing")
+                    .setTitle(R.string.title_approve_listing)
                     .setMessage("Approve '" + listing.getTitle() + "' to go live on the platform?")
                     .setPositiveButton("Yes, Approve", (dialog, which) -> {
                         updateListingStatus(listing, "APPROVED", null, holder.getBindingAdapterPosition());
@@ -84,13 +84,13 @@ public class AdminListingAdapter extends RecyclerView.Adapter<AdminListingAdapte
             input.setPadding(40, 40, 40, 40);
 
             new AlertDialog.Builder(context)
-                    .setTitle("Reject Listing")
+                    .setTitle(R.string.title_reject_listing)
                     .setMessage("Please provide a reason for rejecting '" + listing.getTitle() + "':")
                     .setView(input)
                     .setPositiveButton("Reject", (dialog, which) -> {
                         String reason = input.getText().toString().trim();
                         if (reason.isEmpty()) {
-                            Toast.makeText(context, "A reason is required to reject a listing.", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(context, R.string.msg_reason_required_reject, Toast.LENGTH_SHORT).show();
                             return;
                         }
                         updateListingStatus(listing, "REJECTED", reason, holder.getBindingAdapterPosition());
@@ -131,7 +131,7 @@ public class AdminListingAdapter extends RecyclerView.Adapter<AdminListingAdapte
                         notifyItemRemoved(position);
                         notifyItemRangeChanged(position, pendingListings.size());
                     }
-                    Toast.makeText(context, "Listing " + newStatus.toLowerCase() + " successfully.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, context.getString(R.string.msg_ticket_marked_as_prefix) + newStatus.toLowerCase(), Toast.LENGTH_SHORT).show();
                     AnalyticsHelper.logAdminAction(context, newStatus.toLowerCase(), listing.getTitle());
                     if (actionListener != null) {
                         actionListener.onListingActionTaken();
@@ -139,7 +139,7 @@ public class AdminListingAdapter extends RecyclerView.Adapter<AdminListingAdapte
                 });
 
             } catch (Exception e) {
-                mainHandler.post(() -> Toast.makeText(context, "Update failed: " + e.getMessage(), Toast.LENGTH_LONG).show());
+                mainHandler.post(() -> Toast.makeText(context, context.getString(R.string.error_update_failed_prefix) + e.getMessage(), Toast.LENGTH_LONG).show());
             }
         });
     }

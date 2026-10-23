@@ -65,56 +65,6 @@ public class OuterMainActivity extends AppCompatActivity {
             ViewCompat.setOnApplyWindowInsetsListener(mainView, (v, insets) -> insets);
         }
 
-        // --- DEVELOPER BYPASS SHORTCUT ---
-        ImageView appIcon = findViewById(R.id.app_icon);
-        if (appIcon != null) {
-            appIcon.setOnLongClickListener(v -> {
-                String[] destinations = {
-                        "Landlord Dashboard",
-                        "Tenant Home / Search",
-                        "Admin Console",
-                        "Add Listing Screen",
-                        "Property Details (Map & Gemini)",
-                        "Tenant Profile",
-                        "Landlord Profile"
-                };
-
-                new AlertDialog.Builder(OuterMainActivity.this)
-                        .setTitle("Developer Bypass Navigation")
-                        .setItems(destinations, (dialog, which) -> {
-                            switch (which) {
-                                case 0:
-                                    startActivity(new Intent(OuterMainActivity.this, LandlordDashboardActivity.class));
-                                    break;
-                                case 1:
-                                    startActivity(new Intent(OuterMainActivity.this, HomeActivity.class));
-                                    break;
-                                case 2:
-                                    Intent adminIntent = new Intent(OuterMainActivity.this, AdminDashboardActivity.class);
-                                    adminIntent.putExtra("USER_ROLE", "ADMIN");
-                                    adminIntent.putExtra("USER_NAME", "Admin Preview");
-                                    startActivity(adminIntent);
-                                    break;
-                                case 3:
-                                    startActivity(new Intent(OuterMainActivity.this, AddListingActivity.class));
-                                    break;
-                                case 4:
-                                    startActivity(new Intent(OuterMainActivity.this, PropertyDetailsActivity.class));
-                                    break;
-                                case 5:
-                                    startActivity(new Intent(OuterMainActivity.this, TenantProfileActivity.class));
-                                    break;
-                                case 6:
-                                    startActivity(new Intent(OuterMainActivity.this, LandlordProfileActivity.class));
-                                    break;
-                            }
-                        })
-                        .setNegativeButton("Cancel", null)
-                        .show();
-                return true;
-            });
-        }
-
         // 1. Reference all buttons
         Button btnEnglish = findViewById(R.id.English_btn);
         Button btnIsiXhosa = findViewById(R.id.isiXhosa_btn);
