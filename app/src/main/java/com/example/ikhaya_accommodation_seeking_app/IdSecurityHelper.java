@@ -27,10 +27,10 @@ public class IdSecurityHelper {
     static {
         try {
             // Convert the hardcoded string into a SecretKeySpec
-            byte[] keyBytes = SHARED_SECRET_STRING.getBytes("UTF-8");
+            byte[] keyBytes = SHARED_SECRET_STRING.getBytes(java.nio.charset.StandardCharsets.UTF_8);
             secretKey = new SecretKeySpec(keyBytes, AES_ALGORITHM);
         } catch (Exception e) {
-            e.printStackTrace();
+            android.util.Log.e("iKhaya", "Error", e);
         }
     }
 
@@ -121,7 +121,7 @@ public class IdSecurityHelper {
             GCMParameterSpec parameterSpec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
             cipher.init(Cipher.ENCRYPT_MODE, secretKey, parameterSpec);
 
-            byte[] cipherText = cipher.doFinal(plainTextId.getBytes("UTF-8"));
+            byte[] cipherText = cipher.doFinal(plainTextId.getBytes(java.nio.charset.StandardCharsets.UTF_8));
 
             // Combine IV and cipherText
             byte[] combined = new byte[iv.length + cipherText.length];
@@ -130,7 +130,7 @@ public class IdSecurityHelper {
 
             return Base64.encodeToString(combined, Base64.DEFAULT);
         } catch (Exception e) {
-            e.printStackTrace();
+            android.util.Log.e("iKhaya", "Error", e);
             return null;
         }
     }
@@ -154,9 +154,9 @@ public class IdSecurityHelper {
 
             byte[] plainText = cipher.doFinal(cipherText);
 
-            return new String(plainText, "UTF-8");
+            return new String(plainText, java.nio.charset.StandardCharsets.UTF_8);
         } catch (Exception e) {
-            e.printStackTrace();
+            android.util.Log.e("iKhaya", "Error", e);
             return null;
         }
     }

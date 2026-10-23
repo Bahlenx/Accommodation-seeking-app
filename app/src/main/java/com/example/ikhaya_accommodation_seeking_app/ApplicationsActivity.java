@@ -17,7 +17,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
-import java.util.Locale;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -145,7 +145,7 @@ public class ApplicationsActivity extends AppCompatActivity {
         title.setText(getString(R.string.rental_application_for_listing, listingId));
         title.setTextColor(Color.parseColor("#1F1614"));
         title.setTextSize(16);
-        title.setTypeface(null, 1);
+        title.setTypeface(null, android.graphics.Typeface.BOLD);
         content.addView(title);
 
         TextView details = new TextView(this);
@@ -163,7 +163,7 @@ public class ApplicationsActivity extends AppCompatActivity {
 
         TextView state = new TextView(this);
         state.setText(getString(R.string.rental_application_status, status));
-        state.setTypeface(null, 1);
+        state.setTypeface(null, android.graphics.Typeface.BOLD);
 
         if ("APPROVED".equalsIgnoreCase(status)) {
             state.setTextColor(Color.parseColor("#2DCE89"));

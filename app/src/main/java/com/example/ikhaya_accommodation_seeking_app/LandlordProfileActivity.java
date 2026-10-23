@@ -38,7 +38,7 @@ public class LandlordProfileActivity extends AppCompatActivity {
                     .getString("USER_NAME", "");
 
             name.setText(
-                    saved == null || saved.trim().isEmpty()
+                    saved.trim().isEmpty()
                             ? getString(R.string.landlord_name)
                             : saved.trim()
             );

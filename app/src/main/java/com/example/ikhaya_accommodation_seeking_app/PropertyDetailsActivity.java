@@ -47,6 +47,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -268,7 +269,7 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                                 + "&listing_id=eq."
                                 + URLEncoder.encode(
                                 listingId,
-                                "UTF-8"
+                                StandardCharsets.UTF_8
                         ).replace("+", "%20");
 
                 connection = SupabaseHelper.createConnection(
@@ -1615,7 +1616,7 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                         "/rest/v1/listings?select=*&id=eq."
                                 + URLEncoder.encode(
                                 listingId,
-                                "UTF-8"
+                                StandardCharsets.UTF_8
                         ).replace("+", "%20")
                                 + "&limit=1";
 
@@ -1712,8 +1713,7 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                 locationText = clean(location);
                 originalDescription = clean(description);
 
-                if (price == null
-                        || price.trim().isEmpty()
+                if (price.trim().isEmpty()
                         || "null".equalsIgnoreCase(price.trim())) {
                     priceText = "";
                 } else if (isForSale) {

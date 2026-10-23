@@ -1,9 +1,9 @@
 package com.example.ikhaya_accommodation_seeking_app;
 
 public class AdminUser {
-    private String userId;
-    private String name;
-    private String role;
+    private final String userId;
+    private final String name;
+    private final String role;
     private boolean isSuspended;
 
     public AdminUser(String userId, String name, String role, boolean isSuspended) {

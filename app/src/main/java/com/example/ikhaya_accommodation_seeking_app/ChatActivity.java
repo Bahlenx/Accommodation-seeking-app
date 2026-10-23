@@ -170,14 +170,15 @@ public class ChatActivity extends AppCompatActivity {
                     popup.getMenu().add(getString(R.string.menu_delete_chat_messages));
                     popup.getMenu().add(getString(R.string.menu_delete_contact_and_chat));
                     popup.setOnMenuItemClickListener(item -> {
-                        if (getString(R.string.menu_delete_chat_messages).contentEquals(item.getTitle())) {
+                        String title = item.getTitle() != null ? item.getTitle().toString() : "";
+                        if (getString(R.string.menu_delete_chat_messages).contentEquals(title)) {
                             new AlertDialog.Builder(this)
                                     .setTitle(R.string.dialog_title_delete_messages)
                                     .setMessage(R.string.dialog_msg_delete_messages_confirm)
                                     .setPositiveButton(R.string.btn_delete, (dialog, which) -> deleteChatMessagesOnly())
                                     .setNegativeButton(R.string.btn_cancel, null)
                                     .show();
-                        } else if (getString(R.string.menu_delete_contact_and_chat).contentEquals(item.getTitle())) {
+                        } else if (getString(R.string.menu_delete_contact_and_chat).contentEquals(title)) {
                             new AlertDialog.Builder(this)
                                     .setTitle(R.string.dialog_title_delete_contact)
                                     .setMessage(R.string.dialog_msg_delete_contact_confirm)
@@ -635,48 +636,52 @@ public class ChatActivity extends AppCompatActivity {
             try {
                 String mimeType = getContentResolver().getType(uri);
                 if (mimeType != null && mimeType.startsWith("image/")) {
-                    InputStream is = getContentResolver().openInputStream(uri);
-                    Bitmap originalBitmap = BitmapFactory.decodeStream(is);
-                    if (originalBitmap != null) {
-                        int width = originalBitmap.getWidth();
-                        int height = originalBitmap.getHeight();
-                        if (width > 480) {
-                            height = (int) (height * (480.0f / width));
-                            width = 480;
+                    try (InputStream is = getContentResolver().openInputStream(uri)) {
+                        if (is == null) return;
+                        Bitmap originalBitmap = BitmapFactory.decodeStream(is);
+                        if (originalBitmap != null) {
+                            int width = originalBitmap.getWidth();
+                            int height = originalBitmap.getHeight();
+                            if (width > 480) {
+                                height = (int) (height * (480.0f / width));
+                                width = 480;
+                            }
+                            Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, width, height, true);
+
+                            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                            scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 65, baos);
+                            byte[] imageBytes = baos.toByteArray();
+                            String base64Image = Base64.encodeToString(imageBytes, Base64.NO_WRAP);
+
+                            String payload = "[IMAGE_BASE64]:" + base64Image;
+                            runOnUiThread(() -> sendPayload(payload));
                         }
-                        Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, width, height, true);
-
-                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                        scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 65, baos);
-                        byte[] imageBytes = baos.toByteArray();
-                        String base64Image = Base64.encodeToString(imageBytes, Base64.NO_WRAP);
-
-                        String payload = "[IMAGE_BASE64]:" + base64Image;
-                        runOnUiThread(() -> sendPayload(payload));
                     }
                 } else if (mimeType != null && mimeType.equals("application/pdf")) {
                     String fileName = getString(R.string.default_document_filename);
-                    Cursor cursor = getContentResolver().query(uri, null, null, null, null);
-                    if (cursor != null && cursor.moveToFirst()) {
-                        int nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-                        if (nameIndex != -1) {
-                            fileName = cursor.getString(nameIndex);
+                    try (Cursor cursor = getContentResolver().query(uri, null, null, null, null)) {
+                        if (cursor != null && cursor.moveToFirst()) {
+                            int nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                            if (nameIndex != -1) {
+                                fileName = cursor.getString(nameIndex);
+                            }
                         }
-                        cursor.close();
                     }
 
-                    InputStream is = getContentResolver().openInputStream(uri);
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    byte[] buffer = new byte[8192];
-                    int bytesRead;
-                    while ((bytesRead = is.read(buffer)) != -1) {
-                        baos.write(buffer, 0, bytesRead);
-                    }
-                    byte[] pdfBytes = baos.toByteArray();
-                    String base64Pdf = Base64.encodeToString(pdfBytes, Base64.NO_WRAP);
+                    try (InputStream is = getContentResolver().openInputStream(uri)) {
+                        if (is == null) return;
+                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                        byte[] buffer = new byte[8192];
+                        int bytesRead;
+                        while ((bytesRead = is.read(buffer)) != -1) {
+                            baos.write(buffer, 0, bytesRead);
+                        }
+                        byte[] pdfBytes = baos.toByteArray();
+                        String base64Pdf = Base64.encodeToString(pdfBytes, Base64.NO_WRAP);
 
-                    String payload = "[PDF_FILE]:" + fileName + "|" + base64Pdf;
-                    runOnUiThread(() -> sendPayload(payload));
+                        String payload = "[PDF_FILE]:" + fileName + "|" + base64Pdf;
+                        runOnUiThread(() -> sendPayload(payload));
+                    }
                 }
             } catch (Exception e) {
                 Log.e(TAG, "Error handling file", e);

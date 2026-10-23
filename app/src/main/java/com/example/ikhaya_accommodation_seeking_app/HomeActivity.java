@@ -332,8 +332,7 @@ public class HomeActivity extends AppCompatActivity {
                                 : createViewingNotificationKeys(viewings);
 
                 boolean unreadMessages =
-                        messages != null
-                                && TenantNotificationState.hasNew(
+                        TenantNotificationState.hasNew(
                                 this,
                                 uid,
                                 "messages",
@@ -341,8 +340,7 @@ public class HomeActivity extends AppCompatActivity {
                         );
 
                 boolean unreadApplications =
-                        applications != null
-                                && TenantNotificationState.hasNew(
+                        TenantNotificationState.hasNew(
                                 this,
                                 uid,
                                 "applications",
@@ -350,8 +348,7 @@ public class HomeActivity extends AppCompatActivity {
                         );
 
                 boolean unreadChatRequests =
-                        chatRequests != null
-                                && TenantNotificationState.hasNew(
+                        TenantNotificationState.hasNew(
                                 this,
                                 uid,
                                 "chat_requests",
@@ -359,8 +356,7 @@ public class HomeActivity extends AppCompatActivity {
                         );
 
                 boolean unreadViewings =
-                        viewingKeys != null
-                                && TenantNotificationState.hasNew(
+                        TenantNotificationState.hasNew(
                                 this,
                                 uid,
                                 "viewing_decisions",

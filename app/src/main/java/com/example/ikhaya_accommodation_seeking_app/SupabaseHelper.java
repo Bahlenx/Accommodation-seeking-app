@@ -268,9 +268,10 @@ public class SupabaseHelper {
         }
     }
 
+    @SuppressWarnings("CharsetObjectCanBeUsed")
     public static String encode(String value) {
         try {
-            return URLEncoder.encode(value, "UTF-8").replace("+", "%20");
+            return URLEncoder.encode(value, java.nio.charset.StandardCharsets.UTF_8.name()).replace("+", "%20");
         } catch (Exception e) {
             return value;
         }

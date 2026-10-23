@@ -96,12 +96,12 @@ public class GeminiTranslator {
 
             client.newCall(request).enqueue(new Callback() {
                 @Override
-                public void onFailure(Call call, IOException e) {
+                public void onFailure(@androidx.annotation.NonNull Call call, @androidx.annotation.NonNull IOException e) {
                     mainHandler.post(() -> callback.onError("Network error: " + e.getMessage()));
                 }
 
                 @Override
-                public void onResponse(Call call, Response response) throws IOException {
+                public void onResponse(@androidx.annotation.NonNull Call call, @androidx.annotation.NonNull Response response) throws IOException {
                     String responseBody = response.body() != null ? response.body().string() : "";
 
                     if (response.isSuccessful()) {

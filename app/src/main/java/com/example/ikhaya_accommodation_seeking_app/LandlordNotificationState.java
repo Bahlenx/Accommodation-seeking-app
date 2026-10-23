@@ -37,7 +37,7 @@ public final class LandlordNotificationState {
         String raw = prefs.getString(key(kind, userId), "");
         Set<String> ids = new HashSet<>();
 
-        if (raw != null && !raw.isEmpty()) {
+        if (!raw.isEmpty()) {
             for (String id : raw.split("\\|")) {
                 if (!id.isEmpty()) {
                     ids.add(id);
@@ -121,6 +121,6 @@ public final class LandlordNotificationState {
         ).edit().putString(
                 key(kind, userId),
                 TextUtils.join("|", ids)
-        ).commit();
+        ).apply();
     }
 }

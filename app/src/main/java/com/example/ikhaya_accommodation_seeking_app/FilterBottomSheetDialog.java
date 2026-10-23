@@ -11,7 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
-import com.google.android.material.chip.Chip;
+
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.slider.RangeSlider;
 

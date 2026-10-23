@@ -1,6 +1,6 @@
 package com.example.ikhaya_accommodation_seeking_app;
 
-import android.content.Intent;
+
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -108,7 +108,7 @@ public class AdminReportsActivity extends AppCompatActivity {
                 JSONObject obj = arr.getJSONObject(i);
                 addReportCard(obj, i);
             } catch (Exception e) {
-                e.printStackTrace();
+                android.util.Log.e("iKhaya", "Error", e);
             }
         }
     }

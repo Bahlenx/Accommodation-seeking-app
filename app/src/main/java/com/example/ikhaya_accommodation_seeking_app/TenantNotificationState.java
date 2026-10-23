@@ -73,7 +73,7 @@ public final class TenantNotificationState {
         if (!prefs.contains(storageKey)) {
             prefs.edit()
                     .putStringSet(storageKey, new HashSet<>(current))
-                    .commit();
+                    .apply();
 
             return false;
         }
@@ -122,6 +122,6 @@ public final class TenantNotificationState {
 
         prefs.edit()
                 .putStringSet(storageKey, seen)
-                .commit();
+                .apply();
     }
 }

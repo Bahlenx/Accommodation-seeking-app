@@ -107,6 +107,7 @@ public class AdminInspectionActivity extends AppCompatActivity {
         fetchFullListingDetails();
     }
 
+    @SuppressWarnings("CharsetObjectCanBeUsed")
     private void fetchFullListingDetails() {
         String token = SupabaseHelper.getAccessToken(this);
 

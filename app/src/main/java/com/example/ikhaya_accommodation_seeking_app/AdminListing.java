@@ -1,13 +1,13 @@
 package com.example.ikhaya_accommodation_seeking_app;
 
 public class AdminListing {
-    private String id;
-    private String title;
-    private String details;
-    private String landlordUid;
-    private String landlordName;
+    private final String id;
+    private final String title;
+    private final String details;
+    private final String landlordUid;
+    private final String landlordName;
     private String status;
-    private String imageUrl;
+    private final String imageUrl;
 
     public AdminListing(String id, String title, String details, String landlordUid, String landlordName, String status, String imageUrl) {
         this.id = id;

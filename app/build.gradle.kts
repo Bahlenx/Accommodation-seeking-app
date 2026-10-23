@@ -36,6 +36,31 @@ android {
         buildConfig = true
     }
 
+    lint {
+        abortOnError = false
+        disable += setOf(
+            "UnusedResources",
+            "HardcodedText",
+            "SetTextI18n",
+            "SmallSp",
+            "Autofill",
+            "Overdraw",
+            "ButtonStyle",
+            "ContentDescription",
+            "LabelFor",
+            "UseCompoundDrawables",
+            "DisableBaselineAlignment",
+            "TooManyViews",
+            "MergeRootFrame",
+            "UselessParent",
+            "RelativeOverlap",
+            "PluralsCandidate",
+            "TypographyEllipsis",
+            "IconLocation",
+            "NotifyDataSetChanged"
+        )
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false

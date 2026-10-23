@@ -1,7 +1,7 @@
 package com.example.ikhaya_accommodation_seeking_app;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
+
 import android.os.Bundle;
 import android.text.method.HideReturnsTransformationMethod;
 import android.text.method.PasswordTransformationMethod;
@@ -19,6 +19,7 @@ import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -244,12 +245,13 @@ public class LoginActivity extends AppCompatActivity {
     /**
      * Loads the user's role and full name from the profiles table and verifies suspension status.
      */
+    @SuppressWarnings("CharsetObjectCanBeUsed")
     private void getUserRole(String accessToken, String userId) {
         executor.execute(() -> {
             HttpURLConnection connection = null;
 
             try {
-                String encodedUserId = URLEncoder.encode(userId, "UTF-8");
+                String encodedUserId = URLEncoder.encode(userId, java.nio.charset.StandardCharsets.UTF_8.name());
                 String endpoint = "/rest/v1/profiles?select=role,full_name,is_suspended&firebase_uid=eq."
                         + encodedUserId
                         + "&limit=1";
@@ -301,7 +303,7 @@ public class LoginActivity extends AppCompatActivity {
      */
     private void fallbackToUsersTable(String userId, String accessToken) {
         try {
-            String encodedUserId = URLEncoder.encode(userId, "UTF-8");
+            String encodedUserId = URLEncoder.encode(userId, StandardCharsets.UTF_8);
             String endpoint = "/rest/v1/Users?select=user_role,firstName,surname,is_suspended&id=eq." + encodedUserId + "&limit=1";
 
             HttpURLConnection conn = SupabaseHelper.createConnection(endpoint, "GET", accessToken);

@@ -197,15 +197,16 @@ public class EditListingActivity extends AppCompatActivity {
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setConnectTimeout(10000);
                 conn.connect();
-                InputStream in = conn.getInputStream();
-                Bitmap bitmap = BitmapFactory.decodeStream(in);
-                if (bitmap != null) {
-                    runOnUiThread(() -> {
-                        if (isFinishing() || isDestroyed()) return;
-                        if (imagePreview != null) {
-                            imagePreview.setImageBitmap(bitmap);
-                        }
-                    });
+                try (InputStream in = conn.getInputStream()) {
+                    Bitmap bitmap = BitmapFactory.decodeStream(in);
+                    if (bitmap != null) {
+                        runOnUiThread(() -> {
+                            if (isFinishing() || isDestroyed()) return;
+                            if (imagePreview != null) {
+                                imagePreview.setImageBitmap(bitmap);
+                            }
+                        });
+                    }
                 }
                 conn.disconnect();
             } catch (Exception e) {
@@ -369,8 +370,9 @@ public class EditListingActivity extends AppCompatActivity {
         }
     }
 
+    @SuppressWarnings("CharsetObjectCanBeUsed")
     private String encode(String value) throws Exception {
-        return URLEncoder.encode(value, "UTF-8").replace("+", "%20");
+        return URLEncoder.encode(value, java.nio.charset.StandardCharsets.UTF_8.name()).replace("+", "%20");
     }
 
     private void showMessage(String message) {
