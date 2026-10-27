@@ -22,6 +22,10 @@ public class ResetPasswordActivity extends AppCompatActivity {
     private EditText edtNewPassword, edtConfirmPassword;
     private Button btnReset;
     private View btnBack;
+    private android.widget.ImageButton btnToggleNewPassword, btnToggleConfirmPassword;
+    
+    private boolean isNewPasswordVisible = false;
+    private boolean isConfirmPasswordVisible = false;
     
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
@@ -37,8 +41,14 @@ public class ResetPasswordActivity extends AppCompatActivity {
         edtNewPassword = findViewById(R.id.edtNewPassword);
         edtConfirmPassword = findViewById(R.id.edtConfirmPassword);
         btnReset = findViewById(R.id.btnChangePassword);
+        
+        btnToggleNewPassword = findViewById(R.id.btnToggleNewPassword);
+        btnToggleConfirmPassword = findViewById(R.id.btnToggleConfirmPassword);
 
         btnBack.setOnClickListener(v -> finish());
+        
+        setupPasswordToggle(btnToggleNewPassword, edtNewPassword, 1);
+        setupPasswordToggle(btnToggleConfirmPassword, edtConfirmPassword, 2);
 
         btnReset.setOnClickListener(v -> {
             if (isResetting) return;
@@ -129,5 +139,31 @@ public class ResetPasswordActivity extends AppCompatActivity {
 
     private void showMessage(int resId) {
         Toast.makeText(this, getString(resId), Toast.LENGTH_SHORT).show();
+    }
+    
+    private void setupPasswordToggle(android.widget.ImageButton toggleBtn, EditText editText, int type) {
+        if (toggleBtn == null || editText == null) return;
+        toggleBtn.setOnClickListener(v -> {
+            int cursorPosition = editText.getSelectionStart();
+            boolean isVisible = false;
+            
+            if (type == 1) {
+                isNewPasswordVisible = !isNewPasswordVisible;
+                isVisible = isNewPasswordVisible;
+            } else if (type == 2) {
+                isConfirmPasswordVisible = !isConfirmPasswordVisible;
+                isVisible = isConfirmPasswordVisible;
+            }
+
+            if (isVisible) {
+                editText.setTransformationMethod(android.text.method.HideReturnsTransformationMethod.getInstance());
+            } else {
+                editText.setTransformationMethod(android.text.method.PasswordTransformationMethod.getInstance());
+            }
+
+            int textLength = editText.getText().length();
+            int safeCursorPosition = Math.max(0, Math.min(cursorPosition, textLength));
+            editText.setSelection(safeCursorPosition);
+        });
     }
 }

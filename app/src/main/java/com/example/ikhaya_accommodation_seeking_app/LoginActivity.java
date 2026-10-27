@@ -202,9 +202,8 @@ public class LoginActivity extends AppCompatActivity {
     }
     
     private void launchOtpActivity(String emailAddress) {
-        Intent intent = new Intent(LoginActivity.this, OtpActivity.class);
+        Intent intent = new Intent(LoginActivity.this, PasswordResetOtpActivity.class);
         intent.putExtra("USER_EMAIL", emailAddress);
-        intent.putExtra("IS_PASSWORD_RESET", true);
         startActivity(intent);
     }
 

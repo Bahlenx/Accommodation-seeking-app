@@ -25,8 +25,13 @@ public class ChangePasswordActivity extends AppCompatActivity {
 
     private View btnBack;
     private Button btnChangePassword;
+    private android.widget.ImageButton btnToggleCurrentPassword, btnToggleNewPassword, btnToggleConfirmPassword;
+    
+    private boolean isCurrentPasswordVisible = false;
+    private boolean isNewPasswordVisible = false;
+    private boolean isConfirmPasswordVisible = false;
 
-    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private final java.util.concurrent.ExecutorService executor = java.util.concurrent.Executors.newSingleThreadExecutor();
 
     private boolean changingPassword = false;
 
@@ -40,6 +45,10 @@ public class ChangePasswordActivity extends AppCompatActivity {
         edtConfirmPassword = findViewById(R.id.edtConfirmPassword);
         btnBack = findViewById(R.id.btnBack);
         btnChangePassword = findViewById(R.id.btnChangePassword);
+        
+        btnToggleCurrentPassword = findViewById(R.id.btnToggleCurrentPassword);
+        btnToggleNewPassword = findViewById(R.id.btnToggleNewPassword);
+        btnToggleConfirmPassword = findViewById(R.id.btnToggleConfirmPassword);
 
         if (edtCurrentPassword == null
                 || edtNewPassword == null
@@ -47,13 +56,46 @@ public class ChangePasswordActivity extends AppCompatActivity {
                 || btnBack == null
                 || btnChangePassword == null) {
 
-            Toast.makeText(this, R.string.password_screen_error, Toast.LENGTH_LONG).show();
+            android.widget.Toast.makeText(this, R.string.password_screen_error, android.widget.Toast.LENGTH_LONG).show();
             finish();
             return;
         }
 
         btnBack.setOnClickListener(v -> finish());
         btnChangePassword.setOnClickListener(v -> changePassword());
+        
+        setupPasswordToggle(btnToggleCurrentPassword, edtCurrentPassword, 1);
+        setupPasswordToggle(btnToggleNewPassword, edtNewPassword, 2);
+        setupPasswordToggle(btnToggleConfirmPassword, edtConfirmPassword, 3);
+    }
+    
+    private void setupPasswordToggle(android.widget.ImageButton toggleBtn, EditText editText, int type) {
+        if (toggleBtn == null || editText == null) return;
+        toggleBtn.setOnClickListener(v -> {
+            int cursorPosition = editText.getSelectionStart();
+            boolean isVisible = false;
+            
+            if (type == 1) {
+                isCurrentPasswordVisible = !isCurrentPasswordVisible;
+                isVisible = isCurrentPasswordVisible;
+            } else if (type == 2) {
+                isNewPasswordVisible = !isNewPasswordVisible;
+                isVisible = isNewPasswordVisible;
+            } else if (type == 3) {
+                isConfirmPasswordVisible = !isConfirmPasswordVisible;
+                isVisible = isConfirmPasswordVisible;
+            }
+
+            if (isVisible) {
+                editText.setTransformationMethod(android.text.method.HideReturnsTransformationMethod.getInstance());
+            } else {
+                editText.setTransformationMethod(android.text.method.PasswordTransformationMethod.getInstance());
+            }
+
+            int textLength = editText.getText().length();
+            int safeCursorPosition = Math.max(0, Math.min(cursorPosition, textLength));
+            editText.setSelection(safeCursorPosition);
+        });
     }
 
     private void changePassword() {

@@ -1078,4 +1078,8 @@
     <string name="action_delete_chat">Delete Chat</string>
 
     <string name="reset_password_subtitle">Your email OTP has been verified. Please enter and confirm your new password below.</string>
+    <string name="password_reset_otp_title">Password Recovery OTP</string>
+    <string name="password_reset_otp_hint">Enter the 6-digit recovery code sent to your email</string>
+    <string name="password_reset_otp_warning">We will send a 6-digit password recovery code to your registered email address. Check your inbox and spam folder.</string>
+    <string name="verify_recovery_otp_btn">Verify Recovery Code</string>
 </resources>
