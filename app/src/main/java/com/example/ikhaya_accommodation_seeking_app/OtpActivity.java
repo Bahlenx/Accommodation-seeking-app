@@ -27,6 +27,7 @@ public class OtpActivity extends AppCompatActivity {
 
     private String username, surname, phone, email, role, password;
     private android.os.CountDownTimer resendTimer;
+    private boolean isPasswordReset = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +61,7 @@ public class OtpActivity extends AppCompatActivity {
         email = incomingIntent.getStringExtra("USER_EMAIL");
         role = "landlord".equalsIgnoreCase(incomingIntent.getStringExtra("USER_ROLE")) ? "landlord" : "tenant";
         password = incomingIntent.getStringExtra("USER_PASSWORD");
+        isPasswordReset = incomingIntent.getBooleanExtra("IS_PASSWORD_RESET", false);
 
         if (rbSmsOtp != null) {
             rbSmsOtp.setVisibility(android.view.View.GONE);
@@ -115,27 +117,41 @@ public class OtpActivity extends AppCompatActivity {
                 
                 connection = SupabaseHelper.createConnection("/auth/v1/otp", "POST", null);
                 body.put("email", email);
-                body.put("create_user", true);
-                JSONObject metadata = new JSONObject();
-                metadata.put("first_name", username);
-                metadata.put("surname", surname);
-                metadata.put("phone", phone);
-                metadata.put("role", role);
-                body.put("data", metadata);
+                if (isPasswordReset) {
+                    body.put("create_user", false);
+                } else {
+                    body.put("create_user", true);
+                    JSONObject metadata = new JSONObject();
+                    metadata.put("first_name", username);
+                    metadata.put("surname", surname);
+                    metadata.put("phone", phone);
+                    metadata.put("role", role);
+                    body.put("data", metadata);
+                }
                 SupabaseHelper.writeJson(connection, body);
                 int code = connection.getResponseCode();
                 String response = SupabaseHelper.readResponse(connection);
                 connection.disconnect();
 
                 if (code >= 400) {
-                    connection = SupabaseHelper.createConnection("/auth/v1/resend", "POST", null);
-                    JSONObject resendBody = new JSONObject();
-                    resendBody.put("type", "signup");
-                    resendBody.put("email", email);
-                    SupabaseHelper.writeJson(connection, resendBody);
-                    code = connection.getResponseCode();
-                    response = SupabaseHelper.readResponse(connection);
-                    connection.disconnect();
+                    if (isPasswordReset) {
+                        connection = SupabaseHelper.createConnection("/auth/v1/recover", "POST", null);
+                        JSONObject resendBody = new JSONObject();
+                        resendBody.put("email", email);
+                        SupabaseHelper.writeJson(connection, resendBody);
+                        code = connection.getResponseCode();
+                        response = SupabaseHelper.readResponse(connection);
+                        connection.disconnect();
+                    } else {
+                        connection = SupabaseHelper.createConnection("/auth/v1/resend", "POST", null);
+                        JSONObject resendBody = new JSONObject();
+                        resendBody.put("type", "signup");
+                        resendBody.put("email", email);
+                        SupabaseHelper.writeJson(connection, resendBody);
+                        code = connection.getResponseCode();
+                        response = SupabaseHelper.readResponse(connection);
+                        connection.disconnect();
+                    }
                 }
 
                 final int finalCode = code;
@@ -226,6 +242,15 @@ public class OtpActivity extends AppCompatActivity {
                             SupabaseHelper.saveSession(this, accessToken, refreshToken, userId, null, null);
 
                             Toast.makeText(this, R.string.msg_verified_successfully, Toast.LENGTH_SHORT).show();
+                            
+                            if (isPasswordReset) {
+                                Intent intent = new Intent(OtpActivity.this, ResetPasswordActivity.class);
+                                intent.putExtra("USER_EMAIL", email);
+                                intent.putExtra("ACCESS_TOKEN", accessToken);
+                                startActivity(intent);
+                                finish();
+                                return;
+                            }
                             
                             if (password != null && !password.isEmpty() && !accessToken.isEmpty()) {
                                 new Thread(() -> {

@@ -150,6 +150,9 @@ public class LoginActivity extends AppCompatActivity {
 
                     // Save session tokens to SharedPreferences
                     SupabaseHelper.saveSession(LoginActivity.this, accessToken, refreshToken, userId, null, null);
+                    SharedPreferences.Editor editor = getSharedPreferences("iKhayaSession", MODE_PRIVATE).edit();
+                    editor.putString("USER_EMAIL", email);
+                    editor.apply();
 
                     // Query profile and determine routing
                     getUserRole(accessToken, userId);
@@ -175,70 +178,34 @@ public class LoginActivity extends AppCompatActivity {
         String email = emailInput.getText().toString().trim();
 
         if (email.isEmpty()) {
-            emailInput.setError("Enter your email address first.");
-            emailInput.requestFocus();
+            final EditText input = new EditText(this);
+            input.setHint("Enter your registered email");
+            
+            new AlertDialog.Builder(this)
+                .setTitle("Reset Password")
+                .setMessage("Please enter your registered email address to receive an OTP.")
+                .setView(input)
+                .setPositiveButton("Send OTP", (dialog, which) -> {
+                    String enteredEmail = input.getText().toString().trim();
+                    if (!enteredEmail.isEmpty()) {
+                        launchOtpActivity(enteredEmail);
+                    } else {
+                        Toast.makeText(this, "Email cannot be empty", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
             return;
         }
 
-        if (loginBtn != null) {
-            loginBtn.setEnabled(false);
-        }
-
-        executor.execute(() -> {
-            HttpURLConnection connection = null;
-
-            try {
-                connection = SupabaseHelper.createConnection(
-                        "/auth/v1/recover",
-                        "POST",
-                        null
-                );
-
-                JSONObject body = new JSONObject();
-                body.put("email", email);
-
-                SupabaseHelper.writeJson(connection, body);
-
-                int responseCode = connection.getResponseCode();
-                String response = SupabaseHelper.readResponse(connection);
-
-                runOnUiThread(() -> {
-                    if (loginBtn != null) {
-                        loginBtn.setEnabled(true);
-                    }
-
-                    if (responseCode >= 200 && responseCode < 300) {
-                        new AlertDialog.Builder(LoginActivity.this)
-                                .setTitle(R.string.title_check_your_email)
-                                .setMessage(R.string.msg_password_reset_email_sent)
-                                .setPositiveButton("OK", null)
-                                .show();
-                    } else {
-                        Toast.makeText(
-                                LoginActivity.this,
-                                "Could not request password reset: " + extractErrorMessage(response),
-                                Toast.LENGTH_LONG
-                        ).show();
-                    }
-                });
-
-            } catch (Exception e) {
-                runOnUiThread(() -> {
-                    if (loginBtn != null) {
-                        loginBtn.setEnabled(true);
-                    }
-                    Toast.makeText(
-                            LoginActivity.this,
-                            "Could not connect to request password reset.",
-                            Toast.LENGTH_LONG
-                    ).show();
-                });
-            } finally {
-                if (connection != null) {
-                    connection.disconnect();
-                }
-            }
-        });
+        launchOtpActivity(email);
+    }
+    
+    private void launchOtpActivity(String emailAddress) {
+        Intent intent = new Intent(LoginActivity.this, OtpActivity.class);
+        intent.putExtra("USER_EMAIL", emailAddress);
+        intent.putExtra("IS_PASSWORD_RESET", true);
+        startActivity(intent);
     }
 
     /**

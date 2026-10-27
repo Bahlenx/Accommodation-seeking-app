@@ -68,6 +68,7 @@
         <activity android:name=".LoginActivity" android:exported="false" />
         <activity android:name=".OtpActivity" android:exported="false" />
         <activity android:name=".CreatePasswordActivity" android:exported="false" />
+        <activity android:name=".ResetPasswordActivity" android:exported="false" />
         <activity android:name=".ChangePasswordActivity" android:exported="false" />
         <activity android:name=".PersonalActivity" android:exported="false" />
 
