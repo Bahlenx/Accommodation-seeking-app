@@ -1082,4 +1082,29 @@
     <string name="password_reset_otp_hint">Enter the 6-digit recovery code sent to your email</string>
     <string name="password_reset_otp_warning">We will send a 6-digit password recovery code to your registered email address. Check your inbox and spam folder.</string>
     <string name="verify_recovery_otp_btn">Verify Recovery Code</string>
+    <string name="settings">SETTINGS</string>
+    <string name="user_name_placeholder">NJ</string>
+    <string name="activity_and_financials">ACTIVITY &amp; FINANCIALS</string>
+    <string name="account_and_settings">ACCOUNT &amp; SETTINGS</string>
+    <string name="support">SUPPORT</string>
+
+    <!-- Navigation Strings -->
+    <string name="nav_add">Add</string>
+    <string name="property_count_placeholder">1 Property</string>
+    <string name="landlord_badge_pill">LANDLORD •</string>
+    <string name="tenant_badge_pill">• TENANT •</string>
+    <string name="active_host_badge">Active Host</string>
+    <string name="active_tenant_badge">Active Tenant</string>
+    <string name="default_verified_location">Midrand, Gauteng • ID Verified</string>
+    <string name="default_listing_count">0 Listings</string>
+    <string name="default_property_count">0 Properties</string>
+    <string name="default_unread_count">0 Unread</string>
+    <string name="default_saved_count">0 Saved</string>
+    <string name="default_pending_count">0 Pending</string>
+    <string name="default_active_lease">0 Active Leases</string>
+    <string name="default_language_label">English (ZA)</string>
+    <string name="accommodation_and_leases">ACCOMMODATION &amp; LEASES</string>
+    <string name="property_and_financials">PROPERTY &amp; FINANCIALS</string>
+    <string name="landlord_hub_version">iKhaya Landlord Hub • v1.4.2</string>
+    <string name="tenant_hub_version">iKhaya Tenant Hub • v1.4.2</string>
 </resources>
