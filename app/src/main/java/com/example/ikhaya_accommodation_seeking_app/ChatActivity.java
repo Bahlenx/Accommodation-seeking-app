@@ -410,13 +410,13 @@ public class ChatActivity extends AppCompatActivity {
         wrapper.setPadding(0, dpToPx(8), 0, dpToPx(8));
 
         CardView pill = new CardView(this);
-        pill.setCardBackgroundColor(Color.parseColor("#E9ECEF"));
+        pill.setCardBackgroundColor(Color.parseColor("#EFEBE4"));
         pill.setRadius(dpToPx(12));
         pill.setCardElevation(0f);
 
         TextView text = new TextView(this);
         text.setText(dateText);
-        text.setTextColor(Color.parseColor("#495057"));
+        text.setTextColor(Color.parseColor("#8C7A70"));
         text.setTextSize(11f);
         text.setTypeface(null, Typeface.BOLD);
         text.setPadding(dpToPx(12), dpToPx(4), dpToPx(12), dpToPx(4));
@@ -469,7 +469,7 @@ public class ChatActivity extends AppCompatActivity {
             txtAuthor.setText(String.format(Locale.getDefault(), "%s • %s", authorName, authorRole.toUpperCase(Locale.getDefault())));
             txtAuthor.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f);
             txtAuthor.setTypeface(null, Typeface.BOLD);
-            txtAuthor.setTextColor(Color.parseColor("#D9480F"));
+            txtAuthor.setTextColor(Color.parseColor("#BA5536"));
             content.addView(txtAuthor);
         }
 
@@ -519,7 +519,7 @@ public class ChatActivity extends AppCompatActivity {
 
             txtMessage.setText(messageText);
             txtMessage.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f);
-            txtMessage.setTextColor(Color.parseColor("#212529"));
+            txtMessage.setTextColor(Color.parseColor("#1F1614"));
             txtMessage.setLineSpacing(0, 1.2f);
             content.addView(txtMessage);
         }
