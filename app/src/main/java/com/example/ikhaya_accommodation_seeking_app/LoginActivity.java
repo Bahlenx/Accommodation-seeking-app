@@ -85,13 +85,15 @@ public class LoginActivity extends AppCompatActivity {
                 String password = passwordInput.getText().toString();
 
                 if (email.isEmpty()) {
-                    emailInput.setError("Enter your email address.");
+                    emailInput.setError(null);
+                    Toast.makeText(this, "Please enter your email address.", Toast.LENGTH_SHORT).show();
                     emailInput.requestFocus();
                     return;
                 }
 
                 if (password.isEmpty()) {
-                    passwordInput.setError("Enter your password.");
+                    passwordInput.setError(null);
+                    Toast.makeText(this, "Please enter your password.", Toast.LENGTH_SHORT).show();
                     passwordInput.requestFocus();
                     return;
                 }
@@ -312,6 +314,8 @@ public class LoginActivity extends AppCompatActivity {
      * Passes the user's full name to AdminDashboardActivity so the header greets them personally.
      */
     private void routeUser(String role, String fullName) {
+        Toast.makeText(getApplicationContext(), R.string.logged_in_successfully, Toast.LENGTH_SHORT).show();
+
         Intent intent;
 
         if ("landlord".equalsIgnoreCase(role)) {

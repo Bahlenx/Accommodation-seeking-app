@@ -205,29 +205,23 @@ public class PersonalActivity extends AppCompatActivity {
         }
 
         if (!province.matches("[a-zA-Z\\s-]+")) {
-
-            provinceInput.setError(
-                    "Please enter a valid province name"
-            );
-
+            provinceInput.setError(null);
+            Toast.makeText(this, "Please enter a valid province name", Toast.LENGTH_SHORT).show();
+            provinceInput.requestFocus();
             return;
         }
 
         if (!city.matches("[a-zA-Z\\s-]+")) {
-
-            cityInput.setError(
-                    "Please enter a valid city name"
-            );
-
+            cityInput.setError(null);
+            Toast.makeText(this, "Please enter a valid city name", Toast.LENGTH_SHORT).show();
+            cityInput.requestFocus();
             return;
         }
 
         if (!suburb.matches("[a-zA-Z0-9\\s-]+")) {
-
-            suburbInput.setError(
-                    "Please enter a valid suburb name"
-            );
-
+            suburbInput.setError(null);
+            Toast.makeText(this, "Please enter a valid suburb name", Toast.LENGTH_SHORT).show();
+            suburbInput.requestFocus();
             return;
         }
 

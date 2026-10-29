@@ -25,6 +25,12 @@
 
         <!-- Forces the placeholder text inside text boxes to be a visible gray -->
         <item name="android:textColorHint">#757575</item>
+
+        <!-- Fix native EditText.setError() popup window text visibility -->
+        <item name="android:textColorPrimaryInverse">#FFFFFF</item>
+        <item name="android:textColorSecondaryInverse">#FFFFFF</item>
+        <item name="android:colorForegroundInverse">#FFFFFF</item>
+        <item name="android:colorBackgroundCacheHint">@null</item>
         <!-- Customize your theme here. -->
     </style>
 </resources>

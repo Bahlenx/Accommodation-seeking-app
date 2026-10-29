@@ -55,6 +55,7 @@
     <string name="existing_user_login">Already have an account? Log In</string>
     <string name="existing_user_btn">Login</string>
     <string name="logged_out_successfully">Logged out successfully.</string>
+    <string name="logged_in_successfully">Logged in successfully.</string>
     <string name="please_log_in_again">Please log in again.</string>
     <string name="session_expired_login_again">Your session has expired. Please log in again.</string>
 

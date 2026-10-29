@@ -9,6 +9,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.RadioGroup;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -200,11 +201,8 @@ public class RegistrationActivity extends AppCompatActivity {
                             "[a-zA-Z\\s-]+"
                     )) {
 
-                        editFirstName.setError(
-                                getString(
-                                        R.string.error_first_name
-                                )
-                        );
+                        editFirstName.setError(null);
+                        Toast.makeText(this, R.string.error_first_name, Toast.LENGTH_SHORT).show();
                     }
                 }
         );
@@ -223,11 +221,8 @@ public class RegistrationActivity extends AppCompatActivity {
                             "[a-zA-Z\\s-]+"
                     )) {
 
-                        editUserSurname.setError(
-                                getString(
-                                        R.string.error_surname
-                                )
-                        );
+                        editUserSurname.setError(null);
+                        Toast.makeText(this, R.string.error_surname, Toast.LENGTH_SHORT).show();
                     }
                 }
         );
@@ -246,11 +241,8 @@ public class RegistrationActivity extends AppCompatActivity {
                             "^(\\+27|0)[6-8][0-9]{8}$"
                     )) {
 
-                        editPhone.setError(
-                                getString(
-                                        R.string.error_phone
-                                )
-                        );
+                        editPhone.setError(null);
+                        Toast.makeText(this, R.string.error_phone, Toast.LENGTH_SHORT).show();
                     }
                 }
         );
@@ -269,11 +261,8 @@ public class RegistrationActivity extends AppCompatActivity {
                             .matcher(value)
                             .matches()) {
 
-                        editEmail.setError(
-                                getString(
-                                        R.string.error_email
-                                )
-                        );
+                        editEmail.setError(null);
+                        Toast.makeText(this, R.string.error_email, Toast.LENGTH_SHORT).show();
                     }
                 }
         );
