@@ -200,7 +200,8 @@ public class PasswordResetOtpActivity extends AppCompatActivity {
                 HttpURLConnection connection = SupabaseHelper.createConnection("/auth/v1/verify", "POST", null);
                 JSONObject body = new JSONObject();
                 body.put("token", enteredCode);
-                body.put("type", "recovery");
+                String otpType = getIntent().getBooleanExtra("IS_DELETE_ACCOUNT", false) ? "email" : "recovery";
+                body.put("type", otpType);
                 body.put("email", email);
                 SupabaseHelper.writeJson(connection, body);
                 
@@ -210,7 +211,7 @@ public class PasswordResetOtpActivity extends AppCompatActivity {
 
                 if (code >= 400) {
                     connection = SupabaseHelper.createConnection("/auth/v1/verify", "POST", null);
-                    body.put("type", "email");
+                    body.put("type", "recovery");
                     SupabaseHelper.writeJson(connection, body);
                     code = connection.getResponseCode();
                     response = SupabaseHelper.readResponse(connection);
@@ -241,6 +242,13 @@ public class PasswordResetOtpActivity extends AppCompatActivity {
 
                             SupabaseHelper.saveSession(this, accessToken, refreshToken, userId, null, null);
 
+                            boolean isDeleteAccount = getIntent().getBooleanExtra("IS_DELETE_ACCOUNT", false);
+                            if (isDeleteAccount) {
+                                String deleteReason = getIntent().getStringExtra("DELETE_REASON");
+                                performPermanentAccountDeletion(accessToken, userId, email, deleteReason);
+                                return;
+                            }
+
                             Toast.makeText(this, R.string.msg_verified_successfully, Toast.LENGTH_SHORT).show();
                             
                             Intent intent = new Intent(PasswordResetOtpActivity.this, ResetPasswordActivity.class);
@@ -263,5 +271,57 @@ public class PasswordResetOtpActivity extends AppCompatActivity {
                 });
             }
         }).start();
+    }
+
+    private void performPermanentAccountDeletion(String token, String verifiedUserId, String userEmail, String reason) {
+        java.util.concurrent.Executors.newSingleThreadExecutor().execute(() -> {
+            String uid = (verifiedUserId != null && !verifiedUserId.isEmpty())
+                    ? verifiedUserId
+                    : SupabaseHelper.getUserId(this);
+            String useToken = (token != null && !token.isEmpty())
+                    ? token
+                    : SupabaseHelper.getAccessToken(this);
+
+            try {
+                // 1. Log the deletion reason to Admin Reports so Admins can review it
+                HttpURLConnection reportConn = SupabaseHelper.createConnection("/rest/v1/reports", "POST", useToken);
+                JSONObject reportBody = new JSONObject();
+                reportBody.put("reporter_id", uid);
+                reportBody.put("reporter_email", userEmail != null ? userEmail : "");
+                reportBody.put("issue_type", "ACCOUNT DELETED");
+                reportBody.put("description", "User deleted account. Reason: " + (reason != null ? reason : "No reason provided"));
+                reportBody.put("status", "RESOLVED");
+                SupabaseHelper.writeJson(reportConn, reportBody);
+                reportConn.getResponseCode();
+                reportConn.disconnect();
+            } catch (Exception ignored) {}
+
+            try {
+                // 2. Delete user profile rows from Supabase
+                if (uid != null && !uid.isEmpty()) {
+                    HttpURLConnection delProfile = SupabaseHelper.createConnection(
+                            "/rest/v1/profiles?firebase_uid=eq." + java.net.URLEncoder.encode(uid, "UTF-8"),
+                            "DELETE", useToken);
+                    delProfile.getResponseCode();
+                    delProfile.disconnect();
+
+                    HttpURLConnection delUser = SupabaseHelper.createConnection(
+                            "/rest/v1/Users?user_id=eq." + java.net.URLEncoder.encode(uid, "UTF-8"),
+                            "DELETE", useToken);
+                    delUser.getResponseCode();
+                    delUser.disconnect();
+                }
+            } catch (Exception ignored) {}
+
+            runOnUiThread(() -> {
+                SupabaseHelper.clearSession(PasswordResetOtpActivity.this);
+                getSharedPreferences("iKhayaSession", MODE_PRIVATE).edit().clear().apply();
+                Toast.makeText(PasswordResetOtpActivity.this, "Your account has been permanently deleted.", Toast.LENGTH_LONG).show();
+                Intent intent = new Intent(PasswordResetOtpActivity.this, OuterMainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                finish();
+            });
+        });
     }
 }

@@ -66,6 +66,11 @@ public class LandlordProfileActivity extends AppCompatActivity {
         if (logout != null) {
             logout.setOnClickListener(v -> logout());
         }
+
+        View deleteAccountBtn = findViewById(R.id.btnDeleteAccount);
+        if (deleteAccountBtn != null) {
+            deleteAccountBtn.setOnClickListener(v -> SupabaseHelper.promptDeleteAccountWithOtp(this));
+        }
     }
 
     @Override

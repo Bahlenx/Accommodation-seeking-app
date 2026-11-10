@@ -634,6 +634,19 @@
                 app:iconTint="#B85032"
                 app:backgroundTint="@null" />
 
+            <Button
+                android:id="@+id/btnDeleteAccount"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_outline_brand"
+                android:text="Delete Account"
+                android:textAllCaps="false"
+                android:textColor="#B91C1C"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                app:backgroundTint="@null" />
+
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

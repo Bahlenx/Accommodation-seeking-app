@@ -73,6 +73,9 @@ public class ChatActivity extends AppCompatActivity {
     private boolean sendingMessage;
 
     private String lastMessagesSnapshot = "";
+    
+    private boolean isGuestSupportChat = false;
+    private String supportGuestId = "";
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
@@ -117,24 +120,41 @@ public class ChatActivity extends AppCompatActivity {
 
         String receiverName = getIntent().getStringExtra("RECEIVER_NAME");
         isCommunity = getIntent().getBooleanExtra("IS_COMMUNITY", false);
-        boolean isAdminSupport = getIntent().getBooleanExtra("IS_ADMIN_SUPPORT", false);
-        if (isAdminSupport) {
-            String guestId = getSharedPreferences("iKhayaSupport", MODE_PRIVATE).getString("GUEST_SUPPORT_ID", "");
-            if (senderId != null && senderId.isEmpty() && guestId != null && !guestId.isEmpty()) {
-                senderId = guestId;
-            }
-            String supportUserHint = getIntent().getStringExtra("SUPPORT_USER_HINT");
-            if (supportUserHint != null && !supportUserHint.isEmpty()) {
-                senderName = "Guest (" + supportUserHint + ")";
-            } else {
-                senderName = "Guest Support User";
-            }
-            senderRole = "SUPPORT";
-            receiverId = "ADMIN_SUPPORT";
-            receiverName = "iKhaya Admin Support";
+        
+        boolean isAdminSupportIntent = getIntent().getBooleanExtra("IS_ADMIN_SUPPORT", false);
+        isGuestSupportChat = isAdminSupportIntent
+                || "ADMIN_SUPPORT".equals(receiverId)
+                || (receiverId != null && receiverId.startsWith("guest_"));
 
-            if (txtTitle != null) txtTitle.setText(receiverName);
-            if (txtSubtitle != null) txtSubtitle.setText("Admin Team");
+        if (isGuestSupportChat) {
+            if (receiverId != null && receiverId.startsWith("guest_")) {
+                // Admin is viewing and replying to a specific Guest thread
+                supportGuestId = receiverId;
+                if (txtTitle != null && receiverName != null) {
+                    txtTitle.setText(receiverName);
+                }
+                if (txtSubtitle != null) {
+                    txtSubtitle.setText("Guest Support Request");
+                }
+            } else {
+                // Pre-login Guest is messaging Admin Support
+                supportGuestId = getIntent().getStringExtra("GUEST_ID");
+                if (supportGuestId == null || supportGuestId.isEmpty()) {
+                    supportGuestId = getSharedPreferences("iKhayaSupport", MODE_PRIVATE)
+                            .getString("GUEST_SUPPORT_ID", "guest_user");
+                }
+                senderId = supportGuestId;
+                String hint = getIntent().getStringExtra("SUPPORT_USER_HINT");
+                senderName = (hint != null && !hint.trim().isEmpty())
+                        ? "Guest (" + hint.trim() + ")"
+                        : "Guest (" + supportGuestId + ")";
+                senderRole = "GUEST";
+                receiverId = "ADMIN_SUPPORT";
+                receiverName = "iKhaya Admin Support";
+
+                if (txtTitle != null) txtTitle.setText(receiverName);
+                if (txtSubtitle != null) txtSubtitle.setText("Admin Support Team");
+            }
         }
 
 
@@ -292,34 +312,22 @@ public class ChatActivity extends AppCompatActivity {
 
             try {
                 String endpoint;
-                if (isCommunity) {
-                    endpoint = "/rest/v1/messages?receiver_id=eq.COMMUNITY"
-                            + "&order=created_at.asc&limit=150";
-                } else if ("ADMIN_SUPPORT".equals(receiverId) || receiverId.startsWith("guest_")) {
-                    String userOrGuest = "ADMIN_SUPPORT".equals(receiverId) ? senderId : receiverId;
-                    String adminUid = "ADMIN_SUPPORT".equals(receiverId) ? "ADMIN_SUPPORT" : senderId;
-                    endpoint = "/rest/v1/messages?or=("
-                            + "and(sender_id.eq." + userOrGuest + ",receiver_id.eq.ADMIN_SUPPORT),"
-                            + "and(sender_id.eq.ADMIN_SUPPORT,receiver_id.eq." + userOrGuest + "),"
-                            + "and(sender_id.eq." + userOrGuest + ",receiver_id.eq." + adminUid + "),"
-                            + "and(sender_id.eq." + adminUid + ",receiver_id.eq." + userOrGuest + ")"
-                            + ")&order=created_at.asc&limit=150";
+                if (isGuestSupportChat) {
+                    String encodedGuestId = java.net.URLEncoder.encode(supportGuestId, "UTF-8");
+                    endpoint = "/rest/v1/guest_support_messages?select=*&guest_id=eq." + encodedGuestId + "&order=created_at.asc";
+                } else if (isCommunity) {
+                    endpoint = "/rest/v1/messages?select=*&receiver_id=eq.COMMUNITY&order=created_at.asc";
                 } else {
-                    String encodedSender = SupabaseHelper.encode(senderId);
-                    String encodedReceiver = SupabaseHelper.encode(receiverId);
-
-                    endpoint = "/rest/v1/messages?or=(and(sender_id.eq."
-                            + encodedSender
-                            + ",receiver_id.eq."
-                            + encodedReceiver
-                            + "),and(sender_id.eq."
-                            + encodedReceiver
-                            + ",receiver_id.eq."
-                            + encodedSender
-                            + "))&order=created_at.asc&limit=150";
+                    String encodedSender = java.net.URLEncoder.encode(senderId, "UTF-8");
+                    String encodedReceiver = java.net.URLEncoder.encode(receiverId, "UTF-8");
+                    endpoint = "/rest/v1/messages?select=*&or=(and(sender_id.eq." + encodedSender + ",receiver_id.eq." + encodedReceiver + "),and(sender_id.eq." + encodedReceiver + ",receiver_id.eq." + encodedSender + "))&order=created_at.asc";
                 }
-
-                connection = SupabaseHelper.createConnection(endpoint, "GET", accessToken);
+                String authToken = ((isGuestSupportChat && senderId != null && senderId.startsWith("guest_")) || accessToken == null || accessToken.isEmpty()) ? null : accessToken;
+                connection = SupabaseHelper.createConnection(endpoint, "GET", authToken);
+                
+                if (isGuestSupportChat && supportGuestId != null) {
+                    connection.setRequestProperty("x-guest-id", supportGuestId);
+                }
 
                 int code = connection.getResponseCode();
                 String response = SupabaseHelper.readResponse(connection);
@@ -746,7 +754,7 @@ public class ChatActivity extends AppCompatActivity {
 
         if (senderId == null || senderId.isEmpty()
                 || receiverId == null || receiverId.isEmpty()
-                || accessToken == null || accessToken.isEmpty()) {
+                || (!isGuestSupportChat && (accessToken == null || accessToken.isEmpty()))) {
 
             Toast.makeText(this, R.string.error_sign_in_for_chat, Toast.LENGTH_SHORT).show();
             return;
@@ -764,15 +772,26 @@ public class ChatActivity extends AppCompatActivity {
             String error = "";
 
             try {
-                connection = SupabaseHelper.createConnection("/rest/v1/messages", "POST", accessToken);
+                String postEndpoint = isGuestSupportChat ? "/rest/v1/guest_support_messages" : "/rest/v1/messages";
+                String authToken = ((isGuestSupportChat && senderId != null && senderId.startsWith("guest_")) || accessToken == null || accessToken.isEmpty()) ? null : accessToken;
+                connection = SupabaseHelper.createConnection(postEndpoint, "POST", authToken);
                 connection.setRequestProperty("Prefer", "return=minimal");
 
                 JSONObject body = new JSONObject();
-                body.put("sender_id", senderId);
-                body.put("sender_name", senderName);
-                body.put("sender_role", senderRole);
-                body.put("receiver_id", receiverId);
-                body.put("message_text", payloadText);
+                if (isGuestSupportChat) {
+                    body.put("guest_id", supportGuestId);
+                    body.put("guest_hint", senderId.startsWith("guest_") ? senderName : receiverId);
+                    body.put("sender_id", senderId);
+                    body.put("sender_name", senderName);
+                    body.put("receiver_id", receiverId);
+                    body.put("message_text", payloadText);
+                } else {
+                    body.put("sender_id", senderId);
+                    body.put("sender_name", senderName);
+                    body.put("sender_role", senderRole);
+                    body.put("receiver_id", isCommunity ? "COMMUNITY" : receiverId);
+                    body.put("message_text", payloadText);
+                }
 
                 SupabaseHelper.writeJson(connection, body);
 

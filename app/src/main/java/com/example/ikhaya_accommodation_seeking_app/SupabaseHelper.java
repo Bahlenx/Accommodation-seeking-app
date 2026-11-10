@@ -72,18 +72,101 @@ public class SupabaseHelper {
     }
 
     public static void openAdminSupportChat(android.content.Context context, String userHint) {
-        String guestId = context.getSharedPreferences("iKhayaSupport", android.content.Context.MODE_PRIVATE).getString("GUEST_SUPPORT_ID", "");
-        if (guestId.isEmpty()) {
-            guestId = "guest_" + java.util.UUID.randomUUID().toString().substring(0, 8);
-            context.getSharedPreferences("iKhayaSupport", android.content.Context.MODE_PRIVATE).edit().putString("GUEST_SUPPORT_ID", guestId).apply();
+        android.content.SharedPreferences prefs = context.getSharedPreferences("iKhayaSupport", android.content.Context.MODE_PRIVATE);
+        String guestId = prefs.getString("GUEST_SUPPORT_ID", "");
+        if (guestId == null || guestId.isEmpty()) {
+            guestId = "guest_" + java.util.UUID.randomUUID().toString();
+            prefs.edit().putString("GUEST_SUPPORT_ID", guestId).apply();
         }
+
+        String cleanHint = (userHint != null) ? userHint.trim() : "";
+        String displayName = !cleanHint.isEmpty()
+                ? "Guest (" + cleanHint + ")"
+                : "Guest (" + guestId + ")";
 
         android.content.Intent intent = new android.content.Intent(context, ChatActivity.class);
         intent.putExtra("IS_ADMIN_SUPPORT", true);
+        intent.putExtra("GUEST_ID", guestId);
+        intent.putExtra("SENDER_ID", guestId);
+        intent.putExtra("SENDER_NAME", displayName);
+        intent.putExtra("SENDER_ROLE", "GUEST");
         intent.putExtra("RECEIVER_ID", "ADMIN_SUPPORT");
         intent.putExtra("RECEIVER_NAME", "iKhaya Admin Support");
-        intent.putExtra("SUPPORT_USER_HINT", userHint);
+        intent.putExtra("SUPPORT_USER_HINT", cleanHint);
         context.startActivity(intent);
+    }
+
+    public static void promptDeleteAccountWithOtp(android.app.Activity activity) {
+        android.content.SharedPreferences sessionPrefs = activity.getSharedPreferences("iKhayaSession", android.content.Context.MODE_PRIVATE);
+        String savedEmail = sessionPrefs.getString("USER_EMAIL", "");
+
+        android.widget.EditText reasonInput = new android.widget.EditText(activity);
+        reasonInput.setHint("Reason for deleting account (shared with Admin)");
+        reasonInput.setPadding(48, 32, 48, 32);
+
+        new androidx.appcompat.app.AlertDialog.Builder(activity)
+                .setTitle("Delete Account")
+                .setMessage("Enter your reason for deleting your account. A 6-digit OTP will be sent to your email to confirm permanent deletion.")
+                .setView(reasonInput)
+                .setNegativeButton("Cancel", null)
+                .setPositiveButton("Send OTP", (dialog, which) -> {
+                    String reason = reasonInput.getText().toString().trim();
+                    if (reason.isEmpty()) {
+                        reason = "User requested account deletion";
+                    }
+                    sendDeleteAccountOtp(activity, savedEmail, reason);
+                })
+                .show();
+    }
+
+    private static void sendDeleteAccountOtp(android.app.Activity activity, String cachedEmail, String reason) {
+        String token = getAccessToken(activity);
+        java.util.concurrent.Executors.newSingleThreadExecutor().execute(() -> {
+            String emailToUse = cachedEmail;
+            try {
+                if ((emailToUse == null || emailToUse.isEmpty()) && token != null && !token.isEmpty()) {
+                    java.net.HttpURLConnection userConn = createConnection("/auth/v1/user", "GET", token);
+                    if (userConn.getResponseCode() >= 200 && userConn.getResponseCode() < 300) {
+                        org.json.JSONObject userJson = new org.json.JSONObject(readResponse(userConn));
+                        emailToUse = userJson.optString("email", "");
+                    }
+                    userConn.disconnect();
+                }
+
+                if (emailToUse == null || emailToUse.isEmpty()) {
+                    activity.runOnUiThread(() ->
+                            android.widget.Toast.makeText(activity, "Could not find account email. Please log in again.", android.widget.Toast.LENGTH_SHORT).show()
+                    );
+                    return;
+                }
+
+                java.net.HttpURLConnection otpConn = createConnection("/auth/v1/otp", "POST", null);
+                org.json.JSONObject body = new org.json.JSONObject();
+                body.put("email", emailToUse);
+                body.put("create_user", false);
+                writeJson(otpConn, body);
+                int code = otpConn.getResponseCode();
+                otpConn.disconnect();
+
+                final String finalEmail = emailToUse;
+                activity.runOnUiThread(() -> {
+                    if (code >= 200 && code < 300) {
+                        android.widget.Toast.makeText(activity, "Verification OTP sent to " + finalEmail, android.widget.Toast.LENGTH_SHORT).show();
+                        android.content.Intent intent = new android.content.Intent(activity, PasswordResetOtpActivity.class);
+                        intent.putExtra("USER_EMAIL", finalEmail);
+                        intent.putExtra("IS_DELETE_ACCOUNT", true);
+                        intent.putExtra("DELETE_REASON", reason);
+                        activity.startActivity(intent);
+                    } else {
+                        android.widget.Toast.makeText(activity, "Failed to send OTP (Code " + code + ")", android.widget.Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } catch (Exception e) {
+                activity.runOnUiThread(() ->
+                        android.widget.Toast.makeText(activity, "Network error while requesting OTP.", android.widget.Toast.LENGTH_SHORT).show()
+                );
+            }
+        });
     }
 
     public static void saveSession(Context context, String accessToken, String refreshToken, String userId, String userName, String userRole) {

@@ -158,6 +158,23 @@ public class LoginActivity extends AppCompatActivity {
                     editor.putString("USER_EMAIL", email);
                     editor.apply();
 
+                    String tempGuestId = getSharedPreferences("iKhayaSupport", MODE_PRIVATE).getString("GUEST_SUPPORT_ID", "");
+                    if (tempGuestId != null && !tempGuestId.isEmpty()) {
+                        getSharedPreferences("iKhayaSupport", MODE_PRIVATE).edit().remove("GUEST_SUPPORT_ID").apply();
+                        final String guestIdToDelete = tempGuestId;
+                        executor.execute(() -> {
+                            try {
+                                HttpURLConnection delConn = SupabaseHelper.createConnection(
+                                        "/rest/v1/guest_support_messages?guest_id=eq." + java.net.URLEncoder.encode(guestIdToDelete, "UTF-8"),
+                                        "DELETE",
+                                        accessToken
+                                );
+                                delConn.getResponseCode();
+                                delConn.disconnect();
+                            } catch (Exception ignored) {}
+                        });
+                    }
+
                     // Query profile and determine routing
                     getUserRole(accessToken, userId);
 

@@ -316,7 +316,7 @@ public class UserSelectionActivity extends AppCompatActivity {
                 JSONArray supportMessages = new JSONArray();
                 HttpURLConnection supportConn = null;
                 if ("admin".equalsIgnoreCase(currentUserRole)) {
-                    String supportEndpoint = "/rest/v1/messages?select=*&or=(receiver_id.eq.ADMIN_SUPPORT,sender_id.eq.ADMIN_SUPPORT)&order=created_at.desc";
+                    String supportEndpoint = "/rest/v1/guest_support_messages?select=guest_id,guest_hint,sender_name&order=created_at.desc";
                     supportConn = SupabaseHelper.createConnection(supportEndpoint, "GET", accessToken);
                     if (supportConn.getResponseCode() >= 200 && supportConn.getResponseCode() < 300) {
                         supportMessages = new JSONArray(SupabaseHelper.readResponse(supportConn));
@@ -331,22 +331,17 @@ public class UserSelectionActivity extends AppCompatActivity {
                     
                     if (finalSupportMsgs.length() > 0) {
                         java.util.HashSet<String> seenIdsSupportMode = new java.util.HashSet<>();
-                        for (int i = 0; i < finalSupportMsgs.length(); i++) {
-                            JSONObject msg = finalSupportMsgs.optJSONObject(i);
-                            if (msg == null) continue;
-                            String sId = msg.optString("sender_id");
-                            String rId = msg.optString("receiver_id");
-                            String targetId = "ADMIN_SUPPORT".equals(sId) ? rId : sId;
-                            
-                            // Don't add admin to admin support threads
-                            if ("ADMIN_SUPPORT".equals(targetId) || targetId.isEmpty()) continue;
-                            
-                            // Prevent duplicate support entries
-                            if (!seenIdsSupportMode.contains(targetId)) {
-                                seenIdsSupportMode.add(targetId);
-                                String targetName = "Guest (" + (targetId.length() >= 8 ? targetId.substring(0, 8) : targetId) + ")";
-                                if (!targetId.startsWith("guest_")) targetName = "Support User";
-                                addUserCard(targetId, targetName, "SUPPORT REQUEST", usersListContainer, "Reply to User");
+                        for (int s = 0; s < finalSupportMsgs.length(); s++) {
+                            JSONObject sMsg = finalSupportMsgs.optJSONObject(s);
+                            if (sMsg == null) continue;
+                            String gId = sMsg.optString("guest_id", "");
+                            if (!gId.isEmpty() && !seenIdsSupportMode.contains(gId)) {
+                                seenIdsSupportMode.add(gId);
+                                String gHint = sMsg.optString("guest_hint", "Guest (" + gId + ")");
+                                if (gHint.isEmpty() || gHint.startsWith("guest_")) {
+                                    gHint = sMsg.optString("sender_name", "Guest (" + gId + ")");
+                                }
+                                addUserCard(gId, gHint, "SUPPORT REQUEST", usersListContainer, "Reply to User");
                             }
                         }
                     }
