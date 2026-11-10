@@ -65,6 +65,14 @@ public class CreatePasswordActivity extends AppCompatActivity {
         lowercaseText = findViewById(R.id.lowercaseChecker);
         numberText = findViewById(R.id.numberChecker);
         specialText = findViewById(R.id.specialCharacter);
+        
+        android.view.View btnSupportMail = findViewById(R.id.btnSupportMail);
+        if (btnSupportMail != null) {
+            btnSupportMail.setOnClickListener(v -> {
+                String userHint = getIntent().getStringExtra("EMAIL") != null ? getIntent().getStringExtra("EMAIL") : "";
+                SupabaseHelper.openAdminSupportChat(this, userHint);
+            });
+        }
 
         if (editPassword == null
                 || passwordStrengthProgressbar == null

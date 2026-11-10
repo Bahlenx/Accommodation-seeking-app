@@ -53,6 +53,14 @@ public class PasswordResetOtpActivity extends AppCompatActivity {
         rbSmsOtp = findViewById(R.id.rbSmsOtp);
 
         email = getIntent().getStringExtra("USER_EMAIL");
+        
+        android.view.View btnSupportMail = findViewById(R.id.btnSupportMail);
+        if (btnSupportMail != null) {
+            btnSupportMail.setOnClickListener(v -> {
+                String userHint = email != null ? email : "";
+                SupabaseHelper.openAdminSupportChat(this, userHint);
+            });
+        }
 
         if (rbSmsOtp != null) {
             rbSmsOtp.setVisibility(View.GONE);

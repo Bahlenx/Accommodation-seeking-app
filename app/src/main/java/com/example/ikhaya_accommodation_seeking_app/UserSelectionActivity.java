@@ -311,10 +311,45 @@ public class UserSelectionActivity extends AppCompatActivity {
                         ? new JSONArray(SupabaseHelper.readResponse(connMsgs))
                         : new JSONArray();
 
+                // 3. ADMIN SUPPORT mode
+                String currentUserRole = getSharedPreferences("iKhayaSession", MODE_PRIVATE).getString("USER_ROLE", "");
+                JSONArray supportMessages = new JSONArray();
+                HttpURLConnection supportConn = null;
+                if ("admin".equalsIgnoreCase(currentUserRole)) {
+                    String supportEndpoint = "/rest/v1/messages?select=*&or=(receiver_id.eq.ADMIN_SUPPORT,sender_id.eq.ADMIN_SUPPORT)&order=created_at.desc";
+                    supportConn = SupabaseHelper.createConnection(supportEndpoint, "GET", accessToken);
+                    if (supportConn.getResponseCode() >= 200 && supportConn.getResponseCode() < 300) {
+                        supportMessages = new JSONArray(SupabaseHelper.readResponse(supportConn));
+                    }
+                }
+
+                final JSONArray finalSupportMsgs = supportMessages;
                 runOnUiThread(() -> {
                     if (isFinishing() || isDestroyed()) return;
                     if (progressUsers != null) progressUsers.setVisibility(View.GONE);
                     mergeAndDisplayChats(requestsArray, messagesArray);
+                    
+                    if (finalSupportMsgs.length() > 0) {
+                        java.util.HashSet<String> seenIdsSupportMode = new java.util.HashSet<>();
+                        for (int i = 0; i < finalSupportMsgs.length(); i++) {
+                            JSONObject msg = finalSupportMsgs.optJSONObject(i);
+                            if (msg == null) continue;
+                            String sId = msg.optString("sender_id");
+                            String rId = msg.optString("receiver_id");
+                            String targetId = "ADMIN_SUPPORT".equals(sId) ? rId : sId;
+                            
+                            // Don't add admin to admin support threads
+                            if ("ADMIN_SUPPORT".equals(targetId) || targetId.isEmpty()) continue;
+                            
+                            // Prevent duplicate support entries
+                            if (!seenIdsSupportMode.contains(targetId)) {
+                                seenIdsSupportMode.add(targetId);
+                                String targetName = "Guest (" + (targetId.length() >= 8 ? targetId.substring(0, 8) : targetId) + ")";
+                                if (!targetId.startsWith("guest_")) targetName = "Support User";
+                                addUserCard(targetId, targetName, "SUPPORT REQUEST", usersListContainer, "Reply to User");
+                            }
+                        }
+                    }
                 });
 
             } catch (Exception e) {
@@ -470,7 +505,7 @@ public class UserSelectionActivity extends AppCompatActivity {
                 }
             }
 
-            for (int i = 0; i < usersArray.length(); i++) {
+                    for (int i = 0; i < usersArray.length(); i++) {
                 JSONObject obj = usersArray.getJSONObject(i);
 
                 String userId = obj.optString("id", "");

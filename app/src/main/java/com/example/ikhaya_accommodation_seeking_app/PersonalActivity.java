@@ -127,6 +127,14 @@ public class PersonalActivity extends AppCompatActivity {
                     v -> finish()
             );
         }
+        
+        android.view.View btnSupportMail = findViewById(R.id.btnSupportMail);
+        if (btnSupportMail != null) {
+            btnSupportMail.setOnClickListener(v -> {
+                String userHint = getIntent().getStringExtra("EMAIL") != null ? getIntent().getStringExtra("EMAIL") : "";
+                SupabaseHelper.openAdminSupportChat(this, userHint);
+            });
+        }
 
         if (gpsBtn != null) {
 

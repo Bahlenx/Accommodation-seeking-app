@@ -56,8 +56,6 @@ public class LandlordProfileActivity extends AppCompatActivity {
         open(R.id.btnNotifications, NotificationsActivity.class);
         open(R.id.btnChangePassword, ChangePasswordActivity.class);
         open(R.id.btnReportProblem, ReportProblemActivity.class);
-        open(R.id.btnPaymentsReceived, PaymentsReceivedActivity.class);
-        open(R.id.btnPaymentHistory, PaymentHistoryActivity.class);
 
         open(R.id.navDashboard, LandlordDashboardActivity.class);
         open(R.id.navListings, MyListingsActivity.class);
@@ -73,6 +71,10 @@ public class LandlordProfileActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        if (viewNotificationDot != null && NotificationHelper.hasUnreadDot(this)) {
+            viewNotificationDot.setVisibility(View.VISIBLE);
+        }
+        NotificationHelper.checkAndTriggerNotifications(this);
         loadDynamicData();
         if (tvCurrentLanguage != null) {
             tvCurrentLanguage.setText(getActiveLanguageDisplayName());
@@ -198,7 +200,7 @@ public class LandlordProfileActivity extends AppCompatActivity {
                 }
                 conn.disconnect();
                 
-                final boolean finalHasNotif = hasNotif || finalUnread > 0;
+                final boolean finalHasNotif = hasNotif || finalUnread > 0 || NotificationHelper.hasUnreadDot(this);
                 runOnUiThread(() -> {
                     if (viewNotificationDot != null) {
                         viewNotificationDot.setVisibility(finalHasNotif ? View.VISIBLE : View.GONE);

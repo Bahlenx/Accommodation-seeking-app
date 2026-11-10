@@ -101,6 +101,10 @@ public class ChatActivity extends AppCompatActivity {
         btnChatOptions = findViewById(R.id.btnChatOptions);
 
         View btnBack = findViewById(R.id.btnBackChat);
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> finish());
+        }
+
         TextView txtTitle = findViewById(R.id.txtChatTitle);
         TextView txtSubtitle = findViewById(R.id.txtChatSubtitle);
 
@@ -113,6 +117,26 @@ public class ChatActivity extends AppCompatActivity {
 
         String receiverName = getIntent().getStringExtra("RECEIVER_NAME");
         isCommunity = getIntent().getBooleanExtra("IS_COMMUNITY", false);
+        boolean isAdminSupport = getIntent().getBooleanExtra("IS_ADMIN_SUPPORT", false);
+        if (isAdminSupport) {
+            String guestId = getSharedPreferences("iKhayaSupport", MODE_PRIVATE).getString("GUEST_SUPPORT_ID", "");
+            if (senderId != null && senderId.isEmpty() && guestId != null && !guestId.isEmpty()) {
+                senderId = guestId;
+            }
+            String supportUserHint = getIntent().getStringExtra("SUPPORT_USER_HINT");
+            if (supportUserHint != null && !supportUserHint.isEmpty()) {
+                senderName = "Guest (" + supportUserHint + ")";
+            } else {
+                senderName = "Guest Support User";
+            }
+            senderRole = "SUPPORT";
+            receiverId = "ADMIN_SUPPORT";
+            receiverName = "iKhaya Admin Support";
+
+            if (txtTitle != null) txtTitle.setText(receiverName);
+            if (txtSubtitle != null) txtSubtitle.setText("Admin Team");
+        }
+
 
         if (senderName == null || senderName.trim().isEmpty()) {
             senderName = getString(R.string.default_chat_user_name);
@@ -271,6 +295,15 @@ public class ChatActivity extends AppCompatActivity {
                 if (isCommunity) {
                     endpoint = "/rest/v1/messages?receiver_id=eq.COMMUNITY"
                             + "&order=created_at.asc&limit=150";
+                } else if ("ADMIN_SUPPORT".equals(receiverId) || receiverId.startsWith("guest_")) {
+                    String userOrGuest = "ADMIN_SUPPORT".equals(receiverId) ? senderId : receiverId;
+                    String adminUid = "ADMIN_SUPPORT".equals(receiverId) ? "ADMIN_SUPPORT" : senderId;
+                    endpoint = "/rest/v1/messages?or=("
+                            + "and(sender_id.eq." + userOrGuest + ",receiver_id.eq.ADMIN_SUPPORT),"
+                            + "and(sender_id.eq.ADMIN_SUPPORT,receiver_id.eq." + userOrGuest + "),"
+                            + "and(sender_id.eq." + userOrGuest + ",receiver_id.eq." + adminUid + "),"
+                            + "and(sender_id.eq." + adminUid + ",receiver_id.eq." + userOrGuest + ")"
+                            + ")&order=created_at.asc&limit=150";
                 } else {
                     String encodedSender = SupabaseHelper.encode(senderId);
                     String encodedReceiver = SupabaseHelper.encode(receiverId);

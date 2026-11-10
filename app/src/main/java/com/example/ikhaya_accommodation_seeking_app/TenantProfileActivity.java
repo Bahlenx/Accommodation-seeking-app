@@ -56,7 +56,6 @@ public class TenantProfileActivity extends AppCompatActivity {
         open(R.id.btnNotifications, NotificationsActivity.class);
         open(R.id.btnChangePassword, ChangePasswordActivity.class);
         open(R.id.btnReportProblem, ReportProblemActivity.class);
-        open(R.id.btnPaymentHistory, PaymentHistoryActivity.class);
 
         open(R.id.navHome, HomeActivity.class);
         open(R.id.navFavorites, SavedListingsActivity.class);
@@ -72,6 +71,10 @@ public class TenantProfileActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        if (viewNotificationDot != null && NotificationHelper.hasUnreadDot(this)) {
+            viewNotificationDot.setVisibility(View.VISIBLE);
+        }
+        NotificationHelper.checkAndTriggerNotifications(this);
         loadDynamicData();
         if (tvCurrentLanguage != null) {
             tvCurrentLanguage.setText(getActiveLanguageDisplayName());
@@ -94,14 +97,22 @@ public class TenantProfileActivity extends AppCompatActivity {
             return;
         }
 
-        // 1. Saved Count (From SharedPreferences or Network)
-        int savedCount = getSharedPreferences("SavedListings", MODE_PRIVATE).getAll().size();
-        if (tvSavedCountBadge != null) {
-            tvSavedCountBadge.setText(savedCount + " Saved");
-        }
-
         executor.execute(() -> {
             try {
+                // 1. Saved Count (From Supabase Network)
+                String savedEndpoint = "/rest/v1/saved_listings?select=id&tenant_uid=eq." + userId;
+                HttpURLConnection connSaved = SupabaseHelper.createConnection(savedEndpoint, "GET", token);
+                if (connSaved.getResponseCode() >= 200 && connSaved.getResponseCode() < 300) {
+                    JSONArray savedArr = new JSONArray(SupabaseHelper.readResponse(connSaved));
+                    final int savedCount = savedArr.length();
+                    runOnUiThread(() -> {
+                        if (tvSavedCountBadge != null) {
+                            tvSavedCountBadge.setText(savedCount + " Saved");
+                        }
+                    });
+                }
+                connSaved.disconnect();
+
                 // 2. Location & Verification
                 String locationEndpoint = "/rest/v1/profiles?select=full_name,city,province,suburb&firebase_uid=eq." + userId + "&limit=1";
                 HttpURLConnection conn = SupabaseHelper.createConnection(locationEndpoint, "GET", token);
@@ -195,7 +206,7 @@ public class TenantProfileActivity extends AppCompatActivity {
                 }
                 conn.disconnect();
 
-                final boolean finalHasNotif = hasNotif;
+                final boolean finalHasNotif = hasNotif || NotificationHelper.hasUnreadDot(this);
                 runOnUiThread(() -> {
                     if (viewNotificationDot != null) {
                         viewNotificationDot.setVisibility(finalHasNotif ? View.VISIBLE : View.GONE);

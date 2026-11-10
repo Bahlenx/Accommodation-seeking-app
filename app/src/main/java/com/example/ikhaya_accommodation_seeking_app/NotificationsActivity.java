@@ -74,6 +74,7 @@ public class NotificationsActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         activityVisible = true;
+        NotificationHelper.markUnreadDot(this, false);
         pollHandler.removeCallbacks(pollRunnable);
         pollHandler.post(pollRunnable);
     }

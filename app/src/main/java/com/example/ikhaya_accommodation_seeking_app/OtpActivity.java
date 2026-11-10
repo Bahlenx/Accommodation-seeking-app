@@ -32,6 +32,14 @@ public class OtpActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_otp);
+        android.view.View btnSupportMail = findViewById(R.id.btnSupportMail);
+        if (btnSupportMail != null) {
+            btnSupportMail.setOnClickListener(v -> {
+                String userHint = email != null ? email : "";
+                SupabaseHelper.openAdminSupportChat(this, userHint);
+            });
+        }
+
 
         ImageButton backButton = findViewById(R.id.back_button);
         if (backButton != null) {

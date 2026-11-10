@@ -24,6 +24,7 @@ public class RegistrationActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_regitration);
 
+
         ImageButton backButton =
                 findViewById(R.id.back_button);
 
@@ -103,6 +104,14 @@ public class RegistrationActivity extends AppCompatActivity {
 
         EditText editEmail =
                 findViewById(R.id.editEmailAddress);
+                
+        android.view.View btnSupportMail = findViewById(R.id.btnSupportMail);
+        if (btnSupportMail != null) {
+            btnSupportMail.setOnClickListener(v -> {
+                String userHint = editEmail != null ? editEmail.getText().toString().trim() : "";
+                SupabaseHelper.openAdminSupportChat(this, userHint);
+            });
+        }
 
         Button otpButton =
                 findViewById(R.id.otp_button);

@@ -38,6 +38,7 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        NotificationHelper.startBackgroundPoller(this);
 
         ImageButton backButton = findViewById(R.id.back_button);
         emailInput = findViewById(R.id.editTextText);
@@ -46,12 +47,17 @@ public class LoginActivity extends AppCompatActivity {
         forgotPasswordText = findViewById(R.id.forgotPasswordText);
         togglePasswordButton = findViewById(R.id.btnTogglePassword);
 
+        android.view.View btnSupportMail = findViewById(R.id.btnSupportMail);
+        if (btnSupportMail != null) {
+            btnSupportMail.setOnClickListener(v -> {
+                String userHint = emailInput != null ? emailInput.getText().toString().trim() : "";
+                SupabaseHelper.openAdminSupportChat(this, userHint);
+            });
+        }
+
         // Back button navigation
         if (backButton != null) {
             backButton.setOnClickListener(v -> {
-                Intent intent = new Intent(LoginActivity.this, OuterMainActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                startActivity(intent);
                 finish();
             });
         }
@@ -85,14 +91,12 @@ public class LoginActivity extends AppCompatActivity {
                 String password = passwordInput.getText().toString();
 
                 if (email.isEmpty()) {
-                    emailInput.setError("Enter your email address.");
-                    emailInput.requestFocus();
+                    SupabaseHelper.showValidationError(this, emailInput, "Enter your email address.");
                     return;
                 }
 
                 if (password.isEmpty()) {
-                    passwordInput.setError("Enter your password.");
-                    passwordInput.requestFocus();
+                    SupabaseHelper.showValidationError(this, passwordInput, "Enter your password.");
                     return;
                 }
 

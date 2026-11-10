@@ -60,6 +60,32 @@ public class SupabaseHelper {
 
     private static final long THIRTY_DAYS_MS = 30L * 24L * 60L * 60L * 1000L;
 
+    
+    public static void showValidationError(android.content.Context context, android.widget.EditText field, String message) {
+        android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_SHORT).show();
+        if (field != null) {
+            android.text.SpannableString span = new android.text.SpannableString(message);
+            span.setSpan(new android.text.style.ForegroundColorSpan(android.graphics.Color.WHITE), 0, span.length(), 0);
+            field.setError(span);
+            field.requestFocus();
+        }
+    }
+
+    public static void openAdminSupportChat(android.content.Context context, String userHint) {
+        String guestId = context.getSharedPreferences("iKhayaSupport", android.content.Context.MODE_PRIVATE).getString("GUEST_SUPPORT_ID", "");
+        if (guestId.isEmpty()) {
+            guestId = "guest_" + java.util.UUID.randomUUID().toString().substring(0, 8);
+            context.getSharedPreferences("iKhayaSupport", android.content.Context.MODE_PRIVATE).edit().putString("GUEST_SUPPORT_ID", guestId).apply();
+        }
+
+        android.content.Intent intent = new android.content.Intent(context, ChatActivity.class);
+        intent.putExtra("IS_ADMIN_SUPPORT", true);
+        intent.putExtra("RECEIVER_ID", "ADMIN_SUPPORT");
+        intent.putExtra("RECEIVER_NAME", "iKhaya Admin Support");
+        intent.putExtra("SUPPORT_USER_HINT", userHint);
+        context.startActivity(intent);
+    }
+
     public static void saveSession(Context context, String accessToken, String refreshToken, String userId, String userName, String userRole) {
         android.content.SharedPreferences.Editor editor = context.getSharedPreferences("iKhayaSession", Context.MODE_PRIVATE).edit();
         if (accessToken != null) editor.putString("access_token", accessToken);
