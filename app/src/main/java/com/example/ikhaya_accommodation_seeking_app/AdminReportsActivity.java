@@ -28,6 +28,9 @@ public class AdminReportsActivity extends AppCompatActivity {
     private LinearLayout reportsContainer;
     private ProgressBar progressReports;
     private TextView tvEmptyReports;
+    
+    private TextView tabIssueTickets, tabGuestChats;
+    private boolean showingGuestChats = false;
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
@@ -44,6 +47,31 @@ public class AdminReportsActivity extends AppCompatActivity {
         reportsContainer = findViewById(R.id.reportsContainer);
         progressReports = findViewById(R.id.progressReports);
         tvEmptyReports = findViewById(R.id.tvEmptyReports);
+        
+        tabIssueTickets = findViewById(R.id.tabIssueTickets);
+        tabGuestChats = findViewById(R.id.tabGuestChats);
+        
+        tabIssueTickets.setOnClickListener(v -> {
+            if (showingGuestChats) {
+                showingGuestChats = false;
+                tabIssueTickets.setBackgroundColor(Color.parseColor("#B85032"));
+                tabIssueTickets.setTextColor(Color.WHITE);
+                tabGuestChats.setBackgroundColor(Color.TRANSPARENT);
+                tabGuestChats.setTextColor(Color.parseColor("#1F1F1F"));
+                loadReports();
+            }
+        });
+        
+        tabGuestChats.setOnClickListener(v -> {
+            if (!showingGuestChats) {
+                showingGuestChats = true;
+                tabGuestChats.setBackgroundColor(Color.parseColor("#B85032"));
+                tabGuestChats.setTextColor(Color.WHITE);
+                tabIssueTickets.setBackgroundColor(Color.TRANSPARENT);
+                tabIssueTickets.setTextColor(Color.parseColor("#1F1F1F"));
+                loadGuestSupportChats();
+            }
+        });
 
         loadReports();
     }
@@ -252,6 +280,156 @@ public class AdminReportsActivity extends AppCompatActivity {
                 if (conn != null) conn.disconnect();
             }
         });
+    }
+
+    private void loadGuestSupportChats() {
+        String token = SupabaseHelper.getAccessToken(this);
+        if (token == null || token.isEmpty()) return;
+
+        progressReports.setVisibility(View.VISIBLE);
+        tvEmptyReports.setVisibility(View.GONE);
+        reportsContainer.removeAllViews();
+
+        executor.execute(() -> {
+            try {
+                HttpURLConnection conn = SupabaseHelper.createConnection(
+                        "/rest/v1/guest_support_messages?select=guest_id,guest_hint,sender_name,message_text,created_at&order=created_at.desc",
+                        "GET", token);
+                conn.setRequestProperty("x-admin-panel", "true");
+                
+                int code = conn.getResponseCode();
+                String res = SupabaseHelper.readResponse(conn);
+                conn.disconnect();
+
+                if (code >= 200 && code < 300) {
+                    JSONArray arr = new JSONArray(res);
+                    java.util.HashSet<String> seenGuests = new java.util.HashSet<>();
+                    final JSONArray uniqueChats = new JSONArray();
+                    for (int i = 0; i < arr.length(); i++) {
+                        JSONObject msg = arr.getJSONObject(i);
+                        String gId = msg.optString("guest_id", "");
+                        if (!gId.isEmpty() && !seenGuests.contains(gId)) {
+                            seenGuests.add(gId);
+                            uniqueChats.put(msg);
+                        }
+                    }
+
+                    runOnUiThread(() -> {
+                        if (isFinishing() || isDestroyed()) return;
+                        progressReports.setVisibility(View.GONE);
+                        tabGuestChats.setText("Guest Support Chats (" + uniqueChats.length() + ")");
+                        
+                        if (uniqueChats.length() == 0) {
+                            tvEmptyReports.setText("No active guest support chats found.");
+                            tvEmptyReports.setVisibility(View.VISIBLE);
+                        } else {
+                            for (int i = 0; i < uniqueChats.length(); i++) {
+                                JSONObject msg = uniqueChats.optJSONObject(i);
+                                if (msg != null) addGuestChatCard(msg);
+                            }
+                        }
+                    });
+                } else {
+                    runOnUiThread(() -> {
+                        progressReports.setVisibility(View.GONE);
+                        Toast.makeText(this, "Failed to load chats.", Toast.LENGTH_SHORT).show();
+                    });
+                }
+            } catch (Exception e) {
+                runOnUiThread(() -> {
+                    progressReports.setVisibility(View.GONE);
+                    Toast.makeText(this, "Error fetching chats.", Toast.LENGTH_SHORT).show();
+                });
+            }
+        });
+    }
+
+    private void addGuestChatCard(JSONObject msg) {
+        String gId = msg.optString("guest_id", "");
+        String gHint = msg.optString("guest_hint", "");
+        if (gHint.isEmpty() || gHint.startsWith("guest_")) {
+            gHint = msg.optString("sender_name", "");
+        }
+        if (gHint.isEmpty() || gHint.startsWith("guest_")) {
+            gHint = "Guest (" + gId.substring(0, Math.min(12, gId.length())) + ")";
+        }
+        
+        String latestText = msg.optString("message_text", "Sent a message");
+        String senderName = msg.optString("sender_name", "");
+
+        CardView card = new CardView(this);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        params.setMargins(16, 16, 16, 8);
+        card.setLayoutParams(params);
+        card.setCardElevation(4f);
+        card.setRadius(12f);
+        card.setCardBackgroundColor(Color.WHITE);
+
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setPadding(32, 32, 32, 32);
+
+        TextView tvBadge = new TextView(this);
+        tvBadge.setText("PRE-LOGIN GUEST SUPPORT");
+        tvBadge.setTextColor(Color.parseColor("#B85032"));
+        tvBadge.setTextSize(10f);
+        tvBadge.setTypeface(null, Typeface.BOLD);
+        layout.addView(tvBadge);
+
+        TextView tvTitle = new TextView(this);
+        tvTitle.setText(gHint);
+        tvTitle.setTextColor(Color.parseColor("#212529"));
+        tvTitle.setTextSize(16f);
+        tvTitle.setTypeface(null, Typeface.BOLD);
+        tvTitle.setPadding(0, 8, 0, 8);
+        layout.addView(tvTitle);
+
+        TextView tvBody = new TextView(this);
+        tvBody.setText((senderName.equals(gHint) ? "" : senderName + ": ") + latestText);
+        tvBody.setTextColor(Color.parseColor("#495057"));
+        tvBody.setTextSize(14f);
+        layout.addView(tvBody);
+
+        Button btnReply = new Button(this);
+        LinearLayout.LayoutParams btnParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        btnParams.setMargins(0, 24, 0, 0);
+        btnReply.setLayoutParams(btnParams);
+        btnReply.setText("Reply in Chat");
+        btnReply.setBackgroundColor(Color.parseColor("#E9ECEF"));
+        btnReply.setTextColor(Color.parseColor("#495057"));
+        
+        final String finalGHint = gHint;
+        btnReply.setOnClickListener(v -> {
+            Intent chatIntent = new Intent(this, ChatActivity.class);
+            chatIntent.putExtra("IS_ADMIN_SUPPORT", true);
+            chatIntent.putExtra("GUEST_ID", gId);
+            chatIntent.putExtra("SENDER_ID", "ADMIN_SUPPORT");
+            chatIntent.putExtra("SENDER_NAME", "iKhaya Admin Support");
+            chatIntent.putExtra("SENDER_ROLE", "ADMIN");
+            chatIntent.putExtra("RECEIVER_ID", gId);
+            chatIntent.putExtra("RECEIVER_NAME", finalGHint);
+            startActivity(chatIntent);
+        });
+        
+        layout.addView(btnReply);
+        card.addView(layout);
+        reportsContainer.addView(card);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (showingGuestChats) {
+            loadGuestSupportChats();
+        } else {
+            loadReports();
+        }
     }
 
     @Override

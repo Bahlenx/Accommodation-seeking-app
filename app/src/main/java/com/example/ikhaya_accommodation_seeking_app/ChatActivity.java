@@ -77,6 +77,8 @@ public class ChatActivity extends AppCompatActivity {
     private boolean isGuestSupportChat = false;
     private String supportGuestId = "";
 
+    private String receiverNameField = "";
+    
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     private final Handler pollHandler = new Handler(Looper.getMainLooper());
@@ -119,6 +121,7 @@ public class ChatActivity extends AppCompatActivity {
         receiverId = getIntent().getStringExtra("RECEIVER_ID");
 
         String receiverName = getIntent().getStringExtra("RECEIVER_NAME");
+        receiverNameField = receiverName;
         isCommunity = getIntent().getBooleanExtra("IS_COMMUNITY", false);
         
         boolean isAdminSupportIntent = getIntent().getBooleanExtra("IS_ADMIN_SUPPORT", false);
@@ -130,6 +133,10 @@ public class ChatActivity extends AppCompatActivity {
             if (receiverId != null && receiverId.startsWith("guest_")) {
                 // Admin is viewing and replying to a specific Guest thread
                 supportGuestId = receiverId;
+                senderId = "ADMIN_SUPPORT";
+                senderName = "iKhaya Admin Support";
+                senderRole = "ADMIN";
+                
                 if (txtTitle != null && receiverName != null) {
                     txtTitle.setText(receiverName);
                 }
@@ -327,6 +334,9 @@ public class ChatActivity extends AppCompatActivity {
                 
                 if (isGuestSupportChat && supportGuestId != null) {
                     connection.setRequestProperty("x-guest-id", supportGuestId);
+                    if ("ADMIN_SUPPORT".equals(senderId)) {
+                        connection.setRequestProperty("x-admin-panel", "true");
+                    }
                 }
 
                 int code = connection.getResponseCode();
@@ -776,14 +786,19 @@ public class ChatActivity extends AppCompatActivity {
                 String authToken = ((isGuestSupportChat && senderId != null && senderId.startsWith("guest_")) || accessToken == null || accessToken.isEmpty()) ? null : accessToken;
                 connection = SupabaseHelper.createConnection(postEndpoint, "POST", authToken);
                 connection.setRequestProperty("Prefer", "return=minimal");
+                
+                if (isGuestSupportChat && "ADMIN_SUPPORT".equals(senderId)) {
+                    connection.setRequestProperty("x-admin-panel", "true");
+                }
 
                 JSONObject body = new JSONObject();
                 if (isGuestSupportChat) {
+                    boolean isFromGuest = senderId != null && senderId.startsWith("guest_");
                     body.put("guest_id", supportGuestId);
-                    body.put("guest_hint", senderId.startsWith("guest_") ? senderName : receiverId);
-                    body.put("sender_id", senderId);
-                    body.put("sender_name", senderName);
-                    body.put("receiver_id", receiverId);
+                    body.put("guest_hint", isFromGuest ? senderName : (receiverNameField != null ? receiverNameField : supportGuestId));
+                    body.put("sender_id", isFromGuest ? supportGuestId : "ADMIN_SUPPORT");
+                    body.put("sender_name", isFromGuest ? senderName : "iKhaya Admin Support");
+                    body.put("receiver_id", isFromGuest ? "ADMIN_SUPPORT" : supportGuestId);
                     body.put("message_text", payloadText);
                 } else {
                     body.put("sender_id", senderId);
