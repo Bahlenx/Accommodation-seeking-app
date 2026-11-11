@@ -119,6 +119,7 @@ public class SupabaseHelper {
                 .show();
     }
 
+
     private static void sendDeleteAccountOtp(android.app.Activity activity, String cachedEmail, String reason) {
         String token = getAccessToken(activity);
         java.util.concurrent.Executors.newSingleThreadExecutor().execute(() -> {
