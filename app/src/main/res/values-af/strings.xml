@@ -1077,4 +1077,42 @@
     <string name="title_request_sent">Versoek Gestuur</string>
     <string name="action_delete_chat">Skrap Klets</string>
 
+    <!-- New UI & Analytics Strings -->
+    <string name="card_title_viewing_tickets">Besigtigingskaartjies</string>
+    <string name="card_subtitle_viewing_tickets">Totale besigtigingsversoeke</string>
+    <string name="card_title_support_issue_tickets">Ondersteuning &amp; Kwatwessiekaartjies</string>
+    <string name="card_subtitle_support_issue_tickets">Hangende ondersteuning- en kwessie-verslae</string>
+    <string name="label_past_7_days">Afgelope 7 Dae</string>
+    <string name="subtitle_realtime_engagement">Intekenaar- en lysinteraksie intyds</string>
+    <string name="label_analytics_searches">Soektogte</string>
+    <string name="label_analytics_views">Lysbesigtigings</string>
+    <string name="label_analytics_bookings">Besigtigings Gemaak</string>
+    <string name="label_admin_approval_clearance">Beheerder-goedkeuringsuitklaring</string>
+    <string name="total_purchase_price_r">Totale Koopprys (R)</string>
+    <string name="msg_gps_captured">GPS-koördinate vasgelê!</string>
+    <string name="msg_searching_gps">Soek vir GPS-sein…</string>
+    <string name="msg_location_permission_required">Liggingtoestemming vereis.</string>
+    <string name="badge_for_sale">TE KOOP</string>
+    <string name="badge_for_rent">TE HUUR</string>
+    <string name="label_enquiry_phone_prefix">Foon: %1$s</string>
+    <string name="label_enquiry_email_prefix">E-pos: %1$s</string>
+    <string name="label_enquiry_message_header">Boodskap:</string>
+    <string name="btn_approve_contact">Keur kontak goed</string>
+    <string name="btn_deny_contact">Weier</string>
+
+    <!-- Landlord Verification Strings -->
+    <string name="title_landlord_identity_verification">Verhuurder Identiteitsverifikasie</string>
+    <string name="label_sa_id_number_13">Suid-Afrikaanse ID-nommer (13 Syfers)</string>
+    <string name="hint_sa_id_13_digit">13-Syfer SA ID-nommer</string>
+    <string name="btn_upload_id_doc">Laai ID-dokument Op (Kaart / Boek)</string>
+    <string name="status_no_doc_selected">Geen dokument gekies nie</string>
+    <string name="btn_take_upload_selfie">Neem / Laai Verifikasie-selfie Op</string>
+    <string name="status_no_selfie_uploaded">Geen selfie opgelaai nie</string>
+    <string name="btn_verify_id">VERIFIEER ID</string>
+    <string name="title_landlord_id_review">Verhuurder Identiteitstruksie</string>
+    <string name="btn_view_id_doc">Sien ID-dok</string>
+    <string name="btn_view_selfie">Sien Selfie</string>
+    <string name="btn_approve_landlord_identity">Keur Verhuurder-identiteit Goed</string>
+    <string name="label_landlord_name_prefix">Verhuurder: %1$s</string>
+    <string name="label_sa_id_prefix">SA ID: %1$s</string>
 </resources>

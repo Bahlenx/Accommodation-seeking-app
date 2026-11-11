@@ -23,8 +23,7 @@ public class GeminiTranslator {
 
     // Direct, pinned model endpoint to avoid deprecated alias 404s
     // Use the current active 3.5 production model
-    private static final String API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent";
-
+    private static final String API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
     // Reusable client with socket timeouts to prevent timeout drops
     private static final OkHttpClient client = new OkHttpClient.Builder()
             .connectTimeout(25, TimeUnit.SECONDS)

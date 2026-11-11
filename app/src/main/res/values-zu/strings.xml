@@ -1077,4 +1077,42 @@
     <string name="title_request_sent">Isicelo Sithunyelwe</string>
     <string name="action_delete_chat">Susa Inxoxo</string>
 
+    <!-- New UI & Analytics Strings -->
+    <string name="card_title_viewing_tickets">Amathikithi Okubona</string>
+    <string name="card_subtitle_viewing_tickets">Izicelo zonke zokubona</string>
+    <string name="card_title_support_issue_tickets">Amathikithi Tshekelo neZinkinga</string>
+    <string name="card_subtitle_support_issue_tickets">Imibiko yesusekelo elindeleyo</string>
+    <string name="label_past_7_days">Izinsuku ezi-7 ezedlule</string>
+    <string name="subtitle_realtime_engagement">Ukubandakanyeka kwabaqashi nezindawo intyds</string>
+    <string name="label_analytics_searches">Izimfuno</string>
+    <string name="label_analytics_views">Ukubonwa Kwezindawo</string>
+    <string name="label_analytics_bookings">Ukubona Kwenziwe</string>
+    <string name="label_admin_approval_clearance">Ugunyazo Lokuvisisa loMlawuli</string>
+    <string name="total_purchase_price_r">Intengo Yonke Yokuthenga (R)</string>
+    <string name="msg_gps_captured">Imininingwane yeGPS ibanjwe!</string>
+    <string name="msg_searching_gps">Icinga uphawu lweGPS…</string>
+    <string name="msg_location_permission_required">Igunya lendawo liyadingeka.</string>
+    <string name="badge_for_sale">IYATENGISWA</string>
+    <string name="badge_for_rent">IYARHAFISWA</string>
+    <string name="label_enquiry_phone_prefix">Inombolo yocingo: %1$s</string>
+    <string name="label_enquiry_email_prefix">I-imeyili: %1$s</string>
+    <string name="label_enquiry_message_header">Umyalezo:</string>
+    <string name="btn_approve_contact">Vumela ikhontakthi</string>
+    <string name="btn_deny_contact">Gatya</string>
+
+    <!-- Landlord Verification Strings -->
+    <string name="title_landlord_identity_verification">Ukuqinisekiswa Kwemininingwane Yabaphathi</string>
+    <string name="label_sa_id_number_13">Inombolo ye-ID yaseNingizimu Afrika (Izibalo ezi-13)</string>
+    <string name="hint_sa_id_13_digit">Inombolo ye-ID yaseNingizimu Afrika enezinhlamvu ezi-13</string>
+    <string name="btn_upload_id_doc">Layisha Umqulu we-ID (Ikhadi / Incwadi)</string>
+    <string name="status_no_doc_selected">Akukho mqulu okhethiwe</string>
+    <string name="btn_take_upload_selfie">Thatha / Layisha Isithombe se-Selfie</string>
+    <string name="status_no_selfie_uploaded">Akukho sithombe esifakiwe</string>
+    <string name="btn_verify_id">QINISEKISA ID</string>
+    <string name="title_landlord_id_review">Uhlaziyo Kwemininingwane Yabaphathi</string>
+    <string name="btn_view_id_doc">Bheka ID</string>
+    <string name="btn_view_selfie">Bheka Isithombe</string>
+    <string name="btn_approve_landlord_identity">Amukela Imininingwane Yabaphathi</string>
+    <string name="label_landlord_name_prefix">Umnikazi Wendawo: %1$s</string>
+    <string name="label_sa_id_prefix">RSA ID: %1$s</string>
 </resources>

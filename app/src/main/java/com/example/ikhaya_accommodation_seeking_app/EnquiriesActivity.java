@@ -221,7 +221,7 @@ public class EnquiriesActivity extends AppCompatActivity {
         // Contact info lines (without emojis)
         if (!senderPhone.isEmpty()) {
             TextView tvPhone = new TextView(this);
-            tvPhone.setText("Phone: " + senderPhone);
+            tvPhone.setText(getString(R.string.label_enquiry_phone_prefix, senderPhone));
             tvPhone.setTextSize(13);
             tvPhone.setTextColor(Color.parseColor("#756763"));
             tvPhone.setPadding(0, dp(6), 0, 0);
@@ -230,7 +230,7 @@ public class EnquiriesActivity extends AppCompatActivity {
 
         if (!senderEmail.isEmpty()) {
             TextView tvEmail = new TextView(this);
-            tvEmail.setText("Email: " + senderEmail);
+            tvEmail.setText(getString(R.string.label_enquiry_email_prefix, senderEmail));
             tvEmail.setTextSize(13);
             tvEmail.setTextColor(Color.parseColor("#756763"));
             tvEmail.setPadding(0, dp(2), 0, 0);
@@ -239,7 +239,7 @@ public class EnquiriesActivity extends AppCompatActivity {
 
         // Message Section
         TextView tvMsgLabel = new TextView(this);
-        tvMsgLabel.setText("Message:");
+        tvMsgLabel.setText(R.string.label_enquiry_message_header);
         tvMsgLabel.setTextSize(13);
         tvMsgLabel.setTypeface(null, Typeface.BOLD);
         tvMsgLabel.setTextColor(Color.parseColor("#1F1614"));
@@ -267,7 +267,7 @@ public class EnquiriesActivity extends AppCompatActivity {
             actions.setLayoutParams(actionsParams);
 
             Button approveButton = new Button(this);
-            approveButton.setText("Approve contact");
+            approveButton.setText(R.string.btn_approve_contact);
             approveButton.setTransformationMethod(null);
             approveButton.setTextSize(13);
             approveButton.setTypeface(null, Typeface.BOLD);
@@ -279,7 +279,7 @@ public class EnquiriesActivity extends AppCompatActivity {
             approveButton.setBackground(approveBg);
 
             Button denyButton = new Button(this);
-            denyButton.setText("Deny");
+            denyButton.setText(R.string.btn_deny_contact);
             denyButton.setTransformationMethod(null);
             denyButton.setTextSize(13);
             denyButton.setTypeface(null, Typeface.BOLD);

@@ -1077,4 +1077,42 @@
     <string name="title_request_sent">Kgopelo e Rometšwe</string>
     <string name="action_delete_chat">Hlakola Poledišano</string>
 
+    <!-- New UI & Analytics Strings -->
+    <string name="card_title_viewing_tickets">Ditikiti tša Go Boniša</string>
+    <string name="card_subtitle_viewing_tickets">Palo ya dikopo tša go bona</string>
+    <string name="card_title_support_issue_tickets">Ditikiti tša Thekgo le Dithulano</string>
+    <string name="card_subtitle_support_issue_tickets">Dipego tša thekgo tše di emetšego</string>
+    <string name="label_past_7_days">Matsatsi a 7 a go Feta</string>
+    <string name="subtitle_realtime_engagement">Tshepedišo ya bakwerethi ba dinomoro intyds</string>
+    <string name="label_analytics_searches">Dinyakišišo</string>
+    <string name="label_analytics_views">Dipono tša Bodulo</string>
+    <string name="label_analytics_bookings">Go Bona go Dirilwe</string>
+    <string name="label_admin_approval_clearance">Tumelelo ya Taolo ya Tshedimosetso</string>
+    <string name="total_purchase_price_r">Theko ka Botlalo ya Go Reka (R)</string>
+    <string name="msg_gps_captured">Dinomoro tša GPS di tšerwe!</string>
+    <string name="msg_searching_gps">E nyaka seka sa GPS…</string>
+    <string name="msg_location_permission_required">Tumelelo ya lefelo e a nyakega.</string>
+    <string name="badge_for_sale">E A REKISWA</string>
+    <string name="badge_for_rent">E A HIRA</string>
+    <string name="label_enquiry_phone_prefix">Mogala: %1$s</string>
+    <string name="label_enquiry_email_prefix">E-meile: %1$s</string>
+    <string name="label_enquiry_message_header">Molaetša:</string>
+    <string name="btn_approve_contact">Amonela tleditšo</string>
+    <string name="btn_deny_contact">Gana</string>
+
+    <!-- Landlord Verification Strings -->
+    <string name="title_landlord_identity_verification">Kgonthišo ya Boitšhupo ba Mong-wa-ntlo</string>
+    <string name="label_sa_id_number_13">Nomoro ya ID ya RSA (Dinomoro tša 13)</string>
+    <string name="hint_sa_id_13_digit">Nomoro ya RSA ID ya ditšhupetšo tše 13</string>
+    <string name="btn_upload_id_doc">Tsenya Tokomane ya ID (Karta / Buka)</string>
+    <string name="status_no_doc_selected">Ga go tokomane ye e kgethilwego</string>
+    <string name="btn_take_upload_selfie">Tšea / Tsenya Senepe sa Boitšhupo</string>
+    <string name="status_no_selfie_uploaded">Ga go senepe se se tsentšhitšwego</string>
+    <string name="btn_verify_id">KGONTHIŠA ID</string>
+    <string name="title_landlord_id_review">Tshekatsheko ya Boitšhupo ba Mong-wa-ntlo</string>
+    <string name="btn_view_id_doc">Bona ID</string>
+    <string name="btn_view_selfie">Bona Senepe</string>
+    <string name="btn_approve_landlord_identity">Amogela Boitšhupo ba Mong-wa-ntlo</string>
+    <string name="label_landlord_name_prefix">Mong-wa-ntlo: %1$s</string>
+    <string name="label_sa_id_prefix">RSA ID: %1$s</string>
 </resources>

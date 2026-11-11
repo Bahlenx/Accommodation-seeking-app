@@ -3,6 +3,7 @@ package com.example.ikhaya_accommodation_seeking_app;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -11,13 +12,16 @@ import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
 
 import com.google.android.material.textfield.TextInputEditText;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -44,30 +48,67 @@ public class EditProfileActivity extends AppCompatActivity {
 
     private Uri selectedIdDocUri = null;
     private Uri selectedSelfieUri = null;
+    private Uri tempCameraUri = null;
+    private boolean isCapturingSelfieForCamera = false;
 
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
-    private final ActivityResultLauncher<String> idDocPicker = registerForActivityResult(
-            new ActivityResultContracts.GetContent(),
-            uri -> {
-                if (uri != null) {
-                    selectedIdDocUri = uri;
-                    tvIdDocStatus.setText("Selected: ID Document");
-                    uploadFileToSupabase(uri, "identity/doc_" + currentUserId + "_" + System.currentTimeMillis() + ".jpg", true);
+    private final ActivityResultLauncher<Uri> takePhotoLauncher = registerForActivityResult(
+            new ActivityResultContracts.TakePicture(),
+            success -> {
+                if (success && tempCameraUri != null) {
+                    if (isCapturingSelfieForCamera) {
+                        selectedSelfieUri = tempCameraUri;
+                        if (tvSelfieStatus != null) tvSelfieStatus.setText("Selected: Camera Selfie");
+                        uploadFileToSupabase(tempCameraUri, "identity/selfie_" + currentUserId + "_" + System.currentTimeMillis() + ".jpg", false);
+                    } else {
+                        selectedIdDocUri = tempCameraUri;
+                        if (tvIdDocStatus != null) tvIdDocStatus.setText("Selected: Camera ID Document");
+                        uploadFileToSupabase(tempCameraUri, "identity/doc_" + currentUserId + "_" + System.currentTimeMillis() + ".jpg", true);
+                    }
                 }
             }
     );
 
-    private final ActivityResultLauncher<String> selfiePicker = registerForActivityResult(
+    private final ActivityResultLauncher<String> pickGalleryLauncher = registerForActivityResult(
             new ActivityResultContracts.GetContent(),
             uri -> {
                 if (uri != null) {
-                    selectedSelfieUri = uri;
-                    tvSelfieStatus.setText("Selected: Selfie");
-                    uploadFileToSupabase(uri, "identity/selfie_" + currentUserId + "_" + System.currentTimeMillis() + ".jpg", false);
+                    if (isCapturingSelfieForCamera) {
+                        selectedSelfieUri = uri;
+                        if (tvSelfieStatus != null) tvSelfieStatus.setText("Selected: Gallery Selfie");
+                        uploadFileToSupabase(uri, "identity/selfie_" + currentUserId + "_" + System.currentTimeMillis() + ".jpg", false);
+                    } else {
+                        selectedIdDocUri = uri;
+                        if (tvIdDocStatus != null) tvIdDocStatus.setText("Selected: Gallery ID Document");
+                        uploadFileToSupabase(uri, "identity/doc_" + currentUserId + "_" + System.currentTimeMillis() + ".jpg", true);
+                    }
                 }
             }
     );
+
+    private void showImageSourceDialog(boolean isSelfie) {
+        isCapturingSelfieForCamera = isSelfie;
+        String[] options = {"Take Photo with Camera", "Choose from Gallery"};
+        new AlertDialog.Builder(this)
+                .setTitle(isSelfie ? "Take Verification Selfie" : "Upload ID Document")
+                .setItems(options, (dialog, which) -> {
+                    if (which == 0) {
+                        try {
+                            File photoFile = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+                                    (isSelfie ? "selfie_" : "id_") + System.currentTimeMillis() + ".jpg");
+                            tempCameraUri = FileProvider.getUriForFile(this,
+                                    getApplicationContext().getPackageName() + ".provider", photoFile);
+                            takePhotoLauncher.launch(tempCameraUri);
+                        } catch (Exception e) {
+                            Toast.makeText(this, "Camera error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        pickGalleryLauncher.launch("image/*");
+                    }
+                })
+                .show();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,8 +131,8 @@ public class EditProfileActivity extends AppCompatActivity {
         btnUploadSelfie = findViewById(R.id.btnUploadSelfie);
         btnSubmitIdentity = findViewById(R.id.btnSubmitIdentity);
 
-        btnUploadIdDoc.setOnClickListener(v -> idDocPicker.launch("*/*"));
-        btnUploadSelfie.setOnClickListener(v -> selfiePicker.launch("image/*"));
+        btnUploadIdDoc.setOnClickListener(v -> showImageSourceDialog(false));
+        btnUploadSelfie.setOnClickListener(v -> showImageSourceDialog(true));
         btnSubmitIdentity.setOnClickListener(v -> submitIdentityVerification());
 
         loadCurrentProfile();
@@ -215,7 +256,9 @@ public class EditProfileActivity extends AppCompatActivity {
             profilePayload.put("sa_id_number", saId);
             profilePayload.put("id_document_url", uploadedIdDocUrl);
             profilePayload.put("selfie_url", uploadedSelfieUrl);
+            profilePayload.put("verification_selfie_url", uploadedSelfieUrl);
             profilePayload.put("identity_status", "PENDING_VERIFICATION");
+            profilePayload.put("is_identity_verified", false);
         } catch (JSONException e) {
             e.printStackTrace();
         }

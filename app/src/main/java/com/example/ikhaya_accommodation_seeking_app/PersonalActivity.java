@@ -613,6 +613,11 @@ public class PersonalActivity extends AppCompatActivity {
                         userId
                 );
 
+                String email = getIntent().getStringExtra("USER_EMAIL");
+                if (email != null && !email.trim().isEmpty()) {
+                    profile.put("email", email.trim());
+                }
+
                 String fullName =
                         (firstName + " " + surname).trim();
 
@@ -651,10 +656,12 @@ public class PersonalActivity extends AppCompatActivity {
                         String selfieUrl = uploadFileToSupabaseStorage(Uri.parse(selfieUriStr), "identity/selfie_" + userId + "_" + System.currentTimeMillis() + ".jpg", accessToken);
                         if (selfieUrl != null) {
                             profile.put("selfie_url", selfieUrl);
+                            profile.put("verification_selfie_url", selfieUrl);
                         }
                     }
 
                     profile.put("identity_status", "PENDING_VERIFICATION");
+                    profile.put("is_identity_verified", false);
                 }
 
                 SupabaseHelper.writeJson(

@@ -1090,4 +1090,43 @@
     <string name="password_reset_otp_hint">Enter the 6-digit recovery code sent to your email</string>
     <string name="password_reset_otp_warning">We will send a 6-digit password recovery code to your registered email address. Check your inbox and spam folder.</string>
     <string name="verify_recovery_otp_btn">Verify Recovery Code</string>
+
+    <!-- New UI & Analytics Strings -->
+    <string name="card_title_viewing_tickets">Viewing Tickets</string>
+    <string name="card_subtitle_viewing_tickets">Total viewing requests</string>
+    <string name="card_title_support_issue_tickets">Support &amp; Issue Tickets</string>
+    <string name="card_subtitle_support_issue_tickets">Pending support &amp; issue reports</string>
+    <string name="label_past_7_days">Past 7 Days</string>
+    <string name="subtitle_realtime_engagement">Real-time tenant &amp; listing engagement</string>
+    <string name="label_analytics_searches">Searches</string>
+    <string name="label_analytics_views">Listing Views</string>
+    <string name="label_analytics_bookings">Viewings Made</string>
+    <string name="label_admin_approval_clearance">Admin Approval Clearance</string>
+    <string name="total_purchase_price_r">Total Purchase Price (R)</string>
+    <string name="msg_gps_captured">GPS coordinates captured!</string>
+    <string name="msg_searching_gps">Searching for GPS signal…</string>
+    <string name="msg_location_permission_required">Location permission required.</string>
+    <string name="badge_for_sale">FOR SALE</string>
+    <string name="badge_for_rent">FOR RENT</string>
+    <string name="label_enquiry_phone_prefix">Phone: %1$s</string>
+    <string name="label_enquiry_email_prefix">Email: %1$s</string>
+    <string name="label_enquiry_message_header">Message:</string>
+    <string name="btn_approve_contact">Approve contact</string>
+    <string name="btn_deny_contact">Deny</string>
+
+    <!-- Landlord Verification Strings -->
+    <string name="title_landlord_identity_verification">Landlord Identity Verification</string>
+    <string name="label_sa_id_number_13">South African ID Number (13 Digits)</string>
+    <string name="hint_sa_id_13_digit">13-Digit SA ID Number</string>
+    <string name="btn_upload_id_doc">Upload ID Document (Card / Book)</string>
+    <string name="status_no_doc_selected">No document selected</string>
+    <string name="btn_take_upload_selfie">Take / Upload Verification Selfie</string>
+    <string name="status_no_selfie_uploaded">No selfie uploaded</string>
+    <string name="btn_verify_id">VERIFY ID</string>
+    <string name="title_landlord_id_review">Landlord Identity Review</string>
+    <string name="btn_view_id_doc">View ID Doc</string>
+    <string name="btn_view_selfie">View Selfie</string>
+    <string name="btn_approve_landlord_identity">Approve Landlord Identity</string>
+    <string name="label_landlord_name_prefix">Landlord: %1$s</string>
+    <string name="label_sa_id_prefix">SA ID: %1$s</string>
 </resources>

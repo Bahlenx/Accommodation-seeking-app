@@ -48,6 +48,26 @@ public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.View
         holder.tvUserName.setText(user.getName());
         holder.tvUserRole.setText(user.getRole().toUpperCase());
 
+        String role = user.getRole() != null ? user.getRole().toLowerCase() : "";
+        String identityStatus = user.getIdentityStatus() != null ? user.getIdentityStatus().toUpperCase() : "UNVERIFIED";
+
+        if ("landlord".equals(role) && "PENDING_VERIFICATION".equalsIgnoreCase(identityStatus)) {
+            if (holder.btnVerifyUser != null) {
+                holder.btnVerifyUser.setVisibility(View.VISIBLE);
+                holder.btnVerifyUser.setText(R.string.btn_verify_id);
+                holder.btnVerifyUser.setBackgroundColor(Color.parseColor("#28A745"));
+                holder.btnVerifyUser.setOnClickListener(v -> {
+                    if (context instanceof AdminUsersActivity) {
+                        ((AdminUsersActivity) context).showLandlordIdReviewDialog(user);
+                    }
+                });
+            }
+        } else {
+            if (holder.btnVerifyUser != null) {
+                holder.btnVerifyUser.setVisibility(View.GONE);
+            }
+        }
+
         // Anti-Self-Destruction & Admin Protection Check
         if (user.getUserId().equals(currentAdminId)) {
             holder.btnSuspendUser.setText("YOU");
@@ -116,13 +136,14 @@ public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.View
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvUserName, tvUserRole;
-        Button btnSuspendUser;
+        Button btnSuspendUser, btnVerifyUser;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             tvUserName = itemView.findViewById(R.id.tvUserName);
             tvUserRole = itemView.findViewById(R.id.tvUserRole);
             btnSuspendUser = itemView.findViewById(R.id.btnSuspendUser);
+            btnVerifyUser = itemView.findViewById(R.id.btnVerifyUser);
         }
     }
 }

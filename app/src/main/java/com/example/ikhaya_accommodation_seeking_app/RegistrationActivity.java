@@ -3,6 +3,7 @@ package com.example.ikhaya_accommodation_seeking_app;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Patterns;
@@ -17,10 +18,14 @@ import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
+import androidx.core.content.FileProvider;
 import androidx.transition.TransitionManager;
+
+import java.io.File;
 
 public class RegistrationActivity extends AppCompatActivity {
 
@@ -33,26 +38,61 @@ public class RegistrationActivity extends AppCompatActivity {
 
     private Uri selectedIdDocUri = null;
     private Uri selectedSelfieUri = null;
+    private Uri tempCameraUri = null;
+    private boolean isCapturingSelfieForCamera = false;
 
-    private final ActivityResultLauncher<String> idDocPicker = registerForActivityResult(
-            new ActivityResultContracts.GetContent(),
-            uri -> {
-                if (uri != null) {
-                    selectedIdDocUri = uri;
-                    tvRegIdDocStatus.setText("Selected: ID Document");
+    private final ActivityResultLauncher<Uri> takePhotoLauncher = registerForActivityResult(
+            new ActivityResultContracts.TakePicture(),
+            success -> {
+                if (success && tempCameraUri != null) {
+                    if (isCapturingSelfieForCamera) {
+                        selectedSelfieUri = tempCameraUri;
+                        if (tvRegSelfieStatus != null) tvRegSelfieStatus.setText("Selected: Camera Selfie");
+                    } else {
+                        selectedIdDocUri = tempCameraUri;
+                        if (tvRegIdDocStatus != null) tvRegIdDocStatus.setText("Selected: Camera ID Document");
+                    }
                 }
             }
     );
 
-    private final ActivityResultLauncher<String> selfiePicker = registerForActivityResult(
+    private final ActivityResultLauncher<String> pickGalleryLauncher = registerForActivityResult(
             new ActivityResultContracts.GetContent(),
             uri -> {
                 if (uri != null) {
-                    selectedSelfieUri = uri;
-                    tvRegSelfieStatus.setText("Selected: Selfie");
+                    if (isCapturingSelfieForCamera) {
+                        selectedSelfieUri = uri;
+                        if (tvRegSelfieStatus != null) tvRegSelfieStatus.setText("Selected: Gallery Selfie");
+                    } else {
+                        selectedIdDocUri = uri;
+                        if (tvRegIdDocStatus != null) tvRegIdDocStatus.setText("Selected: Gallery ID Document");
+                    }
                 }
             }
     );
+
+    private void showImageSourceDialog(boolean isSelfie) {
+        isCapturingSelfieForCamera = isSelfie;
+        String[] options = {"Take Photo with Camera", "Choose from Gallery"};
+        new AlertDialog.Builder(this)
+                .setTitle(isSelfie ? "Take Verification Selfie" : "Upload ID Document")
+                .setItems(options, (dialog, which) -> {
+                    if (which == 0) {
+                        try {
+                            File photoFile = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+                                    (isSelfie ? "selfie_" : "id_") + System.currentTimeMillis() + ".jpg");
+                            tempCameraUri = FileProvider.getUriForFile(this,
+                                    getApplicationContext().getPackageName() + ".provider", photoFile);
+                            takePhotoLauncher.launch(tempCameraUri);
+                        } catch (Exception e) {
+                            Toast.makeText(this, "Camera error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        pickGalleryLauncher.launch("image/*");
+                    }
+                })
+                .show();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,8 +123,8 @@ public class RegistrationActivity extends AppCompatActivity {
         tvRegIdDocStatus = findViewById(R.id.tvRegIdDocStatus);
         tvRegSelfieStatus = findViewById(R.id.tvRegSelfieStatus);
 
-        btnRegUploadIdDoc.setOnClickListener(v -> idDocPicker.launch("*/*"));
-        btnRegUploadSelfie.setOnClickListener(v -> selfiePicker.launch("image/*"));
+        btnRegUploadIdDoc.setOnClickListener(v -> showImageSourceDialog(false));
+        btnRegUploadSelfie.setOnClickListener(v -> showImageSourceDialog(true));
 
         roleRadioGroup.setOnCheckedChangeListener(
                 (group, checkedId) -> {

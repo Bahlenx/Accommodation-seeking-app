@@ -146,7 +146,7 @@ public class EditListingActivity extends AppCompatActivity {
         if (cgOfferTypeEdit != null) {
             cgOfferTypeEdit.setOnCheckedChangeListener((group, checkedId) -> {
                 if (checkedId == R.id.chipSellEdit) {
-                    if (tvEditPriceLabel != null) tvEditPriceLabel.setText("Total Purchase Price (R)");
+                    if (tvEditPriceLabel != null) tvEditPriceLabel.setText(R.string.total_purchase_price_r);
                 } else {
                     if (tvEditPriceLabel != null) tvEditPriceLabel.setText(R.string.monthly_rental_price_r);
                 }
@@ -186,14 +186,14 @@ public class EditListingActivity extends AppCompatActivity {
                                 if (addrs != null && !addrs.isEmpty()) {
                                     locationInput.setText(addrs.get(0).getAddressLine(0));
                                 }
-                                Toast.makeText(this, "GPS coordinates captured!", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(this, R.string.msg_gps_captured, Toast.LENGTH_SHORT).show();
                             } else {
-                                Toast.makeText(this, "Searching for GPS signal...", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(this, R.string.msg_searching_gps, Toast.LENGTH_SHORT).show();
                             }
                         } catch (Exception ignored) {}
                     }
                 } else {
-                    Toast.makeText(this, "Location permission required.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, R.string.msg_location_permission_required, Toast.LENGTH_SHORT).show();
                 }
             });
         }
@@ -387,7 +387,7 @@ public class EditListingActivity extends AppCompatActivity {
                             if (chipSellEdit != null && chipRentEdit != null) {
                                 if (isSale) {
                                     chipSellEdit.setChecked(true);
-                                    if (tvEditPriceLabel != null) tvEditPriceLabel.setText("Total Purchase Price (R)");
+                                    if (tvEditPriceLabel != null) tvEditPriceLabel.setText(R.string.total_purchase_price_r);
                                 } else {
                                     chipRentEdit.setChecked(true);
                                     if (tvEditPriceLabel != null) tvEditPriceLabel.setText(R.string.monthly_rental_price_r);

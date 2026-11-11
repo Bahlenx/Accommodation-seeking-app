@@ -33,6 +33,17 @@
     </LinearLayout>
 
     <Button
+        android:id="@+id/btnVerifyUser"
+        android:layout_width="wrap_content"
+        android:layout_height="36dp"
+        android:layout_marginEnd="8dp"
+        android:backgroundTint="#28A745"
+        android:text="VERIFY ID"
+        android:textColor="#FFFFFF"
+        android:textSize="12sp"
+        android:visibility="gone" />
+
+    <Button
         android:id="@+id/btnSuspendUser"
         android:layout_width="wrap_content"
         android:layout_height="36dp"

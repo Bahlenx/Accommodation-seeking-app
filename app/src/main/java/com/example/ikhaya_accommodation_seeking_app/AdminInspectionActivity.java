@@ -237,7 +237,7 @@ public class AdminInspectionActivity extends AppCompatActivity {
                                 || "Vacant Land".equalsIgnoreCase(type)
                                 || "Land".equalsIgnoreCase(type);
 
-                        String purposeTag = isSale ? "FOR SALE" : "FOR RENT";
+                        String purposeTag = isSale ? getString(R.string.badge_for_sale) : getString(R.string.badge_for_rent);
                         String priceFormatted = isSale ? ("R " + price) : ("R " + price + " / month");
 
                         String detailsStr = String.format(Locale.getDefault(), "%s • %s • %s %s\n%s • %s",
