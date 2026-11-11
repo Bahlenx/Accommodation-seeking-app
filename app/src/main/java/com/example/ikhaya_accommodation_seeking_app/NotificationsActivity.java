@@ -5,497 +5,474 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
+import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class NotificationsActivity extends AppCompatActivity {
 
-    private static final String TAG = "Notifications";
+    private LinearLayout containerChatRequests;
+    private TextView tvChatRequestsHeader;
+    private TextView tvNoNotifications;
+    private TextView btnClearAllNotifications;
+    private SwipeRefreshLayout swipeRefresh;
+    private RecyclerView rvNotifications;
+    private NotificationsAdapter adapter;
 
-    private LinearLayout pendingRequestsContainer;
-    private LinearLayout notificationsListContainer;
+    private String currentUserId = "";
+    private String userRole = "";
+    private String token = "";
 
-    private String userId;
-    private String accessToken;
-
+    private final List<JSONObject> notificationList = new ArrayList<>();
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
-    private final Handler pollHandler = new Handler(Looper.getMainLooper());
-    private boolean activityVisible = false;
-
-    private final Runnable pollRunnable = new Runnable() {
-        @Override
-        public void run() {
-            if (!activityVisible) return;
-
-            if (userId != null && !userId.isEmpty() && accessToken != null && !accessToken.isEmpty()) {
-                loadPendingChatRequests();
-                loadNotifications();
-                loadUnseenEnquiries();
-            }
-            pollHandler.postDelayed(this, 10000);
-        }
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notifications);
 
-        pendingRequestsContainer = findViewById(R.id.pendingRequestsContainer);
-        notificationsListContainer = findViewById(R.id.notificationsListContainer);
+        currentUserId = SupabaseHelper.getUserId(this);
+        token = SupabaseHelper.getAccessToken(this);
 
-        View btnBack = findViewById(R.id.btnBack);
-        if (btnBack != null) {
-            btnBack.setOnClickListener(v -> finish());
-        }
+        SharedPreferences prefs = getSharedPreferences("iKhayaSession", MODE_PRIVATE);
+        userRole = prefs.getString("USER_ROLE", "tenant");
 
-        userId = SupabaseHelper.getUserId(this);
-        accessToken = SupabaseHelper.getAccessToken(this);
-    }
+        containerChatRequests = findViewById(R.id.containerChatRequests);
+        tvChatRequestsHeader = findViewById(R.id.tvChatRequestsHeader);
+        tvNoNotifications = findViewById(R.id.tvNoNotifications);
+        btnClearAllNotifications = findViewById(R.id.btnClearAllNotifications);
+        swipeRefresh = findViewById(R.id.swipeRefreshNotifications);
+        rvNotifications = findViewById(R.id.rvNotifications);
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        activityVisible = true;
-        pollHandler.removeCallbacks(pollRunnable);
-        pollHandler.post(pollRunnable);
-    }
+        if (rvNotifications != null) {
+            rvNotifications.setLayoutManager(new LinearLayoutManager(this));
+            adapter = new NotificationsAdapter();
+            rvNotifications.setAdapter(adapter);
 
-    @Override
-    protected void onPause() {
-        activityVisible = false;
-        pollHandler.removeCallbacks(pollRunnable);
-        super.onPause();
-    }
-
-    private void loadUnseenEnquiries() {
-        executor.execute(() -> {
-            HttpURLConnection connection = null;
-
-            try {
-                String endpoint = "/rest/v1/enquiries?select=id&landlord_uid=eq." + SupabaseHelper.encode(userId);
-                connection = SupabaseHelper.createConnection(endpoint, "GET", accessToken);
-
-                int code = connection.getResponseCode();
-                String response = SupabaseHelper.readResponse(connection);
-
-                if (code < 200 || code >= 300) {
-                    return;
+            // Enable swipe to dismiss on either LEFT or RIGHT direction
+            ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+                @Override
+                public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                    return false;
                 }
 
-                JSONArray rows = new JSONArray(response);
-                Set<String> seen = LandlordNotificationState.seen(this, "enquiries", userId);
-
-                int unseen = 0;
-                for (int i = 0; i < rows.length(); i++) {
-                    JSONObject row = rows.optJSONObject(i);
-                    if (row != null) {
-                        String id = row.optString("id", "");
-                        if (!id.isEmpty() && !seen.contains(id)) {
-                            unseen++;
-                        }
+                @Override
+                public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                    int pos = viewHolder.getBindingAdapterPosition();
+                    if (pos >= 0 && pos < notificationList.size()) {
+                        JSONObject item = notificationList.get(pos);
+                        String notifId = item.optString("id", "");
+                        deleteNotificationDirect(notifId, pos);
                     }
-                }
-
-                final int count = unseen;
-
-                runOnUiThread(() -> {
-                    if (isFinishing() || isDestroyed() || pendingRequestsContainer == null) {
-                        return;
-                    }
-
-                    View previous = pendingRequestsContainer.findViewWithTag("unseen_enquiries_shortcut");
-                    if (previous != null) {
-                        pendingRequestsContainer.removeView(previous);
-                    }
-
-                    if (count == 0) {
-                        return;
-                    }
-
-                    Button enquiries = new Button(this);
-                    enquiries.setTag("unseen_enquiries_shortcut");
-                    enquiries.setAllCaps(false);
-                    enquiries.setText(getString(R.string.unseen_enquiries_count, count));
-                    enquiries.setBackgroundResource(R.drawable.selector_regular_button);
-                    enquiries.setTextColor(Color.WHITE);
-
-                    enquiries.setOnClickListener(v ->
-                            startActivity(new Intent(this, EnquiriesActivity.class))
-                    );
-
-                    pendingRequestsContainer.addView(enquiries, 0);
-                });
-
-            } catch (Exception e) {
-                Log.w(TAG, "Unable to check new enquiries", e);
-            } finally {
-                if (connection != null) {
-                    connection.disconnect();
-                }
-            }
-        });
-    }
-
-    private void loadPendingChatRequests() {
-        executor.execute(() -> {
-            HttpURLConnection conn = null;
-
-            try {
-                String endpoint = "/rest/v1/chat_requests?receiver_id=eq." + SupabaseHelper.encode(userId)
-                        + "&status=eq.pending&order=created_at.desc";
-
-                conn = SupabaseHelper.createConnection(endpoint, "GET", accessToken);
-
-                int code = conn.getResponseCode();
-                String response = SupabaseHelper.readResponse(conn);
-
-                if (code >= 200 && code < 300) {
-                    JSONArray requests = new JSONArray(response);
-                    runOnUiThread(() -> renderPendingRequests(requests));
-                }
-
-            } catch (Exception e) {
-                showMessage(R.string.error_loading_chat_requests);
-            } finally {
-                if (conn != null) {
-                    conn.disconnect();
-                }
-            }
-        });
-    }
-
-    private void renderPendingRequests(JSONArray requests) {
-        if (pendingRequestsContainer == null) {
-            return;
-        }
-
-        pendingRequestsContainer.removeAllViews();
-        LandlordNotificationState.markSeen(this, "chat", userId, requests);
-
-        if (requests.length() == 0) {
-            return;
-        }
-
-        TextView title = new TextView(this);
-        title.setText(R.string.pending_chat_requests);
-        title.setTextSize(18f);
-        title.setTypeface(null, Typeface.BOLD);
-        title.setTextColor(Color.parseColor("#BA5536"));
-        title.setPadding(0, 0, 0, dp(12));
-
-        pendingRequestsContainer.addView(title);
-
-        for (int i = 0; i < requests.length(); i++) {
-            JSONObject request = requests.optJSONObject(i);
-            if (request != null) {
-                renderRequestCard(request);
-            }
-        }
-    }
-
-    private void renderRequestCard(JSONObject request) {
-        String senderId = request.optString("sender_id", "");
-        String senderName = request.optString("sender_name", getString(R.string.notification_user));
-        String senderRole = request.optString("sender_role", getString(R.string.notification_member));
-
-        CardView card = new CardView(this);
-        LinearLayout.LayoutParams cardParams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-        );
-        cardParams.bottomMargin = dp(12);
-
-        card.setLayoutParams(cardParams);
-        card.setRadius(dp(14));
-        card.setCardElevation(dp(2));
-        card.setCardBackgroundColor(Color.WHITE);
-
-        LinearLayout inner = new LinearLayout(this);
-        inner.setOrientation(LinearLayout.VERTICAL);
-        inner.setPadding(dp(16), dp(14), dp(16), dp(14));
-
-        TextView body = new TextView(this);
-        body.setText(getString(R.string.chat_request_message, senderName, senderRole));
-        body.setTextSize(15f);
-        body.setTextColor(Color.parseColor("#1F1614"));
-
-        inner.addView(body);
-
-        LinearLayout actions = new LinearLayout(this);
-        actions.setOrientation(LinearLayout.HORIZONTAL);
-        actions.setPadding(0, dp(10), 0, 0);
-
-        Button accept = new Button(this);
-        accept.setText(R.string.accept);
-        accept.setAllCaps(false);
-        accept.setBackgroundResource(R.drawable.selector_regular_button);
-        accept.setTextColor(Color.WHITE);
-
-        LinearLayout.LayoutParams acceptParams = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
-        acceptParams.setMarginEnd(dp(5));
-        accept.setLayoutParams(acceptParams);
-
-        Button decline = new Button(this);
-        decline.setText(R.string.decline);
-        decline.setAllCaps(false);
-        decline.setBackgroundResource(R.drawable.selector_regular_button);
-        decline.setTextColor(Color.WHITE);
-
-        LinearLayout.LayoutParams declineParams = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
-        declineParams.setMarginStart(dp(5));
-        decline.setLayoutParams(declineParams);
-
-        accept.setOnClickListener(v -> {
-            accept.setEnabled(false);
-            decline.setEnabled(false);
-
-            updateRequestStatus(
-                    request,
-                    "accepted",
-                    card,
-                    senderId,
-                    senderName,
-                    accept,
-                    decline
-            );
-        });
-
-        decline.setOnClickListener(v -> {
-            accept.setEnabled(false);
-            decline.setEnabled(false);
-            card.setVisibility(View.GONE);
-
-            executor.execute(() -> {
-                try {
-                    String reqId = request.optString("id", "");
-                    String endpoint = "/rest/v1/chat_requests?id=eq." + SupabaseHelper.encode(reqId);
-                    HttpURLConnection connection = SupabaseHelper.createConnection(endpoint, "DELETE", accessToken);
-                    int code = connection.getResponseCode();
-                    connection.disconnect();
-
-                    if (code >= 200 && code < 300) {
-                        runOnUiThread(() -> {
-                            if (isFinishing() || isDestroyed()) return;
-                            pendingRequestsContainer.removeView(card);
-                            Toast.makeText(this, R.string.chat_request_declined, Toast.LENGTH_SHORT).show();
-                        });
-                    }
-                } catch (Exception ignored) {
                 }
             });
-        });
+            itemTouchHelper.attachToRecyclerView(rvNotifications);
+        }
 
-        actions.addView(accept);
-        actions.addView(decline);
+        View btnBack = findViewById(R.id.btnBackNotifications);
+        if (btnBack != null) btnBack.setOnClickListener(v -> finish());
 
-        inner.addView(actions);
-        card.addView(inner);
+        if (btnClearAllNotifications != null) {
+            btnClearAllNotifications.setOnClickListener(v -> confirmClearAll());
+        }
 
-        pendingRequestsContainer.addView(card);
+        if (swipeRefresh != null) {
+            swipeRefresh.setColorSchemeColors(Color.parseColor("#BA5536"));
+            swipeRefresh.setOnRefreshListener(this::loadAllNotifications);
+        }
+
+        loadAllNotifications();
     }
 
-    private void updateRequestStatus(
-            JSONObject fullRow,
-            String newStatus,
-            CardView card,
-            String targetUserId,
-            String targetName,
-            Button acceptButton,
-            Button declineButton) {
+    private void loadAllNotifications() {
+        if (currentUserId == null || currentUserId.isEmpty()) return;
 
         executor.execute(() -> {
-            HttpURLConnection conn = null;
+            loadChatRequests();
+            loadGeneralNotifications();
+        });
+    }
 
+    private void loadChatRequests() {
+        try {
+            String endpoint = "/rest/v1/chat_requests?select=*&receiver_id=eq." + SupabaseHelper.encode(currentUserId)
+                    + "&status=eq.pending&order=created_at.desc";
+
+            HttpURLConnection conn = SupabaseHelper.createConnection(endpoint, "GET", token);
+            int code = conn.getResponseCode();
+            String res = SupabaseHelper.readResponse(conn);
+            conn.disconnect();
+
+            if (code >= 200 && code < 300) {
+                JSONArray requests = new JSONArray(res);
+                runOnUiThread(() -> renderChatRequests(requests));
+            }
+        } catch (Exception ignored) {}
+    }
+
+    private void renderChatRequests(JSONArray requests) {
+        if (containerChatRequests == null) return;
+        containerChatRequests.removeAllViews();
+
+        if (requests == null || requests.length() == 0) {
+            if (tvChatRequestsHeader != null) tvChatRequestsHeader.setVisibility(View.GONE);
+            return;
+        }
+
+        if (tvChatRequestsHeader != null) tvChatRequestsHeader.setVisibility(View.VISIBLE);
+
+        for (int i = 0; i < requests.length(); i++) {
+            JSONObject req = requests.optJSONObject(i);
+            if (req == null) continue;
+
+            String reqId = req.optString("id", "");
+            String senderId = req.optString("sender_id", "");
+            String senderName = req.optString("sender_name", "Resident");
+            String senderRole = req.optString("sender_role", "Resident");
+
+            CardView card = createCardWrapper();
+            LinearLayout inner = new LinearLayout(this);
+            inner.setOrientation(LinearLayout.VERTICAL);
+            inner.setPadding(dp(16), dp(16), dp(16), dp(16));
+
+            TextView tvTitle = new TextView(this);
+            tvTitle.setText(senderName + " (" + senderRole + ") wants to start a chat with you.");
+            tvTitle.setTextColor(Color.parseColor("#1F1614"));
+            tvTitle.setTextSize(14f);
+            tvTitle.setTypeface(null, Typeface.BOLD);
+            inner.addView(tvTitle);
+
+            LinearLayout actionRow = new LinearLayout(this);
+            actionRow.setOrientation(LinearLayout.HORIZONTAL);
+            actionRow.setPadding(0, dp(12), 0, 0);
+
+            Button btnAccept = new Button(this);
+            btnAccept.setText("Accept");
+            btnAccept.setTextColor(Color.WHITE);
+            btnAccept.setBackgroundColor(Color.parseColor("#BA5536"));
+            LinearLayout.LayoutParams p1 = new LinearLayout.LayoutParams(0, dp(42), 1f);
+            p1.setMarginEnd(dp(8));
+            btnAccept.setLayoutParams(p1);
+
+            Button btnDecline = new Button(this);
+            btnDecline.setText("Decline");
+            btnDecline.setTextColor(Color.WHITE);
+            btnDecline.setBackgroundColor(Color.parseColor("#8C7A70"));
+            LinearLayout.LayoutParams p2 = new LinearLayout.LayoutParams(0, dp(42), 1f);
+            btnDecline.setLayoutParams(p2);
+
+            btnAccept.setOnClickListener(v -> respondChatRequest(reqId, senderId, senderName, true));
+            btnDecline.setOnClickListener(v -> respondChatRequest(reqId, senderId, senderName, false));
+
+            actionRow.addView(btnAccept);
+            actionRow.addView(btnDecline);
+            inner.addView(actionRow);
+
+            card.addView(inner);
+            containerChatRequests.addView(card);
+        }
+    }
+
+    private void respondChatRequest(String reqId, String senderId, String senderName, boolean accept) {
+        executor.execute(() -> {
             try {
-                conn = SupabaseHelper.createConnection(
-                        "/rest/v1/chat_requests?on_conflict=id",
-                        "POST",
-                        accessToken
-                );
+                String endpoint = "/rest/v1/chat_requests?id=eq." + SupabaseHelper.encode(reqId);
+                JSONObject body = new JSONObject();
+                body.put("status", accept ? "accepted" : "declined");
 
-                conn.setRequestProperty(
-                        "Prefer",
-                        "resolution=merge-duplicates,return=minimal"
-                );
+                SupabaseHelper.patch(endpoint, body, token);
 
-                JSONObject updatedRow = new JSONObject(fullRow.toString());
-                updatedRow.put("status", newStatus);
+                runOnUiThread(() -> {
+                    Toast.makeText(this, accept ? "Chat accepted!" : "Chat declined", Toast.LENGTH_SHORT).show();
+                    loadAllNotifications();
 
-                SupabaseHelper.writeJson(conn, updatedRow);
+                    if (accept) {
+                        Intent chatIntent = new Intent(this, ChatActivity.class);
+                        chatIntent.putExtra("RECEIVER_ID", senderId);
+                        chatIntent.putExtra("RECEIVER_NAME", senderName);
+                        startActivity(chatIntent);
+                    }
+                });
+            } catch (Exception ignored) {}
+        });
+    }
 
+    private void loadGeneralNotifications() {
+        try {
+            String endpoint = "/rest/v1/notifications?select=*&user_uid=eq." + SupabaseHelper.encode(currentUserId)
+                    + "&order=created_at.desc&limit=50";
+
+            HttpURLConnection conn = SupabaseHelper.createConnection(endpoint, "GET", token);
+            int code = conn.getResponseCode();
+            String res = SupabaseHelper.readResponse(conn);
+            conn.disconnect();
+
+            if (code >= 200 && code < 300) {
+                JSONArray arr = new JSONArray(res);
+                List<JSONObject> tempList = new ArrayList<>();
+                for (int i = 0; i < arr.length(); i++) {
+                    JSONObject obj = arr.optJSONObject(i);
+                    if (obj != null) tempList.add(obj);
+                }
+
+                runOnUiThread(() -> {
+                    if (swipeRefresh != null) swipeRefresh.setRefreshing(false);
+                    notificationList.clear();
+                    notificationList.addAll(tempList);
+
+                    if (adapter != null) adapter.notifyDataSetChanged();
+
+                    if (notificationList.isEmpty()) {
+                        if (tvNoNotifications != null) tvNoNotifications.setVisibility(View.VISIBLE);
+                        if (btnClearAllNotifications != null) btnClearAllNotifications.setVisibility(View.GONE);
+                    } else {
+                        if (tvNoNotifications != null) tvNoNotifications.setVisibility(View.GONE);
+                        if (btnClearAllNotifications != null) btnClearAllNotifications.setVisibility(View.VISIBLE);
+                    }
+                });
+            } else {
+                runOnUiThread(() -> {
+                    if (swipeRefresh != null) swipeRefresh.setRefreshing(false);
+                });
+            }
+        } catch (Exception e) {
+            runOnUiThread(() -> {
+                if (swipeRefresh != null) swipeRefresh.setRefreshing(false);
+            });
+        }
+    }
+
+    private void deleteNotificationDirect(String notifId, int position) {
+        executor.execute(() -> {
+            try {
+                String endpoint = "/rest/v1/notifications?id=eq." + SupabaseHelper.encode(notifId);
+                HttpURLConnection conn = SupabaseHelper.createConnection(endpoint, "DELETE", token);
+                conn.setRequestProperty("Prefer", "return=representation");
                 int code = conn.getResponseCode();
-
-                if (code >= 200 && code < 300) {
-                    runOnUiThread(() -> {
-                        pendingRequestsContainer.removeView(card);
-
-                        if ("accepted".equals(newStatus)) {
-                            Toast.makeText(this, R.string.chat_request_accepted, Toast.LENGTH_SHORT).show();
-
-                            Intent intent = new Intent(this, ChatActivity.class);
-                            intent.putExtra("RECEIVER_ID", targetUserId);
-                            intent.putExtra("RECEIVER_NAME", targetName);
-                            intent.putExtra("IS_COMMUNITY", false);
-
-                            SharedPreferences prefs = getSharedPreferences("iKhayaSession", MODE_PRIVATE);
-                            intent.putExtra("SENDER_ID", userId);
-                            intent.putExtra("SENDER_NAME", prefs.getString("USER_NAME", getString(R.string.notification_user)));
-                            intent.putExtra("SENDER_ROLE", prefs.getString("USER_ROLE", getString(R.string.notification_member)));
-
-                            startActivity(intent);
-                        } else {
-                            Toast.makeText(this, R.string.chat_request_declined, Toast.LENGTH_SHORT).show();
-                        }
-                    });
-
-                } else {
-                    String error = SupabaseHelper.readResponse(conn);
-                    Log.e(TAG, "Chat request update failed: " + error);
-
-                    runOnUiThread(() -> {
-                        acceptButton.setEnabled(true);
-                        declineButton.setEnabled(true);
-                        Toast.makeText(this, R.string.chat_request_update_failed, Toast.LENGTH_LONG).show();
-                    });
-                }
-
-            } catch (Exception e) {
-                Log.e(TAG, "Error updating chat request", e);
+                conn.disconnect();
 
                 runOnUiThread(() -> {
-                    acceptButton.setEnabled(true);
-                    declineButton.setEnabled(true);
-                    Toast.makeText(this, R.string.chat_request_update_failed, Toast.LENGTH_SHORT).show();
+                    if (code >= 200 && code < 300) {
+                        if (position >= 0 && position < notificationList.size()) {
+                            notificationList.remove(position);
+                            adapter.notifyItemRemoved(position);
+                        }
+                        Toast.makeText(this, "Notification dismissed", Toast.LENGTH_SHORT).show();
+                        if (notificationList.isEmpty() && tvNoNotifications != null) {
+                            tvNoNotifications.setVisibility(View.VISIBLE);
+                            if (btnClearAllNotifications != null) btnClearAllNotifications.setVisibility(View.GONE);
+                        }
+                    } else {
+                        adapter.notifyItemChanged(position); // Restore row if failed
+                        Toast.makeText(this, "Failed to dismiss: HTTP " + code, Toast.LENGTH_SHORT).show();
+                    }
                 });
-
-            } finally {
-                if (conn != null) {
-                    conn.disconnect();
-                }
+            } catch (Exception e) {
+                runOnUiThread(() -> {
+                    adapter.notifyItemChanged(position);
+                    Toast.makeText(this, "Error deleting: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
             }
         });
     }
 
-    private void loadNotifications() {
-        executor.execute(() -> {
-            HttpURLConnection connection = null;
+    private void confirmClearAll() {
+        new AlertDialog.Builder(this)
+                .setTitle("Clear All Notifications")
+                .setMessage("Are you sure you want to dismiss all notifications?")
+                .setPositiveButton("Clear All", (d, w) -> {
+                    executor.execute(() -> {
+                        try {
+                            String endpoint = "/rest/v1/notifications?user_uid=eq." + SupabaseHelper.encode(currentUserId);
+                            HttpURLConnection conn = SupabaseHelper.createConnection(endpoint, "DELETE", token);
+                            int code = conn.getResponseCode();
+                            conn.disconnect();
 
-            try {
-                String endpoint = "/rest/v1/notifications?select=*&user_uid=eq."
-                        + SupabaseHelper.encode(userId)
-                        + "&order=created_at.desc";
-
-                connection = SupabaseHelper.createConnection(endpoint, "GET", accessToken);
-
-                int code = connection.getResponseCode();
-                String response = SupabaseHelper.readResponse(connection);
-
-                if (code < 200 || code >= 300) {
-                    showMessage(R.string.could_not_load_notifications);
-                    return;
-                }
-
-                JSONArray notifications = new JSONArray(response);
-
-                runOnUiThread(() -> {
-                    if (isFinishing() || isDestroyed() || notificationsListContainer == null) {
-                        return;
-                    }
-
-                    notificationsListContainer.removeAllViews();
-
-                    for (int i = 0; i < notifications.length(); i++) {
-                        JSONObject notification = notifications.optJSONObject(i);
-                        if (notification != null) {
-                            renderNotificationCard(notification);
+                            runOnUiThread(() -> {
+                                if (code >= 200 && code < 300) {
+                                    notificationList.clear();
+                                    adapter.notifyDataSetChanged();
+                                    if (tvNoNotifications != null) tvNoNotifications.setVisibility(View.VISIBLE);
+                                    if (btnClearAllNotifications != null) btnClearAllNotifications.setVisibility(View.GONE);
+                                    Toast.makeText(this, "All notifications cleared.", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    Toast.makeText(this, "Failed to clear all: HTTP " + code, Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        } catch (Exception e) {
+                            runOnUiThread(() -> Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show());
                         }
-                    }
-
-                    if (notifications.length() == 0) {
-                        TextView empty = new TextView(this);
-                        empty.setText(R.string.no_general_notifications);
-                        empty.setTextSize(15f);
-                        empty.setTextColor(Color.parseColor("#8C7A70"));
-                        notificationsListContainer.addView(empty);
-                    }
-
-                    LandlordNotificationState.markSeen(this, "notifications", userId, notifications);
-                });
-
-            } catch (Exception e) {
-                Log.e(TAG, "Could not load notifications", e);
-                showMessage(R.string.could_not_load_notifications);
-            } finally {
-                if (connection != null) {
-                    connection.disconnect();
-                }
-            }
-        });
+                    });
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 
-    private void renderNotificationCard(JSONObject notification) {
-        String title = notification.optString("title", getString(R.string.notifications));
-        String message = notification.optString("message", "");
+    private void handleNotificationDeepLink(String title, String message) {
+        String combined = (title + " " + message).toLowerCase();
 
+        if ("admin".equalsIgnoreCase(userRole)) {
+            if (combined.contains("listing") || combined.contains("edit") || combined.contains("submitted") || combined.contains("risk")) {
+                startActivity(new Intent(this, AdminPendingQueueActivity.class));
+                return;
+            } else if (combined.contains("report") || combined.contains("ticket")) {
+                startActivity(new Intent(this, AdminReportsActivity.class));
+                return;
+            }
+        }
+
+        if ("landlord".equalsIgnoreCase(userRole)) {
+            if (combined.contains("suspended") || combined.contains("re-verification") || combined.contains("action required")) {
+                Intent intent = new Intent(this, MyListingsActivity.class);
+                intent.putExtra("FILTER_STATUS", "PENDING");
+                startActivity(intent);
+                return;
+            } else if (combined.contains("approved") && combined.contains("listing")) {
+                Intent intent = new Intent(this, MyListingsActivity.class);
+                intent.putExtra("FILTER_STATUS", "APPROVED");
+                startActivity(intent);
+                return;
+            } else if (combined.contains("enquiry") || combined.contains("contact")) {
+                startActivity(new Intent(this, EnquiriesActivity.class));
+                return;
+            } else if (combined.contains("application") || combined.contains("lease")) {
+                Intent intent = new Intent(this, ApplicationsActivity.class);
+                intent.putExtra("isLandlord", true);
+                startActivity(intent);
+                return;
+            } else if (combined.contains("viewing")) {
+                startActivity(new Intent(this, LandlordViewingsActivity.class));
+                return;
+            }
+        }
+
+        if (combined.contains("viewing")) {
+            startActivity(new Intent(this, ViewingsActivity.class));
+        } else if (combined.contains("application")) {
+            Intent intent = new Intent(this, ApplicationsActivity.class);
+            intent.putExtra("isLandlord", false);
+            startActivity(intent);
+        } else if (combined.contains("chat") || combined.contains("message")) {
+            startActivity(new Intent(this, UserSelectionActivity.class));
+        } else {
+            Toast.makeText(this, title, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdapter.ViewHolder> {
+
+        @NonNull
+        @Override
+        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            CardView card = createCardWrapper();
+            LinearLayout inner = new LinearLayout(NotificationsActivity.this);
+            inner.setOrientation(LinearLayout.HORIZONTAL);
+            inner.setGravity(Gravity.CENTER_VERTICAL);
+            inner.setPadding(dp(16), dp(14), dp(16), dp(14));
+
+            LinearLayout textCol = new LinearLayout(NotificationsActivity.this);
+            textCol.setOrientation(LinearLayout.VERTICAL);
+            textCol.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+
+            TextView tvTitle = new TextView(NotificationsActivity.this);
+            tvTitle.setId(View.generateViewId());
+            tvTitle.setTextColor(Color.parseColor("#1F1614"));
+            tvTitle.setTextSize(15f);
+            tvTitle.setTypeface(null, Typeface.BOLD);
+            textCol.addView(tvTitle);
+
+            TextView tvMsg = new TextView(NotificationsActivity.this);
+            tvMsg.setId(View.generateViewId());
+            tvMsg.setTextColor(Color.parseColor("#6C757D"));
+            tvMsg.setTextSize(13f);
+            tvMsg.setPadding(0, dp(4), 0, dp(4));
+            textCol.addView(tvMsg);
+
+            inner.addView(textCol);
+
+            // '✕' Close Button instead of trash icon
+            TextView btnClose = new TextView(NotificationsActivity.this);
+            btnClose.setId(View.generateViewId());
+            btnClose.setText("✕");
+            btnClose.setTextSize(18f);
+            btnClose.setTypeface(null, Typeface.BOLD);
+            btnClose.setTextColor(Color.parseColor("#A09893"));
+            btnClose.setPadding(dp(12), dp(8), dp(8), dp(8));
+            inner.addView(btnClose);
+
+            card.addView(inner);
+            return new ViewHolder(card, tvTitle, tvMsg, btnClose);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+            JSONObject notif = notificationList.get(position);
+            String title = notif.optString("title", "Notification");
+            String message = notif.optString("message", "");
+            String notifId = notif.optString("id", "");
+
+            holder.tvTitle.setText(title);
+            holder.tvMsg.setText(message);
+
+            holder.itemView.setOnClickListener(v -> handleNotificationDeepLink(title, message));
+
+            holder.btnClose.setOnClickListener(v -> {
+                int pos = holder.getBindingAdapterPosition();
+                deleteNotificationDirect(notifId, pos);
+            });
+        }
+
+        @Override
+        public int getItemCount() {
+            return notificationList.size();
+        }
+
+        class ViewHolder extends RecyclerView.ViewHolder {
+            TextView tvTitle, tvMsg, btnClose;
+
+            public ViewHolder(@NonNull View itemView, TextView tvTitle, TextView tvMsg, TextView btnClose) {
+                super(itemView);
+                this.tvTitle = tvTitle;
+                this.tvMsg = tvMsg;
+                this.btnClose = btnClose;
+            }
+        }
+    }
+
+    private CardView createCardWrapper() {
         CardView card = new CardView(this);
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
         );
-        params.bottomMargin = dp(12);
-
+        params.setMargins(0, 0, 0, dp(12));
         card.setLayoutParams(params);
-        card.setRadius(dp(12));
+        card.setRadius(dp(16));
         card.setCardElevation(dp(2));
         card.setCardBackgroundColor(Color.WHITE);
-
-        LinearLayout inner = new LinearLayout(this);
-        inner.setOrientation(LinearLayout.VERTICAL);
-        inner.setPadding(dp(16), dp(14), dp(16), dp(14));
-
-        TextView titleView = new TextView(this);
-        titleView.setText(title);
-        titleView.setTextSize(16f);
-        titleView.setTypeface(null, Typeface.BOLD);
-        titleView.setTextColor(Color.parseColor("#1F1614"));
-
-        TextView messageView = new TextView(this);
-        messageView.setText(message);
-        messageView.setTextSize(14f);
-        messageView.setTextColor(Color.parseColor("#8C7A70"));
-        messageView.setPadding(0, dp(4), 0, 0);
-
-        inner.addView(titleView);
-        inner.addView(messageView);
-
-        card.addView(inner);
-        notificationsListContainer.addView(card);
-    }
-
-    private void showMessage(int messageResource) {
-        runOnUiThread(() -> {
-            if (!isFinishing() && !isDestroyed()) {
-                Toast.makeText(this, messageResource, Toast.LENGTH_SHORT).show();
-            }
-        });
+        return card;
     }
 
     private int dp(int value) {
@@ -504,8 +481,6 @@ public class NotificationsActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        activityVisible = false;
-        pollHandler.removeCallbacks(pollRunnable);
         executor.shutdownNow();
         super.onDestroy();
     }

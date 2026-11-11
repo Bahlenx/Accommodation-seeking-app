@@ -807,7 +807,7 @@
     <string name="rule_fenced">E Arolelitsoe &amp; E Koetsoeng</string>
 
     <!-- Dynamic Formatters -->
-    <string name="listing_location_pin">📍 %1$s</string>
+    <string name="listing_location_pin">%1$s</string>
     <string name="listing_price_month">R %1$s / mnd</string>
     <string name="listing_rooms_tag">Dikamora tse %1$s</string>
 

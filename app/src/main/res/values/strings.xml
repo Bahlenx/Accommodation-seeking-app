@@ -808,7 +808,7 @@
     <string name="rule_fenced">Fenced &amp; Gated</string>
 
     <!-- Dynamic Formatters -->
-    <string name="listing_location_pin">📍 %1$s</string>
+    <string name="listing_location_pin">%1$s</string>
     <string name="listing_price_month">R %1$s / mo</string>
     <string name="listing_rooms_tag">%1$s rooms</string>
 
@@ -848,6 +848,13 @@
         <item>Shared Accommodation</item>
         <item>Backyard Room</item>
         <item>Cottage</item>
+    </string-array>
+
+    <string-array name="sa_authority_doc_types">
+        <item>Urban: Municipal Rates &amp; Taxes Bill</item>
+        <item>Urban: Title Deed / Lease Agreement</item>
+        <item>Rural: Permission to Occupy (PTO)</item>
+        <item>Rural: Traditional Council Letter</item>
     </string-array>
 
     <string-array name="sa_property_types">

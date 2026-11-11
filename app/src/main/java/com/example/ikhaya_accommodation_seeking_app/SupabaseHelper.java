@@ -1,6 +1,7 @@
 package com.example.ikhaya_accommodation_seeking_app;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -10,11 +11,13 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
+import java.util.concurrent.Executors;
 
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -41,18 +44,21 @@ public class SupabaseHelper {
     }
 
     public static String getAccessToken(Context context) {
+        if (context == null) return null;
         return context
                 .getSharedPreferences("iKhayaSession", Context.MODE_PRIVATE)
                 .getString("access_token", null);
     }
 
     public static String getRefreshToken(Context context) {
+        if (context == null) return null;
         return context
                 .getSharedPreferences("iKhayaSession", Context.MODE_PRIVATE)
                 .getString("refresh_token", null);
     }
 
     public static String getUserId(Context context) {
+        if (context == null) return null;
         return context
                 .getSharedPreferences("iKhayaSession", Context.MODE_PRIVATE)
                 .getString("user_id", null);
@@ -61,7 +67,7 @@ public class SupabaseHelper {
     private static final long THIRTY_DAYS_MS = 30L * 24L * 60L * 60L * 1000L;
 
     public static void saveSession(Context context, String accessToken, String refreshToken, String userId, String userName, String userRole) {
-        android.content.SharedPreferences.Editor editor = context.getSharedPreferences("iKhayaSession", Context.MODE_PRIVATE).edit();
+        SharedPreferences.Editor editor = context.getSharedPreferences("iKhayaSession", Context.MODE_PRIVATE).edit();
         if (accessToken != null) editor.putString("access_token", accessToken);
         if (refreshToken != null) editor.putString("refresh_token", refreshToken);
         if (userId != null) editor.putString("user_id", userId);
@@ -138,6 +144,8 @@ public class SupabaseHelper {
 
         if (accessToken != null && accessToken.startsWith("ey")) {
             builder.addHeader("Authorization", "Bearer " + accessToken);
+        } else {
+            builder.addHeader("Authorization", "Bearer " + SUPABASE_KEY);
         }
 
         try (Response response = httpClient.newCall(builder.build()).execute()) {
@@ -200,6 +208,7 @@ public class SupabaseHelper {
 
         connection.setRequestMethod(method);
         connection.setRequestProperty("apikey", SUPABASE_KEY);
+        connection.setRequestProperty("x-upsert", "true");
 
         if (accessToken != null && accessToken.startsWith("ey")) {
             connection.setRequestProperty("Authorization", "Bearer " + accessToken);
@@ -220,6 +229,29 @@ public class SupabaseHelper {
         }
 
         return connection;
+    }
+
+    public static String uploadStorageBytes(String bucket, String imagePath, byte[] data) throws Exception {
+        Context ctx = getAppContext();
+        String token = ctx != null ? getAccessToken(ctx) : null;
+
+        HttpURLConnection conn = createStorageConnection(bucket, imagePath, "POST", token);
+        conn.setDoOutput(true);
+
+        try (OutputStream os = conn.getOutputStream()) {
+            os.write(data);
+            os.flush();
+        }
+
+        int responseCode = conn.getResponseCode();
+        String responseStr = readResponse(conn);
+        conn.disconnect();
+
+        if (responseCode >= 200 && responseCode < 300) {
+            return getPublicStorageUrl(bucket, imagePath);
+        } else {
+            throw new Exception("Storage Upload Failed (HTTP " + responseCode + "): " + responseStr);
+        }
     }
 
     public static String getPublicStorageUrl(String bucket, String imagePath) {
@@ -277,7 +309,7 @@ public class SupabaseHelper {
     }
 
     public static void createNotification(String targetUid, String title, String message, String token) {
-        java.util.concurrent.Executors.newSingleThreadExecutor().execute(() -> {
+        Executors.newSingleThreadExecutor().execute(() -> {
             HttpURLConnection conn = null;
             try {
                 conn = createConnection("/rest/v1/notifications", "POST", token);
@@ -305,10 +337,9 @@ public class SupabaseHelper {
     }
 
     public static void notifyAdmins(String title, String message, String token) {
-        java.util.concurrent.Executors.newSingleThreadExecutor().execute(() -> {
+        Executors.newSingleThreadExecutor().execute(() -> {
             HttpURLConnection conn = null;
             try {
-                // Case-insensitive check on profiles
                 conn = createConnection("/rest/v1/profiles?select=firebase_uid&role=ilike.admin", "GET", token);
                 int code = conn.getResponseCode();
 
@@ -324,7 +355,6 @@ public class SupabaseHelper {
                 }
                 conn.disconnect();
 
-                // Fallback check on Users table if empty
                 if (adminUids.isEmpty()) {
                     conn = createConnection("/rest/v1/Users?select=id&user_role=ilike.admin", "GET", token);
                     if (conn.getResponseCode() >= 200 && conn.getResponseCode() < 300) {
@@ -341,6 +371,110 @@ public class SupabaseHelper {
                 }
             } catch (Exception e) {
                 Log.e("SupabaseHelper", "Failed to notify admins", e);
+            } finally {
+                if (conn != null) conn.disconnect();
+            }
+        });
+    }
+
+    public interface ProfileUpdateCallback {
+        void onResult(boolean success, String error);
+    }
+
+    public interface ProfileFetchCallback {
+        void onResult(JSONObject profileObj, String error);
+    }
+
+    public interface UpdateCallback {
+        void onResult(boolean success, String error);
+    }
+
+    public static void updateListing(String listingId, JSONObject body, UpdateCallback callback) {
+        Executors.newSingleThreadExecutor().execute(() -> {
+            try {
+                Context ctx = getAppContext();
+                String token = ctx != null ? getAccessToken(ctx) : null;
+                String endpoint = "/rest/v1/listings?id=eq." + encode(listingId);
+                patch(endpoint, body, token);
+                if (callback != null) callback.onResult(true, null);
+            } catch (Exception e) {
+                if (callback != null) callback.onResult(false, e.getMessage());
+            }
+        });
+    }
+
+    public static String buildTenantDiscoverEndpoint(String categoryFilter, String locationQuery) {
+        StringBuilder endpoint = new StringBuilder("/rest/v1/listings?");
+        endpoint.append("select=*,profiles!inner(identity_status)&");
+        endpoint.append("status=eq.APPROVED&");
+        endpoint.append("is_archived=eq.false&");
+        endpoint.append("profiles.identity_status=eq.VERIFIED");
+
+        if (categoryFilter != null && !categoryFilter.isEmpty() && !"All".equalsIgnoreCase(categoryFilter)) {
+            endpoint.append("&property_type=eq.").append(encode(categoryFilter));
+        }
+
+        if (locationQuery != null && !locationQuery.trim().isEmpty()) {
+            endpoint.append("&location=ilike.*").append(encode(locationQuery.trim())).append("*");
+        }
+
+        endpoint.append("&order=created_at.desc");
+        return endpoint.toString();
+    }
+
+    private static Context getAppContext() {
+        try {
+            Class<?> activityThreadClass = Class.forName("android.app.ActivityThread");
+            Method method = activityThreadClass.getMethod("currentApplication");
+            return (Context) method.invoke(null);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public static void updateProfile(String userId, JSONObject profilePayload, ProfileUpdateCallback callback) {
+        Executors.newSingleThreadExecutor().execute(() -> {
+            try {
+                Context ctx = getAppContext();
+                String token = ctx != null ? getAccessToken(ctx) : null;
+                String endpoint = "/rest/v1/profiles?firebase_uid=eq." + encode(userId);
+                patch(endpoint, profilePayload, token);
+                if (callback != null) callback.onResult(true, null);
+            } catch (Exception e) {
+                if (callback != null) callback.onResult(false, e.getMessage());
+            }
+        });
+    }
+
+    public static void fetchProfileById(String userId, ProfileFetchCallback callback) {
+        Executors.newSingleThreadExecutor().execute(() -> {
+            HttpURLConnection conn = null;
+            try {
+                Context ctx = getAppContext();
+                String token = ctx != null ? getAccessToken(ctx) : null;
+                String endpoint = "/rest/v1/profiles?select=*&firebase_uid=eq." + encode(userId) + "&limit=1";
+                conn = createConnection(endpoint, "GET", token);
+                int code = conn.getResponseCode();
+                if (code >= 200 && code < 300) {
+                    JSONArray arr = new JSONArray(readResponse(conn));
+                    if (arr.length() > 0) {
+                        if (callback != null) callback.onResult(arr.getJSONObject(0), null);
+                        return;
+                    }
+                }
+                if (conn != null) conn.disconnect();
+                endpoint = "/rest/v1/profiles?select=*&id=eq." + encode(userId) + "&limit=1";
+                conn = createConnection(endpoint, "GET", token);
+                if (conn.getResponseCode() >= 200 && conn.getResponseCode() < 300) {
+                    JSONArray arr = new JSONArray(readResponse(conn));
+                    if (arr.length() > 0) {
+                        if (callback != null) callback.onResult(arr.getJSONObject(0), null);
+                        return;
+                    }
+                }
+                if (callback != null) callback.onResult(null, "Profile not found");
+            } catch (Exception e) {
+                if (callback != null) callback.onResult(null, e.getMessage());
             } finally {
                 if (conn != null) conn.disconnect();
             }

@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -24,6 +25,8 @@ import com.google.android.gms.location.LocationServices;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.util.List;
 import java.util.Locale;
@@ -103,6 +106,13 @@ public class PersonalActivity extends AppCompatActivity {
 
         idInput =
                 findViewById(R.id.idNum);
+
+        String passedSaId = getIntent().getStringExtra("USER_SA_ID");
+        if (passedSaId != null && !passedSaId.isEmpty()) {
+            idInput.setText(passedSaId);
+            idInput.setEnabled(false);
+            idInput.setFocusable(false);
+        }
 
         provinceInput =
                 findViewById(R.id.provinceInputText);
@@ -621,6 +631,32 @@ public class PersonalActivity extends AppCompatActivity {
                         role
                 );
 
+                String saId = idInput.getText().toString().trim();
+                if (!saId.isEmpty()) {
+                    profile.put("sa_id_number", saId);
+                }
+
+                if ("landlord".equalsIgnoreCase(role)) {
+                    String idDocUriStr = getIntent().getStringExtra("USER_ID_DOC_URI");
+                    String selfieUriStr = getIntent().getStringExtra("USER_SELFIE_URI");
+
+                    if (idDocUriStr != null && !idDocUriStr.isEmpty()) {
+                        String docUrl = uploadFileToSupabaseStorage(Uri.parse(idDocUriStr), "identity/doc_" + userId + "_" + System.currentTimeMillis() + ".jpg", accessToken);
+                        if (docUrl != null) {
+                            profile.put("id_document_url", docUrl);
+                        }
+                    }
+
+                    if (selfieUriStr != null && !selfieUriStr.isEmpty()) {
+                        String selfieUrl = uploadFileToSupabaseStorage(Uri.parse(selfieUriStr), "identity/selfie_" + userId + "_" + System.currentTimeMillis() + ".jpg", accessToken);
+                        if (selfieUrl != null) {
+                            profile.put("selfie_url", selfieUrl);
+                        }
+                    }
+
+                    profile.put("identity_status", "PENDING_VERIFICATION");
+                }
+
                 SupabaseHelper.writeJson(
                         connection,
                         profile
@@ -928,5 +964,45 @@ public class PersonalActivity extends AppCompatActivity {
         super.onDestroy();
 
         executorService.shutdown();
+    }
+
+    private String uploadFileToSupabaseStorage(Uri uri, String storagePath, String accessToken) {
+        HttpURLConnection connection = null;
+        try {
+            connection = SupabaseHelper.createStorageConnection(
+                    "property-images",
+                    storagePath,
+                    "POST",
+                    accessToken
+            );
+
+            String mimeType = getContentResolver().getType(uri);
+            if (mimeType == null) mimeType = "image/jpeg";
+
+            connection.setRequestProperty("Content-Type", mimeType);
+            connection.setRequestProperty("x-upsert", "true");
+            connection.setDoOutput(true);
+
+            try (InputStream in = getContentResolver().openInputStream(uri);
+                 OutputStream out = connection.getOutputStream()) {
+                if (in == null) return null;
+                byte[] buffer = new byte[8192];
+                int len;
+                while ((len = in.read(buffer)) != -1) {
+                    out.write(buffer, 0, len);
+                }
+                out.flush();
+            }
+
+            int code = connection.getResponseCode();
+            if (code >= 200 && code < 300) {
+                return SupabaseHelper.getPublicStorageUrl("property-images", storagePath);
+            }
+        } catch (Exception e) {
+            Log.e("PersonalActivity", "Upload error", e);
+        } finally {
+            if (connection != null) connection.disconnect();
+        }
+        return null;
     }
 }

@@ -1,7 +1,15 @@
 package com.example.ikhaya_accommodation_seeking_app;
 
+import android.Manifest;
+import android.content.Context;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.location.Address;
+import android.location.Geocoder;
+import android.location.Location;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -12,11 +20,17 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -27,6 +41,9 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -45,9 +62,22 @@ public class EditListingActivity extends AppCompatActivity {
     private AutoCompleteTextView electricityInput;
     private AutoCompleteTextView sanitationInput;
 
+    private AutoCompleteTextView authorityDocTypeInput;
+    private TextView authorityDocNameText;
+    private Button uploadAuthorityDocButton;
+    private Uri selectedDocUriEdit = null;
+
     private ImageView imagePreview;
     private Button uploadImageButton;
     private Button saveButton;
+
+    private final ArrayList<String> selectedAmenities = new ArrayList<>();
+    private ChipGroup cgEditAmenities;
+    private Button btnRemovePhoto;
+
+    private ChipGroup cgOfferTypeEdit;
+    private Chip chipRentEdit, chipSellEdit;
+    private TextView tvEditPriceLabel;
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
@@ -56,6 +86,28 @@ public class EditListingActivity extends AppCompatActivity {
     private String accessToken = "";
     private Uri selectedImageUri = null;
     private String currentImageUrl = "";
+
+    private String originalAddress = "";
+    private String originalDocType = "";
+    private String originalDocUrl = "";
+    private JSONObject originalListingSnapshot = null;
+
+    private double propertyLatitude = 0.0;
+    private double propertyLongitude = 0.0;
+
+    private final ActivityResultLauncher<String> docPickerEdit =
+            registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
+                if (uri != null) {
+                    selectedDocUriEdit = uri;
+                    if (authorityDocNameText != null) {
+                        authorityDocNameText.setText("Document attached: " + uri.getLastPathSegment());
+                        authorityDocNameText.setTextColor(Color.parseColor("#2DCE89"));
+                    }
+                    if (uploadAuthorityDocButton != null) {
+                        uploadAuthorityDocButton.setText("Change Authority Document");
+                    }
+                }
+            });
 
     private final ActivityResultLauncher<String> imagePicker =
             registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
@@ -66,6 +118,9 @@ public class EditListingActivity extends AppCompatActivity {
                     }
                     if (uploadImageButton != null) {
                         uploadImageButton.setText(R.string.btn_change_selected_photos);
+                    }
+                    if (btnRemovePhoto != null) {
+                        btnRemovePhoto.setVisibility(View.VISIBLE);
                     }
                 }
             });
@@ -83,6 +138,66 @@ public class EditListingActivity extends AppCompatActivity {
         nameInput = findViewById(R.id.edtEditPropertyName);
         locationInput = findViewById(R.id.autoCompleteLocationEdit);
 
+        cgOfferTypeEdit = findViewById(R.id.cgOfferTypeEdit);
+        chipRentEdit = findViewById(R.id.chipRentEdit);
+        chipSellEdit = findViewById(R.id.chipSellEdit);
+        tvEditPriceLabel = findViewById(R.id.tvEditPriceLabel);
+
+        if (cgOfferTypeEdit != null) {
+            cgOfferTypeEdit.setOnCheckedChangeListener((group, checkedId) -> {
+                if (checkedId == R.id.chipSellEdit) {
+                    if (tvEditPriceLabel != null) tvEditPriceLabel.setText("Total Purchase Price (R)");
+                } else {
+                    if (tvEditPriceLabel != null) tvEditPriceLabel.setText(R.string.monthly_rental_price_r);
+                }
+            });
+        }
+
+        View btnAdjustPin = findViewById(R.id.btnAdjustPinOnMapEdit);
+        if (btnAdjustPin != null) {
+            btnAdjustPin.setOnClickListener(v -> {
+                AddListingActivity.launchUberStylePinPicker(
+                        this,
+                        propertyLatitude,
+                        propertyLongitude,
+                        (lat, lon, resolvedAddress) -> {
+                            propertyLatitude = lat;
+                            propertyLongitude = lon;
+                            locationInput.setText(resolvedAddress);
+                        }
+                );
+            });
+        }
+
+        View btnUseGps = findViewById(R.id.btnUseCurrentGpsEdit);
+        if (btnUseGps != null) {
+            btnUseGps.setOnClickListener(v -> {
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                    LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                    if (lm != null) {
+                        try {
+                            Location loc = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                            if (loc == null) loc = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+                            if (loc != null) {
+                                propertyLatitude = loc.getLatitude();
+                                propertyLongitude = loc.getLongitude();
+                                Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+                                List<Address> addrs = geocoder.getFromLocation(propertyLatitude, propertyLongitude, 1);
+                                if (addrs != null && !addrs.isEmpty()) {
+                                    locationInput.setText(addrs.get(0).getAddressLine(0));
+                                }
+                                Toast.makeText(this, "GPS coordinates captured!", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(this, "Searching for GPS signal...", Toast.LENGTH_SHORT).show();
+                            }
+                        } catch (Exception ignored) {}
+                    }
+                } else {
+                    Toast.makeText(this, "Location permission required.", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
         priceInput = findViewById(R.id.edtEditPrice);
         roomsInput = findViewById(R.id.edtEditRooms);
         descriptionInput = findViewById(R.id.edtEditDescription);
@@ -95,10 +210,42 @@ public class EditListingActivity extends AppCompatActivity {
         electricityInput = findViewById(R.id.dropdownEditElectricity);
         sanitationInput = findViewById(R.id.dropdownEditSanitation);
 
+        authorityDocTypeInput = findViewById(R.id.dropdownEditAuthorityDocType);
+        authorityDocNameText = findViewById(R.id.tvEditSelectedDocName);
+        uploadAuthorityDocButton = findViewById(R.id.btnUploadAuthorityDocEdit);
+
+        cgEditAmenities = findViewById(R.id.cgSelectedAmenitiesEdit);
+        View btnExtraAmenities = findViewById(R.id.btnSelectExtraAmenitiesEdit);
+        btnRemovePhoto = findViewById(R.id.btnRemovePhotoEdit);
+
+        if (btnExtraAmenities != null) {
+            btnExtraAmenities.setOnClickListener(v -> showAmenitiesPickerDialog());
+        }
+
+        if (btnRemovePhoto != null) {
+            btnRemovePhoto.setOnClickListener(v -> {
+                selectedImageUri = null;
+                currentImageUrl = "";
+                if (imagePreview != null) {
+                    imagePreview.setImageResource(android.R.drawable.ic_menu_gallery);
+                }
+                btnRemovePhoto.setVisibility(View.GONE);
+                if (uploadImageButton != null) {
+                    uploadImageButton.setText(R.string.choose_property_photos);
+                }
+                Toast.makeText(this, "Photo removed. You can choose a new one or keep it blank.", Toast.LENGTH_SHORT).show();
+            });
+        }
+
         setupDropdown(typeInput, R.array.sa_property_types);
         setupDropdown(waterInput, R.array.sa_water_sources);
         setupDropdown(electricityInput, R.array.sa_electricity_types);
         setupDropdown(sanitationInput, R.array.sa_sanitation_types);
+        setupDropdown(authorityDocTypeInput, R.array.sa_authority_doc_types);
+
+        if (uploadAuthorityDocButton != null) {
+            uploadAuthorityDocButton.setOnClickListener(v -> docPickerEdit.launch("*/*"));
+        }
 
         View backButton = findViewById(R.id.btnBackEditListing);
         if (backButton != null) {
@@ -143,6 +290,55 @@ public class EditListingActivity extends AppCompatActivity {
         });
     }
 
+    private void showAmenitiesPickerDialog() {
+        String[] options = {
+                getString(R.string.amenity_wifi),
+                getString(R.string.amenity_parking),
+                getString(R.string.amenity_security),
+                getString(R.string.amenity_furnished),
+                getString(R.string.amenity_water_included),
+                getString(R.string.amenity_electricity_included),
+                getString(R.string.amenity_deposit_required),
+                getString(R.string.amenity_no_smoking),
+                getString(R.string.amenity_shared_kitchen),
+                getString(R.string.amenity_laundry_facilities)
+        };
+
+        boolean[] checked = new boolean[options.length];
+        for (int i = 0; i < options.length; i++) {
+            checked[i] = selectedAmenities.contains(options[i]);
+        }
+
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.title_select_features_and_rules)
+                .setMultiChoiceItems(options, checked, (dialog, which, isChecked) -> {
+                    if (isChecked) {
+                        if (!selectedAmenities.contains(options[which])) selectedAmenities.add(options[which]);
+                    } else {
+                        selectedAmenities.remove(options[which]);
+                    }
+                })
+                .setPositiveButton(R.string.btn_done, (dialog, which) -> renderAmenityChips())
+                .setNegativeButton(R.string.btn_cancel, null)
+                .show();
+    }
+
+    private void renderAmenityChips() {
+        if (cgEditAmenities == null) return;
+        cgEditAmenities.removeAllViews();
+
+        for (String amenity : selectedAmenities) {
+            Chip chip = new Chip(this);
+            chip.setText(amenity);
+            chip.setCloseIconVisible(true);
+            chip.setOnCloseIconClickListener(v -> {
+                selectedAmenities.remove(amenity);
+                cgEditAmenities.removeView(chip);
+            });
+            cgEditAmenities.addView(chip);
+        }
+    }
+
     private void loadListing() {
         executor.execute(() -> {
             HttpURLConnection connection = null;
@@ -157,10 +353,46 @@ public class EditListingActivity extends AppCompatActivity {
                     JSONArray data = new JSONArray(response);
                     if (data.length() > 0) {
                         JSONObject listing = data.getJSONObject(0);
+
+                        JSONObject existingOriginal = listing.optJSONObject("original_payload");
+                        if (existingOriginal != null && existingOriginal.length() > 0) {
+                            originalListingSnapshot = existingOriginal;
+                        } else {
+                            originalListingSnapshot = new JSONObject(listing.toString());
+                        }
+
                         currentImageUrl = listing.optString("image_url", "");
+
+                        JSONArray existingAmenities = listing.optJSONArray("amenities");
+                        if (existingAmenities != null) {
+                            selectedAmenities.clear();
+                            for (int i = 0; i < existingAmenities.length(); i++) {
+                                selectedAmenities.add(existingAmenities.optString(i));
+                            }
+                        }
+
+                        propertyLatitude = listing.optDouble("latitude", 0.0);
+                        propertyLongitude = listing.optDouble("longitude", 0.0);
+
+                        originalAddress = listing.optString("location", "");
+                        originalDocType = listing.optString("authority_doc_type", "MUNICIPAL_RATES");
+                        originalDocUrl = listing.optString("authority_doc_url", "");
+
+                        String offerType = listing.optString("offer_type", "rent");
+                        boolean isSale = "sale".equalsIgnoreCase(offerType);
 
                         runOnUiThread(() -> {
                             if (isFinishing() || isDestroyed()) return;
+
+                            if (chipSellEdit != null && chipRentEdit != null) {
+                                if (isSale) {
+                                    chipSellEdit.setChecked(true);
+                                    if (tvEditPriceLabel != null) tvEditPriceLabel.setText("Total Purchase Price (R)");
+                                } else {
+                                    chipRentEdit.setChecked(true);
+                                    if (tvEditPriceLabel != null) tvEditPriceLabel.setText(R.string.monthly_rental_price_r);
+                                }
+                            }
 
                             if (nameInput != null) nameInput.setText(listing.optString("property_name", ""));
                             if (locationInput != null) locationInput.setText(listing.optString("location", ""));
@@ -171,6 +403,25 @@ public class EditListingActivity extends AppCompatActivity {
                             if (electricityInput != null) electricityInput.setText(listing.optString("electricity", ""), false);
                             if (sanitationInput != null) sanitationInput.setText(listing.optString("sanitation", ""), false);
                             if (descriptionInput != null) descriptionInput.setText(listing.optString("description", ""));
+
+                            if (authorityDocTypeInput != null) {
+                                String label = AddListingActivity.getDocTypeLabel(originalDocType);
+                                authorityDocTypeInput.setText(label, false);
+                            }
+                            if (authorityDocNameText != null) {
+                                if (!originalDocUrl.isEmpty()) {
+                                    authorityDocNameText.setText("Current document attached");
+                                    authorityDocNameText.setTextColor(Color.parseColor("#2DCE89"));
+                                } else {
+                                    authorityDocNameText.setText("No authority document attached");
+                                    authorityDocNameText.setTextColor(Color.parseColor("#8C7A70"));
+                                }
+                            }
+
+                            renderAmenityChips();
+                            if (btnRemovePhoto != null) {
+                                btnRemovePhoto.setVisibility(!currentImageUrl.isEmpty() ? View.VISIBLE : View.GONE);
+                            }
                         });
 
                         if (!currentImageUrl.isEmpty()) {
@@ -214,6 +465,11 @@ public class EditListingActivity extends AppCompatActivity {
         });
     }
 
+    public interface UploadCallback {
+        void onSuccess(String uploadedPublicUrl);
+        void onError(String error);
+    }
+
     private void saveChanges() {
         String name = nameInput != null ? nameInput.getText().toString().trim() : "";
         String location = locationInput != null ? locationInput.getText().toString().trim() : "";
@@ -247,19 +503,76 @@ public class EditListingActivity extends AppCompatActivity {
             saveButton.setText(R.string.btn_saving_changes_in_progress);
         }
 
-        executor.execute(() -> {
-            String finalImageUrl = currentImageUrl;
+        if (selectedDocUriEdit != null) {
+            uploadAuthorityDocument(selectedDocUriEdit, new UploadCallback() {
+                @Override
+                public void onSuccess(String uploadedPublicUrl) {
+                    sendListingUpdatePayload(uploadedPublicUrl);
+                }
 
+                @Override
+                public void onError(String error) {
+                    runOnUiThread(() -> {
+                        if (saveButton != null) {
+                            saveButton.setEnabled(true);
+                            saveButton.setText(R.string.save_changes);
+                        }
+                        Toast.makeText(EditListingActivity.this, "Document upload failed: " + error, Toast.LENGTH_SHORT).show();
+                    });
+                }
+            });
+        } else {
+            sendListingUpdatePayload(originalDocUrl);
+        }
+    }
+
+    private void uploadAuthorityDocument(Uri docUri, UploadCallback callback) {
+        executor.execute(() -> {
+            try {
+                String docPath = userId + "/" + listingId + "/authority_doc_edit_" + System.currentTimeMillis() + ".jpg";
+                boolean uploadedDoc = uploadImageToStorage(docUri, docPath);
+                if (uploadedDoc) {
+                    String docPublicUrl = SupabaseHelper.getPublicStorageUrl("property-images", docPath);
+                    callback.onSuccess(docPublicUrl);
+                } else {
+                    callback.onError("Storage upload returned failure status.");
+                }
+            } catch (Exception e) {
+                callback.onError(e.getMessage());
+            }
+        });
+    }
+
+    private void sendListingUpdatePayload(String finalDocUrl) {
+        executor.execute(() -> {
+            String name = nameInput != null ? nameInput.getText().toString().trim() : "";
+            String location = locationInput != null ? locationInput.getText().toString().trim() : "";
+            String price = priceInput != null ? priceInput.getText().toString().trim() : "";
+            String rooms = roomsInput != null ? roomsInput.getText().toString().trim() : "";
+            String type = typeInput != null ? typeInput.getText().toString().trim() : "";
+            String description = descriptionInput != null ? descriptionInput.getText().toString().trim() : "";
+
+            double parsedPrice = Double.parseDouble(price);
+            int parsedRooms = Integer.parseInt(rooms);
+
+            String finalImageUrl = currentImageUrl;
             if (selectedImageUri != null) {
                 String imagePath = userId + "/" + listingId + "/property_edit_" + System.currentTimeMillis() + ".jpg";
                 boolean uploaded = uploadImageToStorage(selectedImageUri, imagePath);
-
                 if (uploaded) {
                     finalImageUrl = SupabaseHelper.getPublicStorageUrl("property-images", imagePath);
-                } else {
-                    showMessage(getString(R.string.warn_image_upload_failed_saving_text));
                 }
             }
+
+            String selectedDocLabel = authorityDocTypeInput != null ? authorityDocTypeInput.getText().toString().trim() : "";
+            String newDocType = AddListingActivity.getDocTypeKey(selectedDocLabel);
+
+            boolean isAddressChanged = !originalAddress.trim().equalsIgnoreCase(location.trim());
+            boolean isDocTypeChanged = !originalDocType.trim().equalsIgnoreCase(newDocType.trim());
+            boolean isDocUrlChanged = (finalDocUrl != null && !finalDocUrl.isEmpty() && !finalDocUrl.equals(originalDocUrl));
+
+            boolean isHighRiskEdit = isAddressChanged || isDocTypeChanged || isDocUrlChanged;
+            String targetStatus = isHighRiskEdit ? "SUSPENDED_FOR_REVERIFICATION" : "CHANGES_PENDING_REVIEW";
 
             HttpURLConnection connection = null;
             try {
@@ -270,10 +583,21 @@ public class EditListingActivity extends AppCompatActivity {
                 JSONObject body = new JSONObject();
                 body.put("property_name", name);
                 body.put("location", location);
+                boolean isForSale = chipSellEdit != null && chipSellEdit.isChecked();
+                body.put("offer_type", isForSale ? "sale" : "rent");
                 body.put("price", parsedPrice);
                 body.put("rooms", parsedRooms);
                 body.put("property_type", type);
                 body.put("description", description);
+                body.put("authority_doc_type", newDocType);
+
+                if (originalListingSnapshot != null) {
+                    body.put("original_payload", originalListingSnapshot);
+                }
+
+                if (finalDocUrl != null && !finalDocUrl.isEmpty()) {
+                    body.put("authority_doc_url", finalDocUrl);
+                }
 
                 String water = waterInput != null ? waterInput.getText().toString().trim() : "";
                 String electricity = electricityInput != null ? electricityInput.getText().toString().trim() : "";
@@ -283,11 +607,20 @@ public class EditListingActivity extends AppCompatActivity {
                 if (!electricity.isEmpty()) body.put("electricity", electricity);
                 if (!sanitation.isEmpty()) body.put("sanitation", sanitation);
 
-                body.put("status", "PENDING");
+                body.put("status", targetStatus);
                 body.put("availability", "Pending");
 
-                if (finalImageUrl != null && !finalImageUrl.isEmpty()) {
-                    body.put("image_url", finalImageUrl);
+                if (isHighRiskEdit) {
+                    body.put("reverification_reason", "High-risk fields updated (address or authority proof).");
+                }
+
+                JSONArray amenitiesJson = new JSONArray(selectedAmenities);
+                body.put("amenities", amenitiesJson);
+                body.put("image_url", finalImageUrl);
+
+                if (propertyLatitude != 0.0 && propertyLongitude != 0.0) {
+                    body.put("latitude", propertyLatitude);
+                    body.put("longitude", propertyLongitude);
                 }
 
                 SupabaseHelper.writeJson(connection, body);
@@ -302,25 +635,28 @@ public class EditListingActivity extends AppCompatActivity {
                     }
 
                     if (code >= 200 && code < 300) {
-                        Toast.makeText(EditListingActivity.this, R.string.msg_listing_updated_success, Toast.LENGTH_SHORT).show();
+                        String toastMsg = isHighRiskEdit
+                                ? "Listing suspended pending admin re-verification."
+                                : "Listing changes submitted for review.";
+                        Toast.makeText(EditListingActivity.this, toastMsg, Toast.LENGTH_LONG).show();
 
                         SupabaseHelper.createNotification(
                                 userId,
-                                "Listing Under Review",
-                                "Your listing '" + name + "' has been submitted and is pending admin approval.",
+                                isHighRiskEdit ? "Listing Suspended for Re-verification" : "Listing Changes Pending Review",
+                                "Your listing '" + name + "' changes have been submitted.",
                                 accessToken
                         );
 
                         SupabaseHelper.notifyAdmins(
-                                "New Listing Edit",
-                                "A landlord has updated '" + name + "'. It requires review.",
+                                isHighRiskEdit ? "High-Risk Listing Edit" : "Listing Edit Submitted",
+                                "Landlord updated '" + name + "'. Status: " + targetStatus,
                                 accessToken
                         );
 
                         setResult(RESULT_OK);
                         finish();
                     } else {
-                        Toast.makeText(EditListingActivity.this, getString(R.string.error_update_failed_http) + " " + code, Toast.LENGTH_LONG).show();
+                        Toast.makeText(EditListingActivity.this, "Update failed (HTTP " + code + ")", Toast.LENGTH_LONG).show();
                     }
                 });
 

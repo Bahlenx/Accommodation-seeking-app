@@ -5,6 +5,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -18,11 +19,16 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,6 +44,9 @@ import com.google.android.material.chip.ChipGroup;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.osmdroid.config.Configuration;
+import org.osmdroid.events.MapListener;
+import org.osmdroid.events.ScrollEvent;
+import org.osmdroid.events.ZoomEvent;
 import org.osmdroid.tileprovider.tilesource.XYTileSource;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
@@ -66,6 +75,11 @@ public class AddListingActivity extends AppCompatActivity {
     private AutoCompleteTextView electricityInput;
     private AutoCompleteTextView sanitationInput;
 
+    private AutoCompleteTextView authorityDocTypeInput;
+    private TextView authorityDocNameText;
+    private Button uploadAuthorityDocButton;
+    private Uri selectedAuthorityDocUri = null;
+
     private ImageView imagePreview;
     private TextView locationStatus;
     private TextView imageCountText;
@@ -85,6 +99,50 @@ public class AddListingActivity extends AppCompatActivity {
     private Runnable searchRunnable;
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
+
+    public static String getDocTypeKey(String label) {
+        if (label == null) return "MUNICIPAL_RATES";
+        String clean = label.trim();
+        if (clean.contains("Municipal Rates") || clean.contains("MUNICIPAL_RATES")) {
+            return "MUNICIPAL_RATES";
+        } else if (clean.contains("Lease") || clean.contains("Title Deed") || clean.contains("LEASE_AGREEMENT")) {
+            return "LEASE_AGREEMENT";
+        } else if (clean.contains("PTO") || clean.contains("Permission to Occupy") || clean.contains("PTO_LETTER")) {
+            return "PTO_LETTER";
+        } else if (clean.contains("Traditional") || clean.contains("Tribal") || clean.contains("TRADITIONAL_LETTER")) {
+            return "TRADITIONAL_LETTER";
+        }
+        return "MUNICIPAL_RATES";
+    }
+
+    public static String getDocTypeLabel(String key) {
+        if (key == null) return "Urban: Municipal Rates & Taxes Bill";
+        switch (key.trim().toUpperCase()) {
+            case "LEASE_AGREEMENT":
+                return "Urban: Title Deed / Lease Agreement";
+            case "PTO_LETTER":
+                return "Rural: Permission to Occupy (PTO)";
+            case "TRADITIONAL_LETTER":
+                return "Rural: Traditional Council Letter";
+            case "MUNICIPAL_RATES":
+            default:
+                return "Urban: Municipal Rates & Taxes Bill";
+        }
+    }
+
+    private final ActivityResultLauncher<String> docPicker =
+            registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
+                if (uri != null) {
+                    selectedAuthorityDocUri = uri;
+                    if (authorityDocNameText != null) {
+                        authorityDocNameText.setText("Document attached: " + uri.getLastPathSegment());
+                        authorityDocNameText.setTextColor(Color.parseColor("#2DCE89"));
+                    }
+                    if (uploadAuthorityDocButton != null) {
+                        uploadAuthorityDocButton.setText("Change Authority Document");
+                    }
+                }
+            });
 
     private final ActivityResultLauncher<String> imagePicker =
             registerForActivityResult(
@@ -182,6 +240,15 @@ public class AddListingActivity extends AppCompatActivity {
         setupDropdown(electricityInput, R.array.sa_electricity_types);
         setupDropdown(sanitationInput, R.array.sa_sanitation_types);
 
+        authorityDocTypeInput = findViewById(R.id.dropdownAuthorityDocType);
+        authorityDocNameText = findViewById(R.id.tvSelectedDocName);
+        uploadAuthorityDocButton = findViewById(R.id.btnUploadAuthorityDoc);
+
+        setupDropdown(authorityDocTypeInput, R.array.sa_authority_doc_types);
+        if (uploadAuthorityDocButton != null) {
+            uploadAuthorityDocButton.setOnClickListener(v -> docPicker.launch("*/*"));
+        }
+
         TextView tvPriceLabel = findViewById(R.id.tvPriceLabel);
         TextView tvRoomsLabel = findViewById(R.id.tvRoomsLabel);
         ChipGroup cgOfferType = findViewById(R.id.cgOfferType);
@@ -220,32 +287,31 @@ public class AddListingActivity extends AppCompatActivity {
 
         uploadImageButton.setOnClickListener(v -> imagePicker.launch("image/*"));
 
-        verifyLocationButton.setOnClickListener(v -> showPinAdjustmentDialog(verifiedLatitude, verifiedLongitude));
+        if (locationInput != null) {
+            locationInput.setFocusable(false);
+        }
 
-        if (locationInput instanceof AutoCompleteTextView) {
-            AutoCompleteTextView autoCompleteLocation = (AutoCompleteTextView) locationInput;
-
-            autoCompleteLocation.addTextChangedListener(new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
-                @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    isLocationVerified = false;
-                    if (locationStatus != null) {
-                        locationStatus.setText(R.string.no_pin_dropped);
-                        locationStatus.setTextColor(Color.parseColor("#8C7A70"));
-                    }
-                    searchHandler.removeCallbacks(searchRunnable);
-                    if (s.length() >= 3) {
-                        searchRunnable = () -> fetchAddressSuggestions(s.toString().trim(), autoCompleteLocation);
-                        searchHandler.postDelayed(searchRunnable, 600);
-                    }
+        View.OnClickListener openPickerListener = v -> {
+            launchUberStylePinPicker(this, verifiedLatitude, verifiedLongitude, (lat, lon, resolvedAddress) -> {
+                verifiedLatitude = lat;
+                verifiedLongitude = lon;
+                isLocationVerified = true;
+                if (locationInput != null) {
+                    locationInput.setText(resolvedAddress);
                 }
-
-                @Override
-                public void afterTextChanged(Editable s) {}
+                if (locationStatus != null) {
+                    locationStatus.setText(String.format(Locale.getDefault(), "Pinned: %.5f, %.5f (Verified)", lat, lon));
+                    locationStatus.setTextColor(Color.parseColor("#2DCE89"));
+                }
             });
+        };
+
+        if (locationInput != null) {
+            locationInput.setOnClickListener(openPickerListener);
+        }
+
+        if (verifyLocationButton != null) {
+            verifyLocationButton.setOnClickListener(openPickerListener);
         }
 
         View btnExtraAmenities = findViewById(R.id.btnSelectExtraAmenities);
@@ -359,46 +425,35 @@ public class AddListingActivity extends AppCompatActivity {
         }
     }
 
-    private void fetchAddressSuggestions(String query, AutoCompleteTextView autoCompleteLocation) {
-        executor.execute(() -> {
-            try {
-                Geocoder geocoder = new Geocoder(AddListingActivity.this, Locale.getDefault());
-                List<Address> matches = geocoder.getFromLocationName(query + ", South Africa", 5);
-
-                if (matches != null && !matches.isEmpty()) {
-                    List<String> displayStrings = new ArrayList<>();
-                    for (Address addr : matches) {
-                        StringBuilder sb = new StringBuilder();
-                        for (int i = 0; i <= addr.getMaxAddressLineIndex(); i++) {
-                            if (i > 0) sb.append(", ");
-                            sb.append(addr.getAddressLine(i));
-                        }
-                        displayStrings.add(sb.toString());
-                    }
-
-                    runOnUiThread(() -> {
-                        if (!isFinishing() && !isDestroyed()) {
-                            ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                                    AddListingActivity.this,
-                                    android.R.layout.simple_dropdown_item_1line,
-                                    displayStrings
-                            );
-                            autoCompleteLocation.setAdapter(adapter);
-                            autoCompleteLocation.showDropDown();
-                        }
-                    });
-                }
-            } catch (Exception ignored) {}
-        });
+    public interface OnLocationSelectedListener {
+        void onLocationSelected(double latitude, double longitude, String resolvedAddress);
     }
 
-    private void showPinAdjustmentDialog(double initialLat, double initialLon) {
-        Dialog dialog = new Dialog(this, android.R.style.Theme_Black_NoTitleBar_Fullscreen);
+    public static void launchUberStylePinPicker(
+            AppCompatActivity activity,
+            double initialLat,
+            double initialLon,
+            OnLocationSelectedListener listener) {
+
+        Dialog dialog = new Dialog(activity, android.R.style.Theme_Light_NoTitleBar_Fullscreen);
         dialog.setContentView(R.layout.dialog_pin_picker);
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
 
         MapView pickerMap = dialog.findViewById(R.id.pickerMapView);
         Button btnConfirmPin = dialog.findViewById(R.id.btnConfirmPin);
         View btnLocateMe = dialog.findViewById(R.id.btnDialogLocateMe);
+        TextView tvSelectedAddress = dialog.findViewById(R.id.tvSelectedAddress);
+        EditText etDialogSearch = dialog.findViewById(R.id.etDialogSearch);
+        View btnDialogSearch = dialog.findViewById(R.id.btnDialogSearch);
+        ProgressBar pbDialogSearch = dialog.findViewById(R.id.pbDialogSearch);
+        View cardSearchSuggestions = dialog.findViewById(R.id.cardSearchSuggestions);
+        LinearLayout layoutSearchSuggestions = dialog.findViewById(R.id.layoutSearchSuggestions);
+
+        Handler handler = new Handler(Looper.getMainLooper());
+        ExecutorService executor = Executors.newSingleThreadExecutor();
 
         if (pickerMap != null) {
             XYTileSource tileSource = new XYTileSource(
@@ -407,7 +462,7 @@ public class AddListingActivity extends AppCompatActivity {
                     19,
                     256,
                     ".png",
-                    new String[]{ "https://tile.openstreetmap.de/" },
+                    new String[]{"https://tile.openstreetmap.de/"},
                     "© OpenStreetMap contributors"
             );
             pickerMap.setTileSource(tileSource);
@@ -415,65 +470,246 @@ public class AddListingActivity extends AppCompatActivity {
 
             GeoPoint startPoint = (!Double.isNaN(initialLat) && initialLat != 0.0)
                     ? new GeoPoint(initialLat, initialLon)
-                    : new GeoPoint(-26.2041, 28.0473);
+                    : new GeoPoint(-25.9124, 28.1419); // Default Kosmosdal / Centurion
 
-            pickerMap.getController().setZoom(16.0);
+            pickerMap.getController().setZoom(17.0);
             pickerMap.getController().setCenter(startPoint);
-
             pickerMap.onResume();
 
-            dialog.setOnDismissListener(d -> {
-                pickerMap.onPause();
-                pickerMap.onDetach();
+            // Perform initial reverse-geocode
+            reverseGeocodeCoords(activity, executor, startPoint.getLatitude(), startPoint.getLongitude(), tvSelectedAddress);
+
+            // Map scroll listener with debounced reverse-geocoding
+            pickerMap.addMapListener(new MapListener() {
+                @Override
+                public boolean onScroll(ScrollEvent event) {
+                    handler.removeCallbacksAndMessages(null);
+                    if (cardSearchSuggestions != null) cardSearchSuggestions.setVisibility(View.GONE);
+                    if (tvSelectedAddress != null) tvSelectedAddress.setText("Locating address...");
+
+                    handler.postDelayed(() -> {
+                        GeoPoint center = (GeoPoint) pickerMap.getMapCenter();
+                        reverseGeocodeCoords(activity, executor, center.getLatitude(), center.getLongitude(), tvSelectedAddress);
+                    }, 500);
+                    return true;
+                }
+
+                @Override
+                public boolean onZoom(ZoomEvent event) {
+                    return false;
+                }
             });
 
+            Runnable triggerSearch = () -> {
+                String query = etDialogSearch != null ? etDialogSearch.getText().toString().trim() : "";
+                if (!query.isEmpty()) {
+                    hideKeyboard(activity, etDialogSearch);
+                    searchPlaces(activity, executor, query, pickerMap, tvSelectedAddress, cardSearchSuggestions, layoutSearchSuggestions, pbDialogSearch);
+                }
+            };
+
+            // 1. Keyboard "Search" action
+            if (etDialogSearch != null) {
+                etDialogSearch.setOnEditorActionListener((v, actionId, event) -> {
+                    if (actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_DONE) {
+                        triggerSearch.run();
+                        return true;
+                    }
+                    return false;
+                });
+            }
+
+            // 2. Search icon button click
+            if (btnDialogSearch != null) {
+                btnDialogSearch.setOnClickListener(v -> triggerSearch.run());
+            }
+
+            // 3. Locate Me button
             if (btnLocateMe != null) {
                 btnLocateMe.setOnClickListener(v -> {
-                    if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-                        if (locationManager != null) {
+                    if (ContextCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                        LocationManager lm = (LocationManager) activity.getSystemService(Context.LOCATION_SERVICE);
+                        if (lm != null) {
                             try {
-                                Location loc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                                if (loc == null) loc = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-
+                                Location loc = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                                if (loc == null) loc = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
                                 if (loc != null) {
                                     GeoPoint myPoint = new GeoPoint(loc.getLatitude(), loc.getLongitude());
                                     pickerMap.getController().animateTo(myPoint);
                                     pickerMap.getController().setZoom(18.0);
+                                    reverseGeocodeCoords(activity, executor, loc.getLatitude(), loc.getLongitude(), tvSelectedAddress);
                                 } else {
-                                    Toast.makeText(this, R.string.searching_gps_signal, Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(activity, "Searching for GPS signal...", Toast.LENGTH_SHORT).show();
                                 }
                             } catch (SecurityException ignored) {}
                         }
                     } else {
-                        locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
+                        Toast.makeText(activity, "Location permission required to pinpoint device.", Toast.LENGTH_SHORT).show();
                     }
                 });
             }
 
+            // 4. Confirm Location button
             if (btnConfirmPin != null) {
                 btnConfirmPin.setOnClickListener(v -> {
                     GeoPoint finalCenter = (GeoPoint) pickerMap.getMapCenter();
-                    verifiedLatitude = finalCenter.getLatitude();
-                    verifiedLongitude = finalCenter.getLongitude();
-                    isLocationVerified = true;
-
-                    if (locationStatus != null) {
-                        locationStatus.setText(String.format(
-                                Locale.getDefault(),
-                                getString(R.string.format_pinned_coords),
-                                verifiedLatitude,
-                                verifiedLongitude
-                        ));
-                        locationStatus.setTextColor(Color.parseColor("#2DCE89"));
+                    String resolvedAddress = tvSelectedAddress != null ? tvSelectedAddress.getText().toString() : "";
+                    if (listener != null) {
+                        listener.onLocationSelected(finalCenter.getLatitude(), finalCenter.getLongitude(), resolvedAddress);
                     }
-
                     dialog.dismiss();
                 });
             }
+
+            dialog.setOnDismissListener(d -> {
+                pickerMap.onPause();
+                pickerMap.onDetach();
+                executor.shutdownNow();
+            });
         }
 
         dialog.show();
+    }
+
+    private static void searchPlaces(
+            AppCompatActivity activity,
+            ExecutorService executor,
+            String query,
+            MapView map,
+            TextView tvSelectedAddress,
+            View cardSuggestions,
+            LinearLayout layoutSuggestions,
+            ProgressBar pbSearch) {
+
+        if (pbSearch != null) pbSearch.setVisibility(View.VISIBLE);
+
+        executor.execute(() -> {
+            try {
+                Geocoder geocoder = new Geocoder(activity, Locale.getDefault());
+                // Fetch up to 5 matching candidates
+                List<Address> matches = geocoder.getFromLocationName(query + ", South Africa", 5);
+
+                activity.runOnUiThread(() -> {
+                    if (pbSearch != null) pbSearch.setVisibility(View.GONE);
+
+                    if (matches == null || matches.isEmpty()) {
+                        Toast.makeText(activity, "No matching places found. Try moving the map directly.", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    if (matches.size() == 1) {
+                        Address single = matches.get(0);
+                        flyToAddress(activity, executor, single, map, tvSelectedAddress, cardSuggestions);
+                    } else {
+                        // Populate multi-option dropdown
+                        if (layoutSuggestions == null || cardSuggestions == null) return;
+                        layoutSuggestions.removeAllViews();
+                        cardSuggestions.setVisibility(View.VISIBLE);
+
+                        for (Address addr : matches) {
+                            String fullTitle = formatAddress(addr);
+
+                            TextView optionView = new TextView(activity);
+                            optionView.setText(fullTitle);
+                            optionView.setTextColor(Color.parseColor("#1F1614"));
+                            optionView.setTextSize(13.5f);
+                            optionView.setPadding(32, 24, 32, 24);
+                            optionView.setBackgroundResource(android.R.drawable.list_selector_background);
+
+                            optionView.setOnClickListener(v -> {
+                                flyToAddress(activity, executor, addr, map, tvSelectedAddress, cardSuggestions);
+                            });
+
+                            layoutSuggestions.addView(optionView);
+
+                            View divider = new View(activity);
+                            divider.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 1));
+                            divider.setBackgroundColor(Color.parseColor("#EFEBE4"));
+                            layoutSuggestions.addView(divider);
+                        }
+                    }
+                });
+            } catch (Exception e) {
+                activity.runOnUiThread(() -> {
+                    if (pbSearch != null) pbSearch.setVisibility(View.GONE);
+                    Toast.makeText(activity, "Search failed. Please pan the map directly.", Toast.LENGTH_SHORT).show();
+                });
+            }
+        });
+    }
+
+    private static void flyToAddress(
+            AppCompatActivity activity,
+            ExecutorService executor,
+            Address addr,
+            MapView map,
+            TextView tvSelectedAddress,
+            View cardSuggestions) {
+
+        if (cardSuggestions != null) cardSuggestions.setVisibility(View.GONE);
+        GeoPoint target = new GeoPoint(addr.getLatitude(), addr.getLongitude());
+        map.getController().animateTo(target);
+        map.getController().setZoom(17.5);
+        reverseGeocodeCoords(activity, executor, addr.getLatitude(), addr.getLongitude(), tvSelectedAddress);
+    }
+
+    private static void reverseGeocodeCoords(
+            AppCompatActivity activity,
+            ExecutorService executor,
+            double lat,
+            double lon,
+            TextView displayView) {
+
+        executor.execute(() -> {
+            try {
+                Geocoder geocoder = new Geocoder(activity, Locale.getDefault());
+                List<Address> addresses = geocoder.getFromLocation(lat, lon, 1);
+                if (addresses != null && !addresses.isEmpty()) {
+                    String cleanAddress = formatAddress(addresses.get(0));
+                    activity.runOnUiThread(() -> {
+                        if (displayView != null) displayView.setText(cleanAddress);
+                    });
+                } else {
+                    activity.runOnUiThread(() -> {
+                        if (displayView != null) displayView.setText(String.format(Locale.getDefault(), "Coordinates: %.5f, %.5f", lat, lon));
+                    });
+                }
+            } catch (Exception e) {
+                activity.runOnUiThread(() -> {
+                    if (displayView != null) displayView.setText(String.format(Locale.getDefault(), "Pinned: %.5f, %.5f", lat, lon));
+                });
+            }
+        });
+    }
+
+    private static String formatAddress(Address addr) {
+        StringBuilder sb = new StringBuilder();
+        String feature = addr.getFeatureName();
+        String thoroughfare = addr.getThoroughfare();
+        String subThoroughfare = addr.getSubThoroughfare();
+        String locality = addr.getLocality() != null ? addr.getLocality() : addr.getSubLocality();
+        String admin = addr.getAdminArea();
+
+        if (subThoroughfare != null) sb.append(subThoroughfare).append(" ");
+        if (thoroughfare != null) {
+            sb.append(thoroughfare).append(", ");
+        } else if (feature != null && !feature.matches("\\d+") && !feature.equalsIgnoreCase(locality)) {
+            sb.append(feature).append(", ");
+        }
+
+        if (locality != null) sb.append(locality).append(", ");
+        if (admin != null) sb.append(admin);
+
+        String res = sb.toString().trim();
+        if (res.endsWith(",")) res = res.substring(0, res.length() - 1);
+        return res.isEmpty() ? addr.getAddressLine(0) : res;
+    }
+
+    private static void hideKeyboard(AppCompatActivity activity, View view) {
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm != null) imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
     }
 
     private void addListing() {
@@ -575,7 +811,11 @@ public class AddListingActivity extends AppCompatActivity {
                     listing.put("longitude", verifiedLongitude);
                 }
 
-                listing.put("status", "PENDING");
+                String docTypeLabel = authorityDocTypeInput != null ? authorityDocTypeInput.getText().toString().trim() : "";
+                String docTypeKey = getDocTypeKey(docTypeLabel);
+
+                listing.put("authority_doc_type", docTypeKey);
+                listing.put("status", "PENDING_VERIFICATION");
                 listing.put("availability", "Pending");
 
                 SupabaseHelper.writeJson(connection, listing);
@@ -628,6 +868,15 @@ public class AddListingActivity extends AppCompatActivity {
                 }
 
                 updateListingImagePath(accessToken, listingId, uploadedUrls.get(0));
+
+                if (selectedAuthorityDocUri != null) {
+                    String docPath = userId + "/" + listingId + "/authority_doc_" + System.currentTimeMillis() + ".jpg";
+                    boolean docUploaded = uploadImage(accessToken, selectedAuthorityDocUri, docPath);
+                    if (docUploaded) {
+                        String docPublicUrl = SupabaseHelper.getPublicStorageUrl("property-images", docPath);
+                        updateListingAuthorityDoc(accessToken, listingId, docPublicUrl);
+                    }
+                }
 
                 SupabaseHelper.createNotification(
                         userId,
@@ -770,6 +1019,37 @@ public class AddListingActivity extends AppCompatActivity {
 
         } catch (Exception e) {
             Log.e(TAG, "Could not update image URL", e);
+        } finally {
+            if (connection != null) {
+                connection.disconnect();
+            }
+        }
+    }
+
+    private void updateListingAuthorityDoc(String accessToken, String listingId, String docUrl) {
+        HttpURLConnection connection = null;
+
+        try {
+            connection = SupabaseHelper.createConnection(
+                    "/rest/v1/listings?id=eq." + SupabaseHelper.encode(listingId),
+                    "PATCH",
+                    accessToken
+            );
+
+            JSONObject body = new JSONObject();
+            body.put("authority_doc_url", docUrl);
+
+            SupabaseHelper.writeJson(connection, body);
+
+            int code = connection.getResponseCode();
+            String response = SupabaseHelper.readResponse(connection);
+
+            if (code < 200 || code >= 300) {
+                Log.e(TAG, "Authority doc URL update failed: " + response);
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, "Could not update authority doc URL", e);
         } finally {
             if (connection != null) {
                 connection.disconnect();

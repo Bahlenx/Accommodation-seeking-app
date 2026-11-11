@@ -245,6 +245,12 @@ public class CreatePasswordActivity extends AppCompatActivity {
                         nextIntent.putExtra("USER_EMAIL", email);
                         nextIntent.putExtra("USER_ROLE", normalizedRole);
                         nextIntent.putExtra("USER_PASSWORD", password);
+                        String saId = getIntent().getStringExtra("USER_SA_ID");
+                        String idDocUri = getIntent().getStringExtra("USER_ID_DOC_URI");
+                        String selfieUri = getIntent().getStringExtra("USER_SELFIE_URI");
+                        if (saId != null) nextIntent.putExtra("USER_SA_ID", saId);
+                        if (idDocUri != null) nextIntent.putExtra("USER_ID_DOC_URI", idDocUri);
+                        if (selfieUri != null) nextIntent.putExtra("USER_SELFIE_URI", selfieUri);
                         nextIntent.putExtra("INITIAL_OTP_SENT", true);
                         startActivity(nextIntent);
                     });

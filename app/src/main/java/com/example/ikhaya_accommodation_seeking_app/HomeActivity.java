@@ -28,6 +28,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -45,6 +46,7 @@ public class HomeActivity extends AppCompatActivity {
 
     private RecyclerView rvPopularPlaces;
     private RecyclerView rvExploreNewArea;
+    private SwipeRefreshLayout swipeRefreshHome;
 
     private View notificationDot;
     private View messageDot;
@@ -144,6 +146,15 @@ public class HomeActivity extends AppCompatActivity {
 
         rvPopularPlaces = findViewById(R.id.rvPopularPlaces);
         rvExploreNewArea = findViewById(R.id.rvExploreNewArea);
+        swipeRefreshHome = findViewById(R.id.swipeRefreshHome);
+
+        if (swipeRefreshHome != null) {
+            swipeRefreshHome.setColorSchemeColors(Color.parseColor("#BA5536"));
+            swipeRefreshHome.setOnRefreshListener(() -> {
+                loadHomeFeedFromSupabase();
+                refreshNotifications();
+            });
+        }
 
         if (rvPopularPlaces != null) {
             rvPopularPlaces.setLayoutManager(
@@ -862,6 +873,11 @@ public class HomeActivity extends AppCompatActivity {
 
         if (accessToken == null
                 || accessToken.isEmpty()) {
+            runOnUiThread(() -> {
+                if (swipeRefreshHome != null && swipeRefreshHome.isRefreshing()) {
+                    swipeRefreshHome.setRefreshing(false);
+                }
+            });
             return;
         }
 
@@ -871,7 +887,7 @@ public class HomeActivity extends AppCompatActivity {
 
             try {
                 conn = SupabaseHelper.createConnection(
-                        "/rest/v1/listings?select=*&status=eq.APPROVED&order=created_at.desc&limit=20",
+                        "/rest/v1/listings?select=*&status=eq.APPROVED&is_archived=eq.false&order=created_at.desc&limit=20",
                         "GET",
                         accessToken
                 );
@@ -914,6 +930,10 @@ public class HomeActivity extends AppCompatActivity {
 
                     runOnUiThread(() -> {
 
+                        if (swipeRefreshHome != null && swipeRefreshHome.isRefreshing()) {
+                            swipeRefreshHome.setRefreshing(false);
+                        }
+
                         if (isFinishing() || isDestroyed()) {
                             return;
                         }
@@ -934,10 +954,20 @@ public class HomeActivity extends AppCompatActivity {
                             );
                         }
                     });
+                } else {
+                    runOnUiThread(() -> {
+                        if (swipeRefreshHome != null && swipeRefreshHome.isRefreshing()) {
+                            swipeRefreshHome.setRefreshing(false);
+                        }
+                    });
                 }
 
             } catch (Exception ignored) {
-
+                runOnUiThread(() -> {
+                    if (swipeRefreshHome != null && swipeRefreshHome.isRefreshing()) {
+                        swipeRefreshHome.setRefreshing(false);
+                    }
+                });
             } finally {
                 if (conn != null) {
                     conn.disconnect();

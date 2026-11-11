@@ -452,7 +452,7 @@ public class LandlordViewingsActivity extends AppCompatActivity {
         card.addView(headerLayout);
 
         TextView tvDate = createText(
-                "🗓 " + viewingDate,
+                viewingDate,
                 14,
                 "#BA5536",
                 true
@@ -461,7 +461,7 @@ public class LandlordViewingsActivity extends AppCompatActivity {
         addTopMargin(card, tvDate, 8);
 
         TextView tvLocation = createText(
-                "📍 " + location,
+                location,
                 13,
                 "#756763",
                 false

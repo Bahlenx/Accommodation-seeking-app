@@ -3,6 +3,7 @@ package com.example.ikhaya_accommodation_seeking_app;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.LayoutInflater;
@@ -43,7 +44,6 @@ public class AdminActiveListingAdapter extends RecyclerView.Adapter<AdminActiveL
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // Reuse the same layout, we will modify the buttons programmatically
         View view = LayoutInflater.from(context).inflate(R.layout.item_admin_listing, parent, false);
         return new ViewHolder(view);
     }
@@ -56,7 +56,13 @@ public class AdminActiveListingAdapter extends RecyclerView.Adapter<AdminActiveL
         holder.tvListingDetails.setText(listing.getDetails());
         holder.tvLandlordInfo.setText("Submitted by: " + listing.getLandlordName());
 
-        // HIDE the Approve Button and Rename Reject to REVOKE
+        // Update badge to ACTIVE
+        if (holder.tvStatusBadge != null) {
+            holder.tvStatusBadge.setText("ACTIVE");
+            holder.tvStatusBadge.setBackgroundColor(Color.parseColor("#28A745"));
+            holder.tvStatusBadge.setTextColor(Color.WHITE);
+        }
+
         holder.btnApproveListing.setVisibility(View.GONE);
         holder.btnRejectListing.setText("REVOKE");
 
@@ -97,13 +103,24 @@ public class AdminActiveListingAdapter extends RecyclerView.Adapter<AdminActiveL
         String token = SupabaseHelper.getAccessToken(context);
         executor.execute(() -> {
             try {
-                String endpoint = "/rest/v1/listings?id=eq." + listing.getId().trim();
+                String cleanId = listing.getId().trim();
+                String endpoint = "/rest/v1/listings?id=eq." + SupabaseHelper.encode(cleanId);
+                
                 JSONObject body = new JSONObject();
-                body.put("status", "REJECTED");
-                body.put("availability", "Rejected");
+                body.put("status", "REMOVED_BY_ADMIN");
+                body.put("is_archived", true);
                 body.put("rejection_reason", "ADMIN REVOKED: " + reason);
 
                 SupabaseHelper.patch(endpoint, body, token);
+
+                if (listing.getLandlordUid() != null && !listing.getLandlordUid().isEmpty()) {
+                    SupabaseHelper.createNotification(
+                            listing.getLandlordUid(),
+                            "Listing Revoked: " + listing.getTitle(),
+                            "Your listing was taken offline by Admin. Reason: " + reason,
+                            token
+                    );
+                }
 
                 mainHandler.post(() -> {
                     if (position >= 0 && position < activeListings.size()) {
@@ -127,7 +144,7 @@ public class AdminActiveListingAdapter extends RecyclerView.Adapter<AdminActiveL
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvListingTitle, tvListingDetails, tvLandlordInfo;
+        TextView tvListingTitle, tvListingDetails, tvLandlordInfo, tvStatusBadge;
         Button btnRejectListing, btnApproveListing;
 
         public ViewHolder(@NonNull View itemView) {
@@ -135,6 +152,7 @@ public class AdminActiveListingAdapter extends RecyclerView.Adapter<AdminActiveL
             tvListingTitle = itemView.findViewById(R.id.tvListingTitle);
             tvListingDetails = itemView.findViewById(R.id.tvListingDetails);
             tvLandlordInfo = itemView.findViewById(R.id.tvLandlordInfo);
+            tvStatusBadge = itemView.findViewById(R.id.tvStatusBadge);
             btnRejectListing = itemView.findViewById(R.id.btnRejectListing);
             btnApproveListing = itemView.findViewById(R.id.btnApproveListing);
         }

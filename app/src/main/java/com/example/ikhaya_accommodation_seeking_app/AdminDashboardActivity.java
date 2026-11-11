@@ -20,6 +20,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -41,6 +43,10 @@ public class AdminDashboardActivity extends AppCompatActivity {
     private TextView tvTrendReports;
     private TextView tvClearancePercent;
     private ProgressBar pbApprovalRatio;
+
+    private TextView tvAnalyticsSearches;
+    private TextView tvAnalyticsViews;
+    private TextView tvAnalyticsBookings;
 
     private int pendingCount = 0;
     private int activeCount = 0;
@@ -90,6 +96,10 @@ public class AdminDashboardActivity extends AppCompatActivity {
         tvClearancePercent = findViewById(R.id.tvClearancePercent);
         pbApprovalRatio = findViewById(R.id.pbApprovalRatio);
 
+        tvAnalyticsSearches = findViewById(R.id.tvAnalyticsSearches);
+        tvAnalyticsViews = findViewById(R.id.tvAnalyticsViews);
+        tvAnalyticsBookings = findViewById(R.id.tvAnalyticsBookings);
+
         View btnAdminLogout = findViewById(R.id.btnAdminLogout);
         // View btnAdminExit = findViewById(R.id.btnAdminExit);
         TextView tvAdminGreeting = findViewById(R.id.tvAdminGreeting);
@@ -120,52 +130,6 @@ public class AdminDashboardActivity extends AppCompatActivity {
         }
 
         setupActionCards();
-        updateGraphHighlight();
-    }
-
-    private void updateGraphHighlight() {
-        View barMon = findViewById(R.id.barMonday);
-        View barTue = findViewById(R.id.barTuesday);
-        View barWed = findViewById(R.id.barWednesday);
-        View barThu = findViewById(R.id.barThursday);
-        View barFri = findViewById(R.id.barFriday);
-        View barSat = findViewById(R.id.barSaturday);
-        View barSun = findViewById(R.id.barSunday);
-
-        View[] bars = {null, barSun, barMon, barTue, barWed, barThu, barFri, barSat};
-
-        int inactiveColor = Color.parseColor("#FFD8CC");
-        int activeColor = Color.parseColor("#BA5536");
-
-        for (int i = 1; i < bars.length; i++) {
-            if (bars[i] != null) {
-                if (bars[i].getBackground() != null) {
-                    bars[i].getBackground().setTint(inactiveColor);
-                } else {
-                    bars[i].setBackgroundColor(inactiveColor);
-                }
-                bars[i].getLayoutParams().height = dpToPx(35);
-                bars[i].requestLayout();
-            }
-        }
-
-        Calendar calendar = Calendar.getInstance();
-        int currentDay = calendar.get(Calendar.DAY_OF_WEEK);
-
-        if (bars[currentDay] != null) {
-            if (bars[currentDay].getBackground() != null) {
-                bars[currentDay].getBackground().setTint(activeColor);
-            } else {
-                bars[currentDay].setBackgroundColor(activeColor);
-            }
-            bars[currentDay].getLayoutParams().height = dpToPx(62);
-            bars[currentDay].requestLayout();
-        }
-    }
-
-    private int dpToPx(int dp) {
-        float density = getResources().getDisplayMetrics().density;
-        return Math.round((float) dp * density);
     }
 
     @Override
@@ -207,7 +171,7 @@ public class AdminDashboardActivity extends AppCompatActivity {
         View cardMetricIngest = findViewById(R.id.cardMetricIngest);
         if (cardMetricIngest != null) {
             cardMetricIngest.setOnClickListener(v ->
-                    startActivity(new Intent(this, AdminActiveListingsActivity.class))
+                    startActivity(new Intent(this, AdminReportsActivity.class))
             );
         }
 
@@ -258,6 +222,74 @@ public class AdminDashboardActivity extends AppCompatActivity {
         loadActiveCount();
         loadLiveUsersCount();
         loadReportsCount();
+        loadViewingsCount();
+        loadRealAnalyticsEvents();
+    }
+
+    private void loadRealAnalyticsEvents() {
+        String token = SupabaseHelper.getAccessToken(this);
+        executor.execute(() -> {
+            HttpURLConnection conn = null;
+            try {
+                Instant sevenDaysAgo = Instant.now().minus(7, ChronoUnit.DAYS);
+                String endpoint = "/rest/v1/analytics_events?select=event_name&created_at=gte." + sevenDaysAgo.toString();
+
+                conn = SupabaseHelper.createConnection(endpoint, "GET", token);
+                int code = conn.getResponseCode();
+                String response = SupabaseHelper.readResponse(conn);
+
+                if (code >= 200 && code < 300) {
+                    JSONArray events = new JSONArray(response);
+                    int searches = 0;
+                    int views = 0;
+                    int bookings = 0;
+
+                    for (int i = 0; i < events.length(); i++) {
+                        String ev = events.getJSONObject(i).optString("event_name", "");
+                        if ("search_performed".equals(ev)) searches++;
+                        else if ("property_view".equals(ev)) views++;
+                        else if ("viewing_scheduled".equals(ev)) bookings++;
+                    }
+
+                    final int fSearches = searches;
+                    final int fViews = views;
+                    final int fBookings = bookings;
+
+                    runOnUiThread(() -> {
+                        if (isFinishing() || isDestroyed()) return;
+                        if (tvAnalyticsSearches != null) tvAnalyticsSearches.setText(String.valueOf(fSearches));
+                        if (tvAnalyticsViews != null) tvAnalyticsViews.setText(String.valueOf(fViews));
+                        if (tvAnalyticsBookings != null) tvAnalyticsBookings.setText(String.valueOf(fBookings));
+                    });
+                }
+            } catch (Exception ignored) {
+            } finally {
+                if (conn != null) conn.disconnect();
+            }
+        });
+    }
+
+    private void loadViewingsCount() {
+        String token = SupabaseHelper.getAccessToken(this);
+        executor.execute(() -> {
+            HttpURLConnection conn = null;
+            try {
+                conn = SupabaseHelper.createConnection("/rest/v1/viewings?select=id", "GET", token);
+                if (conn.getResponseCode() >= 200 && conn.getResponseCode() < 300) {
+                    JSONArray arr = new JSONArray(SupabaseHelper.readResponse(conn));
+                    int count = arr.length();
+                    runOnUiThread(() -> {
+                        if (tvStatTotalProperties != null) {
+                            tvStatTotalProperties.setText(String.valueOf(count));
+                        }
+                    });
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Error fetching viewings count", e);
+            } finally {
+                if (conn != null) conn.disconnect();
+            }
+        });
     }
 
     private void loadPendingCount() {
@@ -265,7 +297,7 @@ public class AdminDashboardActivity extends AppCompatActivity {
         executor.execute(() -> {
             HttpURLConnection conn = null;
             try {
-                conn = SupabaseHelper.createConnection("/rest/v1/listings?select=id&status=ilike.PENDING", "GET", token);
+                conn = SupabaseHelper.createConnection("/rest/v1/listings?select=id&status=in.(PENDING,PENDING_VERIFICATION,SUSPENDED_FOR_REVERIFICATION,CHANGES_PENDING_REVIEW)", "GET", token);
                 if (conn.getResponseCode() >= 200 && conn.getResponseCode() < 300) {
                     JSONArray arr = new JSONArray(SupabaseHelper.readResponse(conn));
                     pendingCount = arr.length();
@@ -343,6 +375,7 @@ public class AdminDashboardActivity extends AppCompatActivity {
                     runOnUiThread(() -> {
                         if (isFinishing() || isDestroyed()) return;
                         if (tvStatReports != null) tvStatReports.setText(String.valueOf(count));
+                        if (tvStatTotalProperties != null) tvStatTotalProperties.setText(String.valueOf(count));
                         if (tvTrendReports != null) {
                             if (count > 0) {
                                 tvTrendReports.setText(String.format(Locale.getDefault(), "%d %s", count, getString(R.string.reports_pending_suffix)));

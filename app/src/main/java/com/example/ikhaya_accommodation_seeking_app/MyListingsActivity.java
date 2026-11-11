@@ -62,6 +62,23 @@ public class MyListingsActivity extends AppCompatActivity {
             activeFilter = passedFilter;
         }
 
+        TextView tvPageTitle = findViewById(R.id.tvPageTitle);
+        if (activeFilter == null) activeFilter = "ALL";
+
+        switch (activeFilter.toUpperCase()) {
+            case "PENDING":
+            case "PENDING_REVIEW":
+                if (tvPageTitle != null) tvPageTitle.setText("Pending Review Listings");
+                break;
+            case "APPROVED":
+            case "AVAILABLE":
+                if (tvPageTitle != null) tvPageTitle.setText("Live / Available Listings");
+                break;
+            default:
+                if (tvPageTitle != null) tvPageTitle.setText("All My Listings");
+                break;
+        }
+
         setupBottomNavigation();
         loadMyListings();
     }
@@ -130,10 +147,19 @@ public class MyListingsActivity extends AppCompatActivity {
         executor.execute(() -> {
             HttpURLConnection connection = null;
             try {
-                String endpoint = "/rest/v1/listings"
-                        + "?select=*"
-                        + "&landlord_uid=eq." + SupabaseHelper.encode(userId)
-                        + "&order=created_at.desc";
+                String endpoint;
+                String encodedUid = SupabaseHelper.encode(userId);
+
+                if ("PENDING".equalsIgnoreCase(activeFilter) || "PENDING_REVIEW".equalsIgnoreCase(activeFilter)) {
+                    endpoint = "/rest/v1/listings?select=*&landlord_uid=eq." + encodedUid 
+                             + "&status=in.(PENDING,PENDING_VERIFICATION,SUSPENDED_FOR_REVERIFICATION,CHANGES_PENDING_REVIEW)&order=created_at.desc";
+                } else if ("APPROVED".equalsIgnoreCase(activeFilter) || "AVAILABLE".equalsIgnoreCase(activeFilter)) {
+                    endpoint = "/rest/v1/listings?select=*&landlord_uid=eq." + encodedUid 
+                             + "&status=in.(APPROVED,VERIFIED)&order=created_at.desc";
+                } else {
+                    endpoint = "/rest/v1/listings?select=*&landlord_uid=eq." + encodedUid 
+                             + "&order=created_at.desc";
+                }
 
                 connection = SupabaseHelper.createConnection(endpoint, "GET", token);
 
@@ -156,12 +182,6 @@ public class MyListingsActivity extends AppCompatActivity {
                     for (int i = 0; i < listings.length(); i++) {
                         JSONObject listing = listings.optJSONObject(i);
                         if (listing != null) {
-                            String status = firstValue(listing, "status", "availability");
-
-                            if (!activeFilter.equals("ALL") && !activeFilter.equalsIgnoreCase(status)) {
-                                continue;
-                            }
-
                             addListingCard(listing);
                             visibleCount++;
                         }
@@ -197,6 +217,7 @@ public class MyListingsActivity extends AppCompatActivity {
         TextView txtListingPrice = card.findViewById(R.id.txtListingPrice);
         TextView txtListingRooms = card.findViewById(R.id.txtListingRooms);
         Button btnEditListing = card.findViewById(R.id.btnEditListing);
+        Button btnMarkRented = card.findViewById(R.id.btnMarkRented);
         Button btnDeleteListing = card.findViewById(R.id.btnDeleteListing);
 
         String listingId = listing.optString("id", "");
@@ -207,17 +228,71 @@ public class MyListingsActivity extends AppCompatActivity {
         String imageUrl = firstValue(listing, "image_url", "image", "image_path", "photo_url", "property_image", "imageUrl", "cover_image", "photo");
         String status = firstValue(listing, "status", "availability");
 
+        if ("RENTED".equalsIgnoreCase(status)) {
+            if (btnMarkRented != null) {
+                btnMarkRented.setText("Reactivate");
+                btnMarkRented.setBackgroundColor(Color.parseColor("#28A745"));
+            }
+        }
+
         if (propertyName.isEmpty()) propertyName = getString(R.string.accommodation);
 
-        if ("PENDING".equalsIgnoreCase(status)) {
-            txtListingName.setText(String.format(Locale.getDefault(), "%s (%s)", propertyName, getString(R.string.status_in_review)));
-            txtListingName.setTextColor(Color.parseColor("#DC3545"));
-        } else if ("REJECTED".equalsIgnoreCase(status)) {
-            txtListingName.setText(String.format(Locale.getDefault(), "%s (%s)", propertyName, getString(R.string.status_requires_fixes)));
-            txtListingName.setTextColor(Color.parseColor("#DC3545"));
-        } else {
-            txtListingName.setText(String.format(Locale.getDefault(), "%s (%s)", propertyName, getString(R.string.status_live)));
-            txtListingName.setTextColor(Color.parseColor("#2DCE89"));
+        TextView tvBadge = card.findViewById(R.id.tvLandlordStatusBadge);
+        LinearLayout layoutAlert = card.findViewById(R.id.layoutReverificationAlert);
+        TextView tvReason = card.findViewById(R.id.tvReverificationReason);
+
+        String reverificationReason = listing.optString("reverification_reason", "");
+        String rejectionReason = listing.optString("rejection_reason", "");
+
+        txtListingName.setText(propertyName);
+        txtListingName.setTextColor(Color.parseColor("#241A18"));
+
+        if (tvBadge != null) {
+            switch (status.toUpperCase()) {
+                case "SUSPENDED_FOR_REVERIFICATION":
+                    tvBadge.setText("SUSPENDED");
+                    tvBadge.setBackgroundColor(Color.parseColor("#DC3545"));
+                    tvBadge.setTextColor(Color.WHITE);
+                    if (layoutAlert != null && tvReason != null) {
+                        layoutAlert.setVisibility(View.VISIBLE);
+                        tvReason.setText("Action Required: " + (!reverificationReason.isEmpty() ? reverificationReason : "Address or authority proof updated. Re-verification required."));
+                    }
+                    break;
+
+                case "CHANGES_PENDING_REVIEW":
+                    tvBadge.setText("EDITS PENDING");
+                    tvBadge.setBackgroundColor(Color.parseColor("#2CA8FF"));
+                    tvBadge.setTextColor(Color.WHITE);
+                    if (layoutAlert != null) layoutAlert.setVisibility(View.GONE);
+                    break;
+
+                case "PENDING_VERIFICATION":
+                case "PENDING":
+                    tvBadge.setText("PENDING APPROVAL");
+                    tvBadge.setBackgroundColor(Color.parseColor("#FFC107"));
+                    tvBadge.setTextColor(Color.BLACK);
+                    if (layoutAlert != null) layoutAlert.setVisibility(View.GONE);
+                    break;
+
+                case "APPROVED":
+                case "VERIFIED":
+                    tvBadge.setText("ACTIVE");
+                    tvBadge.setBackgroundColor(Color.parseColor("#28A745"));
+                    tvBadge.setTextColor(Color.WHITE);
+                    if (layoutAlert != null) layoutAlert.setVisibility(View.GONE);
+                    break;
+
+                case "REJECTED":
+                default:
+                    tvBadge.setText("REJECTED");
+                    tvBadge.setBackgroundColor(Color.parseColor("#6C757D"));
+                    tvBadge.setTextColor(Color.WHITE);
+                    if (layoutAlert != null && tvReason != null) {
+                        layoutAlert.setVisibility(View.VISIBLE);
+                        tvReason.setText("Rejection Reason: " + (!rejectionReason.isEmpty() ? rejectionReason : "Listing details require corrections."));
+                    }
+                    break;
+            }
         }
 
         if (location.isEmpty()) location = getString(R.string.default_unknown_location);
@@ -236,11 +311,17 @@ public class MyListingsActivity extends AppCompatActivity {
         }
 
         String finalPropertyName = propertyName;
+        final String finalStatus = status;
 
         if (btnEditListing != null) {
             btnEditListing.setOnClickListener(v -> {
                 if (listingId.isEmpty()) {
                     showMessage(getString(R.string.error_missing_credentials_or_listing));
+                    return;
+                }
+
+                if ("CHANGES_PENDING_REVIEW".equalsIgnoreCase(finalStatus)) {
+                    Toast.makeText(this, "Your listing edits are currently under admin review. Further edits are locked until reviewed.", Toast.LENGTH_LONG).show();
                     return;
                 }
 
@@ -252,6 +333,31 @@ public class MyListingsActivity extends AppCompatActivity {
             });
         }
 
+        if (btnMarkRented != null) {
+            btnMarkRented.setOnClickListener(v -> {
+                if (listingId.isEmpty()) {
+                    showMessage(getString(R.string.error_missing_credentials_or_listing));
+                    return;
+                }
+                boolean isRented = "RENTED".equalsIgnoreCase(finalStatus);
+                JSONObject body = new JSONObject();
+                try {
+                    body.put("status", isRented ? "APPROVED" : "RENTED");
+                } catch (Exception ignored) {}
+
+                SupabaseHelper.updateListing(listingId, body, (success, error) -> {
+                    runOnUiThread(() -> {
+                        if (success) {
+                            Toast.makeText(this, isRented ? "Listing reactivated successfully." : "Listing marked as rented.", Toast.LENGTH_SHORT).show();
+                            loadMyListings();
+                        } else {
+                            Toast.makeText(this, "Failed to update listing: " + error, Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                });
+            });
+        }
+
         if (btnDeleteListing != null) {
             btnDeleteListing.setOnClickListener(v -> {
                 if (listingId.isEmpty()) {
@@ -260,10 +366,27 @@ public class MyListingsActivity extends AppCompatActivity {
                 }
 
                 new AlertDialog.Builder(this)
-                        .setTitle(R.string.dialog_title_delete_listing)
-                        .setMessage(String.format(Locale.getDefault(), "%s \"%s\"?", getString(R.string.dialog_msg_delete_listing_confirm), finalPropertyName))
-                        .setNegativeButton(R.string.btn_cancel, null)
-                        .setPositiveButton(R.string.btn_delete, (dialog, which) -> deleteListing(listingId))
+                        .setTitle("Delete Listing")
+                        .setMessage("Are you sure you want to delete this property listing? It will be removed from your dashboard and search results.")
+                        .setPositiveButton("Delete", (dialog, which) -> {
+                            JSONObject body = new JSONObject();
+                            try {
+                                body.put("status", "DELETED");
+                                body.put("is_archived", true);
+                            } catch (Exception ignored) {}
+
+                            SupabaseHelper.updateListing(listingId, body, (success, error) -> {
+                                runOnUiThread(() -> {
+                                    if (success) {
+                                        Toast.makeText(this, "Listing removed successfully.", Toast.LENGTH_SHORT).show();
+                                        loadMyListings();
+                                    } else {
+                                        Toast.makeText(this, "Failed to remove listing: " + error, Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                            });
+                        })
+                        .setNegativeButton("Cancel", null)
                         .show();
             });
         }
@@ -325,43 +448,6 @@ public class MyListingsActivity extends AppCompatActivity {
                     }
                 }
             } catch (Exception ignored) {
-            } finally {
-                if (connection != null) {
-                    connection.disconnect();
-                }
-            }
-        });
-    }
-
-    private void deleteListing(String listingId) {
-        String userId = SupabaseHelper.getUserId(this);
-        String token = SupabaseHelper.getAccessToken(this);
-
-        if (userId == null || userId.isEmpty() || token == null || token.isEmpty()) {
-            showMessage(getString(R.string.please_log_in_again));
-            return;
-        }
-
-        executor.execute(() -> {
-            HttpURLConnection connection = null;
-            try {
-                String endpoint = "/rest/v1/listings"
-                        + "?id=eq." + SupabaseHelper.encode(listingId)
-                        + "&landlord_uid=eq." + SupabaseHelper.encode(userId);
-
-                connection = SupabaseHelper.createConnection(endpoint, "DELETE", token);
-                int code = connection.getResponseCode();
-                SupabaseHelper.readResponse(connection);
-
-                if (code >= 200 && code < 300) {
-                    showMessage(getString(R.string.msg_listing_deleted));
-                    loadMyListings();
-                } else {
-                    showMessage(getString(R.string.error_could_not_delete_listing) + " " + code);
-                }
-            } catch (Exception e) {
-                Log.e(TAG, "Could not delete listing", e);
-                showMessage(getString(R.string.error_delete_listing_general));
             } finally {
                 if (connection != null) {
                     connection.disconnect();

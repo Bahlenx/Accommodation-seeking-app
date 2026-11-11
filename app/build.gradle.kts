@@ -71,4 +71,5 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:32.8.0"))
     // Add Firebase Analytics
     implementation("com.google.firebase:firebase-analytics")
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 }

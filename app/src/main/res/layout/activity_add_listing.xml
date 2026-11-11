@@ -422,6 +422,60 @@
                 android:textAllCaps="false"
                 app:backgroundTint="@null" />
 
+            <!-- Authority & Ownership Verification Section -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Authority &amp; Ownership Verification"
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                android:textSize="14sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="8dp"
+                android:text="Select document category and upload proof of property authority."
+                android:textColor="@color/black"
+                android:textSize="13sp" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp">
+
+                <AutoCompleteTextView
+                    android:id="@+id/dropdownAuthorityDocType"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:inputType="none"
+                    android:paddingHorizontal="12dp"
+                    android:hint="Select Authority Document Type" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <TextView
+                android:id="@+id/tvSelectedDocName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="6dp"
+                android:text="No authority document attached"
+                android:textColor="#8C7A70"
+                android:textSize="13sp" />
+
+            <Button
+                android:id="@+id/btnUploadAuthorityDoc"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginBottom="24dp"
+                android:text="Upload Authority Proof Document"
+                android:textAllCaps="false"
+                android:textColor="#BA5536"
+                app:strokeColor="#BA5536" />
+
             <Button
                 android:id="@+id/btnSubmitListing"
                 android:layout_width="match_parent"

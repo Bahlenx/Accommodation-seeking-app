@@ -79,6 +79,8 @@ public class PropertyDetailsActivity extends AppCompatActivity {
     private ProgressBar progressTranslate;
     private Button btnTranslate;
     private Button btnApplyToRent;
+    private ImageButton btnSave;
+    private boolean isListingSaved = false;
 
     private boolean isTranslated = false;
     private String originalDescription = "";
@@ -122,6 +124,9 @@ public class PropertyDetailsActivity extends AppCompatActivity {
 
         if (listingId == null || listingId.trim().isEmpty()) {
             listingId = getIntent().getStringExtra("listingId");
+        }
+        if (listingId == null || listingId.trim().isEmpty()) {
+            listingId = getIntent().getStringExtra("id");
         }
 
         if (getIntent().hasExtra("latitude")
@@ -199,6 +204,11 @@ public class PropertyDetailsActivity extends AppCompatActivity {
 
         if (btnBack != null) {
             btnBack.setOnClickListener(v -> finish());
+        }
+
+        View btnBackToDiscover = findViewById(R.id.btnBackToDiscover);
+        if (btnBackToDiscover != null) {
+            btnBackToDiscover.setOnClickListener(v -> finish());
         }
 
         setupImageGalleryControls();
@@ -619,8 +629,7 @@ public class PropertyDetailsActivity extends AppCompatActivity {
         View btnOpenMap =
                 findViewById(R.id.btnOpenMap);
 
-        View btnSave =
-                findViewById(R.id.btnSave);
+        btnSave = findViewById(R.id.btnSave);
 
         View btnContact =
                 findViewById(R.id.btnContactLandlord);
@@ -638,7 +647,7 @@ public class PropertyDetailsActivity extends AppCompatActivity {
         }
 
         if (btnSave != null) {
-            btnSave.setOnClickListener(v -> saveListing());
+            btnSave.setOnClickListener(v -> toggleSaveListing());
         }
 
         if (btnContact != null) {
@@ -663,28 +672,22 @@ public class PropertyDetailsActivity extends AppCompatActivity {
         btnApplyToRent =
                 findViewById(R.id.btnApplyToRent);
 
+        if (btnEditListing != null) {
+            btnEditListing.setVisibility(View.GONE);
+        }
+
         if (isLandlord) {
             if (btnContact != null) {
                 btnContact.setVisibility(View.GONE);
             }
 
             if (btnApplyToRent != null) {
-                btnApplyToRent.setVisibility(View.GONE);
-            }
-
-            if (btnEditListing != null) {
-                btnEditListing.setVisibility(View.VISIBLE);
-
-                btnEditListing.setOnClickListener(v -> {
-                    Intent intent = new Intent(
-                            this,
-                            AddListingActivity.class
-                    );
-
-                    intent.putExtra("isEditing", true);
+                btnApplyToRent.setVisibility(View.VISIBLE);
+                btnApplyToRent.setText("Edit Listing");
+                btnApplyToRent.setOnClickListener(v -> {
+                    Intent intent = new Intent(this, EditListingActivity.class);
+                    intent.putExtra("LISTING_ID", listingId);
                     intent.putExtra("listingId", listingId);
-                    intent.putExtra("propertyName", propertyName);
-
                     startActivity(intent);
                 });
             }
@@ -692,10 +695,6 @@ public class PropertyDetailsActivity extends AppCompatActivity {
         } else {
             if (btnContact != null) {
                 btnContact.setVisibility(View.VISIBLE);
-            }
-
-            if (btnEditListing != null) {
-                btnEditListing.setVisibility(View.GONE);
             }
 
             if (btnApplyToRent != null) {
@@ -706,15 +705,9 @@ public class PropertyDetailsActivity extends AppCompatActivity {
     }
 
     private void updateActionButtonsForOffering() {
-        if (btnApplyToRent == null) {
-            return;
-        }
+        boolean isLandlord = getIntent().getBooleanExtra("isLandlord", false);
 
         if (isForSale) {
-            btnApplyToRent.setText(
-                    R.string.btn_book_site_visit
-            );
-
             if (tvTermsSubtitle != null) {
                 tvTermsSubtitle.setText(
                         R.string.terms_sale_subtitle
@@ -734,10 +727,6 @@ public class PropertyDetailsActivity extends AppCompatActivity {
             }
 
         } else {
-            btnApplyToRent.setText(
-                    R.string.btn_schedule_viewing_action
-            );
-
             if (tvTermsSubtitle != null) {
                 tvTermsSubtitle.setText(
                         R.string.terms_rent_subtitle
@@ -757,9 +746,34 @@ public class PropertyDetailsActivity extends AppCompatActivity {
             }
         }
 
-        btnApplyToRent.setOnClickListener(
-                v -> showActionOptions()
-        );
+        if (btnApplyToRent == null) {
+            return;
+        }
+
+        if (isLandlord) {
+            btnApplyToRent.setText("Edit Listing");
+            btnApplyToRent.setVisibility(View.VISIBLE);
+            btnApplyToRent.setOnClickListener(v -> {
+                Intent intent = new Intent(this, EditListingActivity.class);
+                intent.putExtra("LISTING_ID", listingId);
+                intent.putExtra("listingId", listingId);
+                startActivity(intent);
+            });
+        } else if (isForSale) {
+            btnApplyToRent.setText(
+                    R.string.btn_book_site_visit
+            );
+            btnApplyToRent.setOnClickListener(
+                    v -> showActionOptions()
+            );
+        } else {
+            btnApplyToRent.setText(
+                    R.string.btn_schedule_viewing_action
+            );
+            btnApplyToRent.setOnClickListener(
+                    v -> showActionOptions()
+            );
+        }
     }
 
     private void showActionOptions() {
@@ -969,6 +983,7 @@ public class PropertyDetailsActivity extends AppCompatActivity {
 
                     if (responseCode >= 200
                             && responseCode < 300) {
+                        AnalyticsHelper.logViewingBooked(this, listingId);
                         String successMessage = isForSale
                                 ? "Your site inspection request was sent successfully."
                                 : "Your viewing request was sent successfully.";
@@ -1509,7 +1524,7 @@ public class PropertyDetailsActivity extends AppCompatActivity {
 
         mapView.getOverlays().add(marker);
         mapView.getController().setCenter(point);
-        mapView.getController().setZoom(16.0);
+        mapView.getController().setZoom(17.5);
         mapView.invalidate();
     }
 
@@ -1546,38 +1561,38 @@ public class PropertyDetailsActivity extends AppCompatActivity {
     }
 
     private void openLocationInMaps(boolean directions) {
-        String destination;
-
-        if (!Double.isNaN(verifiedLatitude)
-                && !Double.isNaN(verifiedLongitude)) {
-            destination =
-                    verifiedLatitude + "," + verifiedLongitude;
-        } else {
-            destination = locationText;
+        if (!Double.isNaN(verifiedLatitude) && !Double.isNaN(verifiedLongitude)
+                && verifiedLatitude != 0.0 && verifiedLongitude != 0.0) {
+            String label = locationText.isEmpty() ? propertyName : locationText;
+            String geoUri = String.format(Locale.US, "geo:%f,%f?q=%f,%f(%s)",
+                    verifiedLatitude, verifiedLongitude, verifiedLatitude, verifiedLongitude, Uri.encode(label));
+            Intent mapIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(geoUri));
+            try {
+                startActivity(mapIntent);
+                return;
+            } catch (Exception e) {
+                String webUri = directions
+                        ? String.format(Locale.US, "https://www.google.com/maps/dir/?api=1&destination=%f,%f", verifiedLatitude, verifiedLongitude)
+                        : String.format(Locale.US, "https://www.google.com/maps/search/?api=1&query=%f,%f", verifiedLatitude, verifiedLongitude);
+                try {
+                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(webUri)));
+                    return;
+                } catch (Exception ignored) {}
+            }
         }
 
-        if (destination == null
-                || destination.trim().isEmpty()) {
+        if (locationText == null || locationText.trim().isEmpty()) {
             showFormError(R.string.location_not_available);
             return;
         }
 
-        String encoded = Uri.encode(destination);
-
+        String encoded = Uri.encode(locationText);
         Uri uri = directions
-                ? Uri.parse(
-                "https://www.google.com/maps/dir/?api=1"
-                        + "&destination=" + encoded
-        )
-                : Uri.parse(
-                "https://www.google.com/maps/search/?api=1"
-                        + "&query=" + encoded
-        );
+                ? Uri.parse("https://www.google.com/maps/dir/?api=1&destination=" + encoded)
+                : Uri.parse("https://www.google.com/maps/search/?api=1&query=" + encoded);
 
         try {
-            startActivity(
-                    new Intent(Intent.ACTION_VIEW, uri)
-            );
+            startActivity(new Intent(Intent.ACTION_VIEW, uri));
         } catch (Exception e) {
             showFormError(R.string.could_not_open_maps);
         }
@@ -1604,7 +1619,7 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                 String endpoint =
                         "/rest/v1/listings?select=*&id=eq."
                                 + URLEncoder.encode(
-                                listingId,
+                                listingId.trim(),
                                 "UTF-8"
                         ).replace("+", "%20")
                                 + "&limit=1";
@@ -1719,6 +1734,8 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                 }
 
                 listingLoaded = true;
+                checkSavedStatus();
+                AnalyticsHelper.logListingView(this, listingId, propertyName);
 
                 runOnUiThread(() -> {
                     if (isFinishing() || isDestroyed()) {
@@ -1775,6 +1792,8 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                                 )
                         );
                     }
+
+                    enforceTenantSafetyGuard(listing);
                 });
 
                 loadListingGallery(accessToken, imageUrl);
@@ -1790,7 +1809,9 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                 );
 
                 if (!Double.isNaN(latitude)
-                        && !Double.isNaN(longitude)) {
+                        && !Double.isNaN(longitude)
+                        && latitude != 0.0
+                        && longitude != 0.0) {
                     verifiedLatitude = latitude;
                     verifiedLongitude = longitude;
 
@@ -1831,96 +1852,127 @@ public class PropertyDetailsActivity extends AppCompatActivity {
         });
     }
 
-    private void saveListing() {
+    private void checkSavedStatus() {
         String userId = SupabaseHelper.getUserId(this);
-        String accessToken =
-                SupabaseHelper.getAccessToken(this);
+        String accessToken = SupabaseHelper.getAccessToken(this);
 
-        if (userId == null || userId.isEmpty()
-                || accessToken == null
-                || accessToken.isEmpty()) {
-            showFormError(R.string.please_log_in_to_save);
-            return;
-        }
-
-        if (listingId == null || listingId.isEmpty()) {
-            Toast.makeText(
-                    this,
-                    "Property ID is missing.",
-                    Toast.LENGTH_SHORT
-            ).show();
+        if (userId == null || userId.isEmpty() || accessToken == null || accessToken.isEmpty()
+                || listingId == null || listingId.isEmpty()) {
             return;
         }
 
         executor.execute(() -> {
             HttpURLConnection connection = null;
-
             try {
-                connection = SupabaseHelper.createConnection(
-                        "/rest/v1/saved_listings",
-                        "POST",
-                        accessToken
-                );
+                String endpoint = "/rest/v1/saved_listings?tenant_uid=eq." + SupabaseHelper.encode(userId)
+                        + "&listing_id=eq." + SupabaseHelper.encode(listingId.trim());
+                connection = SupabaseHelper.createConnection(endpoint, "GET", accessToken);
+                int responseCode = connection.getResponseCode();
+                String response = SupabaseHelper.readResponse(connection);
 
-                JSONObject body = new JSONObject();
-
-                body.put("tenant_uid", userId);
-                body.put("listing_id", listingId);
-
-                SupabaseHelper.writeJson(connection, body);
-
-                int responseCode =
-                        connection.getResponseCode();
-
-                String response =
-                        SupabaseHelper.readResponse(connection);
-
-                Log.d(
-                        TAG,
-                        "Save listing HTTP "
-                                + responseCode
-                                + ": "
-                                + response
-                );
-
-                runOnUiThread(() -> {
-                    if (isFinishing() || isDestroyed()) {
-                        return;
-                    }
-
-                    if (responseCode >= 200
-                            && responseCode < 300) {
-                        showFormError(
-                                R.string.accommodation_saved
-                        );
-
-                    } else if (responseCode == 409) {
-                        showFormError(R.string.already_saved);
-
-                    } else {
-                        showFormError(
-                                R.string.could_not_save_accommodation
-                        );
-                    }
-                });
-
-            } catch (Exception e) {
-                Log.e(TAG, "Save listing error", e);
-
-                runOnUiThread(() -> {
-                    if (!isFinishing() && !isDestroyed()) {
-                        showFormError(
-                                R.string.could_not_save_accommodation
-                        );
-                    }
-                });
-
-            } finally {
-                if (connection != null) {
-                    connection.disconnect();
+                if (responseCode >= 200 && responseCode < 300) {
+                    JSONArray arr = new JSONArray(response);
+                    isListingSaved = arr.length() > 0;
+                    runOnUiThread(() -> updateFavoriteButtonUI(isListingSaved));
                 }
+            } catch (Exception e) {
+                Log.e(TAG, "Error checking saved status", e);
+            } finally {
+                if (connection != null) connection.disconnect();
             }
         });
+    }
+
+    private void updateFavoriteButtonUI(boolean isSaved) {
+        if (btnSave == null) return;
+        if (isSaved) {
+            btnSave.setImageResource(R.drawable.heart_filled);
+            btnSave.setImageTintList(ColorStateList.valueOf(Color.parseColor("#DC3545")));
+        } else {
+            btnSave.setImageResource(R.drawable.heart);
+            btnSave.setImageTintList(ColorStateList.valueOf(Color.parseColor("#BA5536")));
+        }
+    }
+
+    private void toggleSaveListing() {
+        String userId = SupabaseHelper.getUserId(this);
+        String accessToken = SupabaseHelper.getAccessToken(this);
+
+        if (userId == null || userId.isEmpty() || accessToken == null || accessToken.isEmpty()) {
+            showFormError(R.string.please_log_in_to_save);
+            return;
+        }
+
+        if (listingId == null || listingId.trim().isEmpty()) {
+            Toast.makeText(this, "Property ID is missing.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (isListingSaved) {
+            executor.execute(() -> {
+                HttpURLConnection connection = null;
+                try {
+                    String endpoint = "/rest/v1/saved_listings?tenant_uid=eq." + SupabaseHelper.encode(userId)
+                            + "&listing_id=eq." + SupabaseHelper.encode(listingId.trim());
+                    connection = SupabaseHelper.createConnection(endpoint, "DELETE", accessToken);
+                    int code = connection.getResponseCode();
+
+                    runOnUiThread(() -> {
+                        if (isFinishing() || isDestroyed()) return;
+                        if (code >= 200 && code < 300) {
+                            isListingSaved = false;
+                            updateFavoriteButtonUI(false);
+                            Toast.makeText(this, "Removed from favourites", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(this, "Could not remove from favourites.", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                } catch (Exception e) {
+                    Log.e(TAG, "Remove favorite error", e);
+                    runOnUiThread(() -> {
+                        if (!isFinishing() && !isDestroyed()) {
+                            Toast.makeText(this, "Could not remove from favourites.", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                } finally {
+                    if (connection != null) connection.disconnect();
+                }
+            });
+        } else {
+            executor.execute(() -> {
+                HttpURLConnection connection = null;
+                try {
+                    connection = SupabaseHelper.createConnection("/rest/v1/saved_listings", "POST", accessToken);
+                    JSONObject body = new JSONObject();
+                    body.put("tenant_uid", userId);
+                    body.put("listing_id", listingId.trim());
+                    SupabaseHelper.writeJson(connection, body);
+
+                    int responseCode = connection.getResponseCode();
+
+                    runOnUiThread(() -> {
+                        if (isFinishing() || isDestroyed()) return;
+
+                        if ((responseCode >= 200 && responseCode < 300) || responseCode == 409) {
+                            isListingSaved = true;
+                            updateFavoriteButtonUI(true);
+                            Toast.makeText(this, "Saved to favourites!", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(this, "Could not save to favourites.", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                } catch (Exception e) {
+                    Log.e(TAG, "Save listing error", e);
+                    runOnUiThread(() -> {
+                        if (!isFinishing() && !isDestroyed()) {
+                            Toast.makeText(this, "Could not save to favourites.", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                } finally {
+                    if (connection != null) connection.disconnect();
+                }
+            });
+        }
     }
 
     private void contactLandlord() {
@@ -2086,5 +2138,63 @@ public class PropertyDetailsActivity extends AppCompatActivity {
         executor.shutdownNow();
 
         super.onDestroy();
+    }
+
+    private void enforceTenantSafetyGuard(JSONObject listingObj) {
+        String status = listingObj.optString("status", "APPROVED");
+        boolean isArchived = listingObj.optBoolean("is_archived", false);
+
+        JSONObject landlordProfile = listingObj.optJSONObject("profiles");
+        String landlordIdentityStatus = landlordProfile != null ? landlordProfile.optString("identity_status", "VERIFIED") : "VERIFIED";
+
+        boolean isFullyAccessible = !isArchived
+                && !"REMOVED_BY_ADMIN".equalsIgnoreCase(status)
+                && !"DELETED".equalsIgnoreCase(status)
+                && !"SUSPENDED_FOR_REVERIFICATION".equalsIgnoreCase(status)
+                && ("VERIFIED".equalsIgnoreCase(landlordIdentityStatus) || landlordIdentityStatus.isEmpty());
+
+        Button btnRequestViewing = findViewById(R.id.btnApplyToRent);
+        View btnContactLandlord = findViewById(R.id.btnContactLandlord);
+        View layoutUnavailableOverlay = findViewById(R.id.layoutUnavailableOverlay);
+        TextView tvUnavailableReason = findViewById(R.id.tvUnavailableReason);
+
+        if (!isFullyAccessible) {
+            if (btnRequestViewing != null) {
+                btnRequestViewing.setEnabled(false);
+                btnRequestViewing.setAlpha(0.5f);
+            }
+            if (btnContactLandlord != null) {
+                btnContactLandlord.setEnabled(false);
+                btnContactLandlord.setAlpha(0.5f);
+            }
+
+            if (layoutUnavailableOverlay != null) {
+                layoutUnavailableOverlay.setVisibility(View.VISIBLE);
+            }
+
+            if (tvUnavailableReason != null) {
+                if (isArchived || "DELETED".equalsIgnoreCase(status)) {
+                    tvUnavailableReason.setText("This listing has been removed or archived by the owner.");
+                } else if ("SUSPENDED_FOR_REVERIFICATION".equalsIgnoreCase(status) || "CHANGES_PENDING_REVIEW".equalsIgnoreCase(status)) {
+                    tvUnavailableReason.setText("This property is currently undergoing routine administrative re-verification.");
+                } else {
+                    tvUnavailableReason.setText("This property is temporarily unavailable.");
+                }
+            }
+
+            Toast.makeText(this, "This listing is currently unavailable for viewing requests.", Toast.LENGTH_LONG).show();
+        } else {
+            if (layoutUnavailableOverlay != null) {
+                layoutUnavailableOverlay.setVisibility(View.GONE);
+            }
+            if (btnRequestViewing != null) {
+                btnRequestViewing.setEnabled(true);
+                btnRequestViewing.setAlpha(1.0f);
+            }
+            if (btnContactLandlord != null) {
+                btnContactLandlord.setEnabled(true);
+                btnContactLandlord.setAlpha(1.0f);
+            }
+        }
     }
 }
