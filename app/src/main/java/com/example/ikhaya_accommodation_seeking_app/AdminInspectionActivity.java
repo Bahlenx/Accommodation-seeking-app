@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -23,6 +24,11 @@ import androidx.core.content.ContextCompat;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.osmdroid.config.Configuration;
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.Marker;
 
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -61,6 +67,9 @@ public class AdminInspectionActivity extends AppCompatActivity {
     private Button btnApprove;
     private Button btnTakedown;
 
+    private MapView adminMapView;
+    private TextView tvAdminCoords;
+
     private String listingId = "";
     private String landlordUid = "";
     private String propertyTitle = "";
@@ -70,6 +79,11 @@ public class AdminInspectionActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Configuration.getInstance().load(getApplicationContext(),
+                PreferenceManager.getDefaultSharedPreferences(getApplicationContext()));
+        Configuration.getInstance().setUserAgentValue(getPackageName());
+
         setContentView(R.layout.activity_admin_inspection);
 
         listingId = getIntent().getStringExtra("LISTING_ID");
@@ -77,6 +91,15 @@ public class AdminInspectionActivity extends AppCompatActivity {
             Toast.makeText(this, R.string.error_missing_listing_id, Toast.LENGTH_SHORT).show();
             finish();
             return;
+        }
+
+        adminMapView = findViewById(R.id.adminInspectionMapView);
+        tvAdminCoords = findViewById(R.id.tvAdminCoords);
+
+        if (adminMapView != null) {
+            adminMapView.setTileSource(TileSourceFactory.MAPNIK);
+            adminMapView.setMultiTouchControls(true);
+            adminMapView.getController().setZoom(16.0);
         }
 
         ivInspectImage = findViewById(R.id.ivInspectImage);
@@ -246,6 +269,9 @@ public class AdminInspectionActivity extends AppCompatActivity {
                         String landlordStr = String.format(Locale.getDefault(), "%s: %s (%s...)",
                                 getString(R.string.label_submitted_by), getString(R.string.role_landlord), landlordShortId);
 
+                        double lat = listing.optDouble("latitude", listing.optDouble("lat", 0.0));
+                        double lng = listing.optDouble("longitude", listing.optDouble("lng", 0.0));
+
                         runOnUiThread(() -> {
                             if (isFinishing() || isDestroyed()) return;
 
@@ -256,6 +282,8 @@ public class AdminInspectionActivity extends AppCompatActivity {
                             if (tvInspectUtilities != null) {
                                 tvInspectUtilities.setText(utilitiesStr.toString().trim());
                             }
+
+                            renderPropertyPinOnAdminMap(lat, lng, propertyTitle);
 
                             // Re-bind click listener with updated data
                             setupActionButtons(currentStatus);
@@ -608,6 +636,49 @@ public class AdminInspectionActivity extends AppCompatActivity {
             startActivity(intent);
         } catch (Exception e) {
             Toast.makeText(this, "Could not open document link", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void renderPropertyPinOnAdminMap(double lat, double lng, String title) {
+        if (adminMapView == null) return;
+
+        if (lat == 0.0 && lng == 0.0) {
+            if (tvAdminCoords != null) tvAdminCoords.setText("No GPS coordinates pinned");
+            adminMapView.setVisibility(View.GONE);
+            return;
+        }
+
+        adminMapView.setVisibility(View.VISIBLE);
+        if (tvAdminCoords != null) {
+            tvAdminCoords.setText(String.format(Locale.US, "GPS: %.5f, %.5f", lat, lng));
+        }
+
+        GeoPoint point = new GeoPoint(lat, lng);
+        adminMapView.getController().setCenter(point);
+        adminMapView.getController().setZoom(16.0);
+
+        adminMapView.getOverlays().clear();
+        Marker marker = new Marker(adminMapView);
+        marker.setPosition(point);
+        marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+        marker.setTitle(title != null ? title : "Pinned Property Location");
+        adminMapView.getOverlays().add(marker);
+        adminMapView.invalidate();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (adminMapView != null) {
+            adminMapView.onResume();
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (adminMapView != null) {
+            adminMapView.onPause();
         }
     }
 

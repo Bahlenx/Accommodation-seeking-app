@@ -229,6 +229,40 @@
                             android:text="Description will appear here."
                             android:textColor="#423936"
                             android:textSize="14sp" />
+
+                        <!-- Location on Map Preview for Admin Verification -->
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="14dp"
+                            android:layout_marginBottom="6dp"
+                            android:text="Pinned GPS Location"
+                            android:textColor="#1F1614"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvAdminCoords"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp"
+                            android:text="Lat: -- , Lng: --"
+                            android:textColor="#7A6A63"
+                            android:textSize="12sp" />
+
+                        <androidx.cardview.widget.CardView
+                            android:id="@+id/cardAdminMapPreview"
+                            android:layout_width="match_parent"
+                            android:layout_height="180dp"
+                            android:layout_marginBottom="8dp"
+                            app:cardCornerRadius="14dp"
+                            app:cardElevation="0dp">
+
+                            <org.osmdroid.views.MapView
+                                android:id="@+id/adminInspectionMapView"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent" />
+                        </androidx.cardview.widget.CardView>
                     </LinearLayout>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
