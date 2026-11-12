@@ -329,6 +329,7 @@ public class AdminDashboardActivity extends AppCompatActivity {
         String token = SupabaseHelper.getAccessToken(this);
         executor.execute(() -> {
             HttpURLConnection conn = null;
+            HttpURLConnection connChats = null;
             try {
                 // Filter only OPEN or PENDING tickets so resolved/dismissed ones aren't counted
                 conn = SupabaseHelper.createConnection(
@@ -336,24 +337,44 @@ public class AdminDashboardActivity extends AppCompatActivity {
                         "GET", 
                         token
                 );
+                int openReportsCount = 0;
                 if (conn.getResponseCode() >= 200 && conn.getResponseCode() < 300) {
                     JSONArray arr = new JSONArray(SupabaseHelper.readResponse(conn));
                     problemReportsCache = arr;
-                    final int count = arr.length();
-                    runOnUiThread(() -> {
-                        if (isFinishing() || isDestroyed()) return;
-                        if (tvStatReports != null) tvStatReports.setText(String.valueOf(count));
-                        if (tvTrendReports != null) {
-                            if (count > 0) {
-                                tvTrendReports.setText(String.format(Locale.getDefault(), "%d %s", count, getString(R.string.reports_pending_suffix)));
-                                tvTrendReports.setTextColor(Color.parseColor("#FB6340"));
-                            } else {
-                                tvTrendReports.setText(R.string.no_issues_reported);
-                                tvTrendReports.setTextColor(Color.parseColor("#2DCE89"));
-                            }
-                        }
-                    });
+                    openReportsCount = arr.length();
                 }
+                conn.disconnect();
+
+                connChats = SupabaseHelper.createConnection(
+                        "/rest/v1/guest_support_messages?select=guest_id",
+                        "GET",
+                        token
+                );
+                connChats.setRequestProperty("x-admin-panel", "true");
+                HashSet<String> uniqueGuests = new HashSet<>();
+                if (connChats.getResponseCode() >= 200 && connChats.getResponseCode() < 300) {
+                    JSONArray arr = new JSONArray(SupabaseHelper.readResponse(connChats));
+                    for (int i = 0; i < arr.length(); i++) {
+                        String gId = arr.getJSONObject(i).optString("guest_id", "");
+                        if (!gId.isEmpty()) uniqueGuests.add(gId);
+                    }
+                }
+                connChats.disconnect();
+
+                final int combinedCount = openReportsCount + uniqueGuests.size();
+                runOnUiThread(() -> {
+                    if (isFinishing() || isDestroyed()) return;
+                    if (tvStatReports != null) tvStatReports.setText(String.valueOf(combinedCount));
+                    if (tvTrendReports != null) {
+                        if (combinedCount > 0) {
+                            tvTrendReports.setText(String.format(Locale.getDefault(), "%d %s", combinedCount, getString(R.string.reports_pending_suffix)));
+                            tvTrendReports.setTextColor(Color.parseColor("#FB6340"));
+                        } else {
+                            tvTrendReports.setText(R.string.no_issues_reported);
+                            tvTrendReports.setTextColor(Color.parseColor("#2DCE89"));
+                        }
+                    }
+                });
             } catch (Exception e) {
                 Log.e(TAG, "Error loading reports", e);
             } finally {

@@ -48,22 +48,16 @@ public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.View
         holder.tvUserName.setText(user.getName());
         holder.tvUserRole.setText(user.getRole().toUpperCase());
 
-        // Anti-Self-Destruction & Admin Protection Check
-        if (user.getUserId().equals(currentAdminId)) {
-            holder.btnSuspendUser.setText("YOU");
-            holder.btnSuspendUser.setBackgroundColor(Color.parseColor("#6C757D")); // Gray disabled color
-            holder.btnSuspendUser.setEnabled(false);
-            holder.tvUserName.setTextColor(Color.parseColor("#5E72E4")); // Highlight own name in blue
-            return; 
-        } else if ("admin".equalsIgnoreCase(user.getRole())) {
-            holder.btnSuspendUser.setText("ADMIN");
-            holder.btnSuspendUser.setBackgroundColor(Color.parseColor("#6C757D")); // Gray disabled color
-            holder.btnSuspendUser.setEnabled(false);
-            return; 
-        }
-
-        holder.btnSuspendUser.setEnabled(true);
         updateButtonUI(holder, user.isSuspended());
+
+        // Hide suspend/delete button for the currently logged in Admin (so they don't break their own account)
+        if (user.getUserId().equals(currentAdminId)) {
+            holder.btnSuspendUser.setVisibility(View.GONE);
+            if (holder.btnDeleteUser != null) holder.btnDeleteUser.setVisibility(View.GONE);
+        } else {
+            holder.btnSuspendUser.setVisibility(View.VISIBLE);
+            if (holder.btnDeleteUser != null) holder.btnDeleteUser.setVisibility(View.VISIBLE);
+        }
 
         holder.btnSuspendUser.setOnClickListener(v -> {
             boolean targetState = !user.isSuspended();
@@ -95,6 +89,20 @@ public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.View
                 }
             });
         });
+
+        if (holder.btnDeleteUser != null) {
+            holder.btnDeleteUser.setOnClickListener(v -> {
+                new androidx.appcompat.app.AlertDialog.Builder(context)
+                        .setTitle("Delete Account")
+                        .setMessage("Are you sure you want to permanently delete " + user.getName() + "'s account? This action cannot be undone.")
+                        .setPositiveButton("Delete", (dialog, which) -> {
+                            holder.btnDeleteUser.setEnabled(false);
+                            SupabaseHelper.deleteAccountCompletely((android.app.Activity) context, user.getUserId(), SupabaseHelper.getAccessToken(context), "", "Deleted by Administrator");
+                        })
+                        .setNegativeButton("Cancel", null)
+                        .show();
+            });
+        }
     }
 
     private void updateButtonUI(ViewHolder holder, boolean isSuspended) {
@@ -116,13 +124,14 @@ public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.View
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvUserName, tvUserRole;
-        Button btnSuspendUser;
+        Button btnSuspendUser, btnDeleteUser;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             tvUserName = itemView.findViewById(R.id.tvUserName);
             tvUserRole = itemView.findViewById(R.id.tvUserRole);
             btnSuspendUser = itemView.findViewById(R.id.btnSuspendUser);
+            // btnDeleteUser = itemView.findViewById(R.id.btnDeleteUser);
         }
     }
 }

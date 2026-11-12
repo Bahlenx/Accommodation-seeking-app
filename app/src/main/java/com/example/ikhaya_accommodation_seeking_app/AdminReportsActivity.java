@@ -34,6 +34,17 @@ public class AdminReportsActivity extends AppCompatActivity {
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
+    private int dp(int v) {
+        return Math.round(v * getResources().getDisplayMetrics().density);
+    }
+
+    private android.graphics.drawable.GradientDrawable roundedBg(String fillHex, int radiusDp) {
+        android.graphics.drawable.GradientDrawable gd = new android.graphics.drawable.GradientDrawable();
+        gd.setColor(Color.parseColor(fillHex));
+        gd.setCornerRadius(dp(radiusDp));
+        return gd;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,16 +59,24 @@ public class AdminReportsActivity extends AppCompatActivity {
         progressReports = findViewById(R.id.progressReports);
         tvEmptyReports = findViewById(R.id.tvEmptyReports);
         
+        View layoutSupportTabs = findViewById(R.id.layoutSupportTabs);
+        if (layoutSupportTabs != null) {
+            layoutSupportTabs.setBackground(roundedBg("#EAE3DC", 12));
+        }
+
         tabIssueTickets = findViewById(R.id.tabIssueTickets);
         tabGuestChats = findViewById(R.id.tabGuestChats);
+        
+        tabIssueTickets.setBackground(roundedBg("#B85032", 9));
+        tabGuestChats.setBackground(roundedBg("#00000000", 9));
         
         tabIssueTickets.setOnClickListener(v -> {
             if (showingGuestChats) {
                 showingGuestChats = false;
-                tabIssueTickets.setBackgroundColor(Color.parseColor("#B85032"));
+                tabIssueTickets.setBackground(roundedBg("#B85032", 9));
                 tabIssueTickets.setTextColor(Color.WHITE);
-                tabGuestChats.setBackgroundColor(Color.TRANSPARENT);
-                tabGuestChats.setTextColor(Color.parseColor("#1F1F1F"));
+                tabGuestChats.setBackground(roundedBg("#00000000", 9));
+                tabGuestChats.setTextColor(Color.parseColor("#6D635E"));
                 loadReports();
             }
         });
@@ -65,15 +84,26 @@ public class AdminReportsActivity extends AppCompatActivity {
         tabGuestChats.setOnClickListener(v -> {
             if (!showingGuestChats) {
                 showingGuestChats = true;
-                tabGuestChats.setBackgroundColor(Color.parseColor("#B85032"));
+                tabGuestChats.setBackground(roundedBg("#B85032", 9));
                 tabGuestChats.setTextColor(Color.WHITE);
-                tabIssueTickets.setBackgroundColor(Color.TRANSPARENT);
-                tabIssueTickets.setTextColor(Color.parseColor("#1F1F1F"));
+                tabIssueTickets.setBackground(roundedBg("#00000000", 9));
+                tabIssueTickets.setTextColor(Color.parseColor("#6D635E"));
                 loadGuestSupportChats();
             }
         });
 
         loadReports();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (showingGuestChats) {
+            loadGuestSupportChats();
+        } else {
+            loadReports();
+        }
+        refreshTabCounts();
     }
 
     private void loadReports() {
@@ -144,9 +174,10 @@ public class AdminReportsActivity extends AppCompatActivity {
     private void addReportCard(JSONObject obj, int position) {
         String ticketId = obj.optString("id", "");
         String reporterUid = obj.optString("reporter_uid", "");
-        String reporterName = obj.optString("reporter_name", "User");
+        String reporterName = obj.optString("reporter_name", obj.optString("reporter_email", "Deleted User"));
         String reporterRole = obj.optString("reporter_role", "Member");
         String reason = obj.optString("reason", "Support Ticket");
+        String issueType = obj.optString("issue_type", reason);
         String description = obj.optString("description", "No description provided");
         String status = obj.optString("status", "OPEN");
 
@@ -155,21 +186,33 @@ public class AdminReportsActivity extends AppCompatActivity {
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
         );
-        cardParams.setMargins(0, 0, 0, 24);
+        cardParams.setMargins(0, 0, 0, dp(12));
         card.setLayoutParams(cardParams);
-        card.setRadius(24f);
+        card.setRadius(dp(14));
         card.setCardElevation(4f);
         card.setCardBackgroundColor(Color.WHITE);
 
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
-        layout.setPadding(32, 28, 32, 28);
+        layout.setPadding(dp(16), dp(16), dp(16), dp(16));
 
         TextView tvReason = new TextView(this);
         tvReason.setText(reason);
         tvReason.setTextSize(16f);
         tvReason.setTypeface(null, Typeface.BOLD);
         tvReason.setTextColor(Color.parseColor("#BA5536"));
+        
+        if (issueType.contains("ACCOUNT DELETED") || reason.contains("ACCOUNT DELETED")) {
+            tvReason.setText("ACCOUNT DELETED");
+            tvReason.setTextColor(Color.parseColor("#B91C1C"));
+            tvReason.setBackground(roundedBg("#FEE2E2", 6));
+            tvReason.setPadding(dp(8), dp(4), dp(8), dp(4));
+            LinearLayout.LayoutParams badgeParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            );
+            tvReason.setLayoutParams(badgeParams);
+        }
 
         TextView tvReporter = new TextView(this);
         tvReporter.setText("By: " + reporterName + " (" + reporterRole.toUpperCase() + ")");
@@ -195,7 +238,7 @@ public class AdminReportsActivity extends AppCompatActivity {
 
         LinearLayout actionRow = new LinearLayout(this);
         actionRow.setOrientation(LinearLayout.HORIZONTAL);
-        actionRow.setPadding(0, 16, 0, 0);
+        actionRow.setPadding(0, dp(16), 0, 0);
 
         Button btnResolve = new Button(this);
         btnResolve.setText("Resolve");
@@ -211,6 +254,46 @@ public class AdminReportsActivity extends AppCompatActivity {
         card.addView(layout);
 
         reportsContainer.addView(card);
+    }
+
+    private void refreshTabCounts() {
+        String token = SupabaseHelper.getAccessToken(this);
+        if (token == null || token.isEmpty()) return;
+        
+        executor.execute(() -> {
+            try {
+                HttpURLConnection connRpt = SupabaseHelper.createConnection(
+                        "/rest/v1/reports?select=id,status&status=in.(OPEN,open,PENDING,pending)", 
+                        "GET", token);
+                int rptCount = 0;
+                if (connRpt.getResponseCode() >= 200 && connRpt.getResponseCode() < 300) {
+                    rptCount = new JSONArray(SupabaseHelper.readResponse(connRpt)).length();
+                }
+                connRpt.disconnect();
+
+                HttpURLConnection connChats = SupabaseHelper.createConnection(
+                        "/rest/v1/guest_support_messages?select=guest_id",
+                        "GET", token);
+                connChats.setRequestProperty("x-admin-panel", "true");
+                java.util.HashSet<String> uniqueGuests = new java.util.HashSet<>();
+                if (connChats.getResponseCode() >= 200 && connChats.getResponseCode() < 300) {
+                    JSONArray arr = new JSONArray(SupabaseHelper.readResponse(connChats));
+                    for (int i = 0; i < arr.length(); i++) {
+                        String gId = arr.getJSONObject(i).optString("guest_id", "");
+                        if (!gId.isEmpty()) uniqueGuests.add(gId);
+                    }
+                }
+                connChats.disconnect();
+
+                final int fRptCount = rptCount;
+                final int fGuestCount = uniqueGuests.size();
+                runOnUiThread(() -> {
+                    if (isFinishing() || isDestroyed()) return;
+                    if (tabIssueTickets != null) tabIssueTickets.setText("Issue Tickets (" + fRptCount + ")");
+                    if (tabGuestChats != null) tabGuestChats.setText("Guest Chats (" + fGuestCount + ")");
+                });
+            } catch (Exception ignored) {}
+        });
     }
 
     private void showResponseDialog(String ticketId, String reporterUid, String ticketReason, String newStatus, String prompt, View cardView) {
@@ -362,21 +445,28 @@ public class AdminReportsActivity extends AppCompatActivity {
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
         );
-        params.setMargins(16, 16, 16, 8);
+        params.setMargins(dp(16), dp(16), dp(16), dp(12));
         card.setLayoutParams(params);
         card.setCardElevation(4f);
-        card.setRadius(12f);
+        card.setRadius(dp(14));
         card.setCardBackgroundColor(Color.WHITE);
 
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
-        layout.setPadding(32, 32, 32, 32);
+        layout.setPadding(dp(18), dp(18), dp(18), dp(18));
 
         TextView tvBadge = new TextView(this);
         tvBadge.setText("PRE-LOGIN GUEST SUPPORT");
         tvBadge.setTextColor(Color.parseColor("#B85032"));
         tvBadge.setTextSize(10f);
         tvBadge.setTypeface(null, Typeface.BOLD);
+        tvBadge.setBackground(roundedBg("#FDE8E1", 6));
+        tvBadge.setPadding(dp(8), dp(4), dp(8), dp(4));
+        LinearLayout.LayoutParams badgeParams = new LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.WRAP_CONTENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        tvBadge.setLayoutParams(badgeParams);
         layout.addView(tvBadge);
 
         TextView tvTitle = new TextView(this);
@@ -393,17 +483,30 @@ public class AdminReportsActivity extends AppCompatActivity {
         tvBody.setTextSize(14f);
         layout.addView(tvBody);
 
-        Button btnReply = new Button(this);
-        LinearLayout.LayoutParams btnParams = new LinearLayout.LayoutParams(
+        LinearLayout actionRow = new LinearLayout(this);
+        actionRow.setOrientation(LinearLayout.HORIZONTAL);
+        LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
         );
-        btnParams.setMargins(0, 24, 0, 0);
-        btnReply.setLayoutParams(btnParams);
-        btnReply.setText("Reply in Chat");
-        btnReply.setBackgroundColor(Color.parseColor("#E9ECEF"));
-        btnReply.setTextColor(Color.parseColor("#495057"));
-        
+        rowParams.setMargins(0, dp(16), 0, 0);
+        actionRow.setLayoutParams(rowParams);
+
+        Button btnReply = new Button(this);
+        LinearLayout.LayoutParams replyParams = new LinearLayout.LayoutParams(
+                0,
+                dp(42),
+                1.2f
+        );
+        replyParams.setMargins(0, 0, dp(8), 0);
+        btnReply.setLayoutParams(replyParams);
+        btnReply.setText("Open Chat & Reply");
+        btnReply.setAllCaps(false);
+        btnReply.setTextSize(13f);
+        btnReply.setBackground(roundedBg("#B85032", 10));
+        btnReply.setTextColor(Color.WHITE);
+        btnReply.setTypeface(null, Typeface.BOLD);
+
         final String finalGHint = gHint;
         btnReply.setOnClickListener(v -> {
             Intent chatIntent = new Intent(this, ChatActivity.class);
@@ -416,20 +519,107 @@ public class AdminReportsActivity extends AppCompatActivity {
             chatIntent.putExtra("RECEIVER_NAME", finalGHint);
             startActivity(chatIntent);
         });
-        
-        layout.addView(btnReply);
+
+        Button btnResolveChat = new Button(this);
+        LinearLayout.LayoutParams resolveParams = new LinearLayout.LayoutParams(
+                0,
+                dp(42),
+                0.8f
+        );
+        btnResolveChat.setLayoutParams(resolveParams);
+        btnResolveChat.setText("Resolve");
+        btnResolveChat.setAllCaps(false);
+        btnResolveChat.setTextSize(13f);
+        btnResolveChat.setBackground(roundedBg("#15803D", 10));
+        btnResolveChat.setTextColor(Color.WHITE);
+        btnResolveChat.setTypeface(null, Typeface.BOLD);
+
+        btnResolveChat.setOnClickListener(v -> {
+            new AlertDialog.Builder(this)
+                    .setTitle("Resolve Guest Support Chat")
+                    .setMessage("Mark " + finalGHint + "'s support request as resolved? This will close the active guest thread.")
+                    .setNegativeButton("Cancel", null)
+                    .setPositiveButton("Mark Resolved", (dialog, which) -> {
+                        btnResolveChat.setEnabled(false);
+                        resolveGuestSupportChat(gId, finalGHint, latestText, card, btnResolveChat);
+                    })
+                    .show();
+        });
+
+        actionRow.addView(btnReply);
+        actionRow.addView(btnResolveChat);
+        layout.addView(actionRow);
         card.addView(layout);
         reportsContainer.addView(card);
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (showingGuestChats) {
-            loadGuestSupportChats();
-        } else {
-            loadReports();
+    private void resolveGuestSupportChat(String guestId, String guestHint, String lastMessage, View cardView, Button btnResolve) {
+        String token = SupabaseHelper.getAccessToken(this);
+        if (token == null || token.isEmpty() || guestId == null || guestId.isEmpty()) {
+            if (btnResolve != null) btnResolve.setEnabled(true);
+            return;
         }
+
+        executor.execute(() -> {
+            HttpURLConnection delConn = null;
+            try {
+                // 1. Save a RESOLVED audit entry in `reports` so historical records are preserved
+                try {
+                    HttpURLConnection archiveConn = SupabaseHelper.createConnection("/rest/v1/reports", "POST", token);
+                    archiveConn.setRequestProperty("Prefer", "return=minimal");
+                    JSONObject archiveBody = new JSONObject();
+                    archiveBody.put("reporter_uid", guestId);
+                    archiveBody.put("reporter_id", guestId);
+                    archiveBody.put("reporter_name", guestHint);
+                    archiveBody.put("reporter_role", "GUEST");
+                    archiveBody.put("reason", "GUEST CHAT RESOLVED (" + guestHint + ")");
+                    archiveBody.put("issue_type", "GUEST CHAT RESOLVED");
+                    archiveBody.put("description", "Resolved guest support thread. Last message: " + lastMessage);
+                    archiveBody.put("status", "RESOLVED");
+                    SupabaseHelper.writeJson(archiveConn, archiveBody);
+                    archiveConn.getResponseCode();
+                    archiveConn.disconnect();
+                } catch (Exception ignored) {}
+
+                // 2. Delete the active temporary thread from `guest_support_messages`
+                String encodedGuestId = java.net.URLEncoder.encode(guestId, "UTF-8");
+                delConn = SupabaseHelper.createConnection(
+                        "/rest/v1/guest_support_messages?guest_id=eq." + encodedGuestId,
+                        "DELETE",
+                        token
+                );
+                delConn.setRequestProperty("x-admin-panel", "true");
+                delConn.setRequestProperty("x-guest-id", guestId);
+
+                int code = delConn.getResponseCode();
+                if (code >= 200 && code < 300) {
+                    runOnUiThread(() -> {
+                        if (isFinishing() || isDestroyed()) return;
+                        Toast.makeText(this, "Guest support chat marked as resolved.", Toast.LENGTH_SHORT).show();
+                        if (reportsContainer != null) {
+                            reportsContainer.removeView(cardView);
+                            if (reportsContainer.getChildCount() == 0 && tvEmptyReports != null) {
+                                tvEmptyReports.setText("No active guest support chats found.");
+                                tvEmptyReports.setVisibility(View.VISIBLE);
+                            }
+                        }
+                        refreshTabCounts();
+                    });
+                } else {
+                    runOnUiThread(() -> {
+                        if (btnResolve != null) btnResolve.setEnabled(true);
+                        Toast.makeText(this, "Failed to resolve chat (HTTP " + code + ")", Toast.LENGTH_SHORT).show();
+                    });
+                }
+            } catch (Exception e) {
+                runOnUiThread(() -> {
+                    if (btnResolve != null) btnResolve.setEnabled(true);
+                    Toast.makeText(this, "Error resolving guest chat.", Toast.LENGTH_SHORT).show();
+                });
+            } finally {
+                if (delConn != null) delConn.disconnect();
+            }
+        });
     }
 
     @Override

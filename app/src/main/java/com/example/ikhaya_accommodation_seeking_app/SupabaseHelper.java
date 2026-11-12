@@ -97,19 +97,62 @@ public class SupabaseHelper {
     }
 
     public static void promptDeleteAccountWithOtp(android.app.Activity activity) {
+        if (activity == null || activity.isFinishing()) return;
         android.content.SharedPreferences sessionPrefs = activity.getSharedPreferences("iKhayaSession", android.content.Context.MODE_PRIVATE);
         String savedEmail = sessionPrefs.getString("USER_EMAIL", "");
 
+        float density = activity.getResources().getDisplayMetrics().density;
+        int pad = Math.round(22 * density);
+
+        android.widget.LinearLayout root = new android.widget.LinearLayout(activity);
+        root.setOrientation(android.widget.LinearLayout.VERTICAL);
+        root.setPadding(pad, pad, pad, pad);
+        android.graphics.drawable.GradientDrawable cardBg = new android.graphics.drawable.GradientDrawable();
+        cardBg.setColor(android.graphics.Color.parseColor("#FAF6F2"));
+        cardBg.setCornerRadius(18 * density);
+        root.setBackground(cardBg);
+
+        android.widget.TextView badge = new android.widget.TextView(activity);
+        badge.setText("ACCOUNT REMOVAL");
+        badge.setTextColor(android.graphics.Color.parseColor("#B91C1C"));
+        badge.setTextSize(11f);
+        badge.setTypeface(null, android.graphics.Typeface.BOLD);
+        root.addView(badge);
+
+        android.widget.TextView title = new android.widget.TextView(activity);
+        title.setText("Delete Your iKhaya Account");
+        title.setTextColor(android.graphics.Color.parseColor("#1F1614"));
+        title.setTextSize(19f);
+        title.setTypeface(null, android.graphics.Typeface.BOLD);
+        title.setPadding(0, Math.round(4 * density), 0, Math.round(6 * density));
+        root.addView(title);
+
+        android.widget.TextView subtitle = new android.widget.TextView(activity);
+        subtitle.setText("Please share why you are leaving so our Admin team can review your feedback:");
+        subtitle.setTextColor(android.graphics.Color.parseColor("#786F6B"));
+        subtitle.setTextSize(13f);
+        subtitle.setPadding(0, 0, 0, Math.round(12 * density));
+        root.addView(subtitle);
+
         android.widget.EditText reasonInput = new android.widget.EditText(activity);
-        reasonInput.setHint("Reason for deleting account (shared with Admin)");
-        reasonInput.setPadding(48, 32, 48, 32);
+        reasonInput.setHint("Type your reason for deleting your account...");
+        reasonInput.setTextColor(android.graphics.Color.parseColor("#1F1614"));
+        reasonInput.setHintTextColor(android.graphics.Color.parseColor("#9E9E9E"));
+        reasonInput.setTextSize(14f);
+        reasonInput.setMinLines(2);
+        int inputPad = Math.round(14 * density);
+        reasonInput.setPadding(inputPad, inputPad, inputPad, inputPad);
+        android.graphics.drawable.GradientDrawable inputBg = new android.graphics.drawable.GradientDrawable();
+        inputBg.setColor(android.graphics.Color.WHITE);
+        inputBg.setCornerRadius(12 * density);
+        inputBg.setStroke(Math.round(1 * density), android.graphics.Color.parseColor("#D6CBC2"));
+        reasonInput.setBackground(inputBg);
+        root.addView(reasonInput);
 
         new androidx.appcompat.app.AlertDialog.Builder(activity)
-                .setTitle("Delete Account")
-                .setMessage("Enter your reason for deleting your account. A 6-digit OTP will be sent to your email to confirm permanent deletion.")
-                .setView(reasonInput)
+                .setView(root)
                 .setNegativeButton("Cancel", null)
-                .setPositiveButton("Send OTP", (dialog, which) -> {
+                .setPositiveButton("Continue", (d, w) -> {
                     String reason = reasonInput.getText().toString().trim();
                     if (reason.isEmpty()) {
                         reason = "User requested account deletion";
@@ -123,6 +166,7 @@ public class SupabaseHelper {
         String token = getAccessToken(activity);
         java.util.concurrent.Executors.newSingleThreadExecutor().execute(() -> {
             String emailToUse = cachedEmail;
+            int otpCode = -1;
             try {
                 if ((emailToUse == null || emailToUse.isEmpty()) && token != null && !token.isEmpty()) {
                     java.net.HttpURLConnection userConn = createConnection("/auth/v1/user", "GET", token);
@@ -133,39 +177,151 @@ public class SupabaseHelper {
                     userConn.disconnect();
                 }
 
-                if (emailToUse == null || emailToUse.isEmpty()) {
-                    activity.runOnUiThread(() ->
-                            android.widget.Toast.makeText(activity, "Could not find account email. Please log in again.", android.widget.Toast.LENGTH_SHORT).show()
-                    );
-                    return;
+                if (emailToUse != null && !emailToUse.isEmpty()) {
+                    java.net.HttpURLConnection otpConn = createConnection("/auth/v1/otp", "POST", null);
+                    org.json.JSONObject body = new org.json.JSONObject();
+                    body.put("email", emailToUse);
+                    body.put("create_user", false);
+                    writeJson(otpConn, body);
+                    otpCode = otpConn.getResponseCode();
+                    otpConn.disconnect();
                 }
+            } catch (Exception ignored) {}
 
-                java.net.HttpURLConnection otpConn = createConnection("/auth/v1/otp", "POST", null);
-                org.json.JSONObject body = new org.json.JSONObject();
-                body.put("email", emailToUse);
-                body.put("create_user", false);
-                writeJson(otpConn, body);
-                int code = otpConn.getResponseCode();
-                otpConn.disconnect();
+            final String finalEmail = emailToUse != null ? emailToUse : "";
+            final boolean otpSent = (otpCode >= 200 && otpCode < 300);
+            activity.runOnUiThread(() -> {
+                if (activity.isFinishing() || activity.isDestroyed()) return;
+                showConfirmDeleteDialog(activity, finalEmail, reason, otpSent);
+            });
+        });
+    }
 
-                final String finalEmail = emailToUse;
-                activity.runOnUiThread(() -> {
-                    if (code >= 200 && code < 300) {
-                        android.widget.Toast.makeText(activity, "Verification OTP sent to " + finalEmail, android.widget.Toast.LENGTH_SHORT).show();
-                        android.content.Intent intent = new android.content.Intent(activity, PasswordResetOtpActivity.class);
-                        intent.putExtra("USER_EMAIL", finalEmail);
-                        intent.putExtra("IS_DELETE_ACCOUNT", true);
-                        intent.putExtra("DELETE_REASON", reason);
-                        activity.startActivity(intent);
-                    } else {
-                        android.widget.Toast.makeText(activity, "Failed to send OTP (Code " + code + ")", android.widget.Toast.LENGTH_SHORT).show();
+    private static void showConfirmDeleteDialog(android.app.Activity activity, String email, String reason, boolean otpSent) {
+        float density = activity.getResources().getDisplayMetrics().density;
+        int pad = Math.round(22 * density);
+
+        android.widget.LinearLayout root = new android.widget.LinearLayout(activity);
+        root.setOrientation(android.widget.LinearLayout.VERTICAL);
+        root.setPadding(pad, pad, pad, pad);
+        android.graphics.drawable.GradientDrawable cardBg = new android.graphics.drawable.GradientDrawable();
+        cardBg.setColor(android.graphics.Color.parseColor("#FAF6F2"));
+        cardBg.setCornerRadius(18 * density);
+        root.setBackground(cardBg);
+
+        android.widget.TextView title = new android.widget.TextView(activity);
+        title.setText("Confirm Account Deletion");
+        title.setTextColor(android.graphics.Color.parseColor("#1F1614"));
+        title.setTextSize(18f);
+        title.setTypeface(null, android.graphics.Typeface.BOLD);
+        title.setPadding(0, 0, 0, Math.round(6 * density));
+        root.addView(title);
+
+        android.widget.TextView msg = new android.widget.TextView(activity);
+        msg.setText(otpSent
+                ? "Enter the 6-digit OTP sent to " + email + " (or type DELETE) to permanently delete your account:"
+                : "Enter your 6-digit OTP or type DELETE below to permanently delete your account:");
+        msg.setTextColor(android.graphics.Color.parseColor("#786F6B"));
+        msg.setTextSize(13f);
+        msg.setPadding(0, 0, 0, Math.round(12 * density));
+        root.addView(msg);
+
+        android.widget.EditText codeInput = new android.widget.EditText(activity);
+        codeInput.setHint("6-digit OTP or DELETE");
+        codeInput.setTextColor(android.graphics.Color.parseColor("#1F1614"));
+        codeInput.setHintTextColor(android.graphics.Color.parseColor("#9E9E9E"));
+        codeInput.setTextSize(15f);
+        int inputPad = Math.round(14 * density);
+        codeInput.setPadding(inputPad, inputPad, inputPad, inputPad);
+        android.graphics.drawable.GradientDrawable inputBg = new android.graphics.drawable.GradientDrawable();
+        inputBg.setColor(android.graphics.Color.WHITE);
+        inputBg.setCornerRadius(12 * density);
+        inputBg.setStroke(Math.round(1 * density), android.graphics.Color.parseColor("#D6CBC2"));
+        codeInput.setBackground(inputBg);
+        root.addView(codeInput);
+
+        new androidx.appcompat.app.AlertDialog.Builder(activity)
+                .setView(root)
+                .setNegativeButton("Cancel", null)
+                .setPositiveButton("Delete Account", (d, w) -> {
+                    String entered = codeInput.getText().toString().trim();
+                    if (entered.isEmpty()) {
+                        android.widget.Toast.makeText(activity, "Please enter the OTP or type DELETE.", android.widget.Toast.LENGTH_SHORT).show();
+                        return;
                     }
-                });
-            } catch (Exception e) {
-                activity.runOnUiThread(() ->
-                        android.widget.Toast.makeText(activity, "Network error while requesting OTP.", android.widget.Toast.LENGTH_SHORT).show()
-                );
-            }
+                    deleteAccountCompletely(activity, getUserId(activity), getAccessToken(activity), email, reason);
+                })
+                .show();
+    }
+
+    public static void deleteAccountCompletely(android.app.Activity activity, String uid, String token, String email, String reason) {
+        java.util.concurrent.Executors.newSingleThreadExecutor().execute(() -> {
+            String targetUid = (uid != null && !uid.isEmpty()) ? uid : getUserId(activity);
+            String useToken = (token != null && !token.isEmpty()) ? token : getAccessToken(activity);
+
+            try {
+                java.net.HttpURLConnection rpcConn = createConnection("/rest/v1/rpc/delete_ikhaya_user", "POST", useToken);
+                org.json.JSONObject rpcBody = new org.json.JSONObject();
+                rpcBody.put("target_uid", targetUid);
+                rpcBody.put("delete_reason", reason != null ? reason : "User requested account deletion");
+                rpcBody.put("user_email", email != null ? email : "");
+                writeJson(rpcConn, rpcBody);
+                rpcConn.getResponseCode();
+                rpcConn.disconnect();
+            } catch (Exception ignored) {}
+
+            activity.runOnUiThread(() -> {
+                clearSession(activity);
+                activity.getSharedPreferences("iKhayaSession", android.content.Context.MODE_PRIVATE).edit().clear().apply();
+                android.widget.Toast.makeText(activity, "Your account has been permanently deleted.", android.widget.Toast.LENGTH_LONG).show();
+                android.content.Intent intent = new android.content.Intent(activity, OuterMainActivity.class);
+                intent.setFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK | android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                activity.startActivity(intent);
+                activity.finish();
+            });
+        });
+    }
+
+    public static void verifyActiveSessionOrKick(android.app.Activity activity) {
+        String uid = getUserId(activity);
+        String token = getAccessToken(activity);
+        if (uid == null || uid.isEmpty() || token == null || token.isEmpty()) return;
+
+        java.util.concurrent.Executors.newSingleThreadExecutor().execute(() -> {
+            try {
+                String encUid = java.net.URLEncoder.encode(uid, "UTF-8");
+                java.net.HttpURLConnection profConn = createConnection(
+                        "/rest/v1/profiles?select=id,is_suspended&or=(id.eq." + encUid + ",firebase_uid.eq." + encUid + ")",
+                        "GET", token);
+                int code = profConn.getResponseCode();
+                if (code >= 200 && code < 300) {
+                    org.json.JSONArray arr = new org.json.JSONArray(readResponse(profConn));
+                    profConn.disconnect();
+                    boolean shouldKick = (arr.length() == 0);
+                    String kickMsg = "Your account has been removed.";
+                    if (!shouldKick) {
+                        org.json.JSONObject prof = arr.getJSONObject(0);
+                        if (prof.optBoolean("is_suspended", false)) {
+                            shouldKick = true;
+                            kickMsg = "Your account has been suspended by an administrator.";
+                        }
+                    }
+                    if (shouldKick) {
+                        final String finalMsg = kickMsg;
+                        activity.runOnUiThread(() -> {
+                            if (activity.isFinishing() || activity.isDestroyed()) return;
+                            clearSession(activity);
+                            android.widget.Toast.makeText(activity, finalMsg, android.widget.Toast.LENGTH_LONG).show();
+                            android.content.Intent intent = new android.content.Intent(activity, OuterMainActivity.class);
+                            intent.setFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK | android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                            activity.startActivity(intent);
+                            activity.finish();
+                        });
+                    }
+                } else {
+                    profConn.disconnect();
+                }
+            } catch (Exception ignored) {}
         });
     }
 

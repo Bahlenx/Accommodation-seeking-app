@@ -268,6 +268,7 @@ public class LandlordDashboardActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        SupabaseHelper.verifyActiveSessionOrKick(this);
         dashboardVisible = true;
 
         View scroll = findViewById(R.id.dashboardScroll);

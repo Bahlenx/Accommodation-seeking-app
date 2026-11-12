@@ -169,6 +169,7 @@ public class LoginActivity extends AppCompatActivity {
                                         "DELETE",
                                         accessToken
                                 );
+                                delConn.setRequestProperty("x-guest-id", guestIdToDelete);
                                 delConn.getResponseCode();
                                 delConn.disconnect();
                             } catch (Exception ignored) {}

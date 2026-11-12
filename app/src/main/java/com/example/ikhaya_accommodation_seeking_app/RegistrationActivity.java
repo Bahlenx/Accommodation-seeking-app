@@ -108,8 +108,13 @@ public class RegistrationActivity extends AppCompatActivity {
         android.view.View btnSupportMail = findViewById(R.id.btnSupportMail);
         if (btnSupportMail != null) {
             btnSupportMail.setOnClickListener(v -> {
-                String userHint = editEmail != null ? editEmail.getText().toString().trim() : "";
-                SupabaseHelper.openAdminSupportChat(this, userHint);
+                String hint = "";
+                if (editEmail != null && !editEmail.getText().toString().trim().isEmpty()) {
+                    hint = editEmail.getText().toString().trim();
+                } else if (editFirstName != null && !editFirstName.getText().toString().trim().isEmpty()) {
+                    hint = editFirstName.getText().toString().trim();
+                }
+                SupabaseHelper.openAdminSupportChat(RegistrationActivity.this, hint);
             });
         }
 

@@ -242,6 +242,7 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        SupabaseHelper.verifyActiveSessionOrKick(this);
 
         homeVisible = true;
 

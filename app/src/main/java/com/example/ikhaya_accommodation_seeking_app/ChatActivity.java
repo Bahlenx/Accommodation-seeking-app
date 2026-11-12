@@ -127,16 +127,15 @@ public class ChatActivity extends AppCompatActivity {
         boolean isAdminSupportIntent = getIntent().getBooleanExtra("IS_ADMIN_SUPPORT", false);
         isGuestSupportChat = isAdminSupportIntent
                 || "ADMIN_SUPPORT".equals(receiverId)
-                || (receiverId != null && receiverId.startsWith("guest_"));
+                || (receiverId != null && receiverId.startsWith("guest_"))
+                || (senderId != null && senderId.startsWith("guest_"));
 
         if (isGuestSupportChat) {
             if (receiverId != null && receiverId.startsWith("guest_")) {
-                // Admin is viewing and replying to a specific Guest thread
                 supportGuestId = receiverId;
                 senderId = "ADMIN_SUPPORT";
                 senderName = "iKhaya Admin Support";
                 senderRole = "ADMIN";
-                
                 if (txtTitle != null && receiverName != null) {
                     txtTitle.setText(receiverName);
                 }
@@ -144,17 +143,25 @@ public class ChatActivity extends AppCompatActivity {
                     txtSubtitle.setText("Guest Support Request");
                 }
             } else {
-                // Pre-login Guest is messaging Admin Support
                 supportGuestId = getIntent().getStringExtra("GUEST_ID");
-                if (supportGuestId == null || supportGuestId.isEmpty()) {
+                if (supportGuestId == null || supportGuestId.trim().isEmpty()) {
                     supportGuestId = getSharedPreferences("iKhayaSupport", MODE_PRIVATE)
-                            .getString("GUEST_SUPPORT_ID", "guest_user");
+                            .getString("GUEST_SUPPORT_ID", "");
+                }
+                if (supportGuestId == null || supportGuestId.trim().isEmpty()) {
+                    supportGuestId = "guest_" + java.util.UUID.randomUUID().toString();
+                    getSharedPreferences("iKhayaSupport", MODE_PRIVATE)
+                            .edit()
+                            .putString("GUEST_SUPPORT_ID", supportGuestId)
+                            .apply();
                 }
                 senderId = supportGuestId;
                 String hint = getIntent().getStringExtra("SUPPORT_USER_HINT");
-                senderName = (hint != null && !hint.trim().isEmpty())
-                        ? "Guest (" + hint.trim() + ")"
-                        : "Guest (" + supportGuestId + ")";
+                if (senderName == null || senderName.trim().isEmpty() || !senderName.startsWith("Guest")) {
+                    senderName = (hint != null && !hint.trim().isEmpty())
+                            ? "Guest (" + hint.trim() + ")"
+                            : "Guest (" + supportGuestId.substring(0, Math.min(12, supportGuestId.length())) + ")";
+                }
                 senderRole = "GUEST";
                 receiverId = "ADMIN_SUPPORT";
                 receiverName = "iKhaya Admin Support";
@@ -741,37 +748,60 @@ public class ChatActivity extends AppCompatActivity {
             return;
         }
 
-        String messageText = editMessage.getText().toString();
-        if (messageText.trim().isEmpty()) {
+        String messageText = editMessage.getText().toString().trim();
+        if (messageText.isEmpty()) {
             return;
         }
 
+        editMessage.setText("");
         sendPayload(messageText);
     }
 
     private void sendPayload(String payloadText) {
-        if (senderId == null || senderId.trim().isEmpty()) {
-            senderId = SupabaseHelper.getUserId(this);
+        if (isGuestSupportChat) {
+            if (supportGuestId == null || supportGuestId.trim().isEmpty()) {
+                supportGuestId = getSharedPreferences("iKhayaSupport", MODE_PRIVATE)
+                        .getString("GUEST_SUPPORT_ID", "");
+                if (supportGuestId == null || supportGuestId.trim().isEmpty()) {
+                    supportGuestId = "guest_" + java.util.UUID.randomUUID().toString();
+                    getSharedPreferences("iKhayaSupport", MODE_PRIVATE)
+                            .edit()
+                            .putString("GUEST_SUPPORT_ID", supportGuestId)
+                            .apply();
+                }
+            }
+            if (receiverId != null && receiverId.startsWith("guest_")) {
+                senderId = "ADMIN_SUPPORT";
+                senderName = "iKhaya Admin Support";
+                senderRole = "ADMIN";
+            } else {
+                senderId = supportGuestId;
+                receiverId = "ADMIN_SUPPORT";
+                if (senderName == null || senderName.trim().isEmpty()) {
+                    senderName = "Guest (" + supportGuestId.substring(0, Math.min(12, supportGuestId.length())) + ")";
+                }
+                senderRole = "GUEST";
+            }
+        } else {
+            if (senderId == null || senderId.trim().isEmpty()) {
+                senderId = SupabaseHelper.getUserId(this);
+            }
+            if (senderName == null || senderName.trim().isEmpty() || getString(R.string.default_chat_user_name).equals(senderName)) {
+                senderName = getSharedPreferences("iKhayaSession", MODE_PRIVATE).getString("USER_NAME", getString(R.string.default_chat_user_name));
+            }
+            if (senderRole == null || senderRole.trim().isEmpty() || getString(R.string.default_chat_member_role).equals(senderRole)) {
+                senderRole = getSharedPreferences("iKhayaSession", MODE_PRIVATE).getString("USER_ROLE", "tenant");
+            }
         }
 
-        if (senderName == null || senderName.trim().isEmpty() || getString(R.string.default_chat_user_name).equals(senderName)) {
-            senderName = getSharedPreferences("iKhayaSession", MODE_PRIVATE).getString("USER_NAME", getString(R.string.default_chat_user_name));
-        }
-
-        if (senderRole == null || senderRole.trim().isEmpty() || getString(R.string.default_chat_member_role).equals(senderRole)) {
-            senderRole = getSharedPreferences("iKhayaSession", MODE_PRIVATE).getString("USER_ROLE", "tenant");
-        }
-
-        if (senderId == null || senderId.isEmpty()
+        if (!isGuestSupportChat && (senderId == null || senderId.isEmpty()
                 || receiverId == null || receiverId.isEmpty()
-                || (!isGuestSupportChat && (accessToken == null || accessToken.isEmpty()))) {
-
+                || accessToken == null || accessToken.isEmpty())) {
             Toast.makeText(this, R.string.error_sign_in_for_chat, Toast.LENGTH_SHORT).show();
             return;
         }
 
         sendingMessage = true;
-
         if (btnSend != null) {
             btnSend.setEnabled(false);
         }
@@ -786,7 +816,7 @@ public class ChatActivity extends AppCompatActivity {
                 String authToken = ((isGuestSupportChat && senderId != null && senderId.startsWith("guest_")) || accessToken == null || accessToken.isEmpty()) ? null : accessToken;
                 connection = SupabaseHelper.createConnection(postEndpoint, "POST", authToken);
                 connection.setRequestProperty("Prefer", "return=minimal");
-                
+
                 if (isGuestSupportChat && "ADMIN_SUPPORT".equals(senderId)) {
                     connection.setRequestProperty("x-admin-panel", "true");
                 }
@@ -795,7 +825,7 @@ public class ChatActivity extends AppCompatActivity {
                 if (isGuestSupportChat) {
                     boolean isFromGuest = senderId != null && senderId.startsWith("guest_");
                     body.put("guest_id", supportGuestId);
-                    body.put("guest_hint", isFromGuest ? senderName : (receiverNameField != null ? receiverNameField : supportGuestId));
+                    body.put("guest_hint", isFromGuest ? senderName : (receiverNameField != null && !receiverNameField.isEmpty() ? receiverNameField : supportGuestId));
                     body.put("sender_id", isFromGuest ? supportGuestId : "ADMIN_SUPPORT");
                     body.put("sender_name", isFromGuest ? senderName : "iKhaya Admin Support");
                     body.put("receiver_id", isFromGuest ? "ADMIN_SUPPORT" : supportGuestId);
@@ -809,16 +839,13 @@ public class ChatActivity extends AppCompatActivity {
                 }
 
                 SupabaseHelper.writeJson(connection, body);
-
                 int code = connection.getResponseCode();
                 String response = SupabaseHelper.readResponse(connection);
-
                 success = code >= 200 && code < 300;
                 if (!success) {
                     error = getString(R.string.error_send_failed_http) + " " + code + ": " + response;
                     Log.e(TAG, error);
                 }
-
             } catch (Exception e) {
                 error = getString(R.string.error_sending_message_prefix) + " " + e.getMessage();
                 Log.e(TAG, error);
