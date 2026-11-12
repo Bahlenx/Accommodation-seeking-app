@@ -94,54 +94,111 @@ public final class NotificationHelper {
         } catch (SecurityException ignored) {}
     }
 
+    public static void requestPermissionAndStartPoller(android.app.Activity activity) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.POST_NOTIFICATIONS}, 101);
+            }
+        }
+        startBackgroundPoller(activity);
+        checkAndTriggerNotifications(activity.getApplicationContext());
+    }
+
     public static void startBackgroundPoller(Context context) {
         Context appContext = context.getApplicationContext();
         createChannel(appContext);
         if (pollerStarted) return;
         pollerStarted = true;
 
+        if (context instanceof android.app.Activity && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions((android.app.Activity) context, new String[]{Manifest.permission.POST_NOTIFICATIONS}, 101);
+            }
+        }
+
         Runnable pollTask = new Runnable() {
             @Override
             public void run() {
                 checkAndTriggerNotifications(appContext);
-                handler.postDelayed(this, 20000L); // Poll every 20 seconds even if user is on home screen
+                handler.postDelayed(this, 10000L); // Poll every 10 seconds for faster live testing
             }
         };
-        handler.postDelayed(pollTask, 3000L);
+        handler.postDelayed(pollTask, 1000L);
     }
 
     public static void checkAndTriggerNotifications(Context context) {
         String userId = SupabaseHelper.getUserId(context);
         String token = SupabaseHelper.getAccessToken(context);
-        if (userId == null || userId.isEmpty() || token == null || token.isEmpty()) return;
 
         executor.execute(() -> {
-            SharedPreferences statePrefs = context.getSharedPreferences(PREFS_NAME + "_" + userId, Context.MODE_PRIVATE);
-            boolean anyUnread = false;
-
             try {
-                // 1. Check Unread Notifications Table (Listings, System Alerts, Viewings)
+                // A. Pre-Login Guest Support Replies
+                String guestId = context.getSharedPreferences("iKhayaSupport", Context.MODE_PRIVATE).getString("GUEST_SUPPORT_ID", "");
+                if (!guestId.isEmpty()) {
+                    HttpURLConnection guestConn = SupabaseHelper.createConnection(
+                            "/rest/v1/guest_support_messages?select=id,sender_id,sender_name,message_text&guest_id=eq." + SupabaseHelper.encode(guestId) + "&order=created_at.desc&limit=1",
+                            "GET", null);
+                    guestConn.setRequestProperty("x-guest-id", guestId);
+                    
+                    if (guestConn.getResponseCode() >= 200 && guestConn.getResponseCode() < 300) {
+                        JSONArray gArr = new JSONArray(SupabaseHelper.readResponse(guestConn));
+                        if (gArr.length() > 0) {
+                            JSONObject gMsg = gArr.getJSONObject(0);
+                            String gMsgId = gMsg.optString("id", "");
+                            String gSenderId = gMsg.optString("sender_id", "");
+                            String gMsgText = gMsg.optString("message_text", "Sent a message");
+                            
+                            SharedPreferences guestPrefs = context.getSharedPreferences("iKhayaSupport", Context.MODE_PRIVATE);
+                            String lastSeen = guestPrefs.getString("LAST_GUEST_ADMIN_MSG_ID", "");
+                            
+                            if ("ADMIN_SUPPORT".equals(gSenderId) && !gMsgId.isEmpty() && !gMsgId.equals(lastSeen)) {
+                                guestPrefs.edit().putString("LAST_GUEST_ADMIN_MSG_ID", gMsgId).apply();
+                                showPhoneNotification(context, "New Reply from iKhaya Support", cleanPreview(gMsgText), LoginActivity.class, ("guest_" + gMsgId).hashCode());
+                            }
+                        }
+                    }
+                    guestConn.disconnect();
+                }
+
+                if (userId == null || userId.isEmpty() || token == null || token.isEmpty()) return;
+
+                SharedPreferences statePrefs = context.getSharedPreferences(PREFS_NAME + "_" + userId, Context.MODE_PRIVATE);
+                boolean anyUnread = false;
+
+                // B. Unread Notifications Table
                 HttpURLConnection conn = SupabaseHelper.createConnection(
-                        "/rest/v1/notifications?select=id,title,message,is_read&user_id=eq." + userId + "&is_read=eq.false&order=created_at.desc",
+                        "/rest/v1/notifications?select=id,title,message,is_read&user_uid=eq." + userId + "&is_read=eq.false&order=created_at.desc",
                         "GET", token);
                 if (conn.getResponseCode() >= 200 && conn.getResponseCode() < 300) {
                     JSONArray arr = new JSONArray(SupabaseHelper.readResponse(conn));
-                    if (arr.length() > 0) {
-                        anyUnread = true;
-                        JSONObject latest = arr.getJSONObject(0);
-                        String notifId = latest.optString("id", "");
-                        String lastSeenNotifId = statePrefs.getString("LAST_NOTIF_ID", "");
-                        if (!notifId.isEmpty() && !notifId.equals(lastSeenNotifId)) {
-                            statePrefs.edit().putString("LAST_NOTIF_ID", notifId).apply();
-                            String title = latest.optString("title", "iKhaya Alert");
-                            String body = latest.optString("message", "You have a new notification.");
-                            showPhoneNotification(context, title, body, NotificationsActivity.class, 1001);
+                    java.util.Set<String> shownIds = new java.util.HashSet<>(statePrefs.getStringSet("SHOWN_NOTIF_IDS", new java.util.HashSet<>()));
+                    
+                    for (int i = 0; i < Math.min(arr.length(), 5); i++) {
+                        JSONObject notif = arr.getJSONObject(i);
+                        String notifId = notif.optString("id", "");
+                        
+                        if (!notifId.isEmpty() && !shownIds.contains(notifId)) {
+                            anyUnread = true;
+                            shownIds.add(notifId);
+                            statePrefs.edit().putStringSet("SHOWN_NOTIF_IDS", shownIds).apply();
+                            
+                            String title = notif.optString("title", "iKhaya Alert");
+                            String body = notif.optString("message", "You have a new notification.");
+                            showPhoneNotification(context, title, cleanPreview(body), NotificationsActivity.class, notifId.hashCode());
+                            
+                            // Mark as read so it stops polling
+                            HttpURLConnection patchConn = SupabaseHelper.createConnection("/rest/v1/notifications?id=eq." + notifId, "PATCH", token);
+                            JSONObject pBody = new JSONObject();
+                            pBody.put("is_read", true);
+                            SupabaseHelper.writeJson(patchConn, pBody);
+                            patchConn.getResponseCode();
+                            patchConn.disconnect();
                         }
                     }
                 }
                 conn.disconnect();
 
-                // 2. Check New Incoming Chat Messages
+                // C. Incoming Direct Chat Messages
                 conn = SupabaseHelper.createConnection(
                         "/rest/v1/messages?select=id,sender_name,message_text&receiver_id=eq." + userId + "&order=created_at.desc&limit=1",
                         "GET", token);
@@ -151,40 +208,44 @@ public final class NotificationHelper {
                         JSONObject msg = msgs.getJSONObject(0);
                         String msgId = msg.optString("id", "");
                         String lastMsgId = statePrefs.getString("LAST_MSG_ID", "");
+                        boolean isInitDone = statePrefs.getBoolean("INIT_DONE_MSG", false);
+                        
                         if (!msgId.isEmpty() && !msgId.equals(lastMsgId)) {
-                            if (!lastMsgId.isEmpty()) {
+                            statePrefs.edit().putString("LAST_MSG_ID", msgId).apply();
+                            if (!isInitDone) {
+                                statePrefs.edit().putBoolean("INIT_DONE_MSG", true).apply();
+                            } else {
                                 anyUnread = true;
                                 String sender = msg.optString("sender_name", "iKhaya User");
-                                String text = msg.optString("message_text", "Sent an attachment");
-                                if (text.startsWith("[IMAGE_BASE64]:")) text = "📷 Sent a photo";
-                                else if (text.startsWith("[PDF_FILE]:")) text = "📄 Sent a PDF document";
-                                showPhoneNotification(context, "New Message from " + sender, text, UserSelectionActivity.class, 1002);
+                                String text = msg.optString("message_text", "Sent a message");
+                                showPhoneNotification(context, "New Message from " + sender, cleanPreview(text), UserSelectionActivity.class, ("msg_" + msgId).hashCode());
                             }
-                            statePrefs.edit().putString("LAST_MSG_ID", msgId).apply();
                         }
                     }
                 }
                 conn.disconnect();
 
-                // 3. Check Pending Chat Requests / Listing Enquiries
+                // D. Pending Chat Requests / Listing Enquiries
                 conn = SupabaseHelper.createConnection(
                         "/rest/v1/chat_requests?select=id,sender_name&receiver_id=eq." + userId + "&status=eq.pending",
                         "GET", token);
                 if (conn.getResponseCode() >= 200 && conn.getResponseCode() < 300) {
                     JSONArray reqs = new JSONArray(SupabaseHelper.readResponse(conn));
                     if (reqs.length() > 0) {
-                        anyUnread = true;
-                        int prevCount = statePrefs.getInt("LAST_CHAT_REQ_COUNT", 0);
-                        if (reqs.length() > prevCount) {
+                        String latestReqId = reqs.getJSONObject(0).optString("id", "");
+                        String savedReqId = statePrefs.getString("LAST_CHAT_REQ_ID", "");
+                        
+                        if (!latestReqId.isEmpty() && !latestReqId.equals(savedReqId)) {
+                            anyUnread = true;
+                            statePrefs.edit().putString("LAST_CHAT_REQ_ID", latestReqId).apply();
                             String sender = reqs.getJSONObject(0).optString("sender_name", "A user");
-                            showPhoneNotification(context, "New Listing Enquiry", sender + " sent you a chat request.", UserSelectionActivity.class, 1003);
+                            showPhoneNotification(context, "New Listing Enquiry", sender + " sent you a chat request.", UserSelectionActivity.class, ("req_" + latestReqId).hashCode());
                         }
-                        statePrefs.edit().putInt("LAST_CHAT_REQ_COUNT", reqs.length()).apply();
                     }
                 }
                 conn.disconnect();
 
-                // 4. Check Tenant Rental Applications & Rent Reminder
+                // E. Tenant & Landlord Rental Applications & Viewing Requests
                 String role = context.getSharedPreferences("iKhayaSession", Context.MODE_PRIVATE).getString("USER_ROLE", "tenant");
                 if ("tenant".equalsIgnoreCase(role)) {
                     conn = SupabaseHelper.createConnection(
@@ -198,43 +259,90 @@ public final class NotificationHelper {
                             String status = app.optString("status", "PENDING").toUpperCase();
                             String propName = app.optString("property_name", "your accommodation");
                             String savedStatus = statePrefs.getString("APP_STATUS_" + appId, "");
+                            
                             if (!savedStatus.isEmpty() && !savedStatus.equals(status)) {
                                 anyUnread = true;
                                 showPhoneNotification(context, "Application " + status,
-                                        "Your application for " + propName + " is now " + status + ".", ApplicationsActivity.class, 1004);
+                                        "Your application for " + propName + " is now " + status + ".", ApplicationsActivity.class, ("app_" + appId).hashCode());
                             }
                             statePrefs.edit().putString("APP_STATUS_" + appId, status).apply();
 
-                            // 5. Rent Reminder for Approved / Active Leases (Once per session cycle)
+                            // Rent Reminder for Approved / Active Leases
                             if (("APPROVED".equals(status) || "ACTIVE".equals(status)) && !statePrefs.getBoolean("RENT_REMINDER_SENT_" + appId, false)) {
                                 statePrefs.edit().putBoolean("RENT_REMINDER_SENT_" + appId, true).apply();
                                 anyUnread = true;
                                 showPhoneNotification(context, "Upcoming Rent & Lease Reminder",
-                                        "Reminder: Your monthly rent for " + propName + " is due on the 1st of the month.", NotificationsActivity.class, 1005);
+                                        "Reminder: Your monthly rent for " + propName + " is due on the 1st of the month.", NotificationsActivity.class, ("rent_" + appId).hashCode());
                             }
                         }
                     }
                     conn.disconnect();
                 } else if ("landlord".equalsIgnoreCase(role)) {
-                    // Check Landlord Viewing Requests / Enquiries
+                    // Check Landlord Rental Applications
                     conn = SupabaseHelper.createConnection(
-                            "/rest/v1/enquiries?select=id,tenant_name,property_name&landlord_uid=eq." + userId,
+                            "/rest/v1/rental_applications?select=id,property_name,status&landlord_uid=eq." + userId + "&order=created_at.desc&limit=1",
                             "GET", token);
                     if (conn.getResponseCode() >= 200 && conn.getResponseCode() < 300) {
-                        JSONArray enqs = new JSONArray(SupabaseHelper.readResponse(conn));
-                        if (enqs.length() > 0) {
-                            anyUnread = true;
-                            int prevEnq = statePrefs.getInt("LAST_ENQ_COUNT", 0);
-                            if (enqs.length() > prevEnq) {
-                                JSONObject eObj = enqs.getJSONObject(0);
-                                showPhoneNotification(context, "New Viewing / Listing Enquiry",
-                                        eObj.optString("tenant_name", "A tenant") + " enquired about " + eObj.optString("property_name", "your listing") + ".",
-                                        UserSelectionActivity.class, 1006);
+                        JSONArray lApps = new JSONArray(SupabaseHelper.readResponse(conn));
+                        if (lApps.length() > 0) {
+                            JSONObject aObj = lApps.getJSONObject(0);
+                            String lAppId = aObj.optString("id", "");
+                            String savedLAppId = statePrefs.getString("LAST_LANDLORD_APP_ID", "");
+                            if (!lAppId.isEmpty() && !lAppId.equals(savedLAppId)) {
+                                anyUnread = true;
+                                statePrefs.edit().putString("LAST_LANDLORD_APP_ID", lAppId).apply();
+                                showPhoneNotification(context, "New Rental Application",
+                                        "A tenant applied for " + aObj.optString("property_name", "your listing") + ".",
+                                        ApplicationsActivity.class, ("lapp_" + lAppId).hashCode());
                             }
-                            statePrefs.edit().putInt("LAST_ENQ_COUNT", enqs.length()).apply();
                         }
                     }
                     conn.disconnect();
+                }
+                
+                // F. Admin Important Alerts
+                if ("admin".equalsIgnoreCase(role)) {
+                    HttpURLConnection admConn = SupabaseHelper.createConnection(
+                            "/rest/v1/guest_support_messages?select=id,guest_hint,sender_id,message_text&order=created_at.desc&limit=1",
+                            "GET", token);
+                    admConn.setRequestProperty("x-admin-panel", "true");
+                    if (admConn.getResponseCode() >= 200 && admConn.getResponseCode() < 300) {
+                        JSONArray admArr = new JSONArray(SupabaseHelper.readResponse(admConn));
+                        if (admArr.length() > 0) {
+                            JSONObject admMsg = admArr.getJSONObject(0);
+                            String aMsgId = admMsg.optString("id", "");
+                            String aSenderId = admMsg.optString("sender_id", "");
+                            if (aSenderId.startsWith("guest_") && !aMsgId.isEmpty()) {
+                                String savedAMsgId = statePrefs.getString("LAST_ADMIN_GUEST_MSG_ID", "");
+                                if (!aMsgId.equals(savedAMsgId)) {
+                                    statePrefs.edit().putString("LAST_ADMIN_GUEST_MSG_ID", aMsgId).apply();
+                                    showPhoneNotification(context, "New Guest Support Message", 
+                                            admMsg.optString("guest_hint", "Guest") + ": " + cleanPreview(admMsg.optString("message_text", "")), 
+                                            AdminReportsActivity.class, ("adm_g_" + aMsgId).hashCode());
+                                }
+                            }
+                        }
+                    }
+                    admConn.disconnect();
+                    
+                    HttpURLConnection rptConn = SupabaseHelper.createConnection(
+                            "/rest/v1/reports?select=id,issue_type,reason&status=in.(OPEN,open,PENDING,pending)&order=created_at.desc&limit=1",
+                            "GET", token);
+                    if (rptConn.getResponseCode() >= 200 && rptConn.getResponseCode() < 300) {
+                        JSONArray rptArr = new JSONArray(SupabaseHelper.readResponse(rptConn));
+                        if (rptArr.length() > 0) {
+                            JSONObject rpt = rptArr.getJSONObject(0);
+                            String rptId = rpt.optString("id", "");
+                            String savedRptId = statePrefs.getString("LAST_ADMIN_RPT_ID", "");
+                            if (!rptId.isEmpty() && !rptId.equals(savedRptId)) {
+                                statePrefs.edit().putString("LAST_ADMIN_RPT_ID", rptId).apply();
+                                showPhoneNotification(context, "New Support Ticket", 
+                                        cleanPreview(rpt.optString("reason", "A new issue was reported.")), 
+                                        AdminReportsActivity.class, ("adm_r_" + rptId).hashCode());
+                            }
+                        }
+                    }
+                    rptConn.disconnect();
                 }
 
                 if (anyUnread) {
@@ -242,5 +350,12 @@ public final class NotificationHelper {
                 }
             } catch (Exception ignored) {}
         });
+    }
+
+    private static String cleanPreview(String text) {
+        if (text == null) return "";
+        if (text.startsWith("[IMAGE_BASE64]:") || text.startsWith("[IMAGE")) return "📷 Sent a photo";
+        if (text.startsWith("[PDF_FILE]:")) return "📄 Sent a PDF document";
+        return text;
     }
 }

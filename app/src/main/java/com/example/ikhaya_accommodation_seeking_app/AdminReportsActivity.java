@@ -438,6 +438,14 @@ public class AdminReportsActivity extends AppCompatActivity {
         }
         
         String latestText = msg.optString("message_text", "Sent a message");
+        if (latestText.startsWith("[IMAGE_BASE64]:") || latestText.startsWith("[IMAGE")) {
+            latestText = "📷 Sent a photo";
+        } else if (latestText.startsWith("[PDF_FILE]:")) {
+            String[] parts = latestText.substring("[PDF_FILE]:".length()).split("\\|", 2);
+            String fileName = parts.length > 0 ? parts[0] : "Document.pdf";
+            latestText = "📄 Sent a PDF document (" + fileName + ")";
+        }
+        
         String senderName = msg.optString("sender_name", "");
 
         CardView card = new CardView(this);
@@ -481,6 +489,8 @@ public class AdminReportsActivity extends AppCompatActivity {
         tvBody.setText((senderName.equals(gHint) ? "" : senderName + ": ") + latestText);
         tvBody.setTextColor(Color.parseColor("#495057"));
         tvBody.setTextSize(14f);
+        tvBody.setMaxLines(3);
+        tvBody.setEllipsize(android.text.TextUtils.TruncateAt.END);
         layout.addView(tvBody);
 
         LinearLayout actionRow = new LinearLayout(this);
@@ -508,6 +518,7 @@ public class AdminReportsActivity extends AppCompatActivity {
         btnReply.setTypeface(null, Typeface.BOLD);
 
         final String finalGHint = gHint;
+        final String finalLatestText = latestText;
         btnReply.setOnClickListener(v -> {
             Intent chatIntent = new Intent(this, ChatActivity.class);
             chatIntent.putExtra("IS_ADMIN_SUPPORT", true);
@@ -541,7 +552,7 @@ public class AdminReportsActivity extends AppCompatActivity {
                     .setNegativeButton("Cancel", null)
                     .setPositiveButton("Mark Resolved", (dialog, which) -> {
                         btnResolveChat.setEnabled(false);
-                        resolveGuestSupportChat(gId, finalGHint, latestText, card, btnResolveChat);
+                        resolveGuestSupportChat(gId, finalGHint, finalLatestText, card, btnResolveChat);
                     })
                     .show();
         });

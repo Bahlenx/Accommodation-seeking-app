@@ -227,6 +227,11 @@ public class ChatActivity extends AppCompatActivity {
                     PopupMenu popup = new PopupMenu(this, v);
                     popup.getMenu().add(getString(R.string.menu_delete_chat_messages));
                     popup.getMenu().add(getString(R.string.menu_delete_contact_and_chat));
+                    
+                    if (isGuestSupportChat && "ADMIN_SUPPORT".equals(senderId)) {
+                        popup.getMenu().add("Resolve Support Chat");
+                    }
+                    
                     popup.setOnMenuItemClickListener(item -> {
                         if (getString(R.string.menu_delete_chat_messages).contentEquals(item.getTitle())) {
                             new AlertDialog.Builder(this)
@@ -241,6 +246,13 @@ public class ChatActivity extends AppCompatActivity {
                                     .setMessage(R.string.dialog_msg_delete_contact_confirm)
                                     .setPositiveButton(R.string.btn_delete, (dialog, which) -> deleteContactAndChat())
                                     .setNegativeButton(R.string.btn_cancel, null)
+                                    .show();
+                        } else if ("Resolve Support Chat".contentEquals(item.getTitle())) {
+                            new AlertDialog.Builder(this)
+                                    .setTitle("Resolve Guest Support Chat")
+                                    .setMessage("Mark this support request as resolved? This will close the active guest thread and return you to the dashboard.")
+                                    .setNegativeButton("Cancel", null)
+                                    .setPositiveButton("Mark Resolved", (dialog, which) -> resolveGuestSupportChatInsideChat())
                                     .show();
                         }
                         return true;
@@ -260,41 +272,171 @@ public class ChatActivity extends AppCompatActivity {
         );
 
         if (btnAttachFile != null) {
-            btnAttachFile.setOnClickListener(v -> {
-                String[] attachOptions = {
-                        getString(R.string.attach_option_picture),
-                        getString(R.string.attach_option_pdf)
-                };
-                new AlertDialog.Builder(this)
-                        .setTitle(R.string.dialog_title_attach_file)
-                        .setItems(attachOptions, (dialog, which) -> {
-                            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                            if (which == 0) {
-                                intent.setType("image/*");
-                            } else {
-                                intent.setType("application/pdf");
-                            }
-                            filePickerLauncher.launch(intent);
-                        })
-                        .show();
+            btnAttachFile.setOnClickListener(v -> showStyledAttachmentPickerDialog());
+        }
+
+        if (!isGuestSupportChat) {
+            UserProfileLoader.load(this, (name, email, phone) -> {
+                if (!name.isEmpty()) {
+                    senderName = name;
+                }
             });
         }
 
-        UserProfileLoader.load(this, (name, email, phone) -> {
-            if (!name.isEmpty()) {
-                senderName = name;
-            }
-        });
-
-        if (senderId == null || senderId.trim().isEmpty()
+        if (!isGuestSupportChat && (senderId == null || senderId.trim().isEmpty()
                 || accessToken == null || accessToken.trim().isEmpty()
-                || receiverId == null || receiverId.trim().isEmpty()) {
+                || receiverId == null || receiverId.trim().isEmpty())) {
 
             Toast.makeText(this, R.string.error_sign_in_for_chat, Toast.LENGTH_LONG).show();
             if (btnSend != null) {
                 btnSend.setEnabled(false);
             }
         }
+
+        if (isGuestSupportChat) {
+            if (editMessage != null) {
+                editMessage.setEnabled(true);
+                editMessage.setFocusable(true);
+                editMessage.setFocusableInTouchMode(true);
+            }
+            if (btnSend != null) {
+                btnSend.setEnabled(true);
+                btnSend.setAlpha(1.0f);
+                btnSend.setVisibility(View.VISIBLE);
+            }
+        }
+    }
+
+    private void showStyledAttachmentPickerDialog() {
+        float density = getResources().getDisplayMetrics().density;
+        int pad = Math.round(20 * density);
+
+        LinearLayout root = new LinearLayout(this);
+        root.setOrientation(LinearLayout.VERTICAL);
+        root.setPadding(pad, pad, pad, pad);
+        android.graphics.drawable.GradientDrawable rootBg = new android.graphics.drawable.GradientDrawable();
+        rootBg.setColor(Color.parseColor("#FAF6F2"));
+        rootBg.setCornerRadius(18 * density);
+        root.setBackground(rootBg);
+
+        TextView badge = new TextView(this);
+        badge.setText("SHARE ATTACHMENT");
+        badge.setTextColor(Color.parseColor("#B85032"));
+        badge.setTextSize(11f);
+        badge.setTypeface(null, Typeface.BOLD);
+        root.addView(badge);
+
+        TextView title = new TextView(this);
+        title.setText("Attach a Photo or Document");
+        title.setTextColor(Color.parseColor("#1F1614"));
+        title.setTextSize(18f);
+        title.setTypeface(null, Typeface.BOLD);
+        title.setPadding(0, Math.round(4 * density), 0, Math.round(4 * density));
+        root.addView(title);
+
+        TextView subtitle = new TextView(this);
+        subtitle.setText("Choose what you would like to send in this chat:");
+        subtitle.setTextColor(Color.parseColor("#786F6B"));
+        subtitle.setTextSize(13f);
+        subtitle.setPadding(0, 0, 0, Math.round(14 * density));
+        root.addView(subtitle);
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(root)
+                .setNegativeButton(R.string.btn_cancel, null)
+                .create();
+
+        // Option Card 1: Photo / Image
+        LinearLayout photoCard = buildAttachmentOptionCard(
+                "IMG", "#FDE8E1", "#B85032",
+                "Photo or Picture",
+                "Share an image from your gallery (JPG / PNG)"
+        );
+        photoCard.setOnClickListener(v -> {
+            dialog.dismiss();
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.setType("image/*");
+            filePickerLauncher.launch(intent);
+        });
+        root.addView(photoCard);
+
+        // Option Card 2: PDF Document
+        LinearLayout pdfCard = buildAttachmentOptionCard(
+                "PDF", "#FEE2E2", "#B91C1C",
+                "PDF Document",
+                "Share a document from your device (PDF)"
+        );
+        LinearLayout.LayoutParams pdfParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        pdfParams.topMargin = Math.round(10 * density);
+        pdfCard.setLayoutParams(pdfParams);
+        pdfCard.setOnClickListener(v -> {
+            dialog.dismiss();
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.setType("application/pdf");
+            filePickerLauncher.launch(intent);
+        });
+        root.addView(pdfCard);
+
+        dialog.show();
+    }
+
+    private LinearLayout buildAttachmentOptionCard(String badgeText, String badgeBgHex, String badgeTextHex, String titleText, String subText) {
+        float density = getResources().getDisplayMetrics().density;
+        LinearLayout card = new LinearLayout(this);
+        LinearLayout.LayoutParams cardLp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        card.setLayoutParams(cardLp);
+        card.setOrientation(LinearLayout.HORIZONTAL);
+        card.setGravity(Gravity.CENTER_VERTICAL);
+        int pad = Math.round(14 * density);
+        card.setPadding(pad, pad, pad, pad);
+        
+        android.graphics.drawable.GradientDrawable bg = new android.graphics.drawable.GradientDrawable();
+        bg.setColor(Color.WHITE);
+        bg.setCornerRadius(12 * density);
+        bg.setStroke(Math.round(1 * density), Color.parseColor("#E6DDD6"));
+        card.setBackground(bg);
+        card.setClickable(true);
+        card.setFocusable(true);
+        
+        TextView badge = new TextView(this);
+        badge.setText(badgeText);
+        badge.setTextColor(Color.parseColor(badgeTextHex));
+        badge.setTextSize(12f);
+        badge.setTypeface(null, Typeface.BOLD);
+        badge.setGravity(Gravity.CENTER);
+        android.graphics.drawable.GradientDrawable bBg = new android.graphics.drawable.GradientDrawable();
+        bBg.setColor(Color.parseColor(badgeBgHex));
+        bBg.setCornerRadius(8 * density);
+        badge.setBackground(bBg);
+        LinearLayout.LayoutParams bParams = new LinearLayout.LayoutParams(Math.round(44 * density), Math.round(44 * density));
+        bParams.rightMargin = Math.round(12 * density);
+        badge.setLayoutParams(bParams);
+        card.addView(badge);
+        
+        LinearLayout meta = new LinearLayout(this);
+        meta.setOrientation(LinearLayout.VERTICAL);
+        
+        TextView t = new TextView(this);
+        t.setText(titleText);
+        t.setTextColor(Color.parseColor("#1F1614"));
+        t.setTextSize(15f);
+        t.setTypeface(null, Typeface.BOLD);
+        meta.addView(t);
+        
+        TextView s = new TextView(this);
+        s.setText(subText);
+        s.setTextColor(Color.parseColor("#786F6B"));
+        s.setTextSize(12f);
+        meta.addView(s);
+        
+        card.addView(meta);
+        return card;
     }
 
     @Override
@@ -302,7 +444,7 @@ public class ChatActivity extends AppCompatActivity {
         super.onResume();
         if (senderId != null && !senderId.isEmpty()
                 && receiverId != null && !receiverId.isEmpty()
-                && accessToken != null && !accessToken.isEmpty()) {
+                && (isGuestSupportChat || (accessToken != null && !accessToken.isEmpty()))) {
             pollHandler.removeCallbacks(pollRunnable);
             pollHandler.post(pollRunnable);
         }
@@ -536,16 +678,34 @@ public class ChatActivity extends AppCompatActivity {
             try {
                 byte[] decodedString = Base64.decode(base64Image, Base64.DEFAULT);
                 Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                
+                androidx.cardview.widget.CardView imgCard = new androidx.cardview.widget.CardView(this);
+                LinearLayout.LayoutParams cardParams = new LinearLayout.LayoutParams(dpToPx(220), LinearLayout.LayoutParams.WRAP_CONTENT);
+                cardParams.topMargin = dpToPx(6);
+                imgCard.setLayoutParams(cardParams);
+                imgCard.setRadius(dpToPx(12));
+                imgCard.setCardElevation(0f);
+                imgCard.setCardBackgroundColor(isMe ? Color.parseColor("#9E3F24") : Color.parseColor("#F3EDE7"));
+
+                LinearLayout imgContainer = new LinearLayout(this);
+                imgContainer.setOrientation(LinearLayout.VERTICAL);
+
                 ImageView imageView = new ImageView(this);
+                imageView.setLayoutParams(new LinearLayout.LayoutParams(dpToPx(220), dpToPx(180)));
+                imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 imageView.setImageBitmap(decodedByte);
-                imageView.setAdjustViewBounds(true);
-                imageView.setMaxWidth(dpToPx(220));
-                LinearLayout.LayoutParams imgParams = new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.WRAP_CONTENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT
-                );
-                imageView.setLayoutParams(imgParams);
-                content.addView(imageView);
+                imgContainer.addView(imageView);
+
+                TextView tvImgCaption = new TextView(this);
+                tvImgCaption.setText("📷 Photo • Tap to view full screen");
+                tvImgCaption.setTextSize(11f);
+                tvImgCaption.setTextColor(isMe ? Color.parseColor("#FDE8E1") : Color.parseColor("#6D635E"));
+                tvImgCaption.setPadding(dpToPx(10), dpToPx(6), dpToPx(10), dpToPx(6));
+                imgContainer.addView(tvImgCaption);
+
+                imgCard.addView(imgContainer);
+                imgCard.setOnClickListener(v -> showFullScreenImageDialog(decodedByte));
+                content.addView(imgCard);
             } catch (Exception e) {
                 TextView txtMessage = new TextView(this);
                 txtMessage.setText(R.string.placeholder_image_missing);
@@ -554,15 +714,62 @@ public class ChatActivity extends AppCompatActivity {
         } else if (messageText.startsWith("[PDF_FILE]:")) {
             String[] parts = messageText.substring("[PDF_FILE]:".length()).split("\\|", 2);
             String fileName = parts.length > 0 ? parts[0] : getString(R.string.default_document_filename);
-            TextView txtMessage = new TextView(this);
-            txtMessage.setText(String.format(Locale.getDefault(), "📄 PDF: %s\n(%s)", fileName, getString(R.string.label_tap_to_open)));
-            txtMessage.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
-            txtMessage.setTextColor(Color.parseColor("#0056b3"));
-            txtMessage.setTypeface(null, Typeface.ITALIC);
-            txtMessage.setOnClickListener(v ->
-                    Toast.makeText(this, getString(R.string.toast_opening_pdf) + " " + fileName, Toast.LENGTH_SHORT).show()
-            );
-            content.addView(txtMessage);
+            String base64Pdf = parts.length > 1 ? parts[1] : "";
+            
+            LinearLayout pdfCard = new LinearLayout(this);
+            pdfCard.setOrientation(LinearLayout.HORIZONTAL);
+            pdfCard.setGravity(Gravity.CENTER_VERTICAL);
+            pdfCard.setPadding(dpToPx(12), dpToPx(10), dpToPx(12), dpToPx(10));
+            LinearLayout.LayoutParams pdfCardParams = new LinearLayout.LayoutParams(dpToPx(240), LinearLayout.LayoutParams.WRAP_CONTENT);
+            pdfCardParams.topMargin = dpToPx(6);
+            pdfCard.setLayoutParams(pdfCardParams);
+
+            android.graphics.drawable.GradientDrawable pdfCardBg = new android.graphics.drawable.GradientDrawable();
+            pdfCardBg.setColor(isMe ? Color.parseColor("#963B20") : Color.parseColor("#F5EFEA"));
+            pdfCardBg.setCornerRadius(dpToPx(10));
+            pdfCardBg.setStroke(dpToPx(1), isMe ? Color.parseColor("#D47A60") : Color.parseColor("#DFD5CC"));
+            pdfCard.setBackground(pdfCardBg);
+
+            TextView pdfBadge = new TextView(this);
+            pdfBadge.setText("PDF");
+            pdfBadge.setTextColor(Color.WHITE);
+            pdfBadge.setTextSize(11f);
+            pdfBadge.setTypeface(null, Typeface.BOLD);
+            pdfBadge.setGravity(Gravity.CENTER);
+            android.graphics.drawable.GradientDrawable badgeBg = new android.graphics.drawable.GradientDrawable();
+            badgeBg.setColor(Color.parseColor("#DC2626"));
+            badgeBg.setCornerRadius(dpToPx(8));
+            pdfBadge.setBackground(badgeBg);
+            LinearLayout.LayoutParams badgeParams = new LinearLayout.LayoutParams(dpToPx(38), dpToPx(38));
+            badgeParams.rightMargin = dpToPx(10);
+            pdfBadge.setLayoutParams(badgeParams);
+            pdfCard.addView(pdfBadge);
+
+            LinearLayout metaCol = new LinearLayout(this);
+            metaCol.setOrientation(LinearLayout.VERTICAL);
+            metaCol.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+
+            TextView tvFileName = new TextView(this);
+            tvFileName.setText(fileName);
+            tvFileName.setTextColor(isMe ? Color.WHITE : Color.parseColor("#1F1614"));
+            tvFileName.setTextSize(13f);
+            tvFileName.setTypeface(null, Typeface.BOLD);
+            tvFileName.setSingleLine(true);
+            tvFileName.setEllipsize(android.text.TextUtils.TruncateAt.MIDDLE);
+            metaCol.addView(tvFileName);
+
+            int approxKb = Math.max(1, (base64Pdf.length() * 3 / 4) / 1024);
+            TextView tvFileSub = new TextView(this);
+            tvFileSub.setText(String.format(Locale.getDefault(), "%d KB • Tap to open PDF", approxKb));
+            tvFileSub.setTextColor(isMe ? Color.parseColor("#FDE8E1") : Color.parseColor("#786F6B"));
+            tvFileSub.setTextSize(11f);
+            metaCol.addView(tvFileSub);
+
+            pdfCard.addView(metaCol);
+            
+            pdfCard.setOnClickListener(v -> openBase64PdfInApp(fileName, base64Pdf));
+            
+            content.addView(pdfCard);
         } else {
             TextView txtMessage = new TextView(this);
             LinearLayout.LayoutParams textParams = new LinearLayout.LayoutParams(
@@ -743,6 +950,200 @@ public class ChatActivity extends AppCompatActivity {
         });
     }
 
+    private void showFullScreenImageDialog(Bitmap bitmap) {
+        if (bitmap == null) return;
+        android.app.Dialog dialog = new android.app.Dialog(this, android.R.style.Theme_Black_NoTitleBar_Fullscreen);
+        FrameLayout root = new FrameLayout(this);
+        root.setBackgroundColor(Color.BLACK);
+
+        ImageView fullScreenImage = new ImageView(this);
+        fullScreenImage.setLayoutParams(new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
+        ));
+        fullScreenImage.setImageBitmap(bitmap);
+        fullScreenImage.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        fullScreenImage.setOnClickListener(v -> dialog.dismiss());
+        root.addView(fullScreenImage);
+
+        TextView btnClose = new TextView(this);
+        btnClose.setText("✕ Close");
+        btnClose.setTextColor(Color.WHITE);
+        btnClose.setTextSize(14f);
+        btnClose.setTypeface(null, Typeface.BOLD);
+        btnClose.setPadding(dpToPx(16), dpToPx(8), dpToPx(16), dpToPx(8));
+        android.graphics.drawable.GradientDrawable closeBg = new android.graphics.drawable.GradientDrawable();
+        closeBg.setColor(Color.parseColor("#99000000"));
+        closeBg.setCornerRadius(dpToPx(20));
+        btnClose.setBackground(closeBg);
+        FrameLayout.LayoutParams closeLp = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                Gravity.TOP | Gravity.END
+        );
+        closeLp.setMargins(dpToPx(16), dpToPx(24), dpToPx(16), dpToPx(16));
+        btnClose.setLayoutParams(closeLp);
+        btnClose.setOnClickListener(v -> dialog.dismiss());
+        root.addView(btnClose);
+
+        dialog.setContentView(root);
+        dialog.show();
+    }
+
+    private void openBase64PdfInApp(String fileName, String base64Pdf) {
+        if (base64Pdf == null || base64Pdf.isEmpty()) {
+            Toast.makeText(this, "PDF content is empty.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        Toast.makeText(this, getString(R.string.toast_opening_pdf) + " " + fileName, Toast.LENGTH_SHORT).show();
+        executor.execute(() -> {
+            try {
+                byte[] pdfBytes = Base64.decode(base64Pdf, Base64.DEFAULT);
+                java.io.File pdfFile = new java.io.File(getCacheDir(), "chat_doc_" + System.currentTimeMillis() + ".pdf");
+                try (java.io.FileOutputStream fos = new java.io.FileOutputStream(pdfFile)) {
+                    fos.write(pdfBytes);
+                    fos.flush();
+                }
+
+                android.os.ParcelFileDescriptor pfd = android.os.ParcelFileDescriptor.open(pdfFile, android.os.ParcelFileDescriptor.MODE_READ_ONLY);
+                android.graphics.pdf.PdfRenderer renderer = new android.graphics.pdf.PdfRenderer(pfd);
+                int pageCount = renderer.getPageCount();
+                java.util.List<Bitmap> pageBitmaps = new java.util.ArrayList<>();
+                int renderWidth = getResources().getDisplayMetrics().widthPixels - dpToPx(24);
+
+                for (int i = 0; i < pageCount; i++) {
+                    android.graphics.pdf.PdfRenderer.Page page = renderer.openPage(i);
+                    int w = Math.max(1, renderWidth);
+                    int h = Math.max(1, (int) ((float) w * page.getHeight() / page.getWidth()));
+                    Bitmap bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+                    bmp.eraseColor(Color.WHITE);
+                    page.render(bmp, null, null, android.graphics.pdf.PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY);
+                    page.close();
+                    pageBitmaps.add(bmp);
+                }
+                renderer.close();
+                pfd.close();
+
+                runOnUiThread(() -> {
+                    if (isFinishing() || isDestroyed()) return;
+                    android.app.Dialog dialog = new android.app.Dialog(this, android.R.style.Theme_Black_NoTitleBar_Fullscreen);
+                    LinearLayout root = new LinearLayout(this);
+                    root.setOrientation(LinearLayout.VERTICAL);
+                    root.setBackgroundColor(Color.parseColor("#2B2623"));
+
+                    LinearLayout topBar = new LinearLayout(this);
+                    topBar.setOrientation(LinearLayout.HORIZONTAL);
+                    topBar.setGravity(Gravity.CENTER_VERTICAL);
+                    topBar.setPadding(dpToPx(16), dpToPx(16), dpToPx(16), dpToPx(16));
+                    topBar.setBackgroundColor(Color.parseColor("#1F1614"));
+
+                    TextView tvTitle = new TextView(this);
+                    tvTitle.setText("📄 " + fileName + " (" + pageBitmaps.size() + "p)");
+                    tvTitle.setTextColor(Color.WHITE);
+                    tvTitle.setTextSize(15f);
+                    tvTitle.setTypeface(null, Typeface.BOLD);
+                    tvTitle.setSingleLine(true);
+                    tvTitle.setEllipsize(android.text.TextUtils.TruncateAt.MIDDLE);
+                    tvTitle.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+                    topBar.addView(tvTitle);
+
+                    TextView btnClose = new TextView(this);
+                    btnClose.setText("✕ Close");
+                    btnClose.setTextColor(Color.WHITE);
+                    btnClose.setTextSize(13f);
+                    btnClose.setTypeface(null, Typeface.BOLD);
+                    btnClose.setPadding(dpToPx(14), dpToPx(6), dpToPx(14), dpToPx(6));
+                    android.graphics.drawable.GradientDrawable closeBg = new android.graphics.drawable.GradientDrawable();
+                    closeBg.setColor(Color.parseColor("#B85032"));
+                    closeBg.setCornerRadius(dpToPx(16));
+                    btnClose.setBackground(closeBg);
+                    btnClose.setOnClickListener(v -> dialog.dismiss());
+                    topBar.addView(btnClose);
+                    root.addView(topBar);
+
+                    ScrollView scrollView = new ScrollView(this);
+                    scrollView.setLayoutParams(new LinearLayout.LayoutParams(
+                            LinearLayout.LayoutParams.MATCH_PARENT,
+                            LinearLayout.LayoutParams.MATCH_PARENT
+                    ));
+                    LinearLayout pagesContainer = new LinearLayout(this);
+                    pagesContainer.setOrientation(LinearLayout.VERTICAL);
+                    pagesContainer.setPadding(dpToPx(12), dpToPx(12), dpToPx(12), dpToPx(24));
+
+                    for (Bitmap pageBmp : pageBitmaps) {
+                        ImageView pageView = new ImageView(this);
+                        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                                LinearLayout.LayoutParams.MATCH_PARENT,
+                                LinearLayout.LayoutParams.WRAP_CONTENT
+                        );
+                        lp.bottomMargin = dpToPx(12);
+                        pageView.setLayoutParams(lp);
+                        pageView.setAdjustViewBounds(true);
+                        pageView.setImageBitmap(pageBmp);
+                        pagesContainer.addView(pageView);
+                    }
+                    scrollView.addView(pagesContainer);
+                    root.addView(scrollView);
+
+                    dialog.setContentView(root);
+                    dialog.show();
+                });
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to open PDF", e);
+                runOnUiThread(() -> Toast.makeText(this, "Could not render PDF file.", Toast.LENGTH_SHORT).show());
+            }
+        });
+    }
+
+    private void resolveGuestSupportChatInsideChat() {
+        if (supportGuestId == null || supportGuestId.isEmpty() || accessToken == null || accessToken.isEmpty()) return;
+
+        executor.execute(() -> {
+            HttpURLConnection delConn = null;
+            try {
+                try {
+                    HttpURLConnection archiveConn = SupabaseHelper.createConnection("/rest/v1/reports", "POST", accessToken);
+                    archiveConn.setRequestProperty("Prefer", "return=minimal");
+                    JSONObject archiveBody = new JSONObject();
+                    archiveBody.put("reporter_uid", supportGuestId);
+                    archiveBody.put("reporter_id", supportGuestId);
+                    archiveBody.put("reporter_name", receiverNameField != null ? receiverNameField : supportGuestId);
+                    archiveBody.put("reporter_role", "GUEST");
+                    archiveBody.put("reason", "GUEST CHAT RESOLVED (" + (receiverNameField != null ? receiverNameField : supportGuestId) + ")");
+                    archiveBody.put("issue_type", "GUEST CHAT RESOLVED");
+                    archiveBody.put("description", "Admin resolved guest support thread manually from inside ChatActivity.");
+                    archiveBody.put("status", "RESOLVED");
+                    SupabaseHelper.writeJson(archiveConn, archiveBody);
+                    archiveConn.getResponseCode();
+                    archiveConn.disconnect();
+                } catch (Exception ignored) {}
+
+                String encodedGuestId = java.net.URLEncoder.encode(supportGuestId, "UTF-8");
+                delConn = SupabaseHelper.createConnection(
+                        "/rest/v1/guest_support_messages?guest_id=eq." + encodedGuestId,
+                        "DELETE",
+                        accessToken
+                );
+                delConn.setRequestProperty("x-admin-panel", "true");
+                delConn.setRequestProperty("x-guest-id", supportGuestId);
+
+                int code = delConn.getResponseCode();
+                if (code >= 200 && code < 300) {
+                    runOnUiThread(() -> {
+                        Toast.makeText(this, "Guest support chat marked as resolved.", Toast.LENGTH_SHORT).show();
+                        finish();
+                    });
+                } else {
+                    runOnUiThread(() -> Toast.makeText(this, "Failed to resolve chat (HTTP " + code + ")", Toast.LENGTH_SHORT).show());
+                }
+            } catch (Exception e) {
+                runOnUiThread(() -> Toast.makeText(this, "Error resolving guest chat.", Toast.LENGTH_SHORT).show());
+            } finally {
+                if (delConn != null) delConn.disconnect();
+            }
+        });
+    }
+
     private void sendMessage() {
         if (sendingMessage || editMessage == null) {
             return;
@@ -842,6 +1243,18 @@ public class ChatActivity extends AppCompatActivity {
                 int code = connection.getResponseCode();
                 String response = SupabaseHelper.readResponse(connection);
                 success = code >= 200 && code < 300;
+                
+                if (success && !isGuestSupportChat && !isCommunity && receiverId != null && !receiverId.isEmpty() && !"ADMIN_SUPPORT".equals(receiverId)) {
+                    String preview = payloadText.startsWith("[IMAGE") ? "Sent an image"
+                            : (payloadText.startsWith("[PDF_FILE]") ? "Sent a PDF document" : payloadText);
+                    SupabaseHelper.createNotification(
+                            receiverId,
+                            "New message from " + (senderName != null && !senderName.isEmpty() ? senderName : "iKhaya User"),
+                            preview,
+                            accessToken
+                    );
+                }
+                
                 if (!success) {
                     error = getString(R.string.error_send_failed_http) + " " + code + ": " + response;
                     Log.e(TAG, error);
