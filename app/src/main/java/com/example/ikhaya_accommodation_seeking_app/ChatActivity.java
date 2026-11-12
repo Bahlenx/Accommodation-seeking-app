@@ -758,9 +758,8 @@ public class ChatActivity extends AppCompatActivity {
             tvFileName.setEllipsize(android.text.TextUtils.TruncateAt.MIDDLE);
             metaCol.addView(tvFileName);
 
-            int approxKb = Math.max(1, (base64Pdf.length() * 3 / 4) / 1024);
             TextView tvFileSub = new TextView(this);
-            tvFileSub.setText(String.format(Locale.getDefault(), "%d KB • Tap to open PDF", approxKb));
+            tvFileSub.setText("📄 PDF • Tap to view full screen");
             tvFileSub.setTextColor(isMe ? Color.parseColor("#FDE8E1") : Color.parseColor("#786F6B"));
             tvFileSub.setTextSize(11f);
             metaCol.addView(tvFileSub);

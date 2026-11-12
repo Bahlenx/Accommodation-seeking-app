@@ -60,6 +60,8 @@ public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.View
                 holder.btnVerifyUser.setBackgroundColor(Color.parseColor("#28A745"));
                 holder.btnVerifyUser.setOnClickListener(v -> {
                     if (context instanceof AdminUsersActivity) {
+                        // The actual approval/rejection API calls happen inside AdminUsersActivity.java,
+                        // so we pass this there.
                         ((AdminUsersActivity) context).showLandlordIdReviewDialog(user);
                     }
                 });

@@ -62,6 +62,17 @@ public class LandlordProfileActivity extends AppCompatActivity {
         open(R.id.navAdd, AddListingActivity.class);
         open(R.id.navMessages, UserSelectionActivity.class);
 
+        View btnNotificationSettings = findViewById(R.id.btnNotificationSettings);
+        TextView tvNotifSettingsSummary = findViewById(R.id.tvNotifSettingsSummary);
+
+        if (btnNotificationSettings != null) {
+            btnNotificationSettings.setOnClickListener(v -> NotificationHelper.openNotificationSettingsDialog(this, () -> {
+                if (tvNotifSettingsSummary != null) {
+                    tvNotifSettingsSummary.setText(NotificationHelper.getPreferencesSummaryLabel(this));
+                }
+            }));
+        }
+
         Button logout = findViewById(R.id.btnLogout);
         if (logout != null) {
             logout.setOnClickListener(v -> logout());
@@ -76,6 +87,11 @@ public class LandlordProfileActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        TextView tvNotifSettingsSummary = findViewById(R.id.tvNotifSettingsSummary);
+        if (tvNotifSettingsSummary != null) {
+            tvNotifSettingsSummary.setText(NotificationHelper.getPreferencesSummaryLabel(this));
+        }
+        
         if (viewNotificationDot != null && NotificationHelper.hasUnreadDot(this)) {
             viewNotificationDot.setVisibility(View.VISIBLE);
         }
@@ -84,6 +100,31 @@ public class LandlordProfileActivity extends AppCompatActivity {
         if (tvCurrentLanguage != null) {
             tvCurrentLanguage.setText(getActiveLanguageDisplayName());
         }
+    }
+
+    private String cleanProfileField(JSONObject obj, String key) {
+        if (obj == null || obj.isNull(key)) return "";
+        String val = obj.optString(key, "").trim();
+        if (val.isEmpty() || "null".equalsIgnoreCase(val) || "undefined".equalsIgnoreCase(val)) {
+            return "";
+        }
+        return val;
+    }
+
+    private String formatProfileLocationText(JSONObject profile) {
+        String suburb = cleanProfileField(profile, "suburb");
+        String city = cleanProfileField(profile, "city");
+        String prov = cleanProfileField(profile, "province");
+
+        java.util.List<String> parts = new java.util.ArrayList<>();
+        if (!suburb.isEmpty()) parts.add(suburb);
+        if (!city.isEmpty() && !city.equalsIgnoreCase(suburb)) parts.add(city);
+        if (!prov.isEmpty() && !prov.equalsIgnoreCase(city)) parts.add(prov);
+
+        if (!parts.isEmpty()) {
+            return android.text.TextUtils.join(", ", parts) + " • ID Verified";
+        }
+        return "";
     }
 
     private void loadDynamicData() {
@@ -105,47 +146,39 @@ public class LandlordProfileActivity extends AppCompatActivity {
         executor.execute(() -> {
             try {
                 // 1. Location & Verification
-                String locationEndpoint = "/rest/v1/profiles?select=full_name,city,province,suburb&firebase_uid=eq." + userId + "&limit=1";
+                String encodedId = SupabaseHelper.encode(userId);
+                String locationEndpoint = "/rest/v1/profiles?select=full_name,city,province,suburb&or=(id.eq." + encodedId + ",firebase_uid.eq." + encodedId + ")&limit=1";
                 HttpURLConnection conn = SupabaseHelper.createConnection(locationEndpoint, "GET", token);
                 int code = conn.getResponseCode();
                 String res = SupabaseHelper.readResponse(conn);
                 conn.disconnect();
 
-                String locationText = getString(R.string.default_verified_location);
+                String locationText = "";
                 if (code >= 200 && code < 300) {
                     JSONArray arr = new JSONArray(res);
                     if (arr.length() > 0) {
                         JSONObject profile = arr.getJSONObject(0);
-                        String city = profile.optString("city", "");
-                        if (city.isEmpty()) city = profile.optString("suburb", "");
-                        String prov = profile.optString("province", "");
-                        if (!city.isEmpty() && !prov.isEmpty()) {
-                            locationText = city + ", " + prov + " • ID Verified";
-                        } else if (!city.isEmpty()) {
-                            locationText = city + " • ID Verified";
-                        }
-                    } else {
-                        // Fallback to Users
-                        String fallbackEndpoint = "/rest/v1/Users?select=firstName,surname,city,province,suburb&id=eq." + userId + "&limit=1";
-                        conn = SupabaseHelper.createConnection(fallbackEndpoint, "GET", token);
-                        code = conn.getResponseCode();
-                        res = SupabaseHelper.readResponse(conn);
-                        conn.disconnect();
-                        if (code >= 200 && code < 300) {
-                            JSONArray arr2 = new JSONArray(res);
-                            if (arr2.length() > 0) {
-                                JSONObject profile = arr2.getJSONObject(0);
-                                String city = profile.optString("city", "");
-                                if (city.isEmpty()) city = profile.optString("suburb", "");
-                                String prov = profile.optString("province", "");
-                                if (!city.isEmpty() && !prov.isEmpty()) {
-                                    locationText = city + ", " + prov + " • ID Verified";
-                                } else if (!city.isEmpty()) {
-                                    locationText = city + " • ID Verified";
-                                }
-                            }
+                        locationText = formatProfileLocationText(profile);
+                    }
+                }
+                
+                if (locationText.isEmpty()) {
+                    String fallbackEndpoint = "/rest/v1/Users?select=firstName,surname,city,province,suburb&id=eq." + encodedId + "&limit=1";
+                    conn = SupabaseHelper.createConnection(fallbackEndpoint, "GET", token);
+                    code = conn.getResponseCode();
+                    res = SupabaseHelper.readResponse(conn);
+                    conn.disconnect();
+                    if (code >= 200 && code < 300) {
+                        JSONArray arr2 = new JSONArray(res);
+                        if (arr2.length() > 0) {
+                            JSONObject profile = arr2.getJSONObject(0);
+                            locationText = formatProfileLocationText(profile);
                         }
                     }
+                }
+                
+                if (locationText.isEmpty()) {
+                    locationText = getString(R.string.default_verified_location);
                 }
                 final String finalLoc = locationText;
                 runOnUiThread(() -> {

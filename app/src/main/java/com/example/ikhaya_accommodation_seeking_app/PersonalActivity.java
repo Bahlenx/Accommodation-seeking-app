@@ -208,17 +208,30 @@ public class PersonalActivity extends AppCompatActivity {
                         .toString()
                         .trim();
 
-        if (enteredId.isEmpty()
-                || province.isEmpty()
-                || city.isEmpty()
-                || suburb.isEmpty()) {
+        boolean hasError = false;
 
-            Toast.makeText(
-                    this,
-                    "Please fill in all fields",
-                    Toast.LENGTH_SHORT
-            ).show();
+        if (enteredId.isEmpty()) {
+            idInput.setError("ID Number is required.");
+            idInput.requestFocus();
+            hasError = true;
+        }
 
+        if (province.isEmpty()) {
+            SupabaseHelper.showValidationError(this, provinceInput, "Province is required (tap GPS to auto-fill).");
+            hasError = true;
+        }
+
+        if (city.isEmpty()) {
+            SupabaseHelper.showValidationError(this, cityInput, "City is required (tap GPS to auto-fill).");
+            hasError = true;
+        }
+
+        if (suburb.isEmpty()) {
+            SupabaseHelper.showValidationError(this, suburbInput, "Suburb is required (tap GPS to auto-fill).");
+            hasError = true;
+        }
+
+        if (hasError) {
             return;
         }
 
@@ -644,6 +657,14 @@ public class PersonalActivity extends AppCompatActivity {
                         role
                 );
 
+                String prov = provinceInput.getText().toString().trim();
+                String cit = cityInput.getText().toString().trim();
+                String sub = suburbInput.getText().toString().trim();
+
+                profile.put("province", prov);
+                profile.put("city", cit);
+                profile.put("suburb", sub);
+
                 String saId = idInput.getText().toString().trim();
                 if (!saId.isEmpty()) {
                     profile.put("sa_id_number", saId);
@@ -901,68 +922,30 @@ public class PersonalActivity extends AppCompatActivity {
         }
     }
 
-    private void handleAddresses(
-            List<Address> addresses
-    ) {
+    private String cleanAddressPart(String value) {
+        if (value == null) return "";
+        String trimmed = value.trim();
+        if (trimmed.isEmpty() || "null".equalsIgnoreCase(trimmed) || "South Africa".equalsIgnoreCase(trimmed)) {
+            return "";
+        }
+        return trimmed;
+    }
 
-        if (addresses != null
-                && !addresses.isEmpty()) {
+    private String cleanMunicipalityToCity(String subAdmin) {
+        String s = cleanAddressPart(subAdmin);
+        if (s.isEmpty()) return "";
+        s = s.replace("City of ", "")
+             .replace(" Metropolitan Municipality", "")
+             .replace(" Local Municipality", "")
+             .replace(" District Municipality", "")
+             .replace(" Municipality", "")
+             .trim();
+        if ("Tshwane".equalsIgnoreCase(s)) return "Pretoria";
+        return s;
+    }
 
-            Address address =
-                    addresses.get(0);
-
-            String province =
-                    address.getAdminArea();
-
-            String city =
-                    address.getLocality();
-
-            if (city == null) {
-                city =
-                        address.getSubAdminArea();
-            }
-
-            String suburb =
-                    address.getSubLocality();
-
-            final String finalProvince =
-                    province != null
-                            ? province
-                            : "";
-
-            final String finalCity =
-                    city != null
-                            ? city
-                            : "";
-
-            final String finalSuburb =
-                    suburb != null
-                            ? suburb
-                            : "";
-
-            runOnUiThread(() -> {
-
-                provinceInput.setText(
-                        finalProvince
-                );
-
-                cityInput.setText(
-                        finalCity
-                );
-
-                suburbInput.setText(
-                        finalSuburb
-                );
-
-                Toast.makeText(
-                        PersonalActivity.this,
-                        "Address updated!",
-                        Toast.LENGTH_SHORT
-                ).show();
-            });
-
-        } else {
-
+    private void handleAddresses(List<Address> addresses) {
+        if (addresses == null || addresses.isEmpty()) {
             runOnUiThread(
                     () -> Toast.makeText(
                             PersonalActivity.this,
@@ -970,7 +953,77 @@ public class PersonalActivity extends AppCompatActivity {
                             Toast.LENGTH_SHORT
                     ).show()
             );
+            return;
         }
+
+        Address address = addresses.get(0);
+        String province = cleanAddressPart(address.getAdminArea());
+        String rawLocality = cleanAddressPart(address.getLocality());
+        String rawSubLocality = cleanAddressPart(address.getSubLocality());
+        String rawSubAdmin = cleanMunicipalityToCity(address.getSubAdminArea());
+        String rawThoroughfare = cleanAddressPart(address.getThoroughfare());
+
+        String city = "";
+        String suburb = "";
+
+        if (!rawSubLocality.isEmpty() && !rawLocality.isEmpty() && !rawSubLocality.equalsIgnoreCase(rawLocality)) {
+            suburb = rawSubLocality;
+            city = rawLocality;
+        } else if (rawSubLocality.isEmpty() && !rawLocality.isEmpty()) {
+            String fullLine = address.getAddressLine(0);
+            String parsedSuburbFromLine = "";
+            if (fullLine != null && fullLine.contains(",")) {
+                String[] parts = fullLine.split(",");
+                for (String rawPart : parts) {
+                    String p = cleanAddressPart(rawPart);
+                    if (p.isEmpty() || p.matches(".*\\d{4}.*") || p.matches("^\\d+\\s+.*")) continue;
+                    if (p.equalsIgnoreCase(province) || p.equalsIgnoreCase(rawLocality) || p.equalsIgnoreCase(rawSubAdmin)) continue;
+                    parsedSuburbFromLine = p;
+                    break;
+                }
+            }
+
+            if (!parsedSuburbFromLine.isEmpty()) {
+                suburb = parsedSuburbFromLine;
+                city = rawLocality;
+            } else if (!rawSubAdmin.isEmpty() && !rawSubAdmin.equalsIgnoreCase(rawLocality)) {
+                suburb = rawLocality;
+                city = rawSubAdmin;
+            } else {
+                city = rawLocality;
+                suburb = !rawThoroughfare.isEmpty() ? rawThoroughfare : rawLocality;
+            }
+        } else if (!rawSubLocality.isEmpty()) {
+            suburb = rawSubLocality;
+            city = !rawSubAdmin.isEmpty() ? rawSubAdmin : rawSubLocality;
+        } else if (!rawSubAdmin.isEmpty()) {
+            city = rawSubAdmin;
+            suburb = !rawThoroughfare.isEmpty() ? rawThoroughfare : rawSubAdmin;
+        }
+
+        if (province.isEmpty()) province = "Gauteng";
+        if (city.isEmpty() && !suburb.isEmpty()) city = suburb;
+        if (suburb.isEmpty() && !city.isEmpty()) suburb = city;
+
+        final String finalProvince = province;
+        final String finalCity = city;
+        final String finalSuburb = suburb;
+
+        runOnUiThread(() -> {
+            if (provinceInput != null) {
+                provinceInput.setText(finalProvince);
+                provinceInput.setError(null);
+            }
+            if (cityInput != null) {
+                cityInput.setText(finalCity);
+                cityInput.setError(null);
+            }
+            if (suburbInput != null) {
+                suburbInput.setText(finalSuburb);
+                suburbInput.setError(null);
+            }
+            Toast.makeText(PersonalActivity.this, "Location auto-filled!", Toast.LENGTH_SHORT).show();
+        });
     }
 
     @Override

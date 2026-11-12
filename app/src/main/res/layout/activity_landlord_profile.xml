@@ -492,6 +492,69 @@
                         android:layout_height="1dp"
                         android:background="#F5F5F5" />
 
+                    <!-- Notification Preferences -->
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/btnNotificationSettings"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="?attr/selectableItemBackground"
+                        android:padding="16dp">
+
+                        <ImageView
+                            android:id="@+id/icNotificationSettings"
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:background="@drawable/bg_icon_container"
+                            android:contentDescription="@string/notifications"
+                            android:padding="8dp"
+                            android:src="@drawable/ic_bell"
+                            app:tint="#B85032"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:text="Notification Preferences"
+                            android:textColor="#1F1F1F"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintStart_toEndOf="@id/icNotificationSettings"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <TextView
+                            android:id="@+id/tvNotifSettingsSummary"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="8dp"
+                            android:background="@drawable/bg_pill_counter"
+                            android:paddingHorizontal="8dp"
+                            android:paddingVertical="2dp"
+                            android:text="All On"
+                            android:textColor="#786F6B"
+                            android:textSize="12sp"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toStartOf="@id/icChevronNotifSettings"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <ImageView
+                            android:id="@+id/icChevronNotifSettings"
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:src="@drawable/ic_chevron_right"
+                            app:tint="#9E9E9E"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="#F5F5F5" />
+
                     <!-- Change Password -->
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:id="@+id/btnChangePassword"

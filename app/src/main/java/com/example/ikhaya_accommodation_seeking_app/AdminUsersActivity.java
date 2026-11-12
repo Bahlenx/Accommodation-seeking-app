@@ -313,10 +313,14 @@ public class AdminUsersActivity extends AppCompatActivity {
             try {
                 JSONObject body = new JSONObject();
                 body.put("identity_status", "VERIFIED");
+                body.put("verification_status", "VERIFIED");
+                body.put("is_verified", true);
 
                 String targetId = user.getProfileId().isEmpty() ? user.getUserId() : user.getProfileId();
                 String endpoint = "/rest/v1/profiles?id=eq." + SupabaseHelper.encode(targetId);
                 SupabaseHelper.patch(endpoint, body, token);
+                
+                SupabaseHelper.createNotification(user.getUserId(), "✅ Identity Verification Approved", "Your identity documents have been verified by an administrator! Your profile now displays the Verified badge.", token);
 
                 if (user.getUserId() != null && !user.getUserId().isEmpty()) {
                     SupabaseHelper.createNotification(
