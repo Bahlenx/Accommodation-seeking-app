@@ -471,6 +471,21 @@ public class EditListingActivity extends AppCompatActivity {
     }
 
     private void saveChanges() {
+        // 1. Enforce GPS Pin selection
+        if (propertyLatitude == 0.0 && propertyLongitude == 0.0) {
+            Toast.makeText(this, "Please pin the exact property location on the map before submitting.", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        // 2. Enforce Ownership / Occupancy Document attachment
+        boolean hasNewDoc = (selectedDocUriEdit != null);
+        boolean hasExistingDoc = (originalDocUrl != null && !originalDocUrl.trim().isEmpty());
+
+        if (!hasNewDoc && !hasExistingDoc) {
+            Toast.makeText(this, "Please upload a proof of ownership or occupancy document before submitting.", Toast.LENGTH_LONG).show();
+            return;
+        }
+
         String name = nameInput != null ? nameInput.getText().toString().trim() : "";
         String location = locationInput != null ? locationInput.getText().toString().trim() : "";
         String price = priceInput != null ? priceInput.getText().toString().trim() : "";

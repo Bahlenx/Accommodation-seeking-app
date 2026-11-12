@@ -713,6 +713,21 @@ public class AddListingActivity extends AppCompatActivity {
     }
 
     private void addListing() {
+        // 1. Enforce GPS Pin selection
+        if (verifiedLatitude == 0.0 && verifiedLongitude == 0.0) {
+            Toast.makeText(this, "Please pin the exact property location on the map before submitting.", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        // 2. Enforce Ownership / Occupancy Document attachment
+        boolean hasNewDoc = (selectedAuthorityDocUri != null);
+        boolean hasExistingDoc = false;
+
+        if (!hasNewDoc && !hasExistingDoc) {
+            Toast.makeText(this, "Please upload a proof of ownership or occupancy document before submitting.", Toast.LENGTH_LONG).show();
+            return;
+        }
+
         String propertyName = propertyNameInput.getText().toString().trim();
         String location = locationInput.getText().toString().trim();
         String priceText = priceInput.getText().toString().trim();

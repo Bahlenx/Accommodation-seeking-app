@@ -1,5 +1,6 @@
 package com.example.ikhaya_accommodation_seeking_app;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -25,10 +26,14 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.osmdroid.config.Configuration;
+import org.osmdroid.config.IConfigurationProvider;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.tileprovider.tilesource.XYTileSource;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
+
+import java.io.File;
 
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -78,12 +83,18 @@ public class AdminInspectionActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // 1. Initialize osmdroid BEFORE setContentView()
+        IConfigurationProvider osmConfig = Configuration.getInstance();
+        osmConfig.load(getApplicationContext(), PreferenceManager.getDefaultSharedPreferences(getApplicationContext()));
+        osmConfig.setUserAgentValue("iKhayaStudentHousingApp/1.0 (contact: support@ikhaya.co.za)");
+
+        // Force clear any previously cached 403 error tiles
+        File tileCache = osmConfig.getOsmdroidTileCache();
+        if (tileCache != null && tileCache.exists()) {
+            deleteRecursive(tileCache);
+        }
+
         super.onCreate(savedInstanceState);
-
-        Configuration.getInstance().load(getApplicationContext(),
-                PreferenceManager.getDefaultSharedPreferences(getApplicationContext()));
-        Configuration.getInstance().setUserAgentValue(getPackageName());
-
         setContentView(R.layout.activity_admin_inspection);
 
         listingId = getIntent().getStringExtra("LISTING_ID");
@@ -97,7 +108,16 @@ public class AdminInspectionActivity extends AppCompatActivity {
         tvAdminCoords = findViewById(R.id.tvAdminCoords);
 
         if (adminMapView != null) {
-            adminMapView.setTileSource(TileSourceFactory.MAPNIK);
+            XYTileSource tileSource = new XYTileSource(
+                    "OpenStreetMapDE",
+                    0,
+                    19,
+                    256,
+                    ".png",
+                    new String[]{"https://tile.openstreetmap.de/"},
+                    "© OpenStreetMap contributors"
+            );
+            adminMapView.setTileSource(tileSource);
             adminMapView.setMultiTouchControls(true);
             adminMapView.getController().setZoom(16.0);
         }
@@ -686,5 +706,17 @@ public class AdminInspectionActivity extends AppCompatActivity {
     protected void onDestroy() {
         executor.shutdownNow();
         super.onDestroy();
+    }
+
+    private void deleteRecursive(File fileOrDirectory) {
+        if (fileOrDirectory.isDirectory()) {
+            File[] children = fileOrDirectory.listFiles();
+            if (children != null) {
+                for (File child : children) {
+                    deleteRecursive(child);
+                }
+            }
+        }
+        fileOrDirectory.delete();
     }
 }
