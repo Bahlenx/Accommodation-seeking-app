@@ -15,5 +15,7 @@
     <color name="now_text_muted">#888888</color>
     <color name="now_info">#2CA8FF</color> <!-- Blue for secondary metrics -->
     <color name="now_success">#18ce0f</color> <!-- Vibrant green -->
+    <color name="colorHighRiskRed">#DC3545</color>
+    <color name="colorLowRiskBlue">#2CA8FF</color>
 
 </resources>

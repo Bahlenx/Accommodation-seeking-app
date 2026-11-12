@@ -1,5 +1,6 @@
 package com.example.ikhaya_accommodation_seeking_app;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Handler;
@@ -12,6 +13,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.json.JSONObject;
@@ -48,6 +50,44 @@ public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.View
         holder.tvUserName.setText(user.getName());
         holder.tvUserRole.setText(user.getRole().toUpperCase());
 
+        String role = user.getRole() != null ? user.getRole().toLowerCase() : "";
+        String identityStatus = user.getIdentityStatus() != null ? user.getIdentityStatus().toUpperCase() : "UNVERIFIED";
+
+        if ("landlord".equals(role) && "PENDING_VERIFICATION".equalsIgnoreCase(identityStatus)) {
+            if (holder.btnVerifyUser != null) {
+                holder.btnVerifyUser.setVisibility(View.VISIBLE);
+                holder.btnVerifyUser.setText(R.string.btn_verify_id);
+                holder.btnVerifyUser.setBackgroundColor(Color.parseColor("#28A745"));
+                holder.btnVerifyUser.setOnClickListener(v -> {
+                    if (context instanceof AdminUsersActivity) {
+                        ((AdminUsersActivity) context).showLandlordIdReviewDialog(user);
+                    }
+                });
+            }
+        } else {
+            if (holder.btnVerifyUser != null) {
+                holder.btnVerifyUser.setVisibility(View.GONE);
+            }
+        }
+
+        // Anti-Self-Destruction & Admin Protection Check
+        if (user.getUserId().equals(currentAdminId)) {
+            holder.btnSuspendUser.setText("YOU");
+            holder.btnSuspendUser.setBackgroundColor(Color.parseColor("#6C757D")); // Gray disabled color
+            holder.btnSuspendUser.setEnabled(false);
+            holder.tvUserName.setTextColor(Color.parseColor("#5E72E4")); // Highlight own name in blue
+            if (holder.btnDeleteUser != null) holder.btnDeleteUser.setVisibility(View.GONE);
+            return; 
+        } else if ("admin".equalsIgnoreCase(user.getRole())) {
+            holder.btnSuspendUser.setText("ADMIN");
+            holder.btnSuspendUser.setBackgroundColor(Color.parseColor("#6C757D")); // Gray disabled color
+            holder.btnSuspendUser.setEnabled(false);
+            if (holder.btnDeleteUser != null) holder.btnDeleteUser.setVisibility(View.GONE);
+            return; 
+        }
+
+        holder.btnSuspendUser.setEnabled(true);
+        if (holder.btnDeleteUser != null) holder.btnDeleteUser.setVisibility(View.VISIBLE);
         updateButtonUI(holder, user.isSuspended());
 
         // Hide suspend/delete button for the currently logged in Admin (so they don't break their own account)
@@ -92,12 +132,12 @@ public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.View
 
         if (holder.btnDeleteUser != null) {
             holder.btnDeleteUser.setOnClickListener(v -> {
-                new androidx.appcompat.app.AlertDialog.Builder(context)
+                new AlertDialog.Builder(context)
                         .setTitle("Delete Account")
                         .setMessage("Are you sure you want to permanently delete " + user.getName() + "'s account? This action cannot be undone.")
                         .setPositiveButton("Delete", (dialog, which) -> {
                             holder.btnDeleteUser.setEnabled(false);
-                            SupabaseHelper.deleteAccountCompletely((android.app.Activity) context, user.getUserId(), SupabaseHelper.getAccessToken(context), "", "Deleted by Administrator");
+                            SupabaseHelper.deleteAccountCompletely((Activity) context, user.getUserId(), SupabaseHelper.getAccessToken(context), "", "Deleted by Administrator");
                         })
                         .setNegativeButton("Cancel", null)
                         .show();
@@ -124,14 +164,15 @@ public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.View
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvUserName, tvUserRole;
-        Button btnSuspendUser, btnDeleteUser;
+        Button btnSuspendUser, btnVerifyUser, btnDeleteUser;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             tvUserName = itemView.findViewById(R.id.tvUserName);
             tvUserRole = itemView.findViewById(R.id.tvUserRole);
             btnSuspendUser = itemView.findViewById(R.id.btnSuspendUser);
-            // btnDeleteUser = itemView.findViewById(R.id.btnDeleteUser);
+            btnVerifyUser = itemView.findViewById(R.id.btnVerifyUser);
+            btnDeleteUser = itemView.findViewById(R.id.btnDeleteUser);
         }
     }
 }

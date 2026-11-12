@@ -1,5 +1,6 @@
 package com.example.ikhaya_accommodation_seeking_app;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
@@ -25,6 +26,11 @@ public class LandlordPersonalInformationActivity extends AppCompatActivity {
 
         if (btnBack != null) {
             btnBack.setOnClickListener(v -> finish());
+        }
+
+        View btnEditIdentity = findViewById(R.id.btnEditIdentityProfile);
+        if (btnEditIdentity != null) {
+            btnEditIdentity.setOnClickListener(v -> startActivity(new Intent(this, EditProfileActivity.class)));
         }
 
         showLoading();

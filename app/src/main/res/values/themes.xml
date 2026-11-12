@@ -17,6 +17,12 @@
         <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
         <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
 
+        <!-- Fix native EditText.setError() popup window text visibility -->
+        <item name="android:textColorPrimaryInverse">#FFFFFF</item>
+        <item name="android:textColorSecondaryInverse">#FFFFFF</item>
+        <item name="android:colorForegroundInverse">#FFFFFF</item>
+        <item name="android:colorBackgroundCacheHint">@null</item>
+
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>

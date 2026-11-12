@@ -33,6 +33,17 @@
     </LinearLayout>
 
     <Button
+        android:id="@+id/btnVerifyUser"
+        android:layout_width="wrap_content"
+        android:layout_height="36dp"
+        android:layout_marginEnd="8dp"
+        android:backgroundTint="#28A745"
+        android:text="VERIFY ID"
+        android:textColor="#FFFFFF"
+        android:textSize="12sp"
+        android:visibility="gone" />
+
+    <Button
         android:id="@+id/btnSuspendUser"
         android:layout_width="wrap_content"
         android:layout_height="36dp"
@@ -40,4 +51,15 @@
         android:text="@string/btn_suspend"
         android:textColor="#FFFFFF"
         android:textSize="12sp" />
+
+    <Button
+        android:id="@+id/btnDeleteUser"
+        android:layout_width="wrap_content"
+        android:layout_height="36dp"
+        android:layout_marginStart="6dp"
+        android:backgroundTint="#8C7A70"
+        android:text="Delete"
+        android:textColor="#FFFFFF"
+        android:textSize="12sp"
+        android:visibility="gone" />
 </LinearLayout>

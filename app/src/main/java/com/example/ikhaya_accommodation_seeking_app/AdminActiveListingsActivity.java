@@ -100,8 +100,8 @@ public class AdminActiveListingsActivity extends AppCompatActivity implements Ad
         executor.execute(() -> {
             HttpURLConnection conn = null;
             try {
-                String endpoint = "/rest/v1/listings?select=id,property_name,price,location,landlord_uid,status,image_url"
-                        + "&status=ilike.APPROVED&order=created_at.desc";
+                String endpoint = "/rest/v1/listings?select=id,property_name,price,location,landlord_uid,status,image_url,property_type,offer_type,updated_at,created_at"
+                        + "&status=in.(APPROVED,VERIFIED)&order=updated_at.desc.nullslast,created_at.desc";
 
                 conn = SupabaseHelper.createConnection(endpoint, "GET", token);
                 int code = conn.getResponseCode();
@@ -121,7 +121,15 @@ public class AdminActiveListingsActivity extends AppCompatActivity implements Ad
                         String status = obj.optString("status", "APPROVED");
                         String imageUrl = obj.optString("image_url", "");
 
-                        String details = loc + " • R " + price + " / month";
+                        String offerType = obj.optString("offer_type", "rent");
+                        String propType = obj.optString("property_type", "");
+                        boolean isSale = "sale".equalsIgnoreCase(offerType)
+                                || "Farm".equalsIgnoreCase(propType)
+                                || "Vacant Stand / Yard Space".equalsIgnoreCase(propType)
+                                || "Vacant Land".equalsIgnoreCase(propType);
+
+                        String priceFormatted = isSale ? ("R " + price) : ("R " + price + " / month");
+                        String details = loc + " • " + priceFormatted;
                         String landlordLabel = landlordUid.length() > 8 ? "Landlord (" + landlordUid.substring(0, 8) + "...)" : "Landlord";
 
                         fetched.add(new AdminListing(id, name, details, landlordUid, landlordLabel, status, imageUrl));

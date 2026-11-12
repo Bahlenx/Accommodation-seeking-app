@@ -209,6 +209,8 @@ public class SearchResultsActivity extends AppCompatActivity {
     }
 
     private void executeSearch() {
+        AnalyticsHelper.logSearch(this, currentSearchQuery, currentPropertyType);
+
         if (searchResultsContainer != null) {
             searchResultsContainer.removeAllViews();
         }
@@ -221,8 +223,7 @@ public class SearchResultsActivity extends AppCompatActivity {
         executor.execute(() -> {
             HttpURLConnection conn = null;
             try {
-                StringBuilder endpoint = new StringBuilder("/rest/v1/listings?select=*");
-                endpoint.append("&status=eq.APPROVED");
+                StringBuilder endpoint = new StringBuilder("/rest/v1/listings?select=*&status=eq.APPROVED&is_archived=eq.false");
 
                 if (currentOfferType != null && !currentOfferType.isEmpty()) {
                     endpoint.append("&offer_type=ilike.").append(currentOfferType);

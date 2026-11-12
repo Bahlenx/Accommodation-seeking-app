@@ -261,6 +261,12 @@ public class OtpActivity extends AppCompatActivity {
                             intent.putExtra("USER_EMAIL", email);
                             intent.putExtra("USER_ROLE", role);
                             intent.putExtra("USER_PASSWORD", password);
+                            String saId = getIntent().getStringExtra("USER_SA_ID");
+                            String idDocUri = getIntent().getStringExtra("USER_ID_DOC_URI");
+                            String selfieUri = getIntent().getStringExtra("USER_SELFIE_URI");
+                            if (saId != null) intent.putExtra("USER_SA_ID", saId);
+                            if (idDocUri != null) intent.putExtra("USER_ID_DOC_URI", idDocUri);
+                            if (selfieUri != null) intent.putExtra("USER_SELFIE_URI", selfieUri);
                             intent.putExtra("OTP_VERIFIED", true);
                             startActivity(intent);
                             

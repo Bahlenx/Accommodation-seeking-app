@@ -93,7 +93,8 @@ public class ReportProblemActivity extends AppCompatActivity {
 
         if (TextUtils.isEmpty(description)) {
             if (edtProblem != null) {
-                edtProblem.setError(getString(R.string.error_describe_problem));
+                edtProblem.setError(null);
+                Toast.makeText(this, R.string.error_describe_problem, Toast.LENGTH_SHORT).show();
                 edtProblem.requestFocus();
             }
             return;

@@ -1,4 +1,3 @@
-
 package com.example.ikhaya_accommodation_seeking_app;
 
 import android.graphics.Color;
@@ -20,8 +19,8 @@ import androidx.core.view.WindowInsetsCompat;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.net.HttpURLConnection;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 
 public class EnquiriesActivity extends AppCompatActivity {
@@ -68,7 +67,6 @@ public class EnquiriesActivity extends AppCompatActivity {
         }
 
         View btnBack = findViewById(R.id.btnBack);
-
         if (btnBack != null) {
             btnBack.setOnClickListener(v -> finish());
         }
@@ -82,21 +80,16 @@ public class EnquiriesActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        loadEnquiries();
     }
 
     private void loadEnquiries() {
-        if (loadingEnquiries) {
-            return;
-        }
+        if (loadingEnquiries) return;
 
         currentUserId = SupabaseHelper.getUserId(this);
         accessToken = SupabaseHelper.getAccessToken(this);
 
-        if (currentUserId == null
-                || currentUserId.trim().isEmpty()
-                || accessToken == null
-                || accessToken.trim().isEmpty()) {
-
+        if (currentUserId == null || currentUserId.trim().isEmpty() || accessToken == null || accessToken.trim().isEmpty()) {
             showMessage("Please log in again.");
             return;
         }
@@ -105,25 +98,15 @@ public class EnquiriesActivity extends AppCompatActivity {
 
         new Thread(() -> {
             HttpURLConnection connection = null;
-
             try {
-                String endpoint =
-                        "/rest/v1/enquiries"
-                                + "?select=*"
-                                + "&landlord_uid=eq."
-                                + SupabaseHelper.encode(currentUserId)
-                                + "&order=created_at.desc";
+                String endpoint = "/rest/v1/enquiries"
+                        + "?select=*"
+                        + "&landlord_uid=eq." + SupabaseHelper.encode(currentUserId)
+                        + "&order=created_at.desc";
 
-                connection = SupabaseHelper.createConnection(
-                        endpoint,
-                        "GET",
-                        accessToken
-                );
-
+                connection = SupabaseHelper.createConnection(endpoint, "GET", accessToken);
                 int responseCode = connection.getResponseCode();
-
-                String response =
-                        SupabaseHelper.readResponse(connection);
+                String response = SupabaseHelper.readResponse(connection);
 
                 if (responseCode < 200 || responseCode >= 300) {
                     showMessage("Could not load enquiries.");
@@ -140,9 +123,7 @@ public class EnquiriesActivity extends AppCompatActivity {
                 );
 
                 runOnUiThread(() -> {
-                    if (isFinishing() || isDestroyed()) {
-                        return;
-                    }
+                    if (isFinishing() || isDestroyed()) return;
 
                     enquiriesContainer.removeAllViews();
 
@@ -155,7 +136,6 @@ public class EnquiriesActivity extends AppCompatActivity {
 
                     for (int i = 0; i < enquiries.length(); i++) {
                         JSONObject enquiry = enquiries.optJSONObject(i);
-
                         if (enquiry != null) {
                             addEnquiry(enquiry);
                         }
@@ -163,15 +143,9 @@ public class EnquiriesActivity extends AppCompatActivity {
                 });
 
             } catch (Exception e) {
-                showMessage(
-                        "Could not load enquiries. Please try again."
-                );
-
+                showMessage("Could not load enquiries. Please try again.");
             } finally {
-                if (connection != null) {
-                    connection.disconnect();
-                }
-
+                if (connection != null) connection.disconnect();
                 loadingEnquiries = false;
             }
         }).start();
@@ -179,60 +153,18 @@ public class EnquiriesActivity extends AppCompatActivity {
 
     private void addEnquiry(JSONObject enquiry) {
         String id = enquiry.optString("id", "");
+        String message = firstValue(enquiry, "message", "enquiry_message", "content");
+        String status = enquiry.optString("status", "Pending");
+        String senderName = firstValue(enquiry, "sender_name", "tenant_name", "applicant_name", "full_name", "name");
+        String senderPhone = firstValue(enquiry, "sender_phone", "tenant_phone", "phone", "phone_number");
+        String senderEmail = firstValue(enquiry, "sender_email", "tenant_email", "email");
 
-        String message = firstValue(
-                enquiry,
-                "message",
-                "enquiry_message",
-                "content"
-        );
-
-        String status = enquiry.optString(
-                "status",
-                "Pending"
-        );
-
-        String senderName = firstValue(
-                enquiry,
-                "sender_name",
-                "tenant_name",
-                "applicant_name",
-                "full_name",
-                "name"
-        );
-
-        String senderPhone = firstValue(
-                enquiry,
-                "sender_phone",
-                "tenant_phone",
-                "phone",
-                "phone_number"
-        );
-
-        String senderEmail = firstValue(
-                enquiry,
-                "sender_email",
-                "tenant_email",
-                "email"
-        );
-
-        if (senderName.isEmpty()) {
-            senderName = "Tenant";
-        }
-
-        if (message.isEmpty()) {
-            message = "No message provided.";
-        }
+        if (senderName.isEmpty()) senderName = "Resident";
+        if (message.isEmpty()) message = "I am interested in this accommodation.";
 
         LinearLayout card = new LinearLayout(this);
         card.setOrientation(LinearLayout.VERTICAL);
-
-        card.setPadding(
-                dp(18),
-                dp(18),
-                dp(18),
-                dp(18)
-        );
+        card.setPadding(dp(18), dp(18), dp(18), dp(18));
 
         GradientDrawable cardBg = new GradientDrawable();
         cardBg.setColor(Color.WHITE);
@@ -241,12 +173,10 @@ public class EnquiriesActivity extends AppCompatActivity {
         card.setBackground(cardBg);
         card.setElevation(dp(2));
 
-        LinearLayout.LayoutParams cardParams =
-                new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT
-                );
-
+        LinearLayout.LayoutParams cardParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
         cardParams.bottomMargin = dp(14);
         card.setLayoutParams(cardParams);
 
@@ -257,16 +187,11 @@ public class EnquiriesActivity extends AppCompatActivity {
 
         TextView sender = new TextView(this);
         sender.setText(senderName);
-        sender.setTextSize(17);
+        sender.setTextSize(16);
         sender.setTypeface(null, Typeface.BOLD);
         sender.setTextColor(Color.parseColor("#1F1614"));
 
-        LinearLayout.LayoutParams nameParams =
-                new LinearLayout.LayoutParams(
-                        0,
-                        LinearLayout.LayoutParams.WRAP_CONTENT,
-                        1f
-                );
+        LinearLayout.LayoutParams nameParams = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
         header.addView(sender, nameParams);
 
         TextView statusView = new TextView(this);
@@ -277,6 +202,7 @@ public class EnquiriesActivity extends AppCompatActivity {
 
         GradientDrawable statusBg = new GradientDrawable();
         statusBg.setCornerRadius(dp(12));
+
         if (status.equalsIgnoreCase("Approved") || status.equalsIgnoreCase("Confirmed")) {
             statusView.setTextColor(Color.parseColor("#1B5E20"));
             statusBg.setColor(Color.parseColor("#E8F5E9"));
@@ -284,117 +210,96 @@ public class EnquiriesActivity extends AppCompatActivity {
             statusView.setTextColor(Color.parseColor("#C62828"));
             statusBg.setColor(Color.parseColor("#FFEBEE"));
         } else {
-            statusView.setTextColor(Color.parseColor("#E65100"));
-            statusBg.setColor(Color.parseColor("#FFF3E0"));
+            statusView.setTextColor(Color.parseColor("#BA5536"));
+            statusBg.setColor(Color.parseColor("#FFE8DE"));
         }
         statusView.setBackground(statusBg);
         header.addView(statusView);
 
         card.addView(header);
 
-        // Details block
-        TextView details = new TextView(this);
-        StringBuilder detailsText = new StringBuilder();
-
+        // Contact info lines (without emojis)
         if (!senderPhone.isEmpty()) {
-            detailsText.append("📞 ").append(senderPhone).append("\n");
+            TextView tvPhone = new TextView(this);
+            tvPhone.setText(getString(R.string.label_enquiry_phone_prefix, senderPhone));
+            tvPhone.setTextSize(13);
+            tvPhone.setTextColor(Color.parseColor("#756763"));
+            tvPhone.setPadding(0, dp(6), 0, 0);
+            card.addView(tvPhone);
         }
 
         if (!senderEmail.isEmpty()) {
-            detailsText.append("✉️ ").append(senderEmail).append("\n");
+            TextView tvEmail = new TextView(this);
+            tvEmail.setText(getString(R.string.label_enquiry_email_prefix, senderEmail));
+            tvEmail.setTextSize(13);
+            tvEmail.setTextColor(Color.parseColor("#756763"));
+            tvEmail.setPadding(0, dp(2), 0, 0);
+            card.addView(tvEmail);
         }
 
-        if (detailsText.length() > 0) {
-            detailsText.append("\n");
-        }
+        // Message Section
+        TextView tvMsgLabel = new TextView(this);
+        tvMsgLabel.setText(R.string.label_enquiry_message_header);
+        tvMsgLabel.setTextSize(13);
+        tvMsgLabel.setTypeface(null, Typeface.BOLD);
+        tvMsgLabel.setTextColor(Color.parseColor("#1F1614"));
+        tvMsgLabel.setPadding(0, dp(10), 0, dp(2));
+        card.addView(tvMsgLabel);
 
-        detailsText.append("💬 Message:\n").append(message);
+        TextView tvMsgBody = new TextView(this);
+        tvMsgBody.setText(message);
+        tvMsgBody.setTextSize(14);
+        tvMsgBody.setTextColor(Color.parseColor("#423936"));
+        tvMsgBody.setLineSpacing(dp(2), 1f);
+        card.addView(tvMsgBody);
 
-        details.setText(detailsText.toString());
-        details.setTextSize(14);
-        details.setTextColor(Color.parseColor("#5A524E"));
-        details.setLineSpacing(dp(3), 1f);
-
-        LinearLayout.LayoutParams detailsParams =
-                new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT
-                );
-        detailsParams.topMargin = dp(10);
-        card.addView(details, detailsParams);
-
+        // Actions for Pending Enquiries
         if (status.equalsIgnoreCase("pending")) {
             LinearLayout actions = new LinearLayout(this);
             actions.setOrientation(LinearLayout.HORIZONTAL);
             actions.setGravity(Gravity.CENTER_VERTICAL);
 
-            LinearLayout.LayoutParams actionsParams =
-                    new LinearLayout.LayoutParams(
-                            LinearLayout.LayoutParams.MATCH_PARENT,
-                            LinearLayout.LayoutParams.WRAP_CONTENT
-                    );
+            LinearLayout.LayoutParams actionsParams = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+            );
             actionsParams.topMargin = dp(14);
             actions.setLayoutParams(actionsParams);
 
             Button approveButton = new Button(this);
-            approveButton.setText("Approve contact");
+            approveButton.setText(R.string.btn_approve_contact);
             approveButton.setTransformationMethod(null);
             approveButton.setTextSize(13);
             approveButton.setTypeface(null, Typeface.BOLD);
             approveButton.setTextColor(Color.WHITE);
 
             GradientDrawable approveBg = new GradientDrawable();
-            approveBg.setColor(Color.parseColor("#34734A"));
+            approveBg.setColor(Color.parseColor("#28A745"));
             approveBg.setCornerRadius(dp(12));
             approveButton.setBackground(approveBg);
 
             Button denyButton = new Button(this);
-            denyButton.setText("Deny");
+            denyButton.setText(R.string.btn_deny_contact);
             denyButton.setTransformationMethod(null);
             denyButton.setTextSize(13);
             denyButton.setTypeface(null, Typeface.BOLD);
-            denyButton.setTextColor(Color.WHITE);
+            denyButton.setTextColor(Color.parseColor("#DC3545"));
 
             GradientDrawable denyBg = new GradientDrawable();
-            denyBg.setColor(Color.parseColor("#7A2525"));
+            denyBg.setColor(Color.WHITE);
             denyBg.setCornerRadius(dp(12));
+            denyBg.setStroke(dp(1), Color.parseColor("#DC3545"));
             denyButton.setBackground(denyBg);
 
-            LinearLayout.LayoutParams buttonParams =
-                    new LinearLayout.LayoutParams(
-                            0,
-                            dp(44),
-                            1f
-                    );
-            buttonParams.setMarginEnd(dp(6));
+            LinearLayout.LayoutParams buttonParams = new LinearLayout.LayoutParams(0, dp(44), 1.2f);
+            buttonParams.setMarginEnd(dp(8));
             approveButton.setLayoutParams(buttonParams);
 
-            LinearLayout.LayoutParams denyParams =
-                    new LinearLayout.LayoutParams(
-                            0,
-                            dp(44),
-                            1f
-                    );
-            denyParams.setMarginStart(dp(6));
+            LinearLayout.LayoutParams denyParams = new LinearLayout.LayoutParams(0, dp(44), 0.8f);
             denyButton.setLayoutParams(denyParams);
 
-            approveButton.setOnClickListener(v ->
-                    updateEnquiryStatus(
-                            id,
-                            "Approved",
-                            approveButton,
-                            denyButton
-                    )
-            );
-
-            denyButton.setOnClickListener(v ->
-                    updateEnquiryStatus(
-                            id,
-                            "Declined",
-                            approveButton,
-                            denyButton
-                    )
-            );
+            approveButton.setOnClickListener(v -> updateEnquiryStatus(id, "Approved", approveButton, denyButton));
+            denyButton.setOnClickListener(v -> updateEnquiryStatus(id, "Declined", approveButton, denyButton));
 
             actions.addView(approveButton);
             actions.addView(denyButton);
@@ -404,29 +309,13 @@ public class EnquiriesActivity extends AppCompatActivity {
         enquiriesContainer.addView(card);
     }
 
-    private void updateEnquiryStatus(
-            String id,
-            String newStatus,
-            Button approveButton,
-            Button denyButton
-    ) {
-        if (id == null || id.isEmpty()) {
-            Toast.makeText(
-                    this,
-                    "This enquiry has no ID; it cannot be updated.",
-                    Toast.LENGTH_LONG
-            ).show();
-            return;
-        }
+    private void updateEnquiryStatus(String id, String newStatus, Button approveButton, Button denyButton) {
+        if (id == null || id.isEmpty()) return;
 
         String userId = SupabaseHelper.getUserId(this);
         String token = SupabaseHelper.getAccessToken(this);
 
-        if (userId == null
-                || userId.isEmpty()
-                || token == null
-                || token.isEmpty()) {
-
+        if (userId == null || userId.isEmpty() || token == null || token.isEmpty()) {
             showMessage("Please log in again.");
             return;
         }
@@ -436,152 +325,70 @@ public class EnquiriesActivity extends AppCompatActivity {
 
         new Thread(() -> {
             HttpURLConnection connection = null;
-
             try {
-                String endpoint =
-                        "/rest/v1/enquiries"
-                                + "?id=eq."
-                                + SupabaseHelper.encode(id)
-                                + "&landlord_uid=eq."
-                                + SupabaseHelper.encode(userId);
+                String endpoint = "/rest/v1/enquiries"
+                        + "?id=eq." + SupabaseHelper.encode(id)
+                        + "&landlord_uid=eq." + SupabaseHelper.encode(userId);
 
-                connection = SupabaseHelper.createConnection(
-                        endpoint,
-                        "PATCH",
-                        token
-                );
-
+                connection = SupabaseHelper.createConnection(endpoint, "PATCH", token);
                 connection.setDoOutput(true);
-
-                connection.setRequestProperty(
-                        "Content-Type",
-                        "application/json"
-                );
-
-                connection.setRequestProperty(
-                        "Prefer",
-                        "return=minimal"
-                );
+                connection.setRequestProperty("Content-Type", "application/json");
+                connection.setRequestProperty("Prefer", "return=minimal");
 
                 JSONObject body = new JSONObject();
                 body.put("status", newStatus);
 
-                try (OutputStream output =
-                             connection.getOutputStream()) {
-
-                    output.write(
-                            body.toString().getBytes(
-                                    StandardCharsets.UTF_8
-                            )
-                    );
+                try (OutputStream output = connection.getOutputStream()) {
+                    output.write(body.toString().getBytes(StandardCharsets.UTF_8));
                 }
 
                 int code = connection.getResponseCode();
                 boolean success = code >= 200 && code < 300;
 
                 runOnUiThread(() -> {
-                    if (isFinishing() || isDestroyed()) {
-                        return;
-                    }
+                    if (isFinishing() || isDestroyed()) return;
 
                     if (success) {
-                        Toast.makeText(
-                                this,
-                                newStatus.equals("Approved")
-                                        ? "Contact request approved."
-                                        : "Contact request declined.",
-                                Toast.LENGTH_SHORT
-                        ).show();
-
+                        Toast.makeText(this, newStatus.equals("Approved") ? "Contact request approved." : "Contact request declined.", Toast.LENGTH_SHORT).show();
                         loadEnquiries();
-
                     } else {
                         approveButton.setEnabled(true);
                         denyButton.setEnabled(true);
-
-                        Toast.makeText(
-                                this,
-                                "Could not update this enquiry. Check your Supabase permissions and status values.",
-                                Toast.LENGTH_LONG
-                        ).show();
+                        Toast.makeText(this, "Could not update enquiry status.", Toast.LENGTH_LONG).show();
                     }
                 });
 
             } catch (Exception e) {
                 runOnUiThread(() -> {
-                    if (isFinishing() || isDestroyed()) {
-                        return;
-                    }
-
+                    if (isFinishing() || isDestroyed()) return;
                     approveButton.setEnabled(true);
                     denyButton.setEnabled(true);
-
-                    Toast.makeText(
-                            this,
-                            "Could not update enquiry.",
-                            Toast.LENGTH_SHORT
-                    ).show();
+                    Toast.makeText(this, "Network error updating enquiry.", Toast.LENGTH_SHORT).show();
                 });
-
             } finally {
-                if (connection != null) {
-                    connection.disconnect();
-                }
+                if (connection != null) connection.disconnect();
             }
         }).start();
     }
 
-    private String firstValue(
-            JSONObject object,
-            String... keys
-    ) {
+    private String firstValue(JSONObject object, String... keys) {
         for (String key : keys) {
             String value = object.optString(key, "");
-
-            if (!value.trim().isEmpty()
-                    && !"null".equalsIgnoreCase(value.trim())) {
-
+            if (!value.trim().isEmpty() && !"null".equalsIgnoreCase(value.trim())) {
                 return value.trim();
             }
         }
-
         return "";
     }
 
-    private GradientDrawable roundedBackground(
-            int fillColor,
-            String strokeColor,
-            int radiusDp
-    ) {
-        GradientDrawable drawable = new GradientDrawable();
-
-        drawable.setColor(fillColor);
-        drawable.setCornerRadius(dp(radiusDp));
-
-        drawable.setStroke(
-                dp(1),
-                Color.parseColor(strokeColor)
-        );
-
-        return drawable;
-    }
-
     private int dp(int value) {
-        return (int) (
-                value
-                        * getResources().getDisplayMetrics().density
-                        + 0.5f
-        );
+        return (int) (value * getResources().getDisplayMetrics().density + 0.5f);
     }
 
     private void showMessage(String message) {
         runOnUiThread(() -> {
             if (!isFinishing() && !isDestroyed()) {
-                Toast.makeText(
-                        this,
-                        message,
-                        Toast.LENGTH_SHORT
-                ).show();
+                Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
             }
         });
     }

@@ -1,21 +1,98 @@
 package com.example.ikhaya_accommodation_seeking_app;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Patterns;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.RadioGroup;
+import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
+import androidx.core.content.FileProvider;
 import androidx.transition.TransitionManager;
 
+import java.io.File;
+
 public class RegistrationActivity extends AppCompatActivity {
+
+    private LinearLayout layoutLandlordRegistrationIdentity;
+    private EditText etRegSaIdNumber;
+    private Button btnRegUploadIdDoc;
+    private Button btnRegUploadSelfie;
+    private TextView tvRegIdDocStatus;
+    private TextView tvRegSelfieStatus;
+
+    private Uri selectedIdDocUri = null;
+    private Uri selectedSelfieUri = null;
+    private Uri tempCameraUri = null;
+    private boolean isCapturingSelfieForCamera = false;
+
+    private final ActivityResultLauncher<Uri> takePhotoLauncher = registerForActivityResult(
+            new ActivityResultContracts.TakePicture(),
+            success -> {
+                if (success && tempCameraUri != null) {
+                    if (isCapturingSelfieForCamera) {
+                        selectedSelfieUri = tempCameraUri;
+                        if (tvRegSelfieStatus != null) tvRegSelfieStatus.setText("Selected: Camera Selfie");
+                    } else {
+                        selectedIdDocUri = tempCameraUri;
+                        if (tvRegIdDocStatus != null) tvRegIdDocStatus.setText("Selected: Camera ID Document");
+                    }
+                }
+            }
+    );
+
+    private final ActivityResultLauncher<String> pickGalleryLauncher = registerForActivityResult(
+            new ActivityResultContracts.GetContent(),
+            uri -> {
+                if (uri != null) {
+                    if (isCapturingSelfieForCamera) {
+                        selectedSelfieUri = uri;
+                        if (tvRegSelfieStatus != null) tvRegSelfieStatus.setText("Selected: Gallery Selfie");
+                    } else {
+                        selectedIdDocUri = uri;
+                        if (tvRegIdDocStatus != null) tvRegIdDocStatus.setText("Selected: Gallery ID Document");
+                    }
+                }
+            }
+    );
+
+    private void showImageSourceDialog(boolean isSelfie) {
+        isCapturingSelfieForCamera = isSelfie;
+        String[] options = {"Take Photo with Camera", "Choose from Gallery"};
+        new AlertDialog.Builder(this)
+                .setTitle(isSelfie ? "Take Verification Selfie" : "Upload ID Document")
+                .setItems(options, (dialog, which) -> {
+                    if (which == 0) {
+                        try {
+                            File photoFile = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+                                    (isSelfie ? "selfie_" : "id_") + System.currentTimeMillis() + ".jpg");
+                            tempCameraUri = FileProvider.getUriForFile(this,
+                                    getApplicationContext().getPackageName() + ".provider", photoFile);
+                            takePhotoLauncher.launch(tempCameraUri);
+                        } catch (Exception e) {
+                            Toast.makeText(this, "Camera error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        pickGalleryLauncher.launch("image/*");
+                    }
+                })
+                .show();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +117,16 @@ public class RegistrationActivity extends AppCompatActivity {
         ConstraintLayout toggleContainer =
                 findViewById(R.id.toggleContainer);
 
+        layoutLandlordRegistrationIdentity = findViewById(R.id.layoutLandlordRegistrationIdentity);
+        etRegSaIdNumber = findViewById(R.id.etRegSaIdNumber);
+        btnRegUploadIdDoc = findViewById(R.id.btnRegUploadIdDoc);
+        btnRegUploadSelfie = findViewById(R.id.btnRegUploadSelfie);
+        tvRegIdDocStatus = findViewById(R.id.tvRegIdDocStatus);
+        tvRegSelfieStatus = findViewById(R.id.tvRegSelfieStatus);
+
+        btnRegUploadIdDoc.setOnClickListener(v -> showImageSourceDialog(false));
+        btnRegUploadSelfie.setOnClickListener(v -> showImageSourceDialog(true));
+
         roleRadioGroup.setOnCheckedChangeListener(
                 (group, checkedId) -> {
 
@@ -55,6 +142,7 @@ public class RegistrationActivity extends AppCompatActivity {
                     );
 
                     if (checkedId == R.id.radioResident) {
+                        layoutLandlordRegistrationIdentity.setVisibility(View.GONE);
 
                         constraintSet.connect(
                                 R.id.slideIndicator,
@@ -71,6 +159,7 @@ public class RegistrationActivity extends AppCompatActivity {
                         );
 
                     } else if (checkedId == R.id.radioLandlord) {
+                        layoutLandlordRegistrationIdentity.setVisibility(View.VISIBLE);
 
                         constraintSet.connect(
                                 R.id.slideIndicator,
@@ -214,11 +303,8 @@ public class RegistrationActivity extends AppCompatActivity {
                             "[a-zA-Z\\s-]+"
                     )) {
 
-                        editFirstName.setError(
-                                getString(
-                                        R.string.error_first_name
-                                )
-                        );
+                        editFirstName.setError(null);
+                        Toast.makeText(this, R.string.error_first_name, Toast.LENGTH_SHORT).show();
                     }
                 }
         );
@@ -237,11 +323,8 @@ public class RegistrationActivity extends AppCompatActivity {
                             "[a-zA-Z\\s-]+"
                     )) {
 
-                        editUserSurname.setError(
-                                getString(
-                                        R.string.error_surname
-                                )
-                        );
+                        editUserSurname.setError(null);
+                        Toast.makeText(this, R.string.error_surname, Toast.LENGTH_SHORT).show();
                     }
                 }
         );
@@ -260,11 +343,8 @@ public class RegistrationActivity extends AppCompatActivity {
                             "^(\\+27|0)[6-8][0-9]{8}$"
                     )) {
 
-                        editPhone.setError(
-                                getString(
-                                        R.string.error_phone
-                                )
-                        );
+                        editPhone.setError(null);
+                        Toast.makeText(this, R.string.error_phone, Toast.LENGTH_SHORT).show();
                     }
                 }
         );
@@ -283,11 +363,8 @@ public class RegistrationActivity extends AppCompatActivity {
                             .matcher(value)
                             .matches()) {
 
-                        editEmail.setError(
-                                getString(
-                                        R.string.error_email
-                                )
-                        );
+                        editEmail.setError(null);
+                        Toast.makeText(this, R.string.error_email, Toast.LENGTH_SHORT).show();
                     }
                 }
         );
@@ -340,6 +417,19 @@ public class RegistrationActivity extends AppCompatActivity {
                             ? "landlord"
                             : "tenant";
 
+            String saId = "";
+            if ("landlord".equalsIgnoreCase(role)) {
+                saId = etRegSaIdNumber.getText().toString().trim();
+                if (!IdValidationUtils.isValidSAID(saId)) {
+                    Toast.makeText(this, "Please enter a valid 13-digit South African ID number.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if (selectedIdDocUri == null || selectedSelfieUri == null) {
+                    Toast.makeText(this, "Landlords must upload both an ID document and verification selfie.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+            }
+
             Intent intent =
                     new Intent(
                             RegistrationActivity.this,
@@ -370,6 +460,12 @@ public class RegistrationActivity extends AppCompatActivity {
                     "USER_ROLE",
                     role
             );
+
+            if ("landlord".equalsIgnoreCase(role)) {
+                intent.putExtra("USER_SA_ID", saId);
+                intent.putExtra("USER_ID_DOC_URI", selectedIdDocUri.toString());
+                intent.putExtra("USER_SELFIE_URI", selectedSelfieUri.toString());
+            }
 
             startActivity(intent);
         });

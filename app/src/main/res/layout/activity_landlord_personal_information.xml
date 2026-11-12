@@ -90,5 +90,17 @@
             android:textColor="@color/black"
             android:textSize="15sp" />
 
+        <Button
+            android:id="@+id/btnEditIdentityProfile"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="24dp"
+            android:backgroundTint="#BA5536"
+            android:text="Edit Profile &amp; Verify Identity"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            app:cornerRadius="24dp" />
+
     </LinearLayout>
 </ScrollView>

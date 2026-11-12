@@ -146,6 +146,7 @@
 
                 <!-- Verification Badge -->
                 <LinearLayout
+                    android:id="@+id/layoutVerifiedBadge"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
@@ -153,7 +154,8 @@
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:paddingHorizontal="10dp"
-                    android:paddingVertical="4dp">
+                    android:paddingVertical="4dp"
+                    android:visibility="gone">
 
                     <ImageView
                         android:layout_width="14dp"
@@ -450,6 +452,57 @@
             android:textStyle="bold"
             app:cornerRadius="22dp" />
 
+    </LinearLayout>
+
+    <!-- Unavailable Overlay (Hidden by default) -->
+    <LinearLayout
+        android:id="@+id/layoutUnavailableOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#E6FAF7F5"
+        android:clickable="true"
+        android:elevation="20dp"
+        android:focusable="true"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="32dp"
+        android:visibility="gone">
+
+        <ImageView
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:contentDescription="Unavailable"
+            android:src="@android:drawable/ic_dialog_alert"
+            app:tint="#DC3545" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Listing Unavailable"
+            android:textColor="#1F1614"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvUnavailableReason"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:textColor="#665B55"
+            android:textSize="15sp"
+            tools:text="This listing is currently unavailable for viewing requests." />
+
+        <Button
+            android:id="@+id/btnBackToDiscover"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:backgroundTint="#BA5536"
+            android:text="Back to Discover"
+            android:textColor="#FFFFFF"
+            app:cornerRadius="20dp" />
     </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

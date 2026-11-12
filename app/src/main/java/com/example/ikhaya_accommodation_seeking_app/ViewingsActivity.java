@@ -288,7 +288,7 @@ public class ViewingsActivity extends AppCompatActivity {
 
         // Appointment Date
         TextView tvDate = new TextView(this);
-        tvDate.setText("🗓 " + date);
+        tvDate.setText(date);
         tvDate.setTextSize(13);
         tvDate.setTextColor(Color.parseColor("#BA5536"));
         tvDate.setTypeface(null, Typeface.BOLD);
@@ -302,7 +302,7 @@ public class ViewingsActivity extends AppCompatActivity {
 
         // Address
         TextView tvLocation = new TextView(this);
-        tvLocation.setText("📍 " + location);
+        tvLocation.setText(location);
         tvLocation.setTextSize(13);
         tvLocation.setTextColor(Color.parseColor("#8C7A70"));
         LinearLayout.LayoutParams locationParams = new LinearLayout.LayoutParams(

@@ -334,6 +334,8 @@ public class LoginActivity extends AppCompatActivity {
      * Passes the user's full name to AdminDashboardActivity so the header greets them personally.
      */
     private void routeUser(String role, String fullName) {
+        Toast.makeText(getApplicationContext(), R.string.logged_in_successfully, Toast.LENGTH_SHORT).show();
+
         Intent intent;
 
         if ("landlord".equalsIgnoreCase(role)) {

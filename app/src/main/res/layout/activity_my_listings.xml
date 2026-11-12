@@ -26,7 +26,7 @@
 
     <!-- Screen Title -->
     <TextView
-        android:id="@+id/txtMyListingsTitle"
+        android:id="@+id/tvPageTitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
@@ -54,7 +54,7 @@
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/txtMyListingsTitle" />
+        app:layout_constraintTop_toBottomOf="@id/tvPageTitle" />
 
     <!-- Scrollable Listings Container -->
     <ScrollView
@@ -67,7 +67,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/txtMyListingsTitle">
+        app:layout_constraintTop_toBottomOf="@id/tvPageTitle">
 
         <LinearLayout
             android:id="@+id/myListingsContainer"

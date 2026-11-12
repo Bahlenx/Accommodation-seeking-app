@@ -807,7 +807,7 @@
     <string name="rule_fenced">Ibiyelwe Ngaphandle</string>
 
     <!-- Dynamic Formatters -->
-    <string name="listing_location_pin">📍 %1$s</string>
+    <string name="listing_location_pin">%1$s</string>
     <string name="listing_price_month">R %1$s / mnd</string>
     <string name="listing_rooms_tag">%1$s amagqabi</string>
 
@@ -1077,4 +1077,42 @@
     <string name="title_request_sent">Isicelo Sithunyelwe</string>
     <string name="action_delete_chat">Cima Incoko</string>
 
+    <!-- New UI & Analytics Strings -->
+    <string name="card_title_viewing_tickets">Amathikithi Okubona</string>
+    <string name="card_subtitle_viewing_tickets">Iziphakamiso zonke zokubona</string>
+    <string name="card_title_support_issue_tickets">Amathikithi Inkxaso neGqugquzelo</string>
+    <string name="card_subtitle_support_issue_tickets">Iingxelo zenkxaso ezilindeleyo</string>
+    <string name="label_past_7_days">Iintsuku ezi-7 ezedluleyo</string>
+    <string name="subtitle_realtime_engagement">Ukubandakanyeka kwabaqashi neendawo intyds</string>
+    <string name="label_analytics_searches">IziPhando</string>
+    <string name="label_analytics_views">Ukubonwa Kweendawo</string>
+    <string name="label_analytics_bookings">Ukubona Kwenziwe</string>
+    <string name="label_admin_approval_clearance">Ugunyaziso Lokuvisisa loMlawuli</string>
+    <string name="total_purchase_price_r">Ixabiso Lilonke Lokuthenga (R)</string>
+    <string name="msg_gps_captured">Iilungelelanisi zeGPS zibanjwe!</string>
+    <string name="msg_searching_gps">Inyuka uphawu lweGPS…</string>
+    <string name="msg_location_permission_required">Igunya lendawo liyadingeka.</string>
+    <string name="badge_for_sale">IYATENGISWA</string>
+    <string name="badge_for_rent">IYARHAFISWA</string>
+    <string name="label_enquiry_phone_prefix">Inombolo yefoni: %1$s</string>
+    <string name="label_enquiry_email_prefix">I-imeyile: %1$s</string>
+    <string name="label_enquiry_message_header">Umyalezo:</string>
+    <string name="btn_approve_contact">Vumela ikhontakthi</string>
+    <string name="btn_deny_contact">Gatya</string>
+
+    <!-- Landlord Verification Strings -->
+    <string name="title_landlord_identity_verification">Uqinisekiso Lwesazisi Somnini-ndawo</string>
+    <string name="label_sa_id_number_13">Inombolo ye-ID yaseMzantsi Afrika (Izinombolo ezi-13)</string>
+    <string name="hint_sa_id_13_digit">Inombolo ye-ID yaseMzantsi Afrika enezinhlamvu ezi-13</string>
+    <string name="btn_upload_id_doc">Layisha Uxwebhu lwe-ID (Ikhadi / Inyanda)</string>
+    <string name="status_no_doc_selected">Akukho xwebhu lukhethiweyo</string>
+    <string name="btn_take_upload_selfie">Thatha / Layisha Isithombe se-Selfie</string>
+    <string name="status_no_selfie_uploaded">Akukho sithombe sisefakiweyo</string>
+    <string name="btn_verify_id">QINISEKISA ID</string>
+    <string name="title_landlord_id_review">Uhlolo Lwesazisi Somnini-ndawo</string>
+    <string name="btn_view_id_doc">Khangela ID</string>
+    <string name="btn_view_selfie">Khangela Isithombe</string>
+    <string name="btn_approve_landlord_identity">Amkela Isazisi Somnini-ndawo</string>
+    <string name="label_landlord_name_prefix">Umnini-ndawo: %1$s</string>
+    <string name="label_sa_id_prefix">RSA ID: %1$s</string>
 </resources>

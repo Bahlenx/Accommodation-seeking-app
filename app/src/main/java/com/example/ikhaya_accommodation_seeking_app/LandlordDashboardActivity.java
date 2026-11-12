@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -294,11 +295,6 @@ public class LandlordDashboardActivity extends AppCompatActivity {
             return;
         }
 
-        if (txtNoListings != null && (listingsContainer == null || listingsContainer.getChildCount() == 0)) {
-            txtNoListings.setText(R.string.loading_listings);
-            txtNoListings.setVisibility(View.VISIBLE);
-        }
-
         executor.execute(() -> {
             try {
                 JSONArray listings = fetchRows(
@@ -306,7 +302,7 @@ public class LandlordDashboardActivity extends AppCompatActivity {
                         token
                 );
 
-                int total = listings.length();
+                int total = 0;
                 int available = 0;
                 int pending = 0;
 
@@ -314,14 +310,20 @@ public class LandlordDashboardActivity extends AppCompatActivity {
                     JSONObject listing = listings.optJSONObject(i);
                     if (listing == null) continue;
 
-                    String availability = listing.optString("availability", "");
-                    String status = listing.optString("status", "");
+                    boolean isArchived = listing.optBoolean("is_archived", false);
+                    String status = listing.optString("status", "").toUpperCase().trim();
 
-                    if ("available".equalsIgnoreCase(availability) || "available".equalsIgnoreCase(status)
-                            || "approved".equalsIgnoreCase(status)) {
-                        available++;
+                    // Exclude deleted or archived listings from active dashboard stats
+                    if (isArchived || "DELETED".equals(status) || "REMOVED_BY_ADMIN".equals(status)) {
+                        continue;
                     }
-                    if ("pending".equalsIgnoreCase(availability) || "pending".equalsIgnoreCase(status)) {
+
+                    total++;
+
+                    if ("APPROVED".equals(status) || "VERIFIED".equals(status)) {
+                        available++;
+                    } else if ("PENDING".equals(status) || "PENDING_VERIFICATION".equals(status)
+                            || "SUSPENDED_FOR_REVERIFICATION".equals(status) || "CHANGES_PENDING_REVIEW".equals(status)) {
                         pending++;
                     }
                 }
@@ -378,11 +380,66 @@ public class LandlordDashboardActivity extends AppCompatActivity {
         View editButton = card.findViewById(R.id.btnEditListing);
         View deleteButton = card.findViewById(R.id.btnDeleteListing);
 
+        TextView tvBadge = card.findViewById(R.id.tvLandlordStatusBadge);
+        LinearLayout layoutAlert = card.findViewById(R.id.layoutReverificationAlert);
+        TextView tvReason = card.findViewById(R.id.tvReverificationReason);
+
         String listingId = listing.optString("id", "");
         String propertyName = firstValue(listing, "property_name", "title", "name");
         String propertyLocation = firstValue(listing, "location", "address", "area");
         String propertyPrice = firstValue(listing, "price", "monthly_price");
         String propertyRooms = firstValue(listing, "rooms", "bedrooms", "room_count");
+        String status = listing.optString("status", "PENDING_VERIFICATION");
+        String reverificationReason = listing.optString("reverification_reason", "");
+        String rejectionReason = listing.optString("rejection_reason", "");
+
+        if (tvBadge != null) {
+            switch (status.toUpperCase()) {
+                case "SUSPENDED_FOR_REVERIFICATION":
+                    tvBadge.setText("SUSPENDED");
+                    tvBadge.setBackgroundColor(Color.parseColor("#DC3545"));
+                    tvBadge.setTextColor(Color.WHITE);
+                    if (layoutAlert != null && tvReason != null) {
+                        layoutAlert.setVisibility(View.VISIBLE);
+                        tvReason.setText("Action Required: " + (!reverificationReason.isEmpty() ? reverificationReason : "Address or authority proof updated. Re-verification required."));
+                    }
+                    break;
+
+                case "CHANGES_PENDING_REVIEW":
+                    tvBadge.setText("EDITS PENDING");
+                    tvBadge.setBackgroundColor(Color.parseColor("#2CA8FF"));
+                    tvBadge.setTextColor(Color.WHITE);
+                    if (layoutAlert != null) layoutAlert.setVisibility(View.GONE);
+                    break;
+
+                case "PENDING_VERIFICATION":
+                case "PENDING":
+                    tvBadge.setText("PENDING APPROVAL");
+                    tvBadge.setBackgroundColor(Color.parseColor("#FFC107"));
+                    tvBadge.setTextColor(Color.BLACK);
+                    if (layoutAlert != null) layoutAlert.setVisibility(View.GONE);
+                    break;
+
+                case "APPROVED":
+                case "VERIFIED":
+                    tvBadge.setText("ACTIVE");
+                    tvBadge.setBackgroundColor(Color.parseColor("#28A745"));
+                    tvBadge.setTextColor(Color.WHITE);
+                    if (layoutAlert != null) layoutAlert.setVisibility(View.GONE);
+                    break;
+
+                case "REJECTED":
+                default:
+                    tvBadge.setText("REJECTED");
+                    tvBadge.setBackgroundColor(Color.parseColor("#6C757D"));
+                    tvBadge.setTextColor(Color.WHITE);
+                    if (layoutAlert != null && tvReason != null) {
+                        layoutAlert.setVisibility(View.VISIBLE);
+                        tvReason.setText("Rejection Reason: " + (!rejectionReason.isEmpty() ? rejectionReason : "Listing details require corrections."));
+                    }
+                    break;
+            }
+        }
 
         if (name != null) {
             name.setText(propertyName.isEmpty() ? getString(R.string.accommodation) : propertyName);
@@ -557,74 +614,81 @@ public class LandlordDashboardActivity extends AppCompatActivity {
         badgeLoading = true;
 
         executor.execute(() -> {
-            boolean unseenEnquiries = false;
-            boolean unseenChatRequests = false;
-            boolean unseenNotifications = false;
-            boolean unseenRentalApplications = false;
-            boolean unseenViewingRequests = false;
-            boolean unseenMessages = false;
-            int exactUnreadMessageCount = 0;
+            int pendingEnquiries = 0;
+            int pendingChatRequests = 0;
+            int unreadDirectMessages = 0;
+            boolean hasUnseenNotifications = false;
+            boolean hasUnseenRentals = false;
+            boolean hasUnseenViewings = false;
 
             String encodedId = SupabaseHelper.encode(userId);
 
+            // A. Tenant Enquiries awaiting reply
             try {
-                JSONArray rows = fetchRows("/rest/v1/enquiries?select=id&landlord_uid=eq." + encodedId, token);
-                unseenEnquiries = LandlordNotificationState.hasUnseen(getApplicationContext(), "enquiries", userId, rows);
+                JSONArray rows = fetchRows("/rest/v1/enquiries?select=id,status&landlord_uid=eq." + encodedId + "&status=ilike.Pending", token);
+                pendingEnquiries = rows.length();
             } catch (Exception ignored) {}
 
+            // B. Pending Chat Requests from Residents
             try {
-                JSONArray rows = fetchRows("/rest/v1/chat_requests?select=id&receiver_id=eq." + encodedId + "&status=eq.pending", token);
-                unseenChatRequests = LandlordNotificationState.hasUnseen(getApplicationContext(), "chat", userId, rows);
+                JSONArray rows = fetchRows("/rest/v1/chat_requests?select=id,status&receiver_id=eq." + encodedId + "&status=eq.pending", token);
+                pendingChatRequests = rows.length();
             } catch (Exception ignored) {}
 
-            try {
-                JSONArray rows = fetchRows("/rest/v1/notifications?select=id&user_uid=eq." + encodedId, token);
-                unseenNotifications = LandlordNotificationState.hasUnseen(getApplicationContext(), "notifications", userId, rows);
-            } catch (Exception ignored) {}
-
-            try {
-                JSONArray rows = fetchRows("/rest/v1/rental_applications?select=id&landlord_uid=eq." + encodedId + "&status=eq.PENDING", token);
-                unseenRentalApplications = LandlordNotificationState.hasUnseen(getApplicationContext(), "rental_applications", userId, rows);
-            } catch (Exception ignored) {}
-
-            try {
-                JSONArray rows = fetchRows("/rest/v1/viewings?select=id&landlord_uid=eq." + encodedId + "&status=eq." + SupabaseHelper.encode("Pending Host"), token);
-                unseenViewingRequests = rows.length() > 0;
-            } catch (Exception ignored) {}
-
+            // C. Direct Messages received
             try {
                 JSONArray rows = fetchRows("/rest/v1/messages?select=id&receiver_id=eq." + encodedId, token);
-                Set<String> seenIds = LandlordNotificationState.seen(getApplicationContext(), "messages", userId);
-
+                SharedPreferences prefs = getSharedPreferences("ikhaya_seen_messages", MODE_PRIVATE);
+                String seenStr = prefs.getString("seen_ids_" + userId, "");
                 for (int i = 0; i < rows.length(); i++) {
-                    if (!seenIds.contains(rows.getJSONObject(i).optString("id"))) {
-                        exactUnreadMessageCount++;
+                    String msgId = rows.getJSONObject(i).optString("id", "");
+                    if (!msgId.isEmpty() && !seenStr.contains(msgId)) {
+                        unreadDirectMessages++;
                     }
                 }
-                unseenMessages = exactUnreadMessageCount > 0;
             } catch (Exception ignored) {}
 
-            boolean showEnquiries = unseenEnquiries;
-            boolean showRentals = unseenRentalApplications;
-            boolean showViewings = unseenViewingRequests;
-            boolean showMessages = unseenMessages;
-            boolean showMainNotification = unseenEnquiries || unseenChatRequests || unseenNotifications
-                    || unseenRentalApplications || unseenMessages || unseenViewingRequests;
+            // D. General System Notifications
+            try {
+                JSONArray rows = fetchRows("/rest/v1/notifications?select=id&user_uid=eq." + encodedId, token);
+                hasUnseenNotifications = rows.length() > 0;
+            } catch (Exception ignored) {}
 
-            int finalMsgCount = exactUnreadMessageCount;
+            // E. Rental Applications pending approval
+            try {
+                JSONArray rows = fetchRows("/rest/v1/rental_applications?select=id&landlord_uid=eq." + encodedId + "&status=eq.PENDING", token);
+                hasUnseenRentals = rows.length() > 0;
+            } catch (Exception ignored) {}
+
+            // F. Viewing requests
+            try {
+                JSONArray rows = fetchRows("/rest/v1/viewings?select=id&landlord_uid=eq." + encodedId + "&status=eq." + SupabaseHelper.encode("Pending Host"), token);
+                hasUnseenViewings = rows.length() > 0;
+            } catch (Exception ignored) {}
+
+            // Total items needing response = unread direct messages
+            boolean showBellDot = hasUnseenNotifications || (unreadDirectMessages > 0) || (pendingChatRequests > 0) || (pendingEnquiries > 0) || hasUnseenRentals || hasUnseenViewings;
+
+            final int finalChatCount = unreadDirectMessages;
+            final boolean fShowBell = showBellDot;
+            final boolean fShowEnquiries = pendingEnquiries > 0;
+            final boolean fShowRentals = hasUnseenRentals;
+            final boolean fShowViewings = hasUnseenViewings;
+            final boolean fShowMessages = finalChatCount > 0;
+
             badgeLoading = false;
 
             runOnUiThread(() -> {
                 if (!dashboardVisible || isFinishing() || isDestroyed()) return;
 
-                setDot(txtNotificationBadge, showMainNotification);
-                setDot(landlordMessageDot, showMessages);
-                setDot(enquiriesCardDot, showEnquiries);
-                setDot(rentalApplicationsCardDot, showRentals);
-                setDot(viewingRequestsCardDot, showViewings);
+                setDot(txtNotificationBadge, fShowBell);
+                setDot(landlordMessageDot, fShowMessages);
+                setDot(enquiriesCardDot, fShowEnquiries);
+                setDot(rentalApplicationsCardDot, fShowRentals);
+                setDot(viewingRequestsCardDot, fShowViewings);
 
                 if (txtUnreadMessagesCard != null) {
-                    txtUnreadMessagesCard.setText(String.valueOf(finalMsgCount));
+                    txtUnreadMessagesCard.setText(String.valueOf(finalChatCount));
                 }
             });
         });

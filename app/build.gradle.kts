@@ -27,9 +27,12 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
+        // Inject the API key into BuildConfig:
         buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     buildFeatures {
@@ -71,4 +74,5 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:32.8.0"))
     // Add Firebase Analytics
     implementation("com.google.firebase:firebase-analytics")
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 }

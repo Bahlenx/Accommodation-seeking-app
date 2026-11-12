@@ -18,6 +18,19 @@
         android:textColor="#212529" />
 
     <TextView
+        android:id="@+id/tvStatusBadge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:background="#E0E0E0"
+        android:paddingHorizontal="8dp"
+        android:paddingVertical="2dp"
+        android:text="PENDING_VERIFICATION"
+        android:textColor="#1F1614"
+        android:textSize="11sp"
+        android:textStyle="bold" />
+
+    <TextView
         android:id="@+id/tvListingDetails"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

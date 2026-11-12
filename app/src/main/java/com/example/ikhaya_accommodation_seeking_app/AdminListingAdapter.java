@@ -3,6 +3,7 @@ package com.example.ikhaya_accommodation_seeking_app;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.LayoutInflater;
@@ -55,6 +56,21 @@ public class AdminListingAdapter extends RecyclerView.Adapter<AdminListingAdapte
         holder.tvListingTitle.setText(listing.getTitle());
         holder.tvListingDetails.setText(listing.getDetails());
         holder.tvLandlordInfo.setText("Submitted by: " + listing.getLandlordName());
+
+        if (holder.tvStatusBadge != null) {
+            String status = listing.getStatus() != null ? listing.getStatus() : "PENDING_VERIFICATION";
+            holder.tvStatusBadge.setText(status);
+            if ("SUSPENDED_FOR_REVERIFICATION".equalsIgnoreCase(status)) {
+                holder.tvStatusBadge.setBackgroundColor(Color.parseColor("#DC3545"));
+                holder.tvStatusBadge.setTextColor(Color.WHITE);
+            } else if ("CHANGES_PENDING_REVIEW".equalsIgnoreCase(status)) {
+                holder.tvStatusBadge.setBackgroundColor(Color.parseColor("#2CA8FF"));
+                holder.tvStatusBadge.setTextColor(Color.WHITE);
+            } else {
+                holder.tvStatusBadge.setBackgroundColor(Color.parseColor("#BA5536"));
+                holder.tvStatusBadge.setTextColor(Color.WHITE);
+            }
+        }
 
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, AdminInspectionActivity.class);
@@ -169,7 +185,7 @@ public class AdminListingAdapter extends RecyclerView.Adapter<AdminListingAdapte
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvListingTitle, tvListingDetails, tvLandlordInfo;
+        TextView tvListingTitle, tvListingDetails, tvLandlordInfo, tvStatusBadge;
         Button btnRejectListing, btnApproveListing;
 
         public ViewHolder(@NonNull View itemView) {
@@ -177,6 +193,7 @@ public class AdminListingAdapter extends RecyclerView.Adapter<AdminListingAdapte
             tvListingTitle = itemView.findViewById(R.id.tvListingTitle);
             tvListingDetails = itemView.findViewById(R.id.tvListingDetails);
             tvLandlordInfo = itemView.findViewById(R.id.tvLandlordInfo);
+            tvStatusBadge = itemView.findViewById(R.id.tvStatusBadge);
             btnRejectListing = itemView.findViewById(R.id.btnRejectListing);
             btnApproveListing = itemView.findViewById(R.id.btnApproveListing);
         }
