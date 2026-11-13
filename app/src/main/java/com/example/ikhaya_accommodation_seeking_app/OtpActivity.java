@@ -156,7 +156,8 @@ public class OtpActivity extends AppCompatActivity {
                         if (resendTimer != null) resendTimer.cancel();
                         btnSendOtp.setEnabled(true);
                         btnSendOtp.setText(R.string.btn_send_otp_code);
-                        Toast.makeText(this, getString(R.string.error_failed_send_otp_prefix) + finalResponse, Toast.LENGTH_LONG).show();
+                        android.util.Log.e("OtpActivity", "Failed to send OTP: " + finalResponse);
+                        Toast.makeText(this, "Could not send verification code right now. Please wait a moment and try again.", Toast.LENGTH_LONG).show();
                     }
                 });
             } catch (Exception e) {
@@ -164,7 +165,8 @@ public class OtpActivity extends AppCompatActivity {
                     if (resendTimer != null) resendTimer.cancel();
                     btnSendOtp.setEnabled(true);
                     btnSendOtp.setText(R.string.btn_send_otp_code);
-                    Toast.makeText(this, getString(R.string.error_sending_otp_prefix) + e.getMessage(), Toast.LENGTH_LONG).show();
+                    android.util.Log.e("OtpActivity", "Error sending OTP", e);
+                    Toast.makeText(this, "Could not send verification code right now. Please wait a moment and try again.", Toast.LENGTH_LONG).show();
                 });
             }
         }).start();

@@ -293,13 +293,15 @@ public class NotificationsActivity extends AppCompatActivity {
                         }
                     } else {
                         adapter.notifyItemChanged(position); // Restore row if failed
-                        Toast.makeText(this, "Failed to dismiss: HTTP " + code, Toast.LENGTH_SHORT).show();
+                        android.util.Log.e("Notifications", "Failed to dismiss: HTTP " + code);
+                        Toast.makeText(this, "Could not dismiss notification. Please check your connection.", Toast.LENGTH_SHORT).show();
                     }
                 });
             } catch (Exception e) {
                 runOnUiThread(() -> {
                     adapter.notifyItemChanged(position);
-                    Toast.makeText(this, "Error deleting: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    android.util.Log.e("Notifications", "Error deleting notification", e);
+                    Toast.makeText(this, "Could not dismiss notification. Please check your connection.", Toast.LENGTH_SHORT).show();
                 });
             }
         });
@@ -325,11 +327,13 @@ public class NotificationsActivity extends AppCompatActivity {
                                     if (btnClearAllNotifications != null) btnClearAllNotifications.setVisibility(View.GONE);
                                     Toast.makeText(this, "All notifications cleared.", Toast.LENGTH_SHORT).show();
                                 } else {
-                                    Toast.makeText(this, "Failed to clear all: HTTP " + code, Toast.LENGTH_SHORT).show();
+                                    android.util.Log.e("Notifications", "Failed to clear all: HTTP " + code);
+                                    Toast.makeText(this, "Could not clear notifications right now. Please try again.", Toast.LENGTH_SHORT).show();
                                 }
                             });
                         } catch (Exception e) {
-                            runOnUiThread(() -> Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                            android.util.Log.e("Notifications", "Error clearing notifications", e);
+                            runOnUiThread(() -> Toast.makeText(this, "Could not clear notifications right now. Please try again.", Toast.LENGTH_SHORT).show());
                         }
                     });
                 })

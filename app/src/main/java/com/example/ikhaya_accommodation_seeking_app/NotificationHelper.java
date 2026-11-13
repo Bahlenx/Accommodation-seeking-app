@@ -491,7 +491,7 @@ public final class NotificationHelper {
                 String role = context.getSharedPreferences("iKhayaSession", Context.MODE_PRIVATE).getString("USER_ROLE", "tenant");
                 if ("tenant".equalsIgnoreCase(role)) {
                     conn = SupabaseHelper.createConnection(
-                            "/rest/v1/rental_applications?select=id,status,property_name&tenant_uid=eq." + userId,
+                            "/rest/v1/rental_applications?select=id,status,applicant_name,listing_id&tenant_uid=eq." + userId,
                             "GET", token);
                     if (conn.getResponseCode() >= 200 && conn.getResponseCode() < 300) {
                         JSONArray apps = new JSONArray(SupabaseHelper.readResponse(conn));
@@ -499,13 +499,12 @@ public final class NotificationHelper {
                             JSONObject app = apps.getJSONObject(i);
                             String appId = app.optString("id", "");
                             String status = app.optString("status", "PENDING").toUpperCase();
-                            String propName = app.optString("property_name", "your accommodation");
                             String savedStatus = statePrefs.getString("APP_STATUS_" + appId, "");
                             
                             if (!savedStatus.isEmpty() && !savedStatus.equals(status) && isCategoryEnabled(context, "PREF_APPLICATIONS")) {
                                 anyUnread = true;
                                 String notifTitle = "APPROVED".equals(status) ? "🎉 Rental Application Approved!" : ("REJECTED".equals(status) || "DECLINED".equals(status) ? "Rental Application Update" : "Application Status Updated");
-                                String notifBody = "APPROVED".equals(status) ? "Great news! Your application for " + propName + " has been approved." : ("REJECTED".equals(status) || "DECLINED".equals(status) ? "Your application for " + propName + " was not approved. Tap to view details." : "Your application for " + propName + " is now " + status + ".");
+                                String notifBody = "APPROVED".equals(status) ? "Great news! Your rental application has been approved." : ("REJECTED".equals(status) || "DECLINED".equals(status) ? "Your rental application was not approved. Tap to view details." : "Your rental application status is now " + status + ".");
                                 showPhoneNotification(context, notifTitle, notifBody, ApplicationsActivity.class, ("app_" + appId).hashCode());
                             }
                             statePrefs.edit().putString("APP_STATUS_" + appId, status).apply();
@@ -514,15 +513,35 @@ public final class NotificationHelper {
                             if (("APPROVED".equals(status) || "ACTIVE".equals(status)) && !statePrefs.getBoolean("RENT_REMINDER_SENT_" + appId, false) && isCategoryEnabled(context, "PREF_RENT_REMINDERS")) {
                                 statePrefs.edit().putBoolean("RENT_REMINDER_SENT_" + appId, true).apply();
                                 anyUnread = true;
-                                showPhoneNotification(context, "📅 Upcoming Rent Reminder", "Friendly reminder: Monthly rent for " + propName + " is due on the 1st of the month.", NotificationsActivity.class, ("rent_" + appId).hashCode());
+                                showPhoneNotification(context, "📅 Upcoming Rent Reminder", "Friendly reminder: Monthly rent for your active lease is due on the 1st of the month.", NotificationsActivity.class, ("rent_" + appId).hashCode());
                             }
                         }
                     }
                     conn.disconnect();
+                    
+                    if (isCategoryEnabled(context, "PREF_VIEWINGS")) {
+                        HttpURLConnection vConn = SupabaseHelper.createConnection("/rest/v1/viewings?select=id,property_name,viewing_date,status&tenant_uid=eq." + userId, "GET", token);
+                        if (vConn.getResponseCode() >= 200 && vConn.getResponseCode() < 300) {
+                            JSONArray vArr = new JSONArray(SupabaseHelper.readResponse(vConn));
+                            for (int i = 0; i < vArr.length(); i++) {
+                                JSONObject vObj = vArr.getJSONObject(i);
+                                String vId = vObj.optString("id", "");
+                                String vStat = vObj.optString("status", "").toUpperCase();
+                                String savedVStat = statePrefs.getString("VIEWING_STATE_" + vId, "");
+                                if (!savedVStat.isEmpty() && !savedVStat.equals(vStat)) {
+                                    anyUnread = true;
+                                    showPhoneNotification(context, "📅 Viewing " + vStat, "Your viewing for " + vObj.optString("property_name", "a property") + " (" + vObj.optString("viewing_date", "") + ") is now " + vStat + ".", ViewingsActivity.class, ("v_" + vId).hashCode());
+                                }
+                                statePrefs.edit().putString("VIEWING_STATE_" + vId, vStat).apply();
+                            }
+                        }
+                        vConn.disconnect();
+                    }
+                    
                 } else if ("landlord".equalsIgnoreCase(role)) {
                     // Check Landlord Rental Applications
                     conn = SupabaseHelper.createConnection(
-                            "/rest/v1/rental_applications?select=id,property_name,status&landlord_uid=eq." + userId + "&order=created_at.desc&limit=1",
+                            "/rest/v1/rental_applications?select=id,applicant_name,status&landlord_uid=eq." + userId + "&order=created_at.desc&limit=1",
                             "GET", token);
                     if (conn.getResponseCode() >= 200 && conn.getResponseCode() < 300) {
                         JSONArray lApps = new JSONArray(SupabaseHelper.readResponse(conn));
@@ -533,11 +552,29 @@ public final class NotificationHelper {
                             if (!lAppId.isEmpty() && !lAppId.equals(savedLAppId) && isCategoryEnabled(context, "PREF_APPLICATIONS")) {
                                 anyUnread = true;
                                 statePrefs.edit().putString("LAST_LANDLORD_APP_ID", lAppId).apply();
-                                showPhoneNotification(context, "📋 New Rental Application", "A tenant submitted a rental application for " + aObj.optString("property_name", "your listing") + ". Tap to review.", ApplicationsActivity.class, ("lapp_" + lAppId).hashCode());
+                                showPhoneNotification(context, "📋 New Rental Application", aObj.optString("applicant_name", "A tenant") + " submitted a new rental application. Tap to review.", ApplicationsActivity.class, ("lapp_" + lAppId).hashCode());
                             }
                         }
                     }
                     conn.disconnect();
+                    
+                    if (isCategoryEnabled(context, "PREF_VIEWINGS")) {
+                        HttpURLConnection vConn = SupabaseHelper.createConnection("/rest/v1/viewings?select=id,property_name,viewing_date,status&landlord_uid=eq." + userId + "&order=created_at.desc&limit=1", "GET", token);
+                        if (vConn.getResponseCode() >= 200 && vConn.getResponseCode() < 300) {
+                            JSONArray vArr = new JSONArray(SupabaseHelper.readResponse(vConn));
+                            if (vArr.length() > 0) {
+                                JSONObject vObj = vArr.getJSONObject(0);
+                                String vId = vObj.optString("id", "");
+                                String savedVId = statePrefs.getString("LAST_LANDLORD_VIEWING_ID", "");
+                                if (!vId.isEmpty() && !vId.equals(savedVId)) {
+                                    anyUnread = true;
+                                    statePrefs.edit().putString("LAST_LANDLORD_VIEWING_ID", vId).apply();
+                                    showPhoneNotification(context, "📅 New Viewing Scheduled", "A tenant scheduled a viewing for " + vObj.optString("property_name", "your listing") + " on " + vObj.optString("viewing_date", "an upcoming date") + ".", UserSelectionActivity.class, ("lv_" + vId).hashCode());
+                                }
+                            }
+                        }
+                        vConn.disconnect();
+                    }
                     
                     // G. Landlord Verifications and Listings
                     if (isCategoryEnabled(context, "PREF_LISTING_AND_VERIFY")) {
@@ -618,7 +655,10 @@ public final class NotificationHelper {
                             String savedRptId = statePrefs.getString("LAST_ADMIN_RPT_ID", "");
                             if (!rptId.isEmpty() && !rptId.equals(savedRptId)) {
                                 statePrefs.edit().putString("LAST_ADMIN_RPT_ID", rptId).apply();
-                                showPhoneNotification(context, "New Support Ticket", 
+                                String issueType = rpt.optString("issue_type", "").trim();
+                                if (issueType.equalsIgnoreCase("null")) issueType = "";
+                                String title = !issueType.isEmpty() ? "🛠️ Ticket: " + issueType : "🛠️ New Support Ticket";
+                                showPhoneNotification(context, title, 
                                         cleanPreview(rpt.optString("reason", "A new issue was reported.")), 
                                         AdminReportsActivity.class, ("adm_r_" + rptId).hashCode());
                             }

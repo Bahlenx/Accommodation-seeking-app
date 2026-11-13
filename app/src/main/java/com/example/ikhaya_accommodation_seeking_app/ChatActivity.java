@@ -508,7 +508,7 @@ public class ChatActivity extends AppCompatActivity {
                     runOnUiThread(() -> {
                         pollHandler.removeCallbacks(pollRunnable);
                         if (!isFinishing() && !isDestroyed()) {
-                            Toast.makeText(this, getString(R.string.error_load_messages_http) + " " + code, Toast.LENGTH_LONG).show();
+                            Toast.makeText(this, "Could not load messages. Please check your connection.", Toast.LENGTH_LONG).show();
                             Log.e(TAG, "Fetch messages HTTP " + code + ": " + response);
                         }
                     });
@@ -919,7 +919,10 @@ public class ChatActivity extends AppCompatActivity {
                         String base64Image = Base64.encodeToString(imageBytes, Base64.NO_WRAP);
 
                         String payload = "[IMAGE_BASE64]:" + base64Image;
-                        runOnUiThread(() -> sendPayload(payload));
+                        runOnUiThread(() -> {
+                            Toast.makeText(ChatActivity.this, "Sending photo...", Toast.LENGTH_SHORT).show();
+                            sendPayload(payload);
+                        });
                     }
                 } else if (mimeType != null && mimeType.equals("application/pdf")) {
                     String fileName = getString(R.string.default_document_filename);
@@ -945,7 +948,10 @@ public class ChatActivity extends AppCompatActivity {
                     String base64Pdf = Base64.encodeToString(pdfBytes, Base64.NO_WRAP);
 
                     String payload = "[PDF_FILE]:" + fileName + "|" + base64Pdf;
-                    runOnUiThread(() -> sendPayload(payload));
+                    runOnUiThread(() -> {
+                        Toast.makeText(ChatActivity.this, "Sending PDF document...", Toast.LENGTH_SHORT).show();
+                        sendPayload(payload);
+                    });
                 }
             } catch (Exception e) {
                 Log.e(TAG, "Error handling file", e);
@@ -1138,7 +1144,7 @@ public class ChatActivity extends AppCompatActivity {
                         finish();
                     });
                 } else {
-                    runOnUiThread(() -> Toast.makeText(this, "Failed to resolve chat (HTTP " + code + ")", Toast.LENGTH_SHORT).show());
+                    runOnUiThread(() -> Toast.makeText(this, "Could not mark chat as resolved. Please try again.", Toast.LENGTH_SHORT).show());
                 }
             } catch (Exception e) {
                 runOnUiThread(() -> Toast.makeText(this, "Error resolving guest chat.", Toast.LENGTH_SHORT).show());
@@ -1260,12 +1266,12 @@ public class ChatActivity extends AppCompatActivity {
                 }
                 
                 if (!success) {
-                    error = getString(R.string.error_send_failed_http) + " " + code + ": " + response;
-                    Log.e(TAG, error);
+                    error = "Could not send message. Please check your internet connection and try again.";
+                    Log.e(TAG, "Send failed: HTTP " + code + ": " + response);
                 }
             } catch (Exception e) {
-                error = getString(R.string.error_sending_message_prefix) + " " + e.getMessage();
-                Log.e(TAG, error);
+                error = "Could not send message. Please check your internet connection and try again.";
+                Log.e(TAG, getString(R.string.error_sending_message_prefix) + " " + e.getMessage());
             } finally {
                 if (connection != null) {
                     connection.disconnect();

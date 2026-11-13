@@ -166,7 +166,8 @@ public class PasswordResetOtpActivity extends AppCompatActivity {
                         if (resendTimer != null) resendTimer.cancel();
                         btnSendOtp.setEnabled(true);
                         btnSendOtp.setText("Send Recovery Code");
-                        Toast.makeText(this, "Failed to send code: " + finalResponse, Toast.LENGTH_LONG).show();
+                        android.util.Log.e("PasswordResetOtp", "Failed to send code: " + finalResponse);
+                        Toast.makeText(this, "Could not send verification code right now. Please wait a moment and try again.", Toast.LENGTH_LONG).show();
                     }
                 });
 
@@ -175,7 +176,8 @@ public class PasswordResetOtpActivity extends AppCompatActivity {
                     if (resendTimer != null) resendTimer.cancel();
                     btnSendOtp.setEnabled(true);
                     btnSendOtp.setText("Send Recovery Code");
-                    Toast.makeText(this, "Error sending code: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    android.util.Log.e("PasswordResetOtp", "Error sending code", e);
+                    Toast.makeText(this, "Could not send verification code right now. Please wait a moment and try again.", Toast.LENGTH_LONG).show();
                 });
             }
         }).start();

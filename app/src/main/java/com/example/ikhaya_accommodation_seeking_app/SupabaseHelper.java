@@ -262,8 +262,29 @@ public class SupabaseHelper {
 
     public static void deleteAccountCompletely(android.app.Activity activity, String uid, String token, String email, String reason) {
         java.util.concurrent.Executors.newSingleThreadExecutor().execute(() -> {
-            String targetUid = (uid != null && !uid.isEmpty()) ? uid : getUserId(activity);
+            String loggedInUid = getUserId(activity);
+            final boolean isSelfDelete = (uid == null || uid.isEmpty() || uid.equals(loggedInUid));
+            
+            String targetUid = (uid != null && !uid.isEmpty()) ? uid : loggedInUid;
             String useToken = (token != null && !token.isEmpty()) ? token : getAccessToken(activity);
+
+            try {
+                java.net.HttpURLConnection repConn = createConnection("/rest/v1/reports", "POST", useToken);
+                repConn.setRequestProperty("Prefer", "return=minimal");
+                org.json.JSONObject repBody = new org.json.JSONObject();
+                repBody.put("reporter_uid", targetUid);
+                repBody.put("reporter_id", targetUid);
+                repBody.put("reporter_name", (email != null && !email.isEmpty()) ? email : ("User " + targetUid));
+                repBody.put("reporter_email", email != null ? email : "");
+                repBody.put("reporter_role", isSelfDelete ? "USER" : "ADMIN_ACTION");
+                repBody.put("issue_type", isSelfDelete ? "USER ACCOUNT DELETION" : "ADMIN ACCOUNT DELETION");
+                repBody.put("reason", "ACCOUNT DELETED");
+                repBody.put("description", reason != null ? reason : "User requested account deletion");
+                repBody.put("status", isSelfDelete ? "open" : "RESOLVED");
+                writeJson(repConn, repBody);
+                repConn.getResponseCode();
+                repConn.disconnect();
+            } catch (Exception ignored) {}
 
             try {
                 java.net.HttpURLConnection rpcConn = createConnection("/rest/v1/rpc/delete_ikhaya_user", "POST", useToken);
@@ -277,13 +298,18 @@ public class SupabaseHelper {
             } catch (Exception ignored) {}
 
             activity.runOnUiThread(() -> {
-                clearSession(activity);
-                activity.getSharedPreferences("iKhayaSession", android.content.Context.MODE_PRIVATE).edit().clear().apply();
-                android.widget.Toast.makeText(activity, "Your account has been permanently deleted.", android.widget.Toast.LENGTH_LONG).show();
-                android.content.Intent intent = new android.content.Intent(activity, OuterMainActivity.class);
-                intent.setFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK | android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                activity.startActivity(intent);
-                activity.finish();
+                if (isSelfDelete) {
+                    clearSession(activity);
+                    activity.getSharedPreferences("iKhayaSession", android.content.Context.MODE_PRIVATE).edit().clear().apply();
+                    android.widget.Toast.makeText(activity, "Your account has been permanently deleted.", android.widget.Toast.LENGTH_LONG).show();
+                    android.content.Intent intent = new android.content.Intent(activity, OuterMainActivity.class);
+                    intent.setFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK | android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    activity.startActivity(intent);
+                    activity.finish();
+                } else {
+                    android.widget.Toast.makeText(activity, "User account has been permanently deleted.", android.widget.Toast.LENGTH_LONG).show();
+                    activity.recreate();
+                }
             });
         });
     }

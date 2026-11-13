@@ -124,12 +124,19 @@ public class ReportProblemActivity extends AppCompatActivity {
         executor.execute(() -> {
             HttpURLConnection connection = null;
             try {
+                String userEmail = prefs.getString("USER_EMAIL", "");
+                String issueTypeTag = category.toUpperCase(java.util.Locale.ROOT);
+                String deviceMeta = "\n[Diagnostics: " + android.os.Build.MANUFACTURER + " " + android.os.Build.MODEL + " • Android " + android.os.Build.VERSION.RELEASE + "]";
+
                 JSONObject report = new JSONObject();
                 report.put("reporter_uid", finalUserId);
+                report.put("reporter_id", finalUserId);
                 report.put("reporter_name", userName);
+                report.put("reporter_email", userEmail);
                 report.put("reporter_role", userRole);
+                report.put("issue_type", issueTypeTag);
                 report.put("reason", category);
-                report.put("description", description);
+                report.put("description", description + deviceMeta);
                 report.put("status", "open");
 
                 connection = SupabaseHelper.createConnection("/rest/v1/reports", "POST", finalAccessToken);
@@ -142,6 +149,8 @@ public class ReportProblemActivity extends AppCompatActivity {
                 if (responseCode >= 400) {
                     errorResponse = SupabaseHelper.readResponse(connection);
                     Log.e(TAG, "HTTP " + responseCode + " - " + errorResponse);
+                } else if (responseCode >= 200 && responseCode < 300) {
+                    SupabaseHelper.notifyAdmins("New Ticket [" + issueTypeTag + "]", userName + " (" + userRole + "): " + description, finalAccessToken);
                 }
 
                 final String finalErr = errorResponse;
@@ -158,15 +167,12 @@ public class ReportProblemActivity extends AppCompatActivity {
                         if (edtProblem != null) edtProblem.setText("");
                         loadMyTickets();
                     } else {
-                        String userMsg = getString(R.string.error_could_not_submit_ticket) + " (HTTP " + responseCode + ").";
-                        if (finalErr.contains("row-level security") || finalErr.contains("42501")) {
-                            userMsg += "\n" + getString(R.string.error_rls_check_failed);
-                        }
-                        Toast.makeText(ReportProblemActivity.this, userMsg, Toast.LENGTH_LONG).show();
+                        Toast.makeText(ReportProblemActivity.this, "Could not submit report right now. Please check your connection and try again.", Toast.LENGTH_LONG).show();
                     }
                 });
 
             } catch (Exception e) {
+                Log.e(TAG, "Exception during ticket submission", e);
                 runOnUiThread(() -> {
                     if (isFinishing() || isDestroyed()) return;
 
@@ -174,7 +180,7 @@ public class ReportProblemActivity extends AppCompatActivity {
                         btnSubmitProblem.setEnabled(true);
                         btnSubmitProblem.setText(R.string.submit_report);
                     }
-                    Toast.makeText(ReportProblemActivity.this, R.string.error_network_submitting_ticket, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ReportProblemActivity.this, "Could not submit report right now. Please check your connection and try again.", Toast.LENGTH_SHORT).show();
                 });
             } finally {
                 if (connection != null) {

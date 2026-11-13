@@ -214,30 +214,12 @@ public class PersonalActivity extends AppCompatActivity {
                         .toString()
                         .trim();
 
-        boolean hasError = false;
-
         if (enteredId.isEmpty()) {
-            idInput.setError("ID Number is required.");
-            idInput.requestFocus();
-            hasError = true;
-        }
-
-        if (province.isEmpty()) {
-            SupabaseHelper.showValidationError(this, provinceInput, "Province is required (tap GPS to auto-fill).");
-            hasError = true;
-        }
-
-        if (city.isEmpty()) {
-            SupabaseHelper.showValidationError(this, cityInput, "City is required (tap GPS to auto-fill).");
-            hasError = true;
-        }
-
-        if (suburb.isEmpty()) {
-            SupabaseHelper.showValidationError(this, suburbInput, "Suburb is required (tap GPS to auto-fill).");
-            hasError = true;
-        }
-
-        if (hasError) {
+            SupabaseHelper.showValidationError(this, idInput, "Please enter your 13-digit South African ID number.");
+            return;
+        } else if (province.isEmpty() || city.isEmpty() || suburb.isEmpty()) {
+            android.widget.EditText firstEmpty = province.isEmpty() ? provinceInput : (city.isEmpty() ? cityInput : suburbInput);
+            SupabaseHelper.showValidationError(this, firstEmpty, "Please tap 'Get GPS Location' to auto-fill your address, or fill in Province, City, and Suburb.");
             return;
         }
 
@@ -574,9 +556,7 @@ public class PersonalActivity extends AppCompatActivity {
                 } else {
 
                     showRegistrationError(
-                            "Supabase registration error: "
-                                    + responseCode
-                                    + "\n"
+                            "Registration could not be completed: "
                                     + extractErrorMessage(response)
                     );
                 }
