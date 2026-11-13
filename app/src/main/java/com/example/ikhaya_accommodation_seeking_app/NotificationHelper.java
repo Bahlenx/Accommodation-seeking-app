@@ -48,6 +48,22 @@ public final class NotificationHelper {
 
     private NotificationHelper() {}
 
+    private static android.graphics.Bitmap getAppIconBitmap(Context context) {
+        try {
+            android.graphics.drawable.Drawable d = androidx.core.content.ContextCompat.getDrawable(context, R.mipmap.ic_launcher);
+            if (d == null) return null;
+            int w = d.getIntrinsicWidth() > 0 ? d.getIntrinsicWidth() : 128;
+            int h = d.getIntrinsicHeight() > 0 ? d.getIntrinsicHeight() : 128;
+            android.graphics.Bitmap bmp = android.graphics.Bitmap.createBitmap(w, h, android.graphics.Bitmap.Config.ARGB_8888);
+            android.graphics.Canvas canvas = new android.graphics.Canvas(bmp);
+            d.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+            d.draw(canvas);
+            return bmp;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     public static void createChannel(Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
@@ -55,7 +71,11 @@ public final class NotificationHelper {
                     "iKhaya Alerts & Reminders",
                     NotificationManager.IMPORTANCE_HIGH
             );
-            channel.setDescription("Notifications for chat messages, listings, viewings, applications, and rent reminders");
+            channel.setDescription("Verified real-time accommodation alerts for iKhaya messages, property viewings, rental applications, and identity verification");
+            channel.enableVibration(true);
+            channel.enableLights(true);
+            channel.setLightColor(android.graphics.Color.parseColor("#B85032"));
+            channel.setShowBadge(true);
             NotificationManager manager = context.getSystemService(NotificationManager.class);
             if (manager != null) {
                 manager.createNotificationChannel(channel);
@@ -95,14 +115,77 @@ public final class NotificationHelper {
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );
 
+        String domain;
+        String category;
+        String groupKey;
+        
+        if (title.contains("Message") || title.contains("Chat") || title.contains("Enquiry")) {
+            domain = "Direct Messaging";
+            category = NotificationCompat.CATEGORY_MESSAGE;
+            groupKey = "IKHAYA_MESSAGES";
+        } else if (title.contains("Viewing") || title.contains("📅")) {
+            domain = "Property Viewing Schedule";
+            category = NotificationCompat.CATEGORY_EVENT;
+            groupKey = "IKHAYA_VIEWINGS";
+        } else if (title.contains("Application") || title.contains("Rent") || title.contains("Lease")) {
+            domain = "Rental & Lease Status";
+            category = NotificationCompat.CATEGORY_STATUS;
+            groupKey = "IKHAYA_APPLICATIONS";
+        } else if (title.contains("Ticket") || title.contains("Verification") || title.contains("ID") || title.contains("Listing")) {
+            domain = "Trust & Verification";
+            category = NotificationCompat.CATEGORY_STATUS;
+            groupKey = "IKHAYA_VERIFICATION";
+        } else {
+            domain = "iKhaya Accommodation";
+            category = NotificationCompat.CATEGORY_RECOMMENDATION;
+            groupKey = "IKHAYA_GENERAL";
+        }
+
+        android.os.Bundle aiExtras = new android.os.Bundle();
+        aiExtras.putString("ikhaya_app_name", "iKhaya");
+        aiExtras.putString("ikhaya_domain", domain);
+        aiExtras.putString("ikhaya_full_title", title);
+        aiExtras.putString("ikhaya_full_details", message);
+        aiExtras.putBoolean("ikhaya_verified_alert", true);
+
+        android.graphics.Bitmap largeLogo = getAppIconBitmap(appContext);
+
         NotificationCompat.Builder builder = new NotificationCompat.Builder(appContext, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_bell)
-                .setContentTitle(title)
-                .setContentText(message)
-                .setStyle(new NotificationCompat.BigTextStyle().bigText(message))
+                .setSmallIcon(R.drawable.ic_ikhaya_app_icon_monochrome)
+                .setColor(android.graphics.Color.parseColor("#B85032"))
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true)
-                .setContentIntent(pendingIntent);
+                .setContentIntent(pendingIntent)
+                .addExtras(aiExtras)
+                .setSubText("iKhaya • " + domain)
+                .setCategory(category)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setShowWhen(true)
+                .setWhen(System.currentTimeMillis())
+                .setGroup(groupKey);
+
+        if (largeLogo != null) {
+            builder.setLargeIcon(largeLogo);
+        }
+
+        if (NotificationCompat.CATEGORY_MESSAGE.equals(category)) {
+            androidx.core.app.Person userMe = new androidx.core.app.Person.Builder().setName("You (iKhaya User)").build();
+            String senderNameClean = title.replace("💬", "").replace("🏠", "").replace("New Message from", "").replace("Enquiry from", "").trim();
+            if (senderNameClean.isEmpty()) senderNameClean = "iKhaya Contact";
+            androidx.core.app.Person.Builder senderBuilder = new androidx.core.app.Person.Builder().setName(senderNameClean).setImportant(true);
+            if (largeLogo != null) {
+                senderBuilder.setIcon(androidx.core.graphics.drawable.IconCompat.createWithBitmap(largeLogo));
+            }
+            androidx.core.app.Person senderPerson = senderBuilder.build();
+            NotificationCompat.MessagingStyle msgStyle = new NotificationCompat.MessagingStyle(userMe)
+                    .setConversationTitle("iKhaya • " + senderNameClean)
+                    .addMessage(message, System.currentTimeMillis(), senderPerson);
+            builder.setStyle(msgStyle);
+        } else {
+            builder.setStyle(new NotificationCompat.BigTextStyle().bigText(message).setBigContentTitle(title).setSummaryText("iKhaya Verified • " + domain));
+            builder.setContentTitle(title);
+            builder.setContentText(message);
+        }
 
         try {
             NotificationManagerCompat.from(appContext).notify(notificationId, builder.build());
@@ -457,7 +540,7 @@ public final class NotificationHelper {
 
                 // C. Incoming Direct Chat Messages
                 conn = SupabaseHelper.createConnection(
-                        "/rest/v1/messages?select=id,sender_name,message_text&receiver_id=eq." + userId + "&order=created_at.desc&limit=1",
+                        "/rest/v1/messages?select=id,sender_name,sender_role,message_text,created_at&receiver_id=eq." + userId + "&order=created_at.desc&limit=1",
                         "GET", token);
                 if (conn.getResponseCode() >= 200 && conn.getResponseCode() < 300) {
                     JSONArray msgs = new JSONArray(SupabaseHelper.readResponse(conn));
@@ -474,8 +557,9 @@ public final class NotificationHelper {
                             } else {
                                 anyUnread = true;
                                 String sender = msg.optString("sender_name", "iKhaya User");
+                                String roleLabel = msg.optString("sender_role", "Member").toUpperCase(java.util.Locale.ROOT);
                                 String text = msg.optString("message_text", "Sent a message");
-                                showPhoneNotification(context, "New Message from " + sender, formatCleanMessageBody(text, sender), UserSelectionActivity.class, ("msg_" + msgId).hashCode());
+                                showPhoneNotification(context, "💬 New Message from " + sender + " (" + roleLabel + ")", formatCleanMessageBody(text, sender), UserSelectionActivity.class, ("msg_" + msgId).hashCode());
                             }
                         }
                     }
@@ -506,20 +590,22 @@ public final class NotificationHelper {
                 String role = context.getSharedPreferences("iKhayaSession", Context.MODE_PRIVATE).getString("USER_ROLE", "tenant");
                 if ("tenant".equalsIgnoreCase(role)) {
                     conn = SupabaseHelper.createConnection(
-                            "/rest/v1/rental_applications?select=id,status,applicant_name,listing_id&tenant_uid=eq." + userId,
+                            "/rest/v1/rental_applications?select=id,status,applicant_name,listing_id,move_in_date,lease_duration&tenant_uid=eq." + userId,
                             "GET", token);
                     if (conn.getResponseCode() >= 200 && conn.getResponseCode() < 300) {
                         JSONArray apps = new JSONArray(SupabaseHelper.readResponse(conn));
                         for (int i = 0; i < apps.length(); i++) {
                             JSONObject app = apps.getJSONObject(i);
                             String appId = app.optString("id", "");
-                            String status = app.optString("status", "PENDING").toUpperCase();
+                            String status = app.optString("status", "PENDING").toUpperCase(java.util.Locale.ROOT);
                             String savedStatus = statePrefs.getString("APP_STATUS_" + appId, "");
+                            String propName = "your accommodation";
+                            String moveIn = app.optString("move_in_date", "TBD");
                             
                             if (!savedStatus.isEmpty() && !savedStatus.equals(status) && isCategoryEnabled(context, "PREF_APPLICATIONS")) {
                                 anyUnread = true;
                                 String notifTitle = "APPROVED".equals(status) ? "🎉 Rental Application Approved!" : ("REJECTED".equals(status) || "DECLINED".equals(status) ? "Rental Application Update" : "Application Status Updated");
-                                String notifBody = "APPROVED".equals(status) ? "Great news! Your rental application has been approved." : ("REJECTED".equals(status) || "DECLINED".equals(status) ? "Your rental application was not approved. Tap to view details." : "Your rental application status is now " + status + ".");
+                                String notifBody = "APPROVED".equals(status) ? "Great news! Your rental application for " + propName + " (Move in: " + moveIn + ") has been approved." : ("REJECTED".equals(status) || "DECLINED".equals(status) ? "Your rental application for " + propName + " was not approved. Tap to view details." : "Your rental application for " + propName + " status is now " + status + ".");
                                 showPhoneNotification(context, notifTitle, notifBody, ApplicationsActivity.class, ("app_" + appId).hashCode());
                             }
                             statePrefs.edit().putString("APP_STATUS_" + appId, status).apply();
@@ -528,24 +614,28 @@ public final class NotificationHelper {
                             if (("APPROVED".equals(status) || "ACTIVE".equals(status)) && !statePrefs.getBoolean("RENT_REMINDER_SENT_" + appId, false) && isCategoryEnabled(context, "PREF_RENT_REMINDERS")) {
                                 statePrefs.edit().putBoolean("RENT_REMINDER_SENT_" + appId, true).apply();
                                 anyUnread = true;
-                                showPhoneNotification(context, "📅 Upcoming Rent Reminder", "Friendly reminder: Monthly rent for your active lease is due on the 1st of the month.", NotificationsActivity.class, ("rent_" + appId).hashCode());
+                                showPhoneNotification(context, "📅 Upcoming Rent Reminder", "Friendly reminder: Monthly rent for your active lease at " + propName + " is due on the 1st of the month.", NotificationsActivity.class, ("rent_" + appId).hashCode());
                             }
                         }
                     }
                     conn.disconnect();
                     
                     if (isCategoryEnabled(context, "PREF_VIEWINGS")) {
-                        HttpURLConnection vConn = SupabaseHelper.createConnection("/rest/v1/viewings?select=id,property_name,viewing_date,status&tenant_uid=eq." + userId, "GET", token);
+                        HttpURLConnection vConn = SupabaseHelper.createConnection("/rest/v1/viewings?select=id,property_name,viewing_date,status,location&tenant_uid=eq." + userId, "GET", token);
                         if (vConn.getResponseCode() >= 200 && vConn.getResponseCode() < 300) {
                             JSONArray vArr = new JSONArray(SupabaseHelper.readResponse(vConn));
                             for (int i = 0; i < vArr.length(); i++) {
                                 JSONObject vObj = vArr.getJSONObject(i);
                                 String vId = vObj.optString("id", "");
-                                String vStat = vObj.optString("status", "").toUpperCase();
+                                String vStat = vObj.optString("status", "").toUpperCase(java.util.Locale.ROOT);
                                 String savedVStat = statePrefs.getString("VIEWING_STATE_" + vId, "");
                                 if (!savedVStat.isEmpty() && !savedVStat.equals(vStat)) {
                                     anyUnread = true;
-                                    showPhoneNotification(context, "📅 Viewing " + vStat, "Your viewing for " + vObj.optString("property_name", "a property") + " (" + vObj.optString("viewing_date", "") + ") is now " + vStat + ".", ViewingsActivity.class, ("v_" + vId).hashCode());
+                                    String propName = vObj.optString("property_name", "a property");
+                                    String loc = vObj.optString("location", "").trim();
+                                    String body = "Your viewing for " + propName + " (" + vObj.optString("viewing_date", "") + ") is now " + vStat + ".";
+                                    if (!loc.isEmpty() && !loc.equalsIgnoreCase("null")) body += " Location: " + loc;
+                                    showPhoneNotification(context, "📅 Viewing " + vStat, body, ViewingsActivity.class, ("v_" + vId).hashCode());
                                 }
                                 statePrefs.edit().putString("VIEWING_STATE_" + vId, vStat).apply();
                             }
@@ -556,7 +646,7 @@ public final class NotificationHelper {
                 } else if ("landlord".equalsIgnoreCase(role)) {
                     // Check Landlord Rental Applications
                     conn = SupabaseHelper.createConnection(
-                            "/rest/v1/rental_applications?select=id,applicant_name,status&landlord_uid=eq." + userId + "&order=created_at.desc&limit=1",
+                            "/rest/v1/rental_applications?select=id,applicant_name,occupation,move_in_date,lease_duration,occupants,status&landlord_uid=eq." + userId + "&order=created_at.desc&limit=1",
                             "GET", token);
                     if (conn.getResponseCode() >= 200 && conn.getResponseCode() < 300) {
                         JSONArray lApps = new JSONArray(SupabaseHelper.readResponse(conn));
@@ -567,7 +657,8 @@ public final class NotificationHelper {
                             if (!lAppId.isEmpty() && !lAppId.equals(savedLAppId) && isCategoryEnabled(context, "PREF_APPLICATIONS")) {
                                 anyUnread = true;
                                 statePrefs.edit().putString("LAST_LANDLORD_APP_ID", lAppId).apply();
-                                showPhoneNotification(context, "📋 New Rental Application", aObj.optString("applicant_name", "A tenant") + " submitted a new rental application. Tap to review.", ApplicationsActivity.class, ("lapp_" + lAppId).hashCode());
+                                String duration = aObj.optString("lease_duration", "12");
+                                showPhoneNotification(context, "📋 New Rental Application", aObj.optString("applicant_name", "A tenant") + " submitted a new " + duration + "-month rental application. Tap to review.", ApplicationsActivity.class, ("lapp_" + lAppId).hashCode());
                             }
                         }
                     }
@@ -660,7 +751,7 @@ public final class NotificationHelper {
                     admConn.disconnect();
                     
                     HttpURLConnection rptConn = SupabaseHelper.createConnection(
-                            "/rest/v1/reports?select=id,issue_type,reason&status=in.(OPEN,open,PENDING,pending)&order=created_at.desc&limit=1",
+                            "/rest/v1/reports?select=id,issue_type,reason,reporter_name,reporter_role&status=in.(OPEN,open,PENDING,pending)&order=created_at.desc&limit=1",
                             "GET", token);
                     if (rptConn.getResponseCode() >= 200 && rptConn.getResponseCode() < 300) {
                         JSONArray rptArr = new JSONArray(SupabaseHelper.readResponse(rptConn));
@@ -673,16 +764,17 @@ public final class NotificationHelper {
                                 String issueType = rpt.optString("issue_type", "").trim();
                                 if (issueType.equalsIgnoreCase("null")) issueType = "";
                                 String title = !issueType.isEmpty() ? "🛠️ Ticket: " + issueType : "🛠️ New Support Ticket";
-                                showPhoneNotification(context, title, 
-                                        cleanPreview(rpt.optString("reason", "A new issue was reported.")), 
-                                        AdminReportsActivity.class, ("adm_r_" + rptId).hashCode());
+                                String repName = rpt.optString("reporter_name", "User");
+                                String repRole = rpt.optString("reporter_role", "Member").toUpperCase(java.util.Locale.ROOT);
+                                String body = cleanPreview(rpt.optString("reason", "A new issue was reported."));
+                                showPhoneNotification(context, title, repName + " (" + repRole + "): " + body, AdminReportsActivity.class, ("adm_r_" + rptId).hashCode());
                             }
                         }
                     }
                     rptConn.disconnect();
                     
                     HttpURLConnection admVerifConn = SupabaseHelper.createConnection(
-                            "/rest/v1/profiles?select=id,full_name,identity_status&identity_status=eq.PENDING_VERIFICATION&limit=1",
+                            "/rest/v1/profiles?select=id,full_name,city,identity_status&identity_status=eq.PENDING_VERIFICATION&limit=1",
                             "GET", token);
                     if (admVerifConn.getResponseCode() >= 200 && admVerifConn.getResponseCode() < 300) {
                         JSONArray vArr = new JSONArray(SupabaseHelper.readResponse(admVerifConn));
@@ -692,8 +784,10 @@ public final class NotificationHelper {
                             String savedVId = statePrefs.getString("LAST_ADMIN_VERIF_ID", "");
                             if (!vId.isEmpty() && !vId.equals(savedVId)) {
                                 statePrefs.edit().putString("LAST_ADMIN_VERIF_ID", vId).apply();
+                                String cityName = vObj.optString("city", "").trim();
+                                String cityTag = (!cityName.isEmpty() && !cityName.equalsIgnoreCase("null")) ? " from " + cityName : "";
                                 showPhoneNotification(context, "🪪 New ID Verification Request", 
-                                        vObj.optString("full_name", "A landlord") + " submitted identity documents for Admin verification.", 
+                                        vObj.optString("full_name", "A landlord") + cityTag + " submitted identity documents for Admin verification.", 
                                         AdminDashboardActivity.class, ("adm_v_" + vId).hashCode());
                             }
                         }

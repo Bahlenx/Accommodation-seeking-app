@@ -62,6 +62,11 @@ public class LoginActivity extends AppCompatActivity {
             });
         }
 
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            if (emailInput != null) emailInput.setAutofillHints(android.view.View.AUTOFILL_HINT_EMAIL_ADDRESS);
+            if (passwordInput != null) passwordInput.setAutofillHints(android.view.View.AUTOFILL_HINT_PASSWORD);
+        }
+
         // Show / Hide password visibility toggle
         if (togglePasswordButton != null && passwordInput != null) {
             togglePasswordButton.setContentDescription("Show password");

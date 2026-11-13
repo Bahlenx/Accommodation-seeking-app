@@ -198,6 +198,10 @@ public class ChatActivity extends AppCompatActivity {
             btnBack.setOnClickListener(v -> finish());
         }
 
+        if (btnBack != null) btnBack.setContentDescription("Back to previous screen");
+        if (btnSend != null) btnSend.setContentDescription("Send chat message");
+        if (btnAttachFile != null) btnAttachFile.setContentDescription("Attach photo or PDF document");
+
         if (btnSend != null) {
             btnSend.setOnClickListener(v -> sendMessage());
         }

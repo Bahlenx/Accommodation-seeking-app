@@ -102,6 +102,27 @@ public class PropertyDetailsActivity extends AppCompatActivity {
             Executors.newFixedThreadPool(3);
 
     @Override
+    public void onProvideAssistContent(android.app.assist.AssistContent outContent) {
+        super.onProvideAssistContent(outContent);
+        try {
+            if (listingId != null && !listingId.isEmpty()) {
+                outContent.setWebUri(Uri.parse("https://ikhaya-app.com/listing/" + listingId));
+            }
+            if (listingLoaded && !propertyName.isEmpty()) {
+                String desc = propertyDescription != null ? propertyDescription.getText().toString() : "";
+                String jsonLd = "{\n" +
+                        "  \"@context\": \"https://schema.org\",\n" +
+                        "  \"@type\": \"Accommodation\",\n" +
+                        "  \"name\": \"" + propertyName.replace("\"", "\\\"") + "\",\n" +
+                        "  \"description\": \"" + desc.replace("\"", "\\\"") + "\",\n" +
+                        "  \"address\": \"" + locationText.replace("\"", "\\\"") + "\"\n" +
+                        "}";
+                outContent.setStructuredData(jsonLd);
+            }
+        } catch (Exception ignored) {}
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
