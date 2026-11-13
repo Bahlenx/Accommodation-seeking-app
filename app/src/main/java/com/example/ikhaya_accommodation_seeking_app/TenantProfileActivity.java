@@ -153,7 +153,7 @@ public class TenantProfileActivity extends AppCompatActivity {
                     final int savedCount = savedArr.length();
                     runOnUiThread(() -> {
                         if (tvSavedCountBadge != null) {
-                            tvSavedCountBadge.setText(savedCount + " Saved");
+                            tvSavedCountBadge.setText(getString(R.string.count_saved, savedCount));
                         }
                     });
                 }
@@ -223,10 +223,10 @@ public class TenantProfileActivity extends AppCompatActivity {
                 final int fTotal = totalCount;
                 runOnUiThread(() -> {
                     if (tvApplicationsBadge != null) {
-                        tvApplicationsBadge.setText(fPending > 0 ? fPending + " Pending" : (fApproved > 0 ? fApproved + " Approved" : fTotal + " Total"));
+                        tvApplicationsBadge.setText(fPending > 0 ? getString(R.string.count_pending, fPending) : (fApproved > 0 ? getString(R.string.count_approved, fApproved) : getString(R.string.count_total, fTotal)));
                     }
                     if (tvHeaderLeaseCount != null) {
-                        tvHeaderLeaseCount.setText(fApproved == 1 ? "1 Active Lease" : fApproved + " Active Leases");
+                        tvHeaderLeaseCount.setText(fApproved == 1 ? getString(R.string.count_active_lease_singular) : getString(R.string.count_active_leases, fApproved));
                     }
                 });
 

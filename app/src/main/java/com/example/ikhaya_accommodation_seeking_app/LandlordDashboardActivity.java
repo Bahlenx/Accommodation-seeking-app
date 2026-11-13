@@ -450,7 +450,7 @@ public class LandlordDashboardActivity extends AppCompatActivity {
         }
 
         if (price != null) {
-            price.setText(propertyPrice.isEmpty() ? getString(R.string.label_price_not_provided) : getString(R.string.listing_price_month, propertyPrice));
+            price.setText(propertyPrice.isEmpty() ? getString(R.string.label_price_not_provided) : PriceUtils.formatDisplayPrice(listing));
         }
 
         if (rooms != null) {

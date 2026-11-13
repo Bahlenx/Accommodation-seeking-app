@@ -281,7 +281,7 @@ public class AdminInspectionActivity extends AppCompatActivity {
                                 || "Land".equalsIgnoreCase(type);
 
                         String purposeTag = isSale ? getString(R.string.badge_for_sale) : getString(R.string.badge_for_rent);
-                        String priceFormatted = isSale ? ("R " + price) : ("R " + price + " / month");
+                        String priceFormatted = PriceUtils.formatDisplayPrice(price, isSale);
 
                         String detailsStr = String.format(Locale.getDefault(), "%s • %s • %s %s\n%s • %s",
                                 purposeTag, type, rooms, getString(R.string.label_rooms_count), loc, priceFormatted);
@@ -315,7 +315,7 @@ public class AdminInspectionActivity extends AppCompatActivity {
                                     tvInspectStatusBadge.setTextColor(Color.WHITE);
                                     if (tvReverificationReason != null) {
                                         tvReverificationReason.setVisibility(View.VISIBLE);
-                                        tvReverificationReason.setText("Reason: " + (reverificationReason.isEmpty() ? "High-risk fields updated." : reverificationReason));
+                                        tvReverificationReason.setText(getString(R.string.label_reason_prefix, reverificationReason.isEmpty() ? "High-risk fields updated." : reverificationReason));
                                     }
                                 } else if ("CHANGES_PENDING_REVIEW".equalsIgnoreCase(currentStatus)) {
                                     tvInspectStatusBadge.setBackgroundColor(Color.parseColor("#2CA8FF"));
@@ -681,7 +681,7 @@ public class AdminInspectionActivity extends AppCompatActivity {
         Marker marker = new Marker(adminMapView);
         marker.setPosition(point);
         marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-        marker.setTitle(title != null ? title : "Pinned Property Location");
+        marker.setTitle(title != null ? title : getString(R.string.pinned_property_location));
         adminMapView.getOverlays().add(marker);
         adminMapView.invalidate();
     }

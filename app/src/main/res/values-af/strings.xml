@@ -1115,4 +1115,48 @@
     <string name="btn_approve_landlord_identity">Keur Verhuurder-identiteit Goed</string>
     <string name="label_landlord_name_prefix">Verhuurder: %1$s</string>
     <string name="label_sa_id_prefix">SA ID: %1$s</string>
+
+    <!-- Validation and Inspection Strings -->
+    <string name="error_pin_location_required">Speld asseblief die presiese eiendomslokasie op die kaart vas voordat u indien.</string>
+    <string name="error_ownership_doc_required">Laai asseblief \'n bewys van eienaarskap of okkupasiedokument op voordat u indien.</string>
+    <string name="doc_attached_prefix">Dokument aangeheg: %1$s</string>
+    <string name="btn_change_authority_doc">Verander Magtigingsdokument</string>
+    <string name="label_reason_prefix">Rede: %1$s</string>
+    <string name="pinned_property_location">Gespelde Eiendomslokasie</string>
+    <string name="btn_pick_date">📅 Datum</string>
+    <string name="no_matching_tickets_in">Geen toepaslike kaartjies in %1$s</string>
+
+    <!-- Profile & Notification Settings Translations -->
+    <string name="title_notification_settings">KENNISGEWING-INSTELLINGS</string>
+    <string name="title_notification_preferences">Kennisgewingvoorkeure</string>
+    <string name="badge_customize_device_alerts">PAS TOESTEL-WAARSKUWINGS AAN</string>
+    <string name="pref_allow_push_notifications">Laat Stootkennisgewings Toe</string>
+    <string name="desc_allow_push_notifications">Aktiveer of demp alle iKhaya-statusbalkwaarskuwings op hierdie toestel</string>
+    <string name="pref_direct_chat_messages">Direkte Kletsboodskappe</string>
+    <string name="desc_direct_chat_messages">Kitswaarskuwings vir nuwe kletsboodskappe, foto\'s en PDF-dokumente</string>
+    <string name="pref_enquiries_chat_requests">Eiendomsnavrae &amp; Kletsversoeke</string>
+    <string name="desc_enquiries_chat_requests">Waarskuwings wanneer \'n huurder of gasheer \'n verbinding- of lysversoek stuur</string>
+    <string name="pref_rental_applications">Huuraansoeke</string>
+    <string name="desc_rental_applications">Statusopdaterings wanneer aansoeke ingedien, goedgekeur of van die hand wys word</string>
+    <string name="pref_property_viewings">Eiendomsbesigtigings</string>
+    <string name="desc_property_viewings">Waarskuwings vir nuwe besigtigingsversoeke en besigtigingsroosterbevestigings</string>
+    <string name="pref_monthly_rent_reminders">Maandelikse Huur-herinnerings</string>
+    <string name="desc_monthly_rent_reminders">Nuttige herinnerings voordat maandelikse huur betaalbaar is op aktiewe huurkontrakte</string>
+    <string name="pref_listings_id_verification">Lyste &amp; ID-verifiëring</string>
+    <string name="desc_listings_id_verification">Waarskuwings vir lysgoedkeurings, prysopdaterings en ID-verifiëringsresultate</string>
+    <string name="btn_send_test_notification">Stuur Toetskennisgewing</string>
+
+    <string name="status_all_on">Alles Aan</string>
+    <string name="btn_delete_account">Skrap Rekening</string>
+    <string name="count_property_singular">1 Eiendom</string>
+    <string name="count_properties">%1$d Eiendomme</string>
+    <string name="count_listing_singular">1 Lysing</string>
+    <string name="count_listings">%1$d Lyste</string>
+    <string name="count_new">%1$d Nuut</string>
+    <string name="count_pending">%1$d Hangend</string>
+    <string name="count_approved">%1$d Goedgekeur</string>
+    <string name="count_total">%1$d Totaal</string>
+    <string name="count_active_lease_singular">1 Aktiewe Huurkontrak</string>
+    <string name="count_active_leases">%1$d Aktiewe Huurkontrakte</string>
+    <string name="count_saved">%1$d Gestoor</string>
 </resources>

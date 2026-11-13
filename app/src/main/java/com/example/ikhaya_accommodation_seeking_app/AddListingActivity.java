@@ -135,11 +135,11 @@ public class AddListingActivity extends AppCompatActivity {
                 if (uri != null) {
                     selectedAuthorityDocUri = uri;
                     if (authorityDocNameText != null) {
-                        authorityDocNameText.setText("Document attached: " + uri.getLastPathSegment());
+                        authorityDocNameText.setText(getString(R.string.doc_attached_prefix, uri.getLastPathSegment()));
                         authorityDocNameText.setTextColor(Color.parseColor("#2DCE89"));
                     }
                     if (uploadAuthorityDocButton != null) {
-                        uploadAuthorityDocButton.setText("Change Authority Document");
+                        uploadAuthorityDocButton.setText(R.string.btn_change_authority_doc);
                     }
                 }
             });
@@ -715,7 +715,7 @@ public class AddListingActivity extends AppCompatActivity {
     private void addListing() {
         // 1. Enforce GPS Pin selection
         if (verifiedLatitude == 0.0 && verifiedLongitude == 0.0) {
-            Toast.makeText(this, "Please pin the exact property location on the map before submitting.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, R.string.error_pin_location_required, Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -724,7 +724,7 @@ public class AddListingActivity extends AppCompatActivity {
         boolean hasExistingDoc = false;
 
         if (!hasNewDoc && !hasExistingDoc) {
-            Toast.makeText(this, "Please upload a proof of ownership or occupancy document before submitting.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, R.string.error_ownership_doc_required, Toast.LENGTH_LONG).show();
             return;
         }
 

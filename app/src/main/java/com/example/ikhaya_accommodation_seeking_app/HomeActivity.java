@@ -1238,7 +1238,6 @@ public class HomeActivity extends AppCompatActivity {
                     getString(R.string.default_country_location)
             );
 
-            String price = item.optString("price", "0");
             String imageUrl = item.optString("image_url", "");
 
             holder.tvTitle.setText(name);
@@ -1250,12 +1249,7 @@ public class HomeActivity extends AppCompatActivity {
                     )
             );
 
-            holder.tvPrice.setText(
-                    getString(
-                            R.string.listing_price_month,
-                            price
-                    )
-            );
+            holder.tvPrice.setText(PriceUtils.formatDisplayPrice(item));
 
             holder.ivImage.setImageResource(
                     android.R.drawable.ic_menu_gallery

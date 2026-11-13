@@ -345,7 +345,6 @@ public class SearchResultsActivity extends AppCompatActivity {
         String listingId = listing.optString("id", "");
         String name = listing.optString("property_name", getString(R.string.accommodation));
         String location = listing.optString("location", getString(R.string.default_country_location));
-        String price = listing.optString("price", "0");
         String imageUrl = listing.optString("image_url", "");
 
         TextView title = new TextView(this);
@@ -370,7 +369,7 @@ public class SearchResultsActivity extends AppCompatActivity {
         details.addView(loc);
 
         TextView priceTv = new TextView(this);
-        priceTv.setText(getString(R.string.listing_price_month, price));
+        priceTv.setText(PriceUtils.formatDisplayPrice(listing));
         priceTv.setTextSize(15f);
         priceTv.setTextColor(Color.parseColor("#BA5536"));
         priceTv.setTypeface(null, Typeface.BOLD);

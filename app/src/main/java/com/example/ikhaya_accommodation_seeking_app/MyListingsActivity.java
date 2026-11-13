@@ -300,7 +300,7 @@ public class MyListingsActivity extends AppCompatActivity {
         if (rooms.isEmpty()) rooms = getString(R.string.label_rooms_not_specified);
 
         txtListingLocation.setText(location);
-        txtListingPrice.setText(getString(R.string.listing_price_month, price));
+        txtListingPrice.setText(PriceUtils.formatDisplayPrice(listing));
         txtListingRooms.setText(String.format(Locale.getDefault(), "%s %s", rooms, getString(R.string.label_rooms_count)));
 
         imgListing.setImageResource(android.R.drawable.ic_menu_gallery);

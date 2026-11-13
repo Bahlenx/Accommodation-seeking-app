@@ -1115,4 +1115,48 @@
     <string name="btn_approve_landlord_identity">Amukela Imininingwane Yabaphathi</string>
     <string name="label_landlord_name_prefix">Umnikazi Wendawo: %1$s</string>
     <string name="label_sa_id_prefix">RSA ID: %1$s</string>
+
+    <!-- Validation and Inspection Strings -->
+    <string name="error_pin_location_required">Sicela uphawule indawo ethize yendlu kumephu ngaphambi kokuthumela.</string>
+    <string name="error_ownership_doc_required">Sicela ulayishe ubufakazi bobumnini noma umbhalo wokuhlala ngaphambi kokuthumela.</string>
+    <string name="doc_attached_prefix">Icedi lifakiwe: %1$s</string>
+    <string name="btn_change_authority_doc">Shintsha Umbhalo Wegunya</string>
+    <string name="label_reason_prefix">Isizathu: %1$s</string>
+    <string name="pinned_property_location">Indawo Yendlu Ebekwe Isikhonkwane</string>
+    <string name="btn_pick_date">📅 Usuku</string>
+    <string name="no_matching_tickets_in">Awekho amathikithi afanayo ku-%1$s</string>
+
+    <!-- Profile & Notification Settings Translations -->
+    <string name="title_notification_settings">IZILUNGISELELO ZIZAZISO</string>
+    <string name="title_notification_preferences">Izinketho Zezaziso</string>
+    <string name="badge_customize_device_alerts">LUNGISA IZIXWAYISO ZEDUMELA</string>
+    <string name="pref_allow_push_notifications">Vumela Izaziso Ze-Push</string>
+    <string name="desc_allow_push_notifications">Vula noma ucime zonke izixwayiso ze-status-bar se-iKhaya kulolu cingo</string>
+    <string name="pref_direct_chat_messages">Imiyalezo Eqondile Ingxoxo</string>
+    <string name="desc_direct_chat_messages">Izixwayiso zokushesha yemiyalezo emisha yengxoxo, izithombe nemibhalo ye-PDF</string>
+    <string name="pref_enquiries_chat_requests">Imibuzo Yezindlu &amp; Izicelo Zengxoxo</string>
+    <string name="desc_enquiries_chat_requests">Izixwayiso lapho umhlali noma umnikazi wendawo ethumela uxhumano noma isicelo sendlu</string>
+    <string name="pref_rental_applications">Izicelo Zokuqasha</string>
+    <string name="desc_rental_applications">Izinguquko zesimo lapho izicelo zifakwa, zamukelwa, noma zenqatshwa</string>
+    <string name="pref_property_viewings">Ukubukwa Kwendawo/Kwendlu</string>
+    <string name="desc_property_viewings">Izixwayiso zezicelo ezintsha zokubona indlu neziqinisekiso zesikhathi</string>
+    <string name="pref_monthly_rent_reminders">Izikhumbuzo ZERente Yenyanga</string>
+    <string name="desc_monthly_rent_reminders">Izikhumbuzo eziwusizo ngaphambi kokuba irente yenyanga ikhokhwe enkontilekeni esebenzayo</string>
+    <string name="pref_listings_id_verification">Izindlu Ezifakiwe &amp; Ukuqinisekiswa Kwe-ID</string>
+    <string name="desc_listings_id_verification">Izixwayiso zokwamukelwa kwendlu, izibuyekezo zentengo neziphumo zekuqinisekiswa kwe-ID</string>
+    <string name="btn_send_test_notification">Thumela Izaziso Zokuhlola</string>
+
+    <string name="status_all_on">Konke Kuvuliwe</string>
+    <string name="btn_delete_account">Susa I-Akaunti</string>
+    <string name="count_property_singular">1 Indlu</string>
+    <string name="count_properties">%1$d Izindlu</string>
+    <string name="count_listing_singular">1 Ukufakwa</string>
+    <string name="count_listings">%1$d Okufakiwe</string>
+    <string name="count_new">%1$d Ezintsha</string>
+    <string name="count_pending">%1$d Ezilindile</string>
+    <string name="count_approved">%1$d Zamukelwe</string>
+    <string name="count_total">%1$d Samukelwe Sonke</string>
+    <string name="count_active_lease_singular">1 Inkontileka Esebenzayo</string>
+    <string name="count_active_leases">%1$d Izinkontileka Ezisebenzayo</string>
+    <string name="count_saved">%1$d Ezilondoloziwe</string>
 </resources>

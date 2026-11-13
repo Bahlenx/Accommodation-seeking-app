@@ -128,7 +128,7 @@ public class AdminActiveListingsActivity extends AppCompatActivity implements Ad
                                 || "Vacant Stand / Yard Space".equalsIgnoreCase(propType)
                                 || "Vacant Land".equalsIgnoreCase(propType);
 
-                        String priceFormatted = isSale ? ("R " + price) : ("R " + price + " / month");
+                        String priceFormatted = PriceUtils.formatDisplayPrice(price, isSale);
                         String details = loc + " • " + priceFormatted;
                         String landlordLabel = landlordUid.length() > 8 ? "Landlord (" + landlordUid.substring(0, 8) + "...)" : "Landlord";
 

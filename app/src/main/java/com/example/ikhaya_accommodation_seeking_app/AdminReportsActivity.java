@@ -260,7 +260,7 @@ public class AdminReportsActivity extends AppCompatActivity {
         btnClearSearch.setVisibility(currentSearchQuery.isEmpty() ? View.GONE : View.VISIBLE);
 
         TextView btnPickDate = new TextView(this);
-        btnPickDate.setText("📅 Date");
+        btnPickDate.setText(R.string.btn_pick_date);
         btnPickDate.setTextSize(11f);
         btnPickDate.setTypeface(null, Typeface.BOLD);
         btnPickDate.setTextColor(Color.parseColor("#B85032"));
@@ -481,7 +481,7 @@ public class AdminReportsActivity extends AppCompatActivity {
             emptyBox.setPadding(dp(24), dp(40), dp(24), dp(40));
 
             TextView tvEmptyTitle = new TextView(this);
-            tvEmptyTitle.setText("No matching tickets in " + activeIssueFilter);
+            tvEmptyTitle.setText(getString(R.string.no_matching_tickets_in, activeIssueFilter));
             tvEmptyTitle.setTextSize(15f);
             tvEmptyTitle.setTypeface(null, Typeface.BOLD);
             tvEmptyTitle.setTextColor(Color.parseColor("#5C534E"));

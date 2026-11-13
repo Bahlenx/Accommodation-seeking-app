@@ -198,10 +198,10 @@ public class LandlordProfileActivity extends AppCompatActivity {
                 final int finalListingCount = listingCount;
                 runOnUiThread(() -> {
                     if (tvHeaderListingCount != null) {
-                        tvHeaderListingCount.setText(finalListingCount == 1 ? "1 Listing" : finalListingCount + " Listings");
+                        tvHeaderListingCount.setText(finalListingCount == 1 ? getString(R.string.count_listing_singular) : getString(R.string.count_listings, finalListingCount));
                     }
                     if (tvMyListingsBadge != null) {
-                        tvMyListingsBadge.setText(finalListingCount == 1 ? "1 Property" : finalListingCount + " Properties");
+                        tvMyListingsBadge.setText(finalListingCount == 1 ? getString(R.string.count_property_singular) : getString(R.string.count_properties, finalListingCount));
                     }
                 });
 
@@ -225,7 +225,7 @@ public class LandlordProfileActivity extends AppCompatActivity {
                 final int finalUnread = unreadEnquiries;
                 runOnUiThread(() -> {
                     if (tvListingEnquiriesBadge != null) {
-                        tvListingEnquiriesBadge.setText(finalUnread > 0 ? finalUnread + " New" : getString(R.string.default_unread_count));
+                        tvListingEnquiriesBadge.setText(finalUnread > 0 ? getString(R.string.count_new, finalUnread) : getString(R.string.default_unread_count));
                     }
                 });
 

@@ -1154,4 +1154,48 @@
     <string name="btn_approve_landlord_identity">Approve Landlord Identity</string>
     <string name="label_landlord_name_prefix">Landlord: %1$s</string>
     <string name="label_sa_id_prefix">SA ID: %1$s</string>
+
+    <!-- Validation and Inspection Strings -->
+    <string name="error_pin_location_required">Please pin the exact property location on the map before submitting.</string>
+    <string name="error_ownership_doc_required">Please upload a proof of ownership or occupancy document before submitting.</string>
+    <string name="doc_attached_prefix">Document attached: %1$s</string>
+    <string name="btn_change_authority_doc">Change Authority Document</string>
+    <string name="label_reason_prefix">Reason: %1$s</string>
+    <string name="pinned_property_location">Pinned Property Location</string>
+    <string name="btn_pick_date">📅 Date</string>
+    <string name="no_matching_tickets_in">No matching tickets in %1$s</string>
+
+    <!-- Profile & Notification Settings Translations -->
+    <string name="title_notification_settings">NOTIFICATION SETTINGS</string>
+    <string name="title_notification_preferences">Notification Preferences</string>
+    <string name="badge_customize_device_alerts">CUSTOMIZE DEVICE ALERTS</string>
+    <string name="pref_allow_push_notifications">Allow Push Notifications</string>
+    <string name="desc_allow_push_notifications">Enable or mute all iKhaya status-bar alerts on this device</string>
+    <string name="pref_direct_chat_messages">Direct Chat Messages</string>
+    <string name="desc_direct_chat_messages">Instant alerts for new chat messages, photos, and PDF documents</string>
+    <string name="pref_enquiries_chat_requests">Listing Enquiries &amp; Chat Requests</string>
+    <string name="desc_enquiries_chat_requests">Alerts when a tenant or host sends a connection or listing request</string>
+    <string name="pref_rental_applications">Rental Applications</string>
+    <string name="desc_rental_applications">Status updates when applications are submitted, approved, or declined</string>
+    <string name="pref_property_viewings">Property Viewings</string>
+    <string name="desc_property_viewings">Alerts for new viewing requests and viewing schedule confirmations</string>
+    <string name="pref_monthly_rent_reminders">Monthly Rent Reminders</string>
+    <string name="desc_monthly_rent_reminders">Helpful reminders before monthly rent is due on active leases</string>
+    <string name="pref_listings_id_verification">Listings &amp; ID Verification</string>
+    <string name="desc_listings_id_verification">Alerts for listing approvals, price updates, and ID verification results</string>
+    <string name="btn_send_test_notification">Send Test Notification</string>
+
+    <string name="status_all_on">All On</string>
+    <string name="btn_delete_account">Delete Account</string>
+    <string name="count_property_singular">1 Property</string>
+    <string name="count_properties">%1$d Properties</string>
+    <string name="count_listing_singular">1 Listing</string>
+    <string name="count_listings">%1$d Listings</string>
+    <string name="count_new">%1$d New</string>
+    <string name="count_pending">%1$d Pending</string>
+    <string name="count_approved">%1$d Approved</string>
+    <string name="count_total">%1$d Total</string>
+    <string name="count_active_lease_singular">1 Active Lease</string>
+    <string name="count_active_leases">%1$d Active Leases</string>
+    <string name="count_saved">%1$d Saved</string>
 </resources>

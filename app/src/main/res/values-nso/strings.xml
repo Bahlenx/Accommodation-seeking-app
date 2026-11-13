@@ -1115,4 +1115,48 @@
     <string name="btn_approve_landlord_identity">Amogela Boitšhupo ba Mong-wa-ntlo</string>
     <string name="label_landlord_name_prefix">Mong-wa-ntlo: %1$s</string>
     <string name="label_sa_id_prefix">RSA ID: %1$s</string>
+
+    <!-- Validation and Inspection Strings -->
+    <string name="error_pin_location_required">Hle tlema lefelo la maleba la thoto mmapeng pele o romela.</string>
+    <string name="error_ownership_doc_required">Hle faele bohlatse bja bong goba toko ya go dula pele o romela.</string>
+    <string name="doc_attached_prefix">Tokomane e kgomaretšwe: %1$s</string>
+    <string name="btn_change_authority_doc">Fetola Tokomane ya Taolo</string>
+    <string name="label_reason_prefix">Lebaka: %1$s</string>
+    <string name="pinned_property_location">Lefelo la Thoto le Tlemilwego</string>
+    <string name="btn_pick_date">📅 Tšatšikgwedi</string>
+    <string name="no_matching_tickets_in">Gase gona ditikiti tše swanago ka go %1$s</string>
+
+    <!-- Profile & Notification Settings Translations -->
+    <string name="title_notification_settings">DIPEAKANYO TŠA DITSEBIŠO</string>
+    <string name="title_notification_preferences">Dikgetho tša Ditsebišo</string>
+    <string name="badge_customize_device_alerts">FETOLA DIELOTO TŠASESHUPETŠO</string>
+    <string name="pref_allow_push_notifications">Dumelela Ditsebišo tša Phuše</string>
+    <string name="desc_allow_push_notifications">Bula goba o khumotše di-alert ka moka tša status-bar ya iKhaya mo founong ye</string>
+    <string name="pref_direct_chat_messages">Melaetša ya Thwii ya Poledišano</string>
+    <string name="desc_direct_chat_messages">Dieloto tša potlako tša melaetša ye meswa, ditšhate, disenepe le ditokomane tša PDF</string>
+    <string name="pref_enquiries_chat_requests">Dipotšišo tša Bodulo &amp; Dikopo tša Poledišano</string>
+    <string name="desc_enquiries_chat_requests">Dieloto ge modudi goba mong-wa-ntlo a romela kgokagano goba kgopo ya bodulo</string>
+    <string name="pref_rental_applications">Dikopo tša go Hirisa</string>
+    <string name="desc_rental_applications">Ditšhabetšo tša maemo ge dikopo di amogelwa, di amogelwa goba di ganwa</string>
+    <string name="pref_property_viewings">Pono ya Thoto</string>
+    <string name="desc_property_viewings">Dieloto tša dikopo tše meswa tša go bona thoto le dikgonthišo tša nako</string>
+    <string name="pref_monthly_rent_reminders">Dikgopotšo tša Rente tša Kgwedi le Kgwedi</string>
+    <string name="desc_monthly_rent_reminders">Dikgopotšo tša bohlokwa pele rente ya kgwedi e lefelwa konterakeng ye e šomago</string>
+    <string name="pref_listings_id_verification">Maina a Bodulo &amp; Kgonthišo ya ID</string>
+    <string name="desc_listings_id_verification">Dieloto tša go amogelwa ga bodulo, diphetogo tša theko le diphetho tša ID</string>
+    <string name="btn_send_test_notification">Romela Tsebišo ya Tekolo</string>
+
+    <string name="status_all_on">Ka Moka di Bulilwe</string>
+    <string name="btn_delete_account">Phumola Akhaonto</string>
+    <string name="count_property_singular">1 Thoto</string>
+    <string name="count_properties">%1$d Dithoto</string>
+    <string name="count_listing_singular">1 Bodulo</string>
+    <string name="count_listings">%1$d Mabodulo</string>
+    <string name="count_new">%1$d Tše Meswa</string>
+    <string name="count_pending">%1$d Tše di Emelwego</string>
+    <string name="count_approved">%1$d Tše di Amogetšwego</string>
+    <string name="count_total">%1$d Palomoka</string>
+    <string name="count_active_lease_singular">1 Konteraka ye e Šomago</string>
+    <string name="count_active_leases">%1$d Dikonteraka tše di Šomago</string>
+    <string name="count_saved">%1$d Tše di Hlokometswego</string>
 </resources>

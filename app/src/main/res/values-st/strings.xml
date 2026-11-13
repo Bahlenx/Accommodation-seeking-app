@@ -1115,4 +1115,48 @@
     <string name="btn_approve_landlord_identity">Amohela Boitsebiso ba Mong-a-ntlo</string>
     <string name="label_landlord_name_prefix">Mong-a-ntlo: %1$s</string>
     <string name="label_sa_id_prefix">RSA ID: %1$s</string>
+
+    <!-- Validation and Inspection Strings -->
+    <string name="error_pin_location_required">Hle tlama sebaka se nepahetseng sa thepa mmapeng pele o romela.</string>
+    <string name="error_ownership_doc_required">Hle kenya bopaki ba beng kapa tokomane ea ho dula pele o romela.</string>
+    <string name="doc_attached_prefix">Tokomane e hokeletsoe: %1$s</string>
+    <string name="btn_change_authority_doc">Fetola Tokomane ea Taolo</string>
+    <string name="label_reason_prefix">Lebaka: %1$s</string>
+    <string name="pinned_property_location">Sebaka sa Thepa se Tlamiloeng</string>
+    <string name="btn_pick_date">📅 Letsatsi</string>
+    <string name="no_matching_tickets_in">Ha ho dithikiti tse tsamaisanang ho %1$s</string>
+
+    <!-- Profile & Notification Settings Translations -->
+    <string name="title_notification_settings">LITLHOPHISO TSA LITSEBISO</string>
+    <string name="title_notification_preferences">Likhetho tsa Litsebiso</string>
+    <string name="badge_customize_device_alerts">LITLHOPHISO TSA LIALOTO TSA SEBELISA</string>
+    <string name="pref_allow_push_notifications">Lumela Litsebiso tsa Push</string>
+    <string name="desc_allow_push_notifications">Bulla kapa o thole lialoto tsohle tsa status-bar tsa iKhaya mofutung ona</string>
+    <string name="pref_direct_chat_messages">Melaetsa e Nepahetseng ea Motsoalle</string>
+    <string name="desc_direct_chat_messages">Lialoto tsa hang-hang tsa melaetsa e mecha, litšoantšo le litokomane tsa PDF</string>
+    <string name="pref_enquiries_chat_requests">Lipotso tsa Thepa &amp; Likopo tsa Motsoalle</string>
+    <string name="desc_enquiries_chat_requests">Lialoto ha moahi kapa mong-a-ntlo a romela kamano kapa kopo ea thepa</string>
+    <string name="pref_rental_applications">Likopo tsa ho Hira</string>
+    <string name="desc_rental_applications">Litsosoloso tsa maemo ha likopo di romeloa, di amoheloa kapa di hanoa</string>
+    <string name="pref_property_viewings">Pono ea Thepa</string>
+    <string name="desc_property_viewings">Lialoto tsa likopo tse ncha tsa ho bona thepa le linetefatso tsa nako</string>
+    <string name="pref_monthly_rent_reminders">Likhopotso tsa Rente tsa Khoeli le Khoeli</string>
+    <string name="desc_monthly_rent_reminders">Likhopotso tsa bohlokoa pele rente ea khoeli e lefshoa konterakeng e sebetsang</string>
+    <string name="pref_listings_id_verification">Lethathamo le Netefatso ea ID</string>
+    <string name="desc_listings_id_verification">Lialoto tsa ho amoheloa ha thepa, litsosoloso tsa theko le liphetho tsa ID</string>
+    <string name="btn_send_test_notification">Romela Tsebiso ea Tekolo</string>
+
+    <string name="status_all_on">Tsohle di Bulehetse</string>
+    <string name="btn_delete_account">Hlakola Akhaonto</string>
+    <string name="count_property_singular">1 Thepa</string>
+    <string name="count_properties">%1$d Lithepa</string>
+    <string name="count_listing_singular">1 Lethathamo</string>
+    <string name="count_listings">%1$d Malethathamo</string>
+    <string name="count_new">%1$d Tse Ncha</string>
+    <string name="count_pending">%1$d Tse Emetseng</string>
+    <string name="count_approved">%1$d Tse Amohetsoeng</string>
+    <string name="count_total">%1$d Kakaretso</string>
+    <string name="count_active_lease_singular">1 Konteraka e Sebetsang</string>
+    <string name="count_active_leases">%1$d Likonteraka tse Sebetsang</string>
+    <string name="count_saved">%1$d Tse Bolokiloeng</string>
 </resources>

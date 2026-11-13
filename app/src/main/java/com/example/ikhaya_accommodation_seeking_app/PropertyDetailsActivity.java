@@ -1721,16 +1721,8 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                         || price.trim().isEmpty()
                         || "null".equalsIgnoreCase(price.trim())) {
                     priceText = "";
-                } else if (isForSale) {
-                    priceText = getString(
-                            R.string.price_for_sale_value,
-                            price
-                    );
                 } else {
-                    priceText = getString(
-                            R.string.price_per_month_value,
-                            price
-                    );
+                    priceText = PriceUtils.formatDisplayPrice(price, isForSale);
                 }
 
                 listingLoaded = true;

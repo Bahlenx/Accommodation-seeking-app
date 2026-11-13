@@ -1,6 +1,7 @@
 package com.example.ikhaya_accommodation_seeking_app;
 
 import android.Manifest;
+import android.app.Dialog;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -8,10 +9,22 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.Typeface;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.Gravity;
+import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
+import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.appcompat.widget.SwitchCompat;
+import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
@@ -20,6 +33,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -143,27 +158,27 @@ public final class NotificationHelper {
         if (activity == null || activity.isFinishing()) return;
         SharedPreferences prefs = activity.getSharedPreferences("iKhayaNotifSettings", Context.MODE_PRIVATE);
         
-        android.app.Dialog dialog = new android.app.Dialog(activity, android.R.style.Theme_Light_NoTitleBar);
+        Dialog dialog = new Dialog(activity, android.R.style.Theme_Light_NoTitleBar);
         float density = activity.getResources().getDisplayMetrics().density;
         
-        android.widget.LinearLayout root = new android.widget.LinearLayout(activity);
-        root.setOrientation(android.widget.LinearLayout.VERTICAL);
-        root.setBackgroundColor(android.graphics.Color.parseColor("#F9F6F3"));
+        LinearLayout root = new LinearLayout(activity);
+        root.setOrientation(LinearLayout.VERTICAL);
+        root.setBackgroundColor(Color.parseColor("#F9F6F3"));
         
-        android.widget.LinearLayout topBar = new android.widget.LinearLayout(activity);
-        topBar.setOrientation(android.widget.LinearLayout.HORIZONTAL);
-        topBar.setGravity(android.view.Gravity.CENTER_VERTICAL);
+        LinearLayout topBar = new LinearLayout(activity);
+        topBar.setOrientation(LinearLayout.HORIZONTAL);
+        topBar.setGravity(Gravity.CENTER_VERTICAL);
         int pad = Math.round(16 * density);
         topBar.setPadding(pad, pad, pad, pad);
         
-        android.widget.ImageButton btnBack = new android.widget.ImageButton(activity);
-        android.graphics.drawable.GradientDrawable backBg = new android.graphics.drawable.GradientDrawable();
-        backBg.setColor(android.graphics.Color.WHITE);
-        backBg.setShape(android.graphics.drawable.GradientDrawable.OVAL);
+        ImageButton btnBack = new ImageButton(activity);
+        GradientDrawable backBg = new GradientDrawable();
+        backBg.setColor(Color.WHITE);
+        backBg.setShape(GradientDrawable.OVAL);
         btnBack.setBackground(backBg);
         btnBack.setImageResource(R.drawable.chevron_left);
         btnBack.setPadding(Math.round(8 * density), Math.round(8 * density), Math.round(8 * density), Math.round(8 * density));
-        android.widget.LinearLayout.LayoutParams backLp = new android.widget.LinearLayout.LayoutParams(Math.round(38 * density), Math.round(38 * density));
+        LinearLayout.LayoutParams backLp = new LinearLayout.LayoutParams(Math.round(38 * density), Math.round(38 * density));
         btnBack.setLayoutParams(backLp);
         btnBack.setOnClickListener(v -> {
             dialog.dismiss();
@@ -171,129 +186,129 @@ public final class NotificationHelper {
         });
         topBar.addView(btnBack);
         
-        android.widget.TextView header = new android.widget.TextView(activity);
-        header.setText("NOTIFICATION SETTINGS");
-        header.setTextColor(android.graphics.Color.parseColor("#786F6B"));
+        TextView header = new TextView(activity);
+        header.setText(R.string.title_notification_settings);
+        header.setTextColor(Color.parseColor("#786F6B"));
         header.setTextSize(12f);
-        header.setTypeface(null, android.graphics.Typeface.BOLD);
-        header.setGravity(android.view.Gravity.CENTER);
-        android.widget.LinearLayout.LayoutParams headLp = new android.widget.LinearLayout.LayoutParams(0, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
+        header.setTypeface(null, Typeface.BOLD);
+        header.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams headLp = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
         headLp.rightMargin = Math.round(38 * density);
         header.setLayoutParams(headLp);
         topBar.addView(header);
         root.addView(topBar);
 
-        android.widget.ScrollView scrollView = new android.widget.ScrollView(activity);
-        android.widget.LinearLayout scrollContent = new android.widget.LinearLayout(activity);
-        scrollContent.setOrientation(android.widget.LinearLayout.VERTICAL);
+        ScrollView scrollView = new ScrollView(activity);
+        LinearLayout scrollContent = new LinearLayout(activity);
+        scrollContent.setOrientation(LinearLayout.VERTICAL);
         scrollContent.setPadding(Math.round(20 * density), Math.round(8 * density), Math.round(20 * density), Math.round(32 * density));
         
-        android.widget.TextView title = new android.widget.TextView(activity);
-        title.setText("Notification Preferences");
-        title.setTextColor(android.graphics.Color.parseColor("#1F1F1F"));
+        TextView title = new TextView(activity);
+        title.setText(R.string.title_notification_preferences);
+        title.setTextColor(Color.parseColor("#1F1F1F"));
         title.setTextSize(26f);
-        title.setTypeface(null, android.graphics.Typeface.BOLD);
+        title.setTypeface(null, Typeface.BOLD);
         scrollContent.addView(title);
         
-        android.widget.TextView badge = new android.widget.TextView(activity);
-        badge.setText("CUSTOMIZE DEVICE ALERTS");
-        badge.setTextColor(android.graphics.Color.parseColor("#B85032"));
+        TextView badge = new TextView(activity);
+        badge.setText(R.string.badge_customize_device_alerts);
+        badge.setTextColor(Color.parseColor("#B85032"));
         badge.setTextSize(10f);
-        badge.setTypeface(null, android.graphics.Typeface.BOLD);
-        android.graphics.drawable.GradientDrawable badgeBg = new android.graphics.drawable.GradientDrawable();
-        badgeBg.setColor(android.graphics.Color.parseColor("#FDE8E1"));
+        badge.setTypeface(null, Typeface.BOLD);
+        GradientDrawable badgeBg = new GradientDrawable();
+        badgeBg.setColor(Color.parseColor("#FDE8E1"));
         badgeBg.setCornerRadius(Math.round(6 * density));
         badge.setBackground(badgeBg);
         badge.setPadding(Math.round(8 * density), Math.round(4 * density), Math.round(8 * density), Math.round(4 * density));
-        android.widget.LinearLayout.LayoutParams badgeLp = new android.widget.LinearLayout.LayoutParams(android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT);
+        LinearLayout.LayoutParams badgeLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         badgeLp.topMargin = Math.round(8 * density);
         badgeLp.bottomMargin = Math.round(24 * density);
         badge.setLayoutParams(badgeLp);
         scrollContent.addView(badge);
 
-        java.util.List<androidx.appcompat.widget.SwitchCompat> allSwitches = new java.util.ArrayList<>();
+        List<SwitchCompat> allSwitches = new ArrayList<>();
         
-        androidx.cardview.widget.CardView card1 = new androidx.cardview.widget.CardView(activity);
+        CardView card1 = new CardView(activity);
         card1.setRadius(16 * density);
         card1.setCardElevation(0f);
-        android.widget.LinearLayout c1 = new android.widget.LinearLayout(activity);
-        c1.setOrientation(android.widget.LinearLayout.VERTICAL);
-        androidx.appcompat.widget.SwitchCompat swMaster = buildSwitchRow(activity, c1, "Allow Push Notifications", "Enable or mute all iKhaya status-bar alerts on this device", prefs, "PREF_MASTER_ENABLED");
+        LinearLayout c1 = new LinearLayout(activity);
+        c1.setOrientation(LinearLayout.VERTICAL);
+        SwitchCompat swMaster = buildSwitchRow(activity, c1, activity.getString(R.string.pref_allow_push_notifications), activity.getString(R.string.desc_allow_push_notifications), prefs, "PREF_MASTER_ENABLED");
         card1.addView(c1);
-        android.widget.LinearLayout.LayoutParams card1Lp = new android.widget.LinearLayout.LayoutParams(android.widget.LinearLayout.LayoutParams.MATCH_PARENT, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT);
+        LinearLayout.LayoutParams card1Lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         card1Lp.bottomMargin = Math.round(16 * density);
         card1.setLayoutParams(card1Lp);
         scrollContent.addView(card1);
         
-        androidx.cardview.widget.CardView card2 = new androidx.cardview.widget.CardView(activity);
+        CardView card2 = new CardView(activity);
         card2.setRadius(16 * density);
         card2.setCardElevation(0f);
-        android.widget.LinearLayout c2 = new android.widget.LinearLayout(activity);
-        c2.setOrientation(android.widget.LinearLayout.VERTICAL);
-        allSwitches.add(buildSwitchRow(activity, c2, "Direct Chat Messages", "Instant alerts for new chat messages, photos, and PDF documents", prefs, "PREF_CHAT_MESSAGES"));
+        LinearLayout c2 = new LinearLayout(activity);
+        c2.setOrientation(LinearLayout.VERTICAL);
+        allSwitches.add(buildSwitchRow(activity, c2, activity.getString(R.string.pref_direct_chat_messages), activity.getString(R.string.desc_direct_chat_messages), prefs, "PREF_CHAT_MESSAGES"));
         buildDivider(activity, c2);
-        allSwitches.add(buildSwitchRow(activity, c2, "Listing Enquiries & Chat Requests", "Alerts when a tenant or host sends a connection or listing request", prefs, "PREF_ENQUIRIES"));
+        allSwitches.add(buildSwitchRow(activity, c2, activity.getString(R.string.pref_enquiries_chat_requests), activity.getString(R.string.desc_enquiries_chat_requests), prefs, "PREF_ENQUIRIES"));
         card2.addView(c2);
-        android.widget.LinearLayout.LayoutParams card2Lp = new android.widget.LinearLayout.LayoutParams(android.widget.LinearLayout.LayoutParams.MATCH_PARENT, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT);
+        LinearLayout.LayoutParams card2Lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         card2Lp.bottomMargin = Math.round(16 * density);
         card2.setLayoutParams(card2Lp);
         scrollContent.addView(card2);
         
-        androidx.cardview.widget.CardView card3 = new androidx.cardview.widget.CardView(activity);
+        CardView card3 = new CardView(activity);
         card3.setRadius(16 * density);
         card3.setCardElevation(0f);
-        android.widget.LinearLayout c3 = new android.widget.LinearLayout(activity);
-        c3.setOrientation(android.widget.LinearLayout.VERTICAL);
-        allSwitches.add(buildSwitchRow(activity, c3, "Rental Applications", "Status updates when applications are submitted, approved, or declined", prefs, "PREF_APPLICATIONS"));
+        LinearLayout c3 = new LinearLayout(activity);
+        c3.setOrientation(LinearLayout.VERTICAL);
+        allSwitches.add(buildSwitchRow(activity, c3, activity.getString(R.string.pref_rental_applications), activity.getString(R.string.desc_rental_applications), prefs, "PREF_APPLICATIONS"));
         buildDivider(activity, c3);
-        allSwitches.add(buildSwitchRow(activity, c3, "Property Viewings", "Alerts for new viewing requests and viewing schedule confirmations", prefs, "PREF_VIEWINGS"));
+        allSwitches.add(buildSwitchRow(activity, c3, activity.getString(R.string.pref_property_viewings), activity.getString(R.string.desc_property_viewings), prefs, "PREF_VIEWINGS"));
         buildDivider(activity, c3);
-        allSwitches.add(buildSwitchRow(activity, c3, "Monthly Rent Reminders", "Helpful reminders before monthly rent is due on active leases", prefs, "PREF_RENT_REMINDERS"));
+        allSwitches.add(buildSwitchRow(activity, c3, activity.getString(R.string.pref_monthly_rent_reminders), activity.getString(R.string.desc_monthly_rent_reminders), prefs, "PREF_RENT_REMINDERS"));
         card3.addView(c3);
-        android.widget.LinearLayout.LayoutParams card3Lp = new android.widget.LinearLayout.LayoutParams(android.widget.LinearLayout.LayoutParams.MATCH_PARENT, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT);
+        LinearLayout.LayoutParams card3Lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         card3Lp.bottomMargin = Math.round(16 * density);
         card3.setLayoutParams(card3Lp);
         scrollContent.addView(card3);
         
-        androidx.cardview.widget.CardView card4 = new androidx.cardview.widget.CardView(activity);
+        CardView card4 = new CardView(activity);
         card4.setRadius(16 * density);
         card4.setCardElevation(0f);
-        android.widget.LinearLayout c4 = new android.widget.LinearLayout(activity);
-        c4.setOrientation(android.widget.LinearLayout.VERTICAL);
-        allSwitches.add(buildSwitchRow(activity, c4, "Listings & ID Verification", "Alerts for listing approvals, price updates, and ID verification results", prefs, "PREF_LISTING_AND_VERIFY"));
+        LinearLayout c4 = new LinearLayout(activity);
+        c4.setOrientation(LinearLayout.VERTICAL);
+        allSwitches.add(buildSwitchRow(activity, c4, activity.getString(R.string.pref_listings_id_verification), activity.getString(R.string.desc_listings_id_verification), prefs, "PREF_LISTING_AND_VERIFY"));
         card4.addView(c4);
-        android.widget.LinearLayout.LayoutParams card4Lp = new android.widget.LinearLayout.LayoutParams(android.widget.LinearLayout.LayoutParams.MATCH_PARENT, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT);
+        LinearLayout.LayoutParams card4Lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         card4Lp.bottomMargin = Math.round(24 * density);
         card4.setLayoutParams(card4Lp);
         scrollContent.addView(card4);
 
         swMaster.setOnCheckedChangeListener((buttonView, isChecked) -> {
             prefs.edit().putBoolean("PREF_MASTER_ENABLED", isChecked).apply();
-            for (androidx.appcompat.widget.SwitchCompat s : allSwitches) {
+            for (SwitchCompat s : allSwitches) {
                 s.setEnabled(isChecked);
                 s.setAlpha(isChecked ? 1.0f : 0.5f);
             }
         });
         boolean isMaster = prefs.getBoolean("PREF_MASTER_ENABLED", true);
-        for (androidx.appcompat.widget.SwitchCompat s : allSwitches) {
+        for (SwitchCompat s : allSwitches) {
             s.setEnabled(isMaster);
             s.setAlpha(isMaster ? 1.0f : 0.5f);
         }
 
-        android.widget.Button btnTest = new android.widget.Button(activity);
-        btnTest.setText("Send Test Notification");
+        Button btnTest = new Button(activity);
+        btnTest.setText(R.string.btn_send_test_notification);
         btnTest.setAllCaps(false);
-        btnTest.setTextColor(android.graphics.Color.parseColor("#B85032"));
-        btnTest.setTypeface(null, android.graphics.Typeface.BOLD);
+        btnTest.setTextColor(Color.parseColor("#B85032"));
+        btnTest.setTypeface(null, Typeface.BOLD);
         btnTest.setBackgroundResource(R.drawable.bg_outline_brand);
-        android.widget.LinearLayout.LayoutParams btnLp = new android.widget.LinearLayout.LayoutParams(android.widget.LinearLayout.LayoutParams.MATCH_PARENT, Math.round(48 * density));
+        LinearLayout.LayoutParams btnLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, Math.round(48 * density));
         btnTest.setLayoutParams(btnLp);
         btnTest.setOnClickListener(v -> {
             if (isCategoryEnabled(activity, "PREF_MASTER_ENABLED")) {
                 showPhoneNotification(activity, "iKhaya Notifications Active", "Your device is set up to receive important accommodation, chat, and lease updates.", NotificationsActivity.class, 9999);
-                android.widget.Toast.makeText(activity, "Test notification sent.", android.widget.Toast.LENGTH_SHORT).show();
+                Toast.makeText(activity, "Test notification sent.", Toast.LENGTH_SHORT).show();
             } else {
-                android.widget.Toast.makeText(activity, "Notifications are currently muted.", android.widget.Toast.LENGTH_SHORT).show();
+                Toast.makeText(activity, "Notifications are currently muted.", Toast.LENGTH_SHORT).show();
             }
         });
         scrollContent.addView(btnTest);

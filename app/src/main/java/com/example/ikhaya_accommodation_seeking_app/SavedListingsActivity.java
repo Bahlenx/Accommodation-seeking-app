@@ -313,7 +313,7 @@ public class SavedListingsActivity extends AppCompatActivity {
         ));
 
         TextView tvPrice = new TextView(this);
-        tvPrice.setText(getString(R.string.listing_price_month, price));
+        tvPrice.setText(PriceUtils.formatDisplayPrice(property));
         tvPrice.setTextSize(15);
         tvPrice.setTextColor(Color.parseColor("#BA5536"));
         tvPrice.setTypeface(null, Typeface.BOLD);
