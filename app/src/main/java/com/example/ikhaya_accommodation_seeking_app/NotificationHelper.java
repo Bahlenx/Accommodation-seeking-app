@@ -94,16 +94,6 @@ public final class NotificationHelper {
         } catch (SecurityException ignored) {}
     }
 
-    public static void requestPermissionAndStartPoller(android.app.Activity activity) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.POST_NOTIFICATIONS}, 101);
-            }
-        }
-        startBackgroundPoller(activity);
-        checkAndTriggerNotifications(activity.getApplicationContext());
-    }
-
     public static void startBackgroundPoller(Context context) {
         Context appContext = context.getApplicationContext();
         createChannel(appContext);
@@ -228,7 +218,7 @@ public final class NotificationHelper {
         card1.setCardElevation(0f);
         android.widget.LinearLayout c1 = new android.widget.LinearLayout(activity);
         c1.setOrientation(android.widget.LinearLayout.VERTICAL);
-        androidx.appcompat.widget.SwitchCompat swMaster = buildSwitchRow(activity, c1, "Allow Push Notifications", "Enable or mute all iKhaya status-bar alerts on this device", prefs, "PREF_MASTER_ENABLED", true);
+        androidx.appcompat.widget.SwitchCompat swMaster = buildSwitchRow(activity, c1, "Allow Push Notifications", "Enable or mute all iKhaya status-bar alerts on this device", prefs, "PREF_MASTER_ENABLED");
         card1.addView(c1);
         android.widget.LinearLayout.LayoutParams card1Lp = new android.widget.LinearLayout.LayoutParams(android.widget.LinearLayout.LayoutParams.MATCH_PARENT, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT);
         card1Lp.bottomMargin = Math.round(16 * density);
@@ -240,9 +230,9 @@ public final class NotificationHelper {
         card2.setCardElevation(0f);
         android.widget.LinearLayout c2 = new android.widget.LinearLayout(activity);
         c2.setOrientation(android.widget.LinearLayout.VERTICAL);
-        allSwitches.add(buildSwitchRow(activity, c2, "Direct Chat Messages", "Instant alerts for new chat messages, photos, and PDF documents", prefs, "PREF_CHAT_MESSAGES", false));
+        allSwitches.add(buildSwitchRow(activity, c2, "Direct Chat Messages", "Instant alerts for new chat messages, photos, and PDF documents", prefs, "PREF_CHAT_MESSAGES"));
         buildDivider(activity, c2);
-        allSwitches.add(buildSwitchRow(activity, c2, "Listing Enquiries & Chat Requests", "Alerts when a tenant or host sends a connection or listing request", prefs, "PREF_ENQUIRIES", true));
+        allSwitches.add(buildSwitchRow(activity, c2, "Listing Enquiries & Chat Requests", "Alerts when a tenant or host sends a connection or listing request", prefs, "PREF_ENQUIRIES"));
         card2.addView(c2);
         android.widget.LinearLayout.LayoutParams card2Lp = new android.widget.LinearLayout.LayoutParams(android.widget.LinearLayout.LayoutParams.MATCH_PARENT, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT);
         card2Lp.bottomMargin = Math.round(16 * density);
@@ -254,11 +244,11 @@ public final class NotificationHelper {
         card3.setCardElevation(0f);
         android.widget.LinearLayout c3 = new android.widget.LinearLayout(activity);
         c3.setOrientation(android.widget.LinearLayout.VERTICAL);
-        allSwitches.add(buildSwitchRow(activity, c3, "Rental Applications", "Status updates when applications are submitted, approved, or declined", prefs, "PREF_APPLICATIONS", false));
+        allSwitches.add(buildSwitchRow(activity, c3, "Rental Applications", "Status updates when applications are submitted, approved, or declined", prefs, "PREF_APPLICATIONS"));
         buildDivider(activity, c3);
-        allSwitches.add(buildSwitchRow(activity, c3, "Property Viewings", "Alerts for new viewing requests and viewing schedule confirmations", prefs, "PREF_VIEWINGS", false));
+        allSwitches.add(buildSwitchRow(activity, c3, "Property Viewings", "Alerts for new viewing requests and viewing schedule confirmations", prefs, "PREF_VIEWINGS"));
         buildDivider(activity, c3);
-        allSwitches.add(buildSwitchRow(activity, c3, "Monthly Rent Reminders", "Helpful reminders before monthly rent is due on active leases", prefs, "PREF_RENT_REMINDERS", true));
+        allSwitches.add(buildSwitchRow(activity, c3, "Monthly Rent Reminders", "Helpful reminders before monthly rent is due on active leases", prefs, "PREF_RENT_REMINDERS"));
         card3.addView(c3);
         android.widget.LinearLayout.LayoutParams card3Lp = new android.widget.LinearLayout.LayoutParams(android.widget.LinearLayout.LayoutParams.MATCH_PARENT, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT);
         card3Lp.bottomMargin = Math.round(16 * density);
@@ -270,7 +260,7 @@ public final class NotificationHelper {
         card4.setCardElevation(0f);
         android.widget.LinearLayout c4 = new android.widget.LinearLayout(activity);
         c4.setOrientation(android.widget.LinearLayout.VERTICAL);
-        allSwitches.add(buildSwitchRow(activity, c4, "Listings & ID Verification", "Alerts for listing approvals, price updates, and ID verification results", prefs, "PREF_LISTING_AND_VERIFY", true));
+        allSwitches.add(buildSwitchRow(activity, c4, "Listings & ID Verification", "Alerts for listing approvals, price updates, and ID verification results", prefs, "PREF_LISTING_AND_VERIFY"));
         card4.addView(c4);
         android.widget.LinearLayout.LayoutParams card4Lp = new android.widget.LinearLayout.LayoutParams(android.widget.LinearLayout.LayoutParams.MATCH_PARENT, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT);
         card4Lp.bottomMargin = Math.round(24 * density);
@@ -318,7 +308,7 @@ public final class NotificationHelper {
         dialog.show();
     }
 
-    private static androidx.appcompat.widget.SwitchCompat buildSwitchRow(Context context, android.widget.LinearLayout parent, String titleText, String subText, SharedPreferences prefs, String prefKey, boolean isLast) {
+    private static androidx.appcompat.widget.SwitchCompat buildSwitchRow(Context context, android.widget.LinearLayout parent, String titleText, String subText, SharedPreferences prefs, String prefKey) {
         float density = context.getResources().getDisplayMetrics().density;
         android.widget.LinearLayout row = new android.widget.LinearLayout(context);
         row.setOrientation(android.widget.LinearLayout.HORIZONTAL);
@@ -470,7 +460,7 @@ public final class NotificationHelper {
                                 anyUnread = true;
                                 String sender = msg.optString("sender_name", "iKhaya User");
                                 String text = msg.optString("message_text", "Sent a message");
-                                showPhoneNotification(context, "New Message from " + sender, cleanPreview(text), UserSelectionActivity.class, ("msg_" + msgId).hashCode());
+                                showPhoneNotification(context, "New Message from " + sender, formatCleanMessageBody(text, sender), UserSelectionActivity.class, ("msg_" + msgId).hashCode());
                             }
                         }
                     }
@@ -551,11 +541,11 @@ public final class NotificationHelper {
                     
                     // G. Landlord Verifications and Listings
                     if (isCategoryEnabled(context, "PREF_LISTING_AND_VERIFY")) {
-                        HttpURLConnection profConn = SupabaseHelper.createConnection("/rest/v1/profiles?select=verification_status,is_verified&or=(id.eq." + userId + ",firebase_uid.eq." + userId + ")", "GET", token);
+                        HttpURLConnection profConn = SupabaseHelper.createConnection("/rest/v1/profiles?select=identity_status,is_identity_verified&or=(id.eq." + userId + ",firebase_uid.eq." + userId + ")", "GET", token);
                         if (profConn.getResponseCode() >= 200 && profConn.getResponseCode() < 300) {
                             JSONArray profArr = new JSONArray(SupabaseHelper.readResponse(profConn));
                             if (profArr.length() > 0) {
-                                String vStatus = profArr.getJSONObject(0).optString("verification_status", "UNVERIFIED").toUpperCase();
+                                String vStatus = profArr.getJSONObject(0).optString("identity_status", "UNVERIFIED").toUpperCase();
                                 String savedVStatus = statePrefs.getString("LAST_VERIF_STATE", vStatus);
                                 if (!vStatus.equals(savedVStatus)) {
                                     statePrefs.edit().putString("LAST_VERIF_STATE", vStatus).apply();
@@ -637,7 +627,7 @@ public final class NotificationHelper {
                     rptConn.disconnect();
                     
                     HttpURLConnection admVerifConn = SupabaseHelper.createConnection(
-                            "/rest/v1/profiles?select=id,full_name,verification_status&verification_status=in.(PENDING,pending,SUBMITTED)&limit=1",
+                            "/rest/v1/profiles?select=id,full_name,identity_status&identity_status=eq.PENDING_VERIFICATION&limit=1",
                             "GET", token);
                     if (admVerifConn.getResponseCode() >= 200 && admVerifConn.getResponseCode() < 300) {
                         JSONArray vArr = new JSONArray(SupabaseHelper.readResponse(admVerifConn));

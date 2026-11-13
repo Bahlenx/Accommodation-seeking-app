@@ -344,7 +344,7 @@ public final class UserProfileLoader {
 
         String cleaned = value.trim();
 
-        if ("null".equalsIgnoreCase(cleaned)) {
+        if (cleaned.isEmpty() || "null".equalsIgnoreCase(cleaned) || "undefined".equalsIgnoreCase(cleaned)) {
             return "";
         }
 

@@ -258,9 +258,7 @@ public class EditProfileActivity extends AppCompatActivity {
             profilePayload.put("selfie_url", uploadedSelfieUrl);
             profilePayload.put("verification_selfie_url", uploadedSelfieUrl);
             profilePayload.put("identity_status", "PENDING_VERIFICATION");
-            profilePayload.put("verification_status", "PENDING");
             profilePayload.put("is_identity_verified", false);
-            profilePayload.put("is_verified", false);
         } catch (JSONException e) {
             e.printStackTrace();
         }

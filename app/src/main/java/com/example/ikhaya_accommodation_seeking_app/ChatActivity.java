@@ -899,8 +899,11 @@ public class ChatActivity extends AppCompatActivity {
             try {
                 String mimeType = getContentResolver().getType(uri);
                 if (mimeType != null && mimeType.startsWith("image/")) {
-                    InputStream is = getContentResolver().openInputStream(uri);
-                    Bitmap originalBitmap = BitmapFactory.decodeStream(is);
+                    Bitmap originalBitmap;
+                    try (InputStream is = getContentResolver().openInputStream(uri)) {
+                        if (is == null) return;
+                        originalBitmap = BitmapFactory.decodeStream(is);
+                    }
                     if (originalBitmap != null) {
                         int width = originalBitmap.getWidth();
                         int height = originalBitmap.getHeight();
@@ -929,12 +932,14 @@ public class ChatActivity extends AppCompatActivity {
                         cursor.close();
                     }
 
-                    InputStream is = getContentResolver().openInputStream(uri);
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    byte[] buffer = new byte[8192];
-                    int bytesRead;
-                    while ((bytesRead = is.read(buffer)) != -1) {
-                        baos.write(buffer, 0, bytesRead);
+                    try (InputStream is = getContentResolver().openInputStream(uri)) {
+                        if (is == null) return;
+                        byte[] buffer = new byte[8192];
+                        int bytesRead;
+                        while ((bytesRead = is.read(buffer)) != -1) {
+                            baos.write(buffer, 0, bytesRead);
+                        }
                     }
                     byte[] pdfBytes = baos.toByteArray();
                     String base64Pdf = Base64.encodeToString(pdfBytes, Base64.NO_WRAP);

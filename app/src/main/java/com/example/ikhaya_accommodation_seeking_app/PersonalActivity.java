@@ -123,6 +123,12 @@ public class PersonalActivity extends AppCompatActivity {
         suburbInput =
                 findViewById(R.id.suburbInputText);
 
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            if (provinceInput != null) provinceInput.setAutofillHints("postalAddressRegion");
+            if (cityInput != null) cityInput.setAutofillHints("postalAddressLocality");
+            if (suburbInput != null) suburbInput.setAutofillHints("postalAddressStreetAddress");
+        }
+
         registerBtn =
                 findViewById(R.id.registrationBtn);
 
@@ -235,21 +241,21 @@ public class PersonalActivity extends AppCompatActivity {
             return;
         }
 
-        if (!province.matches("[a-zA-Z\\s-]+")) {
+        if (!province.matches("[a-zA-Z0-9\\s.,'()/&-]+")) {
             provinceInput.setError(null);
             Toast.makeText(this, "Please enter a valid province name", Toast.LENGTH_SHORT).show();
             provinceInput.requestFocus();
             return;
         }
 
-        if (!city.matches("[a-zA-Z\\s-]+")) {
+        if (!city.matches("[a-zA-Z0-9\\s.,'()/&-]+")) {
             cityInput.setError(null);
             Toast.makeText(this, "Please enter a valid city name", Toast.LENGTH_SHORT).show();
             cityInput.requestFocus();
             return;
         }
 
-        if (!suburb.matches("[a-zA-Z0-9\\s-]+")) {
+        if (!suburb.matches("[a-zA-Z0-9\\s.,'()/&-]+")) {
             suburbInput.setError(null);
             Toast.makeText(this, "Please enter a valid suburb name", Toast.LENGTH_SHORT).show();
             suburbInput.requestFocus();
@@ -834,6 +840,7 @@ public class PersonalActivity extends AppCompatActivity {
                 : response;
     }
 
+    @SuppressWarnings("deprecation")
     private void fetchLocation() {
 
         try {
@@ -1002,8 +1009,8 @@ public class PersonalActivity extends AppCompatActivity {
         }
 
         if (province.isEmpty()) province = "Gauteng";
-        if (city.isEmpty() && !suburb.isEmpty()) city = suburb;
-        if (suburb.isEmpty() && !city.isEmpty()) suburb = city;
+        if (city.isEmpty()) city = suburb.isEmpty() ? "Johannesburg" : suburb;
+        if (suburb.isEmpty()) suburb = city;
 
         final String finalProvince = province;
         final String finalCity = city;
