@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+    
+    <!-- 2. Rondavel Drum Wall (Cream Fill) -->
+    <path d="M 34,64
+             L 34,92
+             C 34,94 40,96 60,96
+             C 80,96 86,94 86,92
+             L 86,64
+             Z" fill="#FAF7F5" />
+
+    <!-- 3. Lower Wall Skirting / Plinth (Warm Tone) -->
+    <path d="M 34,82
+             L 34,92
+             C 34,94 40,96 60,96
+             C 80,96 86,94 86,92
+             L 86,82
+             C 78,84 66,85 60,85
+             C 54,85 42,84 34,82
+             Z" fill="#E8A590" />
+
+    <!-- 4. Drum Wall Outline -->
+    <path d="M 34,64
+             L 34,92
+             C 34,94 40,96 60,96
+             C 80,96 86,94 86,92
+             L 86,64" stroke="#211A18" stroke-width="3" fill="none" stroke-linecap="round" />
+
+    <!-- 5. Windows (Left and Right) -->
+    <!-- Left Window -->
+    <path d="M 40,71
+             L 40,78
+             C 40,80 46,80 46,78
+             L 46,71
+             C 46,69 40,69 40,71
+             Z" fill="#211A18" />
+
+    <!-- Right Window -->
+    <path d="M 74,71
+             L 74,78
+             C 74,80 80,80 80,78
+             L 80,71
+             C 80,69 74,69 74,71
+             Z" fill="#211A18" />
+
+    <!-- 6. Center Arched Doorway -->
+    <path d="M 53,96
+             L 53,75
+             C 53,69 67,69 67,75
+             L 67,96
+             Z" fill="#211A18" />
+
+    <path d="M 53,96
+             L 53,75
+             C 53,69 67,69 67,75
+             L 67,96" stroke="#211A18" stroke-width="2.5" fill="none" stroke-linecap="round" />
+
+    <!-- 7. Thatched Conical Roof Base Fill -->
+    <path d="M 60,26
+             L 24,63
+             L 96,63
+             Z" fill="#FAF7F5" />
+
+    <!-- 8. Thatch Overhang Zigzag Fringe -->
+    <path d="M 23,62
+             L 27,67 L 31,62 L 35,67 L 39,62 L 43,67 L 47,62
+             L 51,67 L 55,62 L 59,67 L 63,62 L 67,67 L 71,62
+             L 75,67 L 79,62 L 83,67 L 87,62 L 91,67 L 97,62
+             L 96,60 L 24,60 Z" fill="#FAF7F5" stroke="#211A18" stroke-width="2" stroke-linejoin="round" />
+
+    <!-- 9. Roof Main Conical Slope Outlines -->
+    <path d="M 24,61 L 55,27 M 65,27 L 96,61" stroke="#211A18" stroke-width="3" fill="none" stroke-linecap="round" />
+
+    <!-- 10. Thatched Crown Tuft (Top Knot) -->
+    <path d="M 55,27
+             L 52,18
+             L 56,21
+             L 60,16
+             L 64,21
+             L 68,18
+             L 65,27
+             Z" fill="#FAF7F5" stroke="#211A18" stroke-width="2.5" stroke-linejoin="round" />
+
+    <!-- Top Tuft Tie Ring -->
+    <path d="M 54,27 L 66,27" stroke="#211A18" stroke-width="3" fill="none" stroke-linecap="round" />
+
+    <!-- 11. Thatch Texture Hatch Strokes -->
+    <path d="M 45,39 L 41,47
+             M 55,34 L 53,44
+             M 65,34 L 67,44
+             M 75,39 L 79,47
+             M 36,49 L 33,56
+             M 48,47 L 47,55
+             M 61,47 L 61,56
+             M 73,47 L 74,55
+             M 84,49 L 87,56" stroke="#211A18" stroke-width="2" fill="none" stroke-linecap="round" />
+</svg>

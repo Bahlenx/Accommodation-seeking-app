@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+
+    <!-- 1. Terracotta Squircle Container -->
+    <path
+        android:pathData="M 36,8
+                          C 16,8 8,16 8,36
+                          L 8,84
+                          C 8,104 16,112 36,112
+                          L 84,112
+                          C 104,112 112,104 112,84
+                          L 112,36
+                          C 112,16 104,8 84,8
+                          Z"
+        android:fillColor="#BA5536" />
+
+    <!-- 2. Rondavel Drum Wall (Cream Fill) -->
+    <path
+        android:pathData="M 34,64
+                          L 34,92
+                          C 34,94 40,96 60,96
+                          C 80,96 86,94 86,92
+                          L 86,64
+                          Z"
+        android:fillColor="#FAF7F5" />
+
+    <!-- 3. Lower Wall Skirting / Plinth (Warm Tone) -->
+    <path
+        android:pathData="M 34,82
+                          L 34,92
+                          C 34,94 40,96 60,96
+                          C 80,96 86,94 86,92
+                          L 86,82
+                          C 78,84 66,85 60,85
+                          C 54,85 42,84 34,82
+                          Z"
+        android:fillColor="#E8A590" />
+
+    <!-- 4. Drum Wall Outline -->
+    <path
+        android:pathData="M 34,64
+                          L 34,92
+                          C 34,94 40,96 60,96
+                          C 80,96 86,94 86,92
+                          L 86,64"
+        android:strokeWidth="3"
+        android:strokeColor="#211A18"
+        android:fillColor="#00000000"
+        android:strokeLineCap="round" />
+
+    <!-- 5. Windows (Left and Right) -->
+    <!-- Left Window -->
+    <path
+        android:pathData="M 40,71
+                          L 40,78
+                          C 40,80 46,80 46,78
+                          L 46,71
+                          C 46,69 40,69 40,71
+                          Z"
+        android:fillColor="#211A18" />
+
+    <!-- Right Window -->
+    <path
+        android:pathData="M 74,71
+                          L 74,78
+                          C 74,80 80,80 80,78
+                          L 80,71
+                          C 80,69 74,69 74,71
+                          Z"
+        android:fillColor="#211A18" />
+
+    <!-- 6. Center Arched Doorway -->
+    <path
+        android:pathData="M 53,96
+                          L 53,75
+                          C 53,69 67,69 67,75
+                          L 67,96
+                          Z"
+        android:fillColor="#211A18" />
+
+    <path
+        android:pathData="M 53,96
+                          L 53,75
+                          C 53,69 67,69 67,75
+                          L 67,96"
+        android:strokeWidth="2.5"
+        android:strokeColor="#211A18"
+        android:fillColor="#00000000"
+        android:strokeLineCap="round" />
+
+    <!-- 7. Thatched Conical Roof Base Fill -->
+    <path
+        android:pathData="M 60,26
+                          L 24,63
+                          L 96,63
+                          Z"
+        android:fillColor="#FAF7F5" />
+
+    <!-- 8. Thatch Overhang Zigzag Fringe -->
+    <path
+        android:pathData="M 23,62
+                          L 27,67 L 31,62 L 35,67 L 39,62 L 43,67 L 47,62
+                          L 51,67 L 55,62 L 59,67 L 63,62 L 67,67 L 71,62
+                          L 75,67 L 79,62 L 83,67 L 87,62 L 91,67 L 97,62
+                          L 96,60 L 24,60 Z"
+        android:fillColor="#FAF7F5"
+        android:strokeWidth="2"
+        android:strokeColor="#211A18"
+        android:strokeLineJoin="round" />
+
+    <!-- 9. Roof Main Conical Slope Outlines -->
+    <path
+        android:pathData="M 24,61 L 55,27 M 65,27 L 96,61"
+        android:strokeWidth="3"
+        android:strokeColor="#211A18"
+        android:strokeLineCap="round" />
+
+    <!-- 10. Thatched Crown Tuft (Top Knot) -->
+    <path
+        android:pathData="M 55,27
+                          L 52,18
+                          L 56,21
+                          L 60,16
+                          L 64,21
+                          L 68,18
+                          L 65,27
+                          Z"
+        android:fillColor="#FAF7F5"
+        android:strokeWidth="2.5"
+        android:strokeColor="#211A18"
+        android:strokeLineJoin="round" />
+
+    <!-- Top Tuft Tie Ring -->
+    <path
+        android:pathData="M 54,27 L 66,27"
+        android:strokeWidth="3"
+        android:strokeColor="#211A18"
+        android:strokeLineCap="round" />
+
+    <!-- 11. Thatch Texture Hatch Strokes -->
+    <path
+        android:pathData="M 45,39 L 41,47
+                          M 55,34 L 53,44
+                          M 65,34 L 67,44
+                          M 75,39 L 79,47
+                          M 36,49 L 33,56
+                          M 48,47 L 47,55
+                          M 61,47 L 61,56
+                          M 73,47 L 74,55
+                          M 84,49 L 87,56"
+        android:strokeWidth="2"
+        android:strokeColor="#211A18"
+        android:strokeLineCap="round" />
+
+</vector>
