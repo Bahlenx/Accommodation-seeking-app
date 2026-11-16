@@ -1,4 +1,3 @@
-
 package com.example.ikhaya_accommodation_seeking_app;
 
 import android.content.Intent;
@@ -15,6 +14,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -244,6 +244,29 @@ public class HomeActivity extends AppCompatActivity {
                         return false;
                     }
             );
+        }
+
+        ImageButton btnHomeFilter = findViewById(R.id.btnHomeFilter);
+        if (btnHomeFilter != null) {
+            btnHomeFilter.setOnClickListener(v -> {
+                FilterBottomSheetDialog filterSheet = new FilterBottomSheetDialog();
+                filterSheet.setFilterListener((offerType, min, max, propType, arrangement, utilities) -> {
+                    EditText homeSearch = findViewById(R.id.etSearchPlace);
+                    String query = homeSearch == null ? "" : homeSearch.getText().toString().trim();
+                    Intent intent = new Intent(HomeActivity.this, SearchResultsActivity.class);
+                    intent.putExtra("SEARCH_QUERY", query);
+                    intent.putExtra("PROPERTY_TYPE", propType);
+                    intent.putExtra("FILTER_OFFER_TYPE", offerType);
+                    intent.putExtra("FILTER_MIN_PRICE", min);
+                    intent.putExtra("FILTER_MAX_PRICE", max);
+                    intent.putExtra("FILTER_ARRANGEMENT", arrangement);
+                    if (utilities != null) {
+                        intent.putStringArrayListExtra("FILTER_UTILITIES", new java.util.ArrayList<>(utilities));
+                    }
+                    startActivity(intent);
+                });
+                filterSheet.show(getSupportFragmentManager(), "HomeFilterBottomSheet");
+            });
         }
 
         setupBottomNavigation();

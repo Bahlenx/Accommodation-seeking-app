@@ -22,198 +22,204 @@
             android:fillViewport="true"
             android:paddingBottom="130dp">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingHorizontal="20dp"
-            android:paddingTop="16dp">
-
-            <!-- 1. TOP BAR: Brand + Notifications + Profile -->
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginBottom="24dp">
-
-                <!-- Left: Logo + Name Lockup -->
-                <LinearLayout
-                    android:id="@+id/layoutBrandLeft"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentStart="true"
-                    android:layout_centerVertical="true"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <ImageView
-                        android:id="@+id/ivHeaderLogo"
-                        android:layout_width="44dp"
-                        android:layout_height="44dp"
-                        android:contentDescription="@string/desc_app_logo"
-                        android:src="@drawable/ic_ikhaya_logo" />
-
-                    <TextView
-                        android:id="@+id/tvBrandName"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:text="@string/app_name"
-                        android:textColor="#1F1614"
-                        android:textSize="21sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
-
-                <!-- Notifications Button with Badge Dot -->
-                <FrameLayout
-                    android:id="@+id/btnNotificationsHome"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:layout_toStartOf="@id/btnProfile"
-                    android:layout_marginEnd="10dp"
-                    android:layout_centerVertical="true"
-                    android:background="@drawable/bg_circle_white"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:contentDescription="@string/desc_notifications_icon">
-
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:layout_gravity="center"
-                        android:src="@android:drawable/ic_popup_reminder"
-                        app:tint="#1F1614" />
-
-                    <View
-                        android:id="@+id/notificationDot"
-                        android:layout_width="9dp"
-                        android:layout_height="9dp"
-                        android:layout_gravity="top|end"
-                        android:layout_marginTop="2dp"
-                        android:layout_marginEnd="2dp"
-                        android:background="@drawable/bg_notification_dot"
-                        android:visibility="gone" />
-                </FrameLayout>
-
-                <!-- Right: Profile Button -->
-                <ImageButton
-                    android:id="@+id/btnProfile"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:background="@drawable/bg_circle_white"
-                    android:contentDescription="@string/desc_my_profile"
-                    android:elevation="1dp"
-                    android:padding="10dp"
-                    android:scaleType="fitCenter"
-                    android:src="@drawable/user"
-                    app:tint="#1F1614" />
-            </RelativeLayout>
-
-            <!-- 2. PERSONALIZED GREETING -->
-            <TextView
-                android:id="@+id/tvHomeGreeting"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="20dp"
-                android:lineSpacingExtra="4dp"
-                android:text="@string/home_greeting_default"
-                android:textColor="#1F1614"
-                android:textSize="26sp"
-                android:textStyle="bold" />
-
-            <!-- 3. SEARCH PILL + FILTER BUTTON -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="28dp"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
+                android:orientation="vertical"
+                android:paddingHorizontal="20dp"
+                android:paddingTop="16dp">
 
-                <!-- Search Input Pill -->
-                <androidx.cardview.widget.CardView
+                <RelativeLayout
                     android:layout_width="match_parent"
-                    android:layout_height="54dp"
-                    app:cardBackgroundColor="#FFFFFF"
-                    app:cardCornerRadius="27dp"
-                    app:cardElevation="2dp">
+                    android:layout_height="48dp"
+                    android:layout_marginBottom="24dp">
 
                     <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
+                        android:id="@+id/layoutBrandLeft"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_centerVertical="true"
                         android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:paddingHorizontal="16dp">
+                        android:orientation="horizontal">
 
                         <ImageView
-                            android:layout_width="18dp"
-                            android:layout_height="18dp"
-                            android:contentDescription="@string/desc_search_icon"
-                            android:src="@drawable/search"
-                            app:tint="#8C7A70" />
+                            android:id="@+id/ivHeaderLogo"
+                            android:layout_width="44dp"
+                            android:layout_height="44dp"
+                            android:contentDescription="@string/desc_app_logo"
+                            android:src="@drawable/ic_ikhaya_logo" />
 
-                        <EditText
-                            android:id="@+id/etSearchPlace"
+                        <TextView
+                            android:id="@+id/tvBrandName"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="@string/app_name"
+                            android:textColor="#1F1614"
+                            android:textSize="21sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <FrameLayout
+                        android:id="@+id/btnNotificationsHome"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_toStartOf="@id/btnProfile"
+                        android:layout_marginEnd="10dp"
+                        android:layout_centerVertical="true"
+                        android:background="@drawable/bg_circle_white"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:contentDescription="@string/desc_notifications_icon">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@android:drawable/ic_popup_reminder"
+                            app:tint="#1F1614" />
+
+                        <View
+                            android:id="@+id/notificationDot"
+                            android:layout_width="9dp"
+                            android:layout_height="9dp"
+                            android:layout_gravity="top|end"
+                            android:layout_marginTop="2dp"
+                            android:layout_marginEnd="2dp"
+                            android:background="@drawable/bg_notification_dot"
+                            android:visibility="gone" />
+                    </FrameLayout>
+
+                    <ImageButton
+                        android:id="@+id/btnProfile"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:background="@drawable/bg_circle_white"
+                        android:contentDescription="@string/desc_my_profile"
+                        android:elevation="1dp"
+                        android:padding="10dp"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/user"
+                        app:tint="#1F1614" />
+                </RelativeLayout>
+
+                <TextView
+                    android:id="@+id/tvHomeGreeting"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="20dp"
+                    android:lineSpacingExtra="4dp"
+                    android:text="@string/home_greeting_default"
+                    android:textColor="#1F1614"
+                    android:textSize="26sp"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="28dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="54dp"
+                        app:cardBackgroundColor="#FFFFFF"
+                        app:cardCornerRadius="27dp"
+                        app:cardElevation="2dp">
+
+                        <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:layout_marginStart="10dp"
-                            android:autofillHints="postalAddress"
-                            android:background="@null"
-                            android:hint="@string/hint_search_places"
-                            android:imeOptions="actionSearch"
-                            android:inputType="textPostalAddress|textCapWords"
-                            android:singleLine="true"
-                            android:textColor="#1F1614"
-                            android:textColorHint="#9E8F87"
-                            android:textSize="14sp" />
-                    </LinearLayout>
-                </androidx.cardview.widget.CardView>
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:paddingHorizontal="16dp">
+
+                            <ImageView
+                                android:layout_width="18dp"
+                                android:layout_height="18dp"
+                                android:contentDescription="@string/desc_search_icon"
+                                android:src="@drawable/search"
+                                app:tint="#8C7A70" />
+
+                            <EditText
+                                android:id="@+id/etSearchPlace"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:layout_marginStart="10dp"
+                                android:autofillHints="postalAddress"
+                                android:background="@null"
+                                android:hint="@string/hint_search_places"
+                                android:imeOptions="actionSearch"
+                                android:inputType="textPostalAddress|textCapWords"
+                                android:singleLine="true"
+                                android:textColor="#1F1614"
+                                android:textColorHint="#9E8F87"
+                                android:textSize="14sp" />
+                        </LinearLayout>
+                    </androidx.cardview.widget.CardView>
+
+                    <!-- NEW FILTER BUTTON -->
+                    <ImageButton
+                        android:id="@+id/btnHomeFilter"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_marginStart="12dp"
+                        android:background="@drawable/bg_circle_white"
+                        android:contentDescription="@string/search_filters_title"
+                        android:elevation="2dp"
+                        android:padding="12dp"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/funnel"
+                        app:tint="#1F1614" />
+                </LinearLayout>
+
+                <!-- MOST POPULAR PLACES -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="14dp"
+                    android:text="@string/title_most_popular"
+                    android:textColor="#1F1614"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvPopularPlaces"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="28dp"
+                    android:clipToPadding="false"
+                    android:nestedScrollingEnabled="false"
+                    android:orientation="horizontal" />
+
+                <!-- EXPLORE NEW AREA -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="14dp"
+                    android:text="@string/title_explore_new_area"
+                    android:textColor="#1F1614"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvExploreNewArea"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:clipToPadding="false"
+                    android:nestedScrollingEnabled="false"
+                    android:orientation="horizontal" />
+
             </LinearLayout>
-
-            <!-- 4. SECTION 1: MOST POPULAR PLACES -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="14dp"
-                android:text="@string/title_most_popular"
-                android:textColor="#1F1614"
-                android:textSize="18sp"
-                android:textStyle="bold" />
-
-            <!-- Horizontal Carousel 1 -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvPopularPlaces"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="28dp"
-                android:clipToPadding="false"
-                android:nestedScrollingEnabled="false"
-                android:orientation="horizontal" />
-
-            <!-- 5. SECTION 2: EXPLORE NEW AREA -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="14dp"
-                android:text="@string/title_explore_new_area"
-                android:textColor="#1F1614"
-                android:textSize="18sp"
-                android:textStyle="bold" />
-
-            <!-- Horizontal Carousel 2 -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvExploreNewArea"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:clipToPadding="false"
-                android:nestedScrollingEnabled="false"
-                android:orientation="horizontal" />
-
-        </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
+        </androidx.core.widget.NestedScrollView>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-    <!-- 6. FLOATING BOTTOM NAVIGATION -->
+    <!-- FLOATING BOTTOM NAVIGATION -->
     <LinearLayout
         android:id="@+id/floatingBottomNav"
         android:layout_width="match_parent"
@@ -230,7 +236,7 @@
         android:padding="0dp"
         android:weightSum="4">
 
-        <!-- Tab 1: Discover -->
+        <!-- DISCOVER -->
         <LinearLayout
             android:id="@+id/navHome"
             android:layout_width="0dp"
@@ -258,7 +264,7 @@
                 android:textStyle="bold" />
         </LinearLayout>
 
-        <!-- Tab 2: Favorites -->
+        <!-- FAVORITES -->
         <LinearLayout
             android:id="@+id/navFavorites"
             android:layout_width="0dp"
@@ -285,7 +291,7 @@
                 android:textSize="10.5sp" />
         </LinearLayout>
 
-        <!-- Tab 3: Viewings -->
+        <!-- VIEWINGS -->
         <LinearLayout
             android:id="@+id/navViewings"
             android:layout_width="0dp"
@@ -312,7 +318,7 @@
                 android:textSize="10.5sp" />
         </LinearLayout>
 
-        <!-- Tab 4: Messages with Badge Dot -->
+        <!-- MESSAGES -->
         <LinearLayout
             android:id="@+id/navMessages"
             android:layout_width="0dp"
