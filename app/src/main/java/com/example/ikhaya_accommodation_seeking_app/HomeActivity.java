@@ -85,6 +85,7 @@ public class HomeActivity extends AppCompatActivity {
                 return;
             }
 
+            SupabaseHelper.verifyActiveSessionOrKick(HomeActivity.this);
             refreshNotifications();
             notificationHandler.postDelayed(this, 10000);
         }

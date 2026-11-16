@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -53,20 +54,39 @@ public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.View
         String role = user.getRole() != null ? user.getRole().toLowerCase() : "";
         String identityStatus = user.getIdentityStatus() != null ? user.getIdentityStatus().toUpperCase() : "UNVERIFIED";
 
-        if ("landlord".equals(role) && "PENDING_VERIFICATION".equalsIgnoreCase(identityStatus)) {
+        if ("landlord".equals(role)) {
+            holder.tvUserRole.setText("LANDLORD • " + identityStatus.replace("_", " "));
             if (holder.btnVerifyUser != null) {
                 holder.btnVerifyUser.setVisibility(View.VISIBLE);
-                holder.btnVerifyUser.setText(R.string.btn_verify_id);
-                holder.btnVerifyUser.setBackgroundColor(Color.parseColor("#28A745"));
-                holder.btnVerifyUser.setOnClickListener(v -> {
-                    if (context instanceof AdminUsersActivity) {
-                        // The actual approval/rejection API calls happen inside AdminUsersActivity.java,
-                        // so we pass this there.
-                        ((AdminUsersActivity) context).showLandlordIdReviewDialog(user);
-                    }
-                });
+                if ("VERIFIED".equalsIgnoreCase(identityStatus)) {
+                    holder.btnVerifyUser.setText("VIEW ID");
+                    holder.btnVerifyUser.setBackgroundColor(Color.parseColor("#5E72E4"));
+                    holder.btnVerifyUser.setOnClickListener(v -> {
+                        if (context instanceof AdminUsersActivity) {
+                            ((AdminUsersActivity) context).showLandlordIdReviewDialog(user);
+                        }
+                    });
+                } else if ("PENDING_VERIFICATION".equalsIgnoreCase(identityStatus)) {
+                    holder.btnVerifyUser.setText(R.string.btn_verify_id);
+                    holder.btnVerifyUser.setBackgroundColor(Color.parseColor("#28A745"));
+                    holder.btnVerifyUser.setOnClickListener(v -> {
+                        if (context instanceof AdminUsersActivity) {
+                            ((AdminUsersActivity) context).showLandlordIdReviewDialog(user);
+                        }
+                    });
+                } else {
+                    // Landlord is UNVERIFIED or REJECTED — allow Admin to prompt/enforce ID upload
+                    holder.btnVerifyUser.setText("REQUEST ID");
+                    holder.btnVerifyUser.setBackgroundColor(Color.parseColor("#FB6340"));
+                    holder.btnVerifyUser.setOnClickListener(v -> {
+                        if (context instanceof AdminUsersActivity) {
+                            ((AdminUsersActivity) context).showRequestLandlordVerificationDialog(user);
+                        }
+                    });
+                }
             }
         } else {
+            holder.tvUserRole.setText(user.getRole().toUpperCase());
             if (holder.btnVerifyUser != null) {
                 holder.btnVerifyUser.setVisibility(View.GONE);
             }
@@ -103,33 +123,27 @@ public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.View
 
         holder.btnSuspendUser.setOnClickListener(v -> {
             boolean targetState = !user.isSuspended();
-            holder.btnSuspendUser.setEnabled(false);
 
-            String token = SupabaseHelper.getAccessToken(context);
+            if (targetState) {
+                // Prompt admin for suspension reason
+                final EditText inputReason = new EditText(context);
+                inputReason.setHint("e.g. Policy violation, suspicious activity, invalid ID...");
+                int paddingPx = (int) (16 * context.getResources().getDisplayMetrics().density);
+                inputReason.setPadding(paddingPx, paddingPx, paddingPx, paddingPx);
 
-            executor.execute(() -> {
-                try {
-                    String endpoint = "/rest/v1/profiles?firebase_uid=eq." + user.getUserId().trim();
-
-                    JSONObject body = new JSONObject();
-                    body.put("is_suspended", targetState);
-
-                    SupabaseHelper.patch(endpoint, body, token);
-
-                    mainHandler.post(() -> {
-                        user.setSuspended(targetState);
-                        holder.btnSuspendUser.setEnabled(true);
-                        updateButtonUI(holder, targetState);
-                        Toast.makeText(context, String.format(Locale.getDefault(), context.getString(R.string.msg_account_status_updated), user.getName(), (targetState ? "suspended" : "reactivated")), Toast.LENGTH_SHORT).show();
-                    });
-
-                } catch (Exception e) {
-                    mainHandler.post(() -> {
-                        holder.btnSuspendUser.setEnabled(true);
-                        Toast.makeText(context, context.getString(R.string.error_account_update_failed) + e.getMessage(), Toast.LENGTH_LONG).show();
-                    });
-                }
-            });
+                new AlertDialog.Builder(context)
+                        .setTitle("Suspend " + user.getName())
+                        .setMessage("Please specify a reason for suspending this user's account:")
+                        .setView(inputReason)
+                        .setPositiveButton("Suspend", (dialog, which) -> {
+                            String reason = inputReason.getText().toString().trim();
+                            executeSuspensionChange(holder, user, true, reason);
+                        })
+                        .setNegativeButton("Cancel", null)
+                        .show();
+            } else {
+                executeSuspensionChange(holder, user, false, "");
+            }
         });
 
         if (holder.btnDeleteUser != null) {
@@ -145,6 +159,76 @@ public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.View
                         .show();
             });
         }
+    }
+
+    private void executeSuspensionChange(ViewHolder holder, AdminUser user, boolean targetState, String reason) {
+        holder.btnSuspendUser.setEnabled(false);
+
+        String token = SupabaseHelper.getAccessToken(context);
+
+        executor.execute(() -> {
+            try {
+                String endpoint = "/rest/v1/profiles?firebase_uid=eq." + user.getUserId().trim();
+
+                JSONObject body = new JSONObject();
+                body.put("is_suspended", targetState);
+
+                SupabaseHelper.patch(endpoint, body, token);
+
+                if ("landlord".equalsIgnoreCase(user.getRole())) {
+                    JSONObject listingPatch = new JSONObject();
+                    if (targetState) {
+                        listingPatch.put("status", "SUSPENDED_FOR_REVERIFICATION");
+                        listingPatch.put("reverification_reason", "Landlord account suspended by administrator.");
+                    } else {
+                        listingPatch.put("status", "APPROVED");
+                        listingPatch.put("reverification_reason", "");
+                    }
+                    SupabaseHelper.patch(
+                            "/rest/v1/listings?landlord_uid=eq." + SupabaseHelper.encode(user.getUserId().trim())
+                                    + (targetState ? "&status=in.(APPROVED,VERIFIED)" : "&status=eq.SUSPENDED_FOR_REVERIFICATION"),
+                            listingPatch,
+                            token
+                    );
+                }
+
+                // Notify the user in Supabase so they receive an alert/audit record
+                if (targetState) {
+                    String notifMsg = "Your iKhaya account has been suspended by an administrator."
+                            + (reason.isEmpty() ? "" : "\n\nReason: " + reason)
+                            + "\n\nContact support via the Login screen if you need assistance.";
+                    SupabaseHelper.createNotification(
+                            user.getUserId().trim(),
+                            "Account Suspended",
+                            notifMsg,
+                            token
+                    );
+                } else {
+                    SupabaseHelper.createNotification(
+                            user.getUserId().trim(),
+                            "Account Reactivated",
+                            "Your iKhaya account suspension has been lifted. You may now use all platform features.",
+                            token
+                    );
+                }
+
+                mainHandler.post(() -> {
+                    user.setSuspended(targetState);
+                    holder.btnSuspendUser.setEnabled(true);
+                    updateButtonUI(holder, targetState);
+                    String toastMsg = targetState
+                            ? user.getName() + " suspended. Reason: " + (reason.isEmpty() ? "None specified" : reason)
+                            : user.getName() + " reactivated.";
+                    Toast.makeText(context, toastMsg, Toast.LENGTH_LONG).show();
+                });
+
+            } catch (Exception e) {
+                mainHandler.post(() -> {
+                    holder.btnSuspendUser.setEnabled(true);
+                    Toast.makeText(context, context.getString(R.string.error_account_update_failed) + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
+            }
+        });
     }
 
     private void updateButtonUI(ViewHolder holder, boolean isSuspended) {

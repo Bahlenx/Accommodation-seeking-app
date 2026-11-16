@@ -72,7 +72,7 @@
             android:background="#FFC107"
             android:paddingHorizontal="10dp"
             android:paddingVertical="4dp"
-            android:text="PENDING APPROVAL"
+            android:text="@string/status_pending_approval"
             android:textColor="#000000"
             android:textSize="12sp"
             android:textStyle="bold" />
@@ -92,7 +92,7 @@
                 android:id="@+id/tvReverificationReason"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Action Required: Address updated — please re-upload valid proof of authority."
+                android:text="@string/msg_reverification_action_required"
                 android:textColor="#856404"
                 android:textSize="12sp"
                 android:textStyle="bold" />
@@ -111,10 +111,11 @@
                 android:layout_marginEnd="4dp"
                 android:layout_weight="1"
                 android:backgroundTint="#B95737"
+                android:paddingHorizontal="4dp"
                 android:text="@string/btn_edit_item"
                 android:textAllCaps="false"
                 android:textColor="#FFFFFF"
-                android:textSize="12sp" />
+                android:textSize="11sp" />
 
             <Button
                 android:id="@+id/btnMarkRented"
@@ -123,10 +124,11 @@
                 android:layout_marginHorizontal="2dp"
                 android:layout_weight="1"
                 android:backgroundTint="#6C757D"
-                android:text="Mark Rented"
+                android:paddingHorizontal="4dp"
+                android:text="@string/btn_mark_rented"
                 android:textAllCaps="false"
                 android:textColor="#FFFFFF"
-                android:textSize="12sp" />
+                android:textSize="11sp" />
 
             <Button
                 android:id="@+id/btnDeleteListing"
@@ -135,10 +137,11 @@
                 android:layout_marginStart="4dp"
                 android:layout_weight="1"
                 android:backgroundTint="#F0E4DF"
+                android:paddingHorizontal="4dp"
                 android:text="@string/btn_delete"
                 android:textAllCaps="false"
                 android:textColor="#9E3828"
-                android:textSize="12sp" />
+                android:textSize="11sp" />
 
         </LinearLayout>
 

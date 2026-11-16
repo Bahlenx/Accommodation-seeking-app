@@ -1,8 +1,12 @@
 package com.example.ikhaya_accommodation_seeking_app;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.util.Log;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AlertDialog;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -17,6 +21,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
+import java.util.UUID;
 import java.util.concurrent.Executors;
 
 import okhttp3.MediaType;
@@ -78,19 +83,31 @@ public class SupabaseHelper {
     }
 
     public static void openAdminSupportChat(android.content.Context context, String userHint) {
-        android.content.SharedPreferences prefs = context.getSharedPreferences("iKhayaSupport", android.content.Context.MODE_PRIVATE);
+        SharedPreferences prefs = context.getSharedPreferences("iKhayaSupport", Context.MODE_PRIVATE);
         String guestId = prefs.getString("GUEST_SUPPORT_ID", "");
         if (guestId == null || guestId.isEmpty()) {
-            guestId = "guest_" + java.util.UUID.randomUUID().toString();
+            guestId = "guest_" + UUID.randomUUID().toString();
             prefs.edit().putString("GUEST_SUPPORT_ID", guestId).apply();
         }
 
         String cleanHint = (userHint != null) ? userHint.trim() : "";
-        String displayName = !cleanHint.isEmpty()
-                ? "Guest (" + cleanHint + ")"
-                : "Guest (" + guestId + ")";
+        if (cleanHint.isEmpty()) {
+            SharedPreferences supportPrefs = context.getSharedPreferences("iKhayaSupport", Context.MODE_PRIVATE);
+            cleanHint = supportPrefs.getString("LAST_USER_EMAIL", "");
+            if (cleanHint.isEmpty()) {
+                cleanHint = supportPrefs.getString("LAST_USER_NAME", "");
+            }
+            if (cleanHint.isEmpty()) {
+                SharedPreferences session = context.getSharedPreferences("iKhayaSession", Context.MODE_PRIVATE);
+                cleanHint = session.getString("USER_EMAIL", session.getString("user_email", ""));
+            }
+        }
 
-        android.content.Intent intent = new android.content.Intent(context, ChatActivity.class);
+        String displayName = !cleanHint.isEmpty()
+                ? "Suspended/Guest (" + cleanHint + ")"
+                : "Guest (" + (guestId.length() >= 8 ? guestId.substring(0, 8) : guestId) + ")";
+
+        Intent intent = new Intent(context, ChatActivity.class);
         intent.putExtra("IS_ADMIN_SUPPORT", true);
         intent.putExtra("GUEST_ID", guestId);
         intent.putExtra("SENDER_ID", guestId);
@@ -327,25 +344,86 @@ public class SupabaseHelper {
                         "GET", token);
                 int code = profConn.getResponseCode();
                 if (code >= 200 && code < 300) {
-                    org.json.JSONArray arr = new org.json.JSONArray(readResponse(profConn));
+                    JSONArray arr = new JSONArray(readResponse(profConn));
                     profConn.disconnect();
-                    boolean shouldKick = (arr.length() == 0);
-                    String kickMsg = "Your account has been removed.";
-                    if (!shouldKick) {
-                        org.json.JSONObject prof = arr.getJSONObject(0);
-                        if (prof.optBoolean("is_suspended", false)) {
-                            shouldKick = true;
-                            kickMsg = "Your account has been suspended by an administrator.";
-                        }
+                    boolean isSuspended = false;
+                    boolean isRemoved = (arr.length() == 0);
+                    if (!isRemoved) {
+                        JSONObject prof = arr.getJSONObject(0);
+                        isSuspended = prof.optBoolean("is_suspended", false);
                     }
-                    if (shouldKick) {
-                        final String finalMsg = kickMsg;
+                    if (isSuspended) {
+                        String fetchedReason = "";
+                        try {
+                            HttpURLConnection notifConn = createConnection(
+                                    "/rest/v1/notifications?select=message&user_id=eq." + encUid + "&title=eq.Account%20Suspended&order=created_at.desc&limit=1",
+                                    "GET", token);
+                            if (notifConn.getResponseCode() >= 200 && notifConn.getResponseCode() < 300) {
+                                JSONArray notifArr = new JSONArray(readResponse(notifConn));
+                                if (notifArr.length() > 0) {
+                                    String msg = notifArr.getJSONObject(0).optString("message", "");
+                                    if (msg.contains("Reason: ")) {
+                                        int start = msg.indexOf("Reason: ") + "Reason: ".length();
+                                        int end = msg.indexOf("\n", start);
+                                        if (end != -1) {
+                                            fetchedReason = msg.substring(start, end).trim();
+                                        } else {
+                                            fetchedReason = msg.substring(start).trim();
+                                        }
+                                    }
+                                }
+                            }
+                            notifConn.disconnect();
+                        } catch (Exception ignored) {}
+
+                        final String reason = fetchedReason;
+                        activity.runOnUiThread(() -> {
+                            if (activity.isFinishing() || activity.isDestroyed()) return;
+
+                            String savedEmail = activity.getSharedPreferences("iKhayaSession", Context.MODE_PRIVATE).getString("USER_EMAIL", "");
+
+                            // 1. Wipe local session immediately so they cannot press Back
+                            activity.getSharedPreferences("iKhayaSession", Context.MODE_PRIVATE)
+                                    .edit()
+                                    .clear()
+                                    .apply();
+
+                            String alertMsg = "Your account has been suspended by an administrator."
+                                    + (reason.isEmpty() ? "" : "\n\nReason: " + reason)
+                                    + "\n\nYou have been signed out immediately. If you believe this is a mistake, tap Contact Support below.";
+
+                            // 2. Show clear suspension notice before kicking to LoginActivity
+                            new AlertDialog.Builder(activity)
+                                    .setTitle("Account Suspended")
+                                    .setMessage(alertMsg)
+                                    .setCancelable(false)
+                                    .setPositiveButton("Return to Login", (dialog, which) -> {
+                                        Intent intent = new Intent(activity, LoginActivity.class);
+                                        intent.putExtra("SUSPENDED_NOTICE", true);
+                                        if (!reason.isEmpty()) intent.putExtra("SUSPENDED_REASON", reason);
+                                        if (!savedEmail.isEmpty()) intent.putExtra("USER_EMAIL", savedEmail);
+                                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                        activity.startActivity(intent);
+                                        activity.finish();
+                                    })
+                                    .setNeutralButton("Contact Support", (dialog, which) -> {
+                                        Intent intent = new Intent(activity, LoginActivity.class);
+                                        intent.putExtra("OPEN_SUPPORT_CHAT", true);
+                                        if (!reason.isEmpty()) intent.putExtra("SUSPENDED_REASON", reason);
+                                        if (!savedEmail.isEmpty()) intent.putExtra("USER_EMAIL", savedEmail);
+                                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                        activity.startActivity(intent);
+                                        activity.finish();
+                                    })
+                                    .show();
+                        });
+                    } else if (isRemoved) {
                         activity.runOnUiThread(() -> {
                             if (activity.isFinishing() || activity.isDestroyed()) return;
                             clearSession(activity);
-                            android.widget.Toast.makeText(activity, finalMsg, android.widget.Toast.LENGTH_LONG).show();
-                            android.content.Intent intent = new android.content.Intent(activity, OuterMainActivity.class);
-                            intent.setFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK | android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                            Toast.makeText(activity, "Your account has been removed.", Toast.LENGTH_LONG).show();
+                            Intent intent = new Intent(activity, OuterMainActivity.class);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                             activity.startActivity(intent);
                             activity.finish();
                         });

@@ -68,6 +68,7 @@ public class LandlordDashboardActivity extends AppCompatActivity {
         @Override
         public void run() {
             if (!dashboardVisible) return;
+            SupabaseHelper.verifyActiveSessionOrKick(LandlordDashboardActivity.this);
             refreshEnquiryBadge();
             badgeHandler.postDelayed(this, 10000);
         }
@@ -389,55 +390,57 @@ public class LandlordDashboardActivity extends AppCompatActivity {
         String propertyLocation = firstValue(listing, "location", "address", "area");
         String propertyPrice = firstValue(listing, "price", "monthly_price");
         String propertyRooms = firstValue(listing, "rooms", "bedrooms", "room_count");
-        String status = listing.optString("status", "PENDING_VERIFICATION");
+        String status = listing.optString("status", "");
+        String availability = listing.optString("availability", "");
+        if (status.isEmpty()) {
+            status = availability;
+        }
+
         String reverificationReason = listing.optString("reverification_reason", "");
         String rejectionReason = listing.optString("rejection_reason", "");
 
         if (tvBadge != null) {
-            switch (status.toUpperCase()) {
-                case "SUSPENDED_FOR_REVERIFICATION":
-                    tvBadge.setText("SUSPENDED");
-                    tvBadge.setBackgroundColor(Color.parseColor("#DC3545"));
-                    tvBadge.setTextColor(Color.WHITE);
-                    if (layoutAlert != null && tvReason != null) {
-                        layoutAlert.setVisibility(View.VISIBLE);
-                        tvReason.setText("Action Required: " + (!reverificationReason.isEmpty() ? reverificationReason : "Address or authority proof updated. Re-verification required."));
-                    }
-                    break;
-
-                case "CHANGES_PENDING_REVIEW":
-                    tvBadge.setText("EDITS PENDING");
-                    tvBadge.setBackgroundColor(Color.parseColor("#2CA8FF"));
-                    tvBadge.setTextColor(Color.WHITE);
-                    if (layoutAlert != null) layoutAlert.setVisibility(View.GONE);
-                    break;
-
-                case "PENDING_VERIFICATION":
-                case "PENDING":
-                    tvBadge.setText("PENDING APPROVAL");
-                    tvBadge.setBackgroundColor(Color.parseColor("#FFC107"));
-                    tvBadge.setTextColor(Color.BLACK);
-                    if (layoutAlert != null) layoutAlert.setVisibility(View.GONE);
-                    break;
-
-                case "APPROVED":
-                case "VERIFIED":
-                    tvBadge.setText("ACTIVE");
-                    tvBadge.setBackgroundColor(Color.parseColor("#28A745"));
-                    tvBadge.setTextColor(Color.WHITE);
-                    if (layoutAlert != null) layoutAlert.setVisibility(View.GONE);
-                    break;
-
-                case "REJECTED":
-                default:
-                    tvBadge.setText("REJECTED");
-                    tvBadge.setBackgroundColor(Color.parseColor("#6C757D"));
-                    tvBadge.setTextColor(Color.WHITE);
-                    if (layoutAlert != null && tvReason != null) {
-                        layoutAlert.setVisibility(View.VISIBLE);
-                        tvReason.setText("Rejection Reason: " + (!rejectionReason.isEmpty() ? rejectionReason : "Listing details require corrections."));
-                    }
-                    break;
+            if ("RENTED".equalsIgnoreCase(status) || "SOLD".equalsIgnoreCase(status) || "Unavailable".equalsIgnoreCase(availability)) {
+                tvBadge.setText("RENTED");
+                tvBadge.setBackgroundColor(Color.parseColor("#6C757D"));
+                tvBadge.setTextColor(Color.WHITE);
+                if (layoutAlert != null) layoutAlert.setVisibility(View.GONE);
+            } else if ("SUSPENDED_FOR_REVERIFICATION".equalsIgnoreCase(status)) {
+                tvBadge.setText("SUSPENDED");
+                tvBadge.setBackgroundColor(Color.parseColor("#DC3545"));
+                tvBadge.setTextColor(Color.WHITE);
+                if (layoutAlert != null && tvReason != null) {
+                    layoutAlert.setVisibility(View.VISIBLE);
+                    tvReason.setText("Action Required: " + (!reverificationReason.isEmpty() ? reverificationReason : "Address or authority proof updated. Re-verification required."));
+                }
+            } else if ("CHANGES_PENDING_REVIEW".equalsIgnoreCase(status)) {
+                tvBadge.setText("EDITS PENDING");
+                tvBadge.setBackgroundColor(Color.parseColor("#2CA8FF"));
+                tvBadge.setTextColor(Color.WHITE);
+                if (layoutAlert != null) layoutAlert.setVisibility(View.GONE);
+            } else if ("PENDING_VERIFICATION".equalsIgnoreCase(status) || "PENDING".equalsIgnoreCase(status)) {
+                tvBadge.setText("PENDING APPROVAL");
+                tvBadge.setBackgroundColor(Color.parseColor("#FFC107"));
+                tvBadge.setTextColor(Color.BLACK);
+                if (layoutAlert != null) layoutAlert.setVisibility(View.GONE);
+            } else if ("APPROVED".equalsIgnoreCase(status) || "VERIFIED".equalsIgnoreCase(status)) {
+                tvBadge.setText("ACTIVE");
+                tvBadge.setBackgroundColor(Color.parseColor("#28A745"));
+                tvBadge.setTextColor(Color.WHITE);
+                if (layoutAlert != null) layoutAlert.setVisibility(View.GONE);
+            } else if ("REJECTED".equalsIgnoreCase(status) || "REMOVED_BY_ADMIN".equalsIgnoreCase(status)) {
+                tvBadge.setText("REJECTED");
+                tvBadge.setBackgroundColor(Color.parseColor("#DC3545"));
+                tvBadge.setTextColor(Color.WHITE);
+                if (layoutAlert != null && tvReason != null) {
+                    layoutAlert.setVisibility(View.VISIBLE);
+                    tvReason.setText("Rejection Reason: " + (!rejectionReason.isEmpty() ? rejectionReason : "Listing details require corrections."));
+                }
+            } else {
+                tvBadge.setText("PENDING APPROVAL");
+                tvBadge.setBackgroundColor(Color.parseColor("#FFC107"));
+                tvBadge.setTextColor(Color.BLACK);
+                if (layoutAlert != null) layoutAlert.setVisibility(View.GONE);
             }
         }
 

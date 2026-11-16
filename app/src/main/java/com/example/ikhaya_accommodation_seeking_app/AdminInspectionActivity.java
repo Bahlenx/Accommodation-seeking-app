@@ -1,5 +1,6 @@
 package com.example.ikhaya_accommodation_seeking_app;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -10,7 +11,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -197,12 +200,7 @@ public class AdminInspectionActivity extends AppCompatActivity {
     }
 
     private void openAuthorityDoc(String urlStr) {
-        try {
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(urlStr));
-            startActivity(intent);
-        } catch (Exception e) {
-            Toast.makeText(this, "Could not open authority document link", Toast.LENGTH_SHORT).show();
-        }
+        openUrlIntent(urlStr);
     }
 
     private void fetchFullListingDetails() {
@@ -647,16 +645,75 @@ public class AdminInspectionActivity extends AppCompatActivity {
     }
 
     private void openUrlIntent(String urlStr) {
-        try {
-            if (urlStr == null || urlStr.isEmpty()) {
-                Toast.makeText(this, "Document link not available", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(urlStr));
-            startActivity(intent);
-        } catch (Exception e) {
-            Toast.makeText(this, "Could not open document link", Toast.LENGTH_SHORT).show();
+        if (urlStr == null || urlStr.trim().isEmpty() || "null".equalsIgnoreCase(urlStr.trim())) {
+            Toast.makeText(this, "Document link not available", Toast.LENGTH_SHORT).show();
+            return;
         }
+
+        String cleanUrl = urlStr.trim();
+
+        // Normalize relative storage paths to full Supabase public URLs
+        if (!cleanUrl.startsWith("http://") && !cleanUrl.startsWith("https://")) {
+            String bucket = cleanUrl.startsWith("identity/") ? "property-images" : "identity-documents";
+            cleanUrl = SupabaseHelper.getPublicStorageUrl(bucket, cleanUrl);
+        }
+
+        // Rewrite legacy/deleted 'listings' bucket references to 'property-images'
+        if (cleanUrl.contains("/object/public/listings/")) {
+            cleanUrl = cleanUrl.replace("/object/public/listings/", "/object/public/property-images/");
+        }
+
+        // Display directly in an in-app dialog (instant, doesn't rely on external phone apps)
+        Dialog previewDialog = new Dialog(this, android.R.style.Theme_Black_NoTitleBar_Fullscreen);
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setBackgroundColor(Color.BLACK);
+        layout.setGravity(Gravity.CENTER);
+
+        // Close button
+        Button btnClose = new Button(this);
+        btnClose.setText("Close Preview");
+        btnClose.setTextColor(Color.WHITE);
+        btnClose.setBackgroundColor(Color.parseColor("#BA5536"));
+        LinearLayout.LayoutParams btnParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        btnParams.bottomMargin = 16;
+        btnClose.setLayoutParams(btnParams);
+        btnClose.setOnClickListener(v -> previewDialog.dismiss());
+
+        // Image view
+        ImageView imageView = new ImageView(this);
+        imageView.setLayoutParams(new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+        ));
+        imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+
+        layout.addView(btnClose);
+        layout.addView(imageView);
+        previewDialog.setContentView(layout);
+
+        String finalUrl = cleanUrl;
+        executor.execute(() -> {
+            try {
+                InputStream in = new URL(finalUrl).openStream();
+                Bitmap bitmap = BitmapFactory.decodeStream(in);
+                runOnUiThread(() -> imageView.setImageBitmap(bitmap));
+            } catch (Exception e) {
+                runOnUiThread(() -> {
+                    try {
+                        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(finalUrl)));
+                        previewDialog.dismiss();
+                    } catch (Exception ex) {
+                        Toast.makeText(AdminInspectionActivity.this, "Could not open document link", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        });
+
+        previewDialog.show();
     }
 
     private void renderPropertyPinOnAdminMap(double lat, double lng, String title) {

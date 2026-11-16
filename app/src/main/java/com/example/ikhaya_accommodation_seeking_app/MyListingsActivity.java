@@ -226,13 +226,10 @@ public class MyListingsActivity extends AppCompatActivity {
         String price = firstValue(listing, "price", "monthly_price");
         String rooms = firstValue(listing, "rooms", "bedrooms", "room_count");
         String imageUrl = firstValue(listing, "image_url", "image", "image_path", "photo_url", "property_image", "imageUrl", "cover_image", "photo");
-        String status = firstValue(listing, "status", "availability");
-
-        if ("RENTED".equalsIgnoreCase(status)) {
-            if (btnMarkRented != null) {
-                btnMarkRented.setText("Reactivate");
-                btnMarkRented.setBackgroundColor(Color.parseColor("#28A745"));
-            }
+        String status = listing.optString("status", "");
+        String availability = listing.optString("availability", "");
+        if (status.isEmpty()) {
+            status = availability;
         }
 
         if (propertyName.isEmpty()) propertyName = getString(R.string.accommodation);
@@ -247,51 +244,92 @@ public class MyListingsActivity extends AppCompatActivity {
         txtListingName.setText(propertyName);
         txtListingName.setTextColor(Color.parseColor("#241A18"));
 
-        if (tvBadge != null) {
-            switch (status.toUpperCase()) {
-                case "SUSPENDED_FOR_REVERIFICATION":
-                    tvBadge.setText("SUSPENDED");
-                    tvBadge.setBackgroundColor(Color.parseColor("#DC3545"));
-                    tvBadge.setTextColor(Color.WHITE);
-                    if (layoutAlert != null && tvReason != null) {
-                        layoutAlert.setVisibility(View.VISIBLE);
-                        tvReason.setText("Action Required: " + (!reverificationReason.isEmpty() ? reverificationReason : "Address or authority proof updated. Re-verification required."));
-                    }
-                    break;
+        boolean isRented = "RENTED".equalsIgnoreCase(status) || "SOLD".equalsIgnoreCase(status) || "Unavailable".equalsIgnoreCase(availability);
 
-                case "CHANGES_PENDING_REVIEW":
-                    tvBadge.setText("EDITS PENDING");
-                    tvBadge.setBackgroundColor(Color.parseColor("#2CA8FF"));
-                    tvBadge.setTextColor(Color.WHITE);
-                    if (layoutAlert != null) layoutAlert.setVisibility(View.GONE);
-                    break;
-
-                case "PENDING_VERIFICATION":
-                case "PENDING":
-                    tvBadge.setText("PENDING APPROVAL");
-                    tvBadge.setBackgroundColor(Color.parseColor("#FFC107"));
-                    tvBadge.setTextColor(Color.BLACK);
-                    if (layoutAlert != null) layoutAlert.setVisibility(View.GONE);
-                    break;
-
-                case "APPROVED":
-                case "VERIFIED":
-                    tvBadge.setText("ACTIVE");
-                    tvBadge.setBackgroundColor(Color.parseColor("#28A745"));
-                    tvBadge.setTextColor(Color.WHITE);
-                    if (layoutAlert != null) layoutAlert.setVisibility(View.GONE);
-                    break;
-
-                case "REJECTED":
-                default:
-                    tvBadge.setText("REJECTED");
-                    tvBadge.setBackgroundColor(Color.parseColor("#6C757D"));
-                    tvBadge.setTextColor(Color.WHITE);
-                    if (layoutAlert != null && tvReason != null) {
-                        layoutAlert.setVisibility(View.VISIBLE);
-                        tvReason.setText("Rejection Reason: " + (!rejectionReason.isEmpty() ? rejectionReason : "Listing details require corrections."));
-                    }
-                    break;
+        if (isRented) {
+            if (tvBadge != null) {
+                tvBadge.setText("RENTED");
+                tvBadge.setBackgroundColor(Color.parseColor("#6C757D"));
+                tvBadge.setTextColor(Color.WHITE);
+            }
+            if (layoutAlert != null) {
+                layoutAlert.setVisibility(View.GONE);
+            }
+            if (btnMarkRented != null) {
+                btnMarkRented.setText("Mark Available");
+                btnMarkRented.setBackgroundColor(Color.parseColor("#28A745"));
+            }
+        } else if ("SUSPENDED_FOR_REVERIFICATION".equalsIgnoreCase(status)) {
+            if (tvBadge != null) {
+                tvBadge.setText("SUSPENDED");
+                tvBadge.setBackgroundColor(Color.parseColor("#DC3545"));
+                tvBadge.setTextColor(Color.WHITE);
+            }
+            if (layoutAlert != null && tvReason != null) {
+                layoutAlert.setVisibility(View.VISIBLE);
+                tvReason.setText("Action Required: " + (!reverificationReason.isEmpty() ? reverificationReason : "Address or authority proof updated. Re-verification required."));
+            }
+            if (btnMarkRented != null) {
+                btnMarkRented.setText("Mark Rented");
+                btnMarkRented.setBackgroundColor(Color.parseColor("#6C757D"));
+            }
+        } else if ("CHANGES_PENDING_REVIEW".equalsIgnoreCase(status)) {
+            if (tvBadge != null) {
+                tvBadge.setText("EDITS PENDING");
+                tvBadge.setBackgroundColor(Color.parseColor("#2CA8FF"));
+                tvBadge.setTextColor(Color.WHITE);
+            }
+            if (layoutAlert != null) layoutAlert.setVisibility(View.GONE);
+            if (btnMarkRented != null) {
+                btnMarkRented.setText("Mark Rented");
+                btnMarkRented.setBackgroundColor(Color.parseColor("#6C757D"));
+            }
+        } else if ("PENDING_VERIFICATION".equalsIgnoreCase(status) || "PENDING".equalsIgnoreCase(status)) {
+            if (tvBadge != null) {
+                tvBadge.setText("PENDING APPROVAL");
+                tvBadge.setBackgroundColor(Color.parseColor("#FFC107"));
+                tvBadge.setTextColor(Color.BLACK);
+            }
+            if (layoutAlert != null) layoutAlert.setVisibility(View.GONE);
+            if (btnMarkRented != null) {
+                btnMarkRented.setText("Mark Rented");
+                btnMarkRented.setBackgroundColor(Color.parseColor("#6C757D"));
+            }
+        } else if ("APPROVED".equalsIgnoreCase(status) || "VERIFIED".equalsIgnoreCase(status)) {
+            if (tvBadge != null) {
+                tvBadge.setText("ACTIVE");
+                tvBadge.setBackgroundColor(Color.parseColor("#28A745"));
+                tvBadge.setTextColor(Color.WHITE);
+            }
+            if (layoutAlert != null) layoutAlert.setVisibility(View.GONE);
+            if (btnMarkRented != null) {
+                btnMarkRented.setText("Mark Rented");
+                btnMarkRented.setBackgroundColor(Color.parseColor("#6C757D"));
+            }
+        } else if ("REJECTED".equalsIgnoreCase(status) || "REMOVED_BY_ADMIN".equalsIgnoreCase(status)) {
+            if (tvBadge != null) {
+                tvBadge.setText("REJECTED");
+                tvBadge.setBackgroundColor(Color.parseColor("#DC3545"));
+                tvBadge.setTextColor(Color.WHITE);
+            }
+            if (layoutAlert != null && tvReason != null) {
+                layoutAlert.setVisibility(View.VISIBLE);
+                tvReason.setText("Rejection Reason: " + (!rejectionReason.isEmpty() ? rejectionReason : "Listing details require corrections."));
+            }
+            if (btnMarkRented != null) {
+                btnMarkRented.setText("Mark Rented");
+                btnMarkRented.setBackgroundColor(Color.parseColor("#6C757D"));
+            }
+        } else {
+            if (tvBadge != null) {
+                tvBadge.setText("PENDING APPROVAL");
+                tvBadge.setBackgroundColor(Color.parseColor("#FFC107"));
+                tvBadge.setTextColor(Color.BLACK);
+            }
+            if (layoutAlert != null) layoutAlert.setVisibility(View.GONE);
+            if (btnMarkRented != null) {
+                btnMarkRented.setText("Mark Rented");
+                btnMarkRented.setBackgroundColor(Color.parseColor("#6C757D"));
             }
         }
 
@@ -334,21 +372,22 @@ public class MyListingsActivity extends AppCompatActivity {
         }
 
         if (btnMarkRented != null) {
+            final boolean finalIsRented = isRented;
             btnMarkRented.setOnClickListener(v -> {
                 if (listingId.isEmpty()) {
                     showMessage(getString(R.string.error_missing_credentials_or_listing));
                     return;
                 }
-                boolean isRented = "RENTED".equalsIgnoreCase(finalStatus);
                 JSONObject body = new JSONObject();
                 try {
-                    body.put("status", isRented ? "APPROVED" : "RENTED");
+                    body.put("status", finalIsRented ? "APPROVED" : "RENTED");
+                    body.put("availability", finalIsRented ? "Available" : "Unavailable");
                 } catch (Exception ignored) {}
 
                 SupabaseHelper.updateListing(listingId, body, (success, error) -> {
                     runOnUiThread(() -> {
                         if (success) {
-                            Toast.makeText(this, isRented ? "Listing reactivated successfully." : "Listing marked as rented.", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this, finalIsRented ? "Listing marked as available." : "Listing marked as rented.", Toast.LENGTH_SHORT).show();
                             loadMyListings();
                         } else {
                             Toast.makeText(this, "Failed to update listing: " + error, Toast.LENGTH_SHORT).show();

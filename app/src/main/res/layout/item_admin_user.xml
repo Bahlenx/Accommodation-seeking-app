@@ -2,64 +2,66 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:background="#FFFFFF"
-    android:padding="16dp"
-    android:layout_marginBottom="8dp"
-    android:gravity="center_vertical">
+    android:orientation="vertical"
+    android:padding="14dp"
+    android:layout_marginBottom="10dp"
+    android:background="@drawable/bg_white_card">
 
+    <!-- Top Row: Full-width Name & Role -->
     <LinearLayout
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:layout_marginBottom="10dp">
 
         <TextView
             android:id="@+id/tvUserName"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/placeholder_user_name"
-            android:textStyle="bold"
             android:textSize="16sp"
-            android:textColor="#212529" />
+            android:textStyle="bold"
+            android:textColor="#1F1614" />
 
         <TextView
             android:id="@+id/tvUserRole"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/landlord_radio_option"
             android:textSize="12sp"
-            android:textColor="#6C757D" />
+            android:textColor="#786F6B" />
     </LinearLayout>
 
-    <Button
-        android:id="@+id/btnVerifyUser"
-        android:layout_width="wrap_content"
-        android:layout_height="36dp"
-        android:layout_marginEnd="8dp"
-        android:backgroundTint="#28A745"
-        android:text="VERIFY ID"
-        android:textColor="#FFFFFF"
-        android:textSize="12sp"
-        android:visibility="gone" />
+    <!-- Bottom Row: Evenly spaced action buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end">
 
-    <Button
-        android:id="@+id/btnSuspendUser"
-        android:layout_width="wrap_content"
-        android:layout_height="36dp"
-        android:backgroundTint="#DC3545"
-        android:text="@string/btn_suspend"
-        android:textColor="#FFFFFF"
-        android:textSize="12sp" />
+        <Button
+            android:id="@+id/btnVerifyUser"
+            android:layout_width="0dp"
+            android:layout_height="38dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="6dp"
+            android:textSize="12sp"
+            android:textColor="#FFFFFF" />
 
-    <Button
-        android:id="@+id/btnDeleteUser"
-        android:layout_width="wrap_content"
-        android:layout_height="36dp"
-        android:layout_marginStart="6dp"
-        android:backgroundTint="#8C7A70"
-        android:text="Delete"
-        android:textColor="#FFFFFF"
-        android:textSize="12sp"
-        android:visibility="gone" />
+        <Button
+            android:id="@+id/btnSuspendUser"
+            android:layout_width="0dp"
+            android:layout_height="38dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="6dp"
+            android:textSize="12sp"
+            android:textColor="#FFFFFF" />
+
+        <Button
+            android:id="@+id/btnDeleteUser"
+            android:layout_width="0dp"
+            android:layout_height="38dp"
+            android:layout_weight="1"
+            android:text="@string/btn_delete_caps"
+            android:textSize="12sp"
+            android:textColor="#FFFFFF" />
+    </LinearLayout>
 </LinearLayout>

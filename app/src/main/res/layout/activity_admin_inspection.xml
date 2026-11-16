@@ -22,7 +22,7 @@
             android:layout_width="38dp"
             android:layout_height="38dp"
             android:background="@drawable/bg_circle_white"
-            android:contentDescription="Back"
+            android:contentDescription="@string/desc_back"
             android:elevation="1dp"
             android:padding="8dp"
             android:scaleType="fitCenter"
@@ -34,7 +34,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="14dp"
             android:layout_weight="1"
-            android:text="Property Inspection"
+            android:text="@string/admin_property_inspection"
             android:textColor="#1F1614"
             android:textSize="22sp"
             android:textStyle="bold" />
@@ -75,7 +75,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Landlord Identity Verification"
+                        android:text="@string/title_landlord_identity_verification"
                         android:textColor="#1F1614"
                         android:textSize="16sp"
                         android:textStyle="bold" />
@@ -85,7 +85,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="Landlord: Loading..."
+                        android:text="@string/landlord_loading"
                         android:textColor="#756763"
                         android:textSize="14sp" />
 
@@ -94,7 +94,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
-                        android:text="SA ID: Loading..."
+                        android:text="@string/sa_id_loading"
                         android:textColor="#756763"
                         android:textSize="13sp" />
 
@@ -103,7 +103,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="Identity Status: UNVERIFIED"
+                        android:text="@string/identity_status_unverified"
                         android:textColor="#28A745"
                         android:textSize="13sp"
                         android:textStyle="bold" />
@@ -121,7 +121,7 @@
                             android:layout_height="42dp"
                             android:layout_marginEnd="6dp"
                             android:layout_weight="1"
-                            android:text="View ID Doc"
+                            android:text="@string/btn_view_id_doc"
                             android:textColor="#BA5536"
                             android:textSize="12sp"
                             app:strokeColor="#BA5536" />
@@ -133,7 +133,7 @@
                             android:layout_height="42dp"
                             android:layout_marginStart="6dp"
                             android:layout_weight="1"
-                            android:text="View Selfie"
+                            android:text="@string/btn_view_selfie"
                             android:textColor="#BA5536"
                             android:textSize="12sp"
                             app:strokeColor="#BA5536" />
@@ -173,7 +173,7 @@
                             android:id="@+id/tvInspectTitle"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Property Title"
+                            android:text="@string/property_title"
                             android:textColor="#1F1614"
                             android:textSize="18sp"
                             android:textStyle="bold" />
@@ -183,7 +183,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
-                            android:text="Type • Rooms • Location • Price"
+                            android:text="@string/type_rooms_location_price"
                             android:textColor="#756763"
                             android:textSize="14sp" />
 
@@ -192,7 +192,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
-                            android:text="Submitted by: Landlord"
+                            android:text="@string/submitted_by_landlord"
                             android:textColor="#BA5536"
                             android:textSize="13sp" />
 
@@ -204,7 +204,7 @@
                             android:background="#BA5536"
                             android:paddingHorizontal="10dp"
                             android:paddingVertical="4dp"
-                            android:text="PENDING"
+                            android:text="@string/status_pending_caps"
                             android:textColor="@android:color/white"
                             android:textSize="11sp"
                             android:textStyle="bold" />
@@ -226,7 +226,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="12dp"
                             android:lineSpacingExtra="3dp"
-                            android:text="Description will appear here."
+                            android:text="@string/description_will_appear_here"
                             android:textColor="#423936"
                             android:textSize="14sp" />
 
@@ -236,7 +236,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="14dp"
                             android:layout_marginBottom="6dp"
-                            android:text="Pinned GPS Location"
+                            android:text="@string/pinned_gps_location"
                             android:textColor="#1F1614"
                             android:textSize="14sp"
                             android:textStyle="bold" />
@@ -246,7 +246,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="8dp"
-                            android:text="Lat: -- , Lng: --"
+                            android:text="@string/lat_lng_placeholder"
                             android:textColor="#7A6A63"
                             android:textSize="12sp" />
 
@@ -285,7 +285,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Utilities &amp; Features"
+                        android:text="@string/utilities_and_features"
                         android:textColor="#1F1614"
                         android:textSize="16sp"
                         android:textStyle="bold" />
@@ -296,7 +296,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:lineSpacingExtra="4dp"
-                        android:text="Loading utilities..."
+                        android:text="@string/loading_utilities"
                         android:textColor="#5A524E"
                         android:textSize="13sp" />
                 </LinearLayout>
@@ -320,7 +320,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Authority &amp; Ownership Document Proof"
+                        android:text="@string/authority_ownership_doc_proof"
                         android:textColor="#1F1614"
                         android:textSize="16sp"
                         android:textStyle="bold" />
@@ -330,7 +330,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="Doc Type: Municipal Rates &amp; Taxes"
+                        android:text="@string/doc_type_municipal_rates_taxes"
                         android:textColor="#756763"
                         android:textSize="13sp" />
 
@@ -340,7 +340,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="44dp"
                         android:layout_marginTop="10dp"
-                        android:text="View Authority Proof Document"
+                        android:text="@string/btn_view_authority_proof_doc"
                         android:textColor="#BA5536"
                         app:strokeColor="#BA5536" />
                 </LinearLayout>
@@ -364,7 +364,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Detected Changes (Diff)"
+                        android:text="@string/detected_changes_diff"
                         android:textColor="#1F1614"
                         android:textSize="16sp"
                         android:textStyle="bold" />
@@ -403,7 +403,7 @@
             android:layout_height="46dp"
             android:layout_marginEnd="6dp"
             android:layout_weight="1"
-            android:text="REQUIRE FIXES"
+            android:text="@string/btn_require_fixes_caps"
             android:textColor="#DC3545"
             android:textSize="12sp"
             app:strokeColor="#DC3545" />
@@ -415,7 +415,7 @@
             android:layout_height="46dp"
             android:layout_marginEnd="6dp"
             android:layout_weight="1"
-            android:text="TAKEDOWN"
+            android:text="@string/btn_takedown"
             android:textColor="#6C757D"
             android:textSize="12sp"
             app:strokeColor="#6C757D" />
@@ -426,7 +426,7 @@
             android:layout_height="46dp"
             android:layout_weight="1"
             android:backgroundTint="#2DCE89"
-            android:text="APPROVE LIVE"
+            android:text="@string/btn_approve_live_caps"
             android:textColor="@android:color/white"
             android:textSize="12sp" />
     </LinearLayout>

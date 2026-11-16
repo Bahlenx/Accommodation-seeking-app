@@ -1258,15 +1258,29 @@ public class ChatActivity extends AppCompatActivity {
                 String response = SupabaseHelper.readResponse(connection);
                 success = code >= 200 && code < 300;
                 
-                if (success && !isGuestSupportChat && !isCommunity && receiverId != null && !receiverId.isEmpty() && !"ADMIN_SUPPORT".equals(receiverId)) {
-                    String preview = payloadText.startsWith("[IMAGE") ? "Sent an image"
-                            : (payloadText.startsWith("[PDF_FILE]") ? "Sent a PDF document" : payloadText);
-                    SupabaseHelper.createNotification(
-                            receiverId,
-                            "New message from " + (senderName != null && !senderName.isEmpty() ? senderName : "iKhaya User"),
-                            preview,
-                            accessToken
-                    );
+                if (success) {
+                    if (isGuestSupportChat) {
+                        boolean isFromGuest = senderId != null && senderId.startsWith("guest_");
+                        if (isFromGuest) {
+                            String preview = payloadText.startsWith("[IMAGE") ? "Sent an image"
+                                    : (payloadText.startsWith("[PDF_FILE]") ? "Sent a PDF document" : payloadText);
+                            String senderTitle = (senderName != null && !senderName.isEmpty()) ? senderName : "Guest User";
+                            SupabaseHelper.notifyAdmins(
+                                    "New Support Message from " + senderTitle,
+                                    preview,
+                                    accessToken
+                            );
+                        }
+                    } else if (!isCommunity && receiverId != null && !receiverId.isEmpty() && !"ADMIN_SUPPORT".equals(receiverId)) {
+                        String preview = payloadText.startsWith("[IMAGE") ? "Sent an image"
+                                : (payloadText.startsWith("[PDF_FILE]") ? "Sent a PDF document" : payloadText);
+                        SupabaseHelper.createNotification(
+                                receiverId,
+                                "New message from " + (senderName != null && !senderName.isEmpty() ? senderName : "iKhaya User"),
+                                preview,
+                                accessToken
+                        );
+                    }
                 }
                 
                 if (!success) {

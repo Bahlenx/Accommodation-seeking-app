@@ -65,14 +65,36 @@
             app:strokeWidth="1dp" />
     </LinearLayout>
 
-    <Button
-        android:id="@+id/btnDialogApproveLandlord"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:backgroundTint="#28A745"
-        android:text="@string/btn_approve_landlord_identity"
-        android:textColor="#FFFFFF"
-        android:textStyle="bold"
-        app:cornerRadius="12dp" />
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btnDialogRejectLandlord"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="6dp"
+            android:backgroundTint="#DC3545"
+            android:text="@string/btn_reject_request_fix"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            app:cornerRadius="12dp" />
+
+        <Button
+            android:id="@+id/btnDialogApproveLandlord"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:layout_marginStart="6dp"
+            android:backgroundTint="#28A745"
+            android:text="@string/btn_approve_landlord_identity"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            app:cornerRadius="12dp" />
+    </LinearLayout>
 
 </LinearLayout>

@@ -728,7 +728,7 @@ public final class NotificationHelper {
                 // F. Admin Important Alerts
                 if ("admin".equalsIgnoreCase(role)) {
                     HttpURLConnection admConn = SupabaseHelper.createConnection(
-                            "/rest/v1/guest_support_messages?select=id,guest_hint,sender_id,message_text&order=created_at.desc&limit=1",
+                            "/rest/v1/guest_support_messages?select=id,guest_hint,sender_id,message_text&sender_id=neq.ADMIN_SUPPORT&order=created_at.desc&limit=1",
                             "GET", token);
                     admConn.setRequestProperty("x-admin-panel", "true");
                     if (admConn.getResponseCode() >= 200 && admConn.getResponseCode() < 300) {
@@ -736,13 +736,16 @@ public final class NotificationHelper {
                         if (admArr.length() > 0) {
                             JSONObject admMsg = admArr.getJSONObject(0);
                             String aMsgId = admMsg.optString("id", "");
-                            String aSenderId = admMsg.optString("sender_id", "");
-                            if (aSenderId.startsWith("guest_") && !aMsgId.isEmpty()) {
+                            if (!aMsgId.isEmpty()) {
                                 String savedAMsgId = statePrefs.getString("LAST_ADMIN_GUEST_MSG_ID", "");
                                 if (!aMsgId.equals(savedAMsgId)) {
                                     statePrefs.edit().putString("LAST_ADMIN_GUEST_MSG_ID", aMsgId).apply();
+                                    String hint = admMsg.optString("guest_hint", "Guest");
+                                    if (hint.isEmpty() || hint.startsWith("guest_")) {
+                                        hint = "Guest";
+                                    }
                                     showPhoneNotification(context, "New Guest Support Message", 
-                                            admMsg.optString("guest_hint", "Guest") + ": " + cleanPreview(admMsg.optString("message_text", "")), 
+                                            hint + ": " + cleanPreview(admMsg.optString("message_text", "")), 
                                             AdminReportsActivity.class, ("adm_g_" + aMsgId).hashCode());
                                 }
                             }

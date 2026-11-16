@@ -7,6 +7,8 @@ import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -24,14 +26,17 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -53,7 +58,26 @@ public class AdminReportsActivity extends AppCompatActivity {
     private boolean isCompactListView = true;
     private JSONArray cachedReportsArray = new JSONArray();
 
+    private SwipeRefreshLayout swipeRefreshAdmin;
+    private boolean isScreenVisible = false;
+
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private final Handler refreshHandler = new Handler(Looper.getMainLooper());
+
+    private final Runnable autoRefreshPoll = new Runnable() {
+        @Override
+        public void run() {
+            if (isScreenVisible && !isFinishing() && !isDestroyed()) {
+                if (showingGuestChats) {
+                    loadGuestSupportChats(true);
+                } else {
+                    loadReports(true);
+                }
+                refreshTabCounts();
+                refreshHandler.postDelayed(this, 8000);
+            }
+        }
+    };
 
     private int dp(int v) {
         return Math.round(v * getResources().getDisplayMetrics().density);
@@ -106,7 +130,7 @@ public class AdminReportsActivity extends AppCompatActivity {
                 tabIssueTickets.setTextColor(Color.WHITE);
                 tabGuestChats.setBackground(roundedBg("#00000000", 9));
                 tabGuestChats.setTextColor(Color.parseColor("#6D635E"));
-                loadReports();
+                loadReports(false);
             }
         });
 
@@ -117,22 +141,39 @@ public class AdminReportsActivity extends AppCompatActivity {
                 tabGuestChats.setTextColor(Color.WHITE);
                 tabIssueTickets.setBackground(roundedBg("#00000000", 9));
                 tabIssueTickets.setTextColor(Color.parseColor("#6D635E"));
-                loadGuestSupportChats();
+                loadGuestSupportChats(false);
             }
         });
 
-        loadReports();
+        swipeRefreshAdmin = findViewById(R.id.swipeRefreshAdmin);
+        if (swipeRefreshAdmin != null) {
+            swipeRefreshAdmin.setColorSchemeColors(Color.parseColor("#BA5536"));
+            swipeRefreshAdmin.setOnRefreshListener(() -> {
+                if (showingGuestChats) {
+                    loadGuestSupportChats(false);
+                } else {
+                    loadReports(false);
+                }
+                refreshTabCounts();
+            });
+        }
+
+        loadReports(false);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if (showingGuestChats) {
-            loadGuestSupportChats();
-        } else {
-            loadReports();
-        }
-        refreshTabCounts();
+        isScreenVisible = true;
+        refreshHandler.removeCallbacks(autoRefreshPoll);
+        refreshHandler.post(autoRefreshPoll);
+    }
+
+    @Override
+    protected void onPause() {
+        isScreenVisible = false;
+        refreshHandler.removeCallbacks(autoRefreshPoll);
+        super.onPause();
     }
 
     private String formatReportDateTime(String rawIso) {
@@ -172,7 +213,7 @@ public class AdminReportsActivity extends AppCompatActivity {
         return (formatReportDateTime(rawIso) + " " + rawIso).toLowerCase(Locale.ROOT);
     }
 
-    private void loadReports() {
+    private void loadReports(boolean silentPoll) {
         String token = SupabaseHelper.getAccessToken(this);
 
         if (token == null || token.isEmpty()) {
@@ -181,7 +222,7 @@ public class AdminReportsActivity extends AppCompatActivity {
             return;
         }
 
-        if (progressReports != null) {
+        if (!silentPoll && progressReports != null) {
             progressReports.setVisibility(View.VISIBLE);
         }
         if (tvEmptyReports != null) {
@@ -196,22 +237,39 @@ public class AdminReportsActivity extends AppCompatActivity {
                 String response = SupabaseHelper.readResponse(conn);
 
                 if (code >= 200 && code < 300) {
-                    cachedReportsArray = new JSONArray(response);
+                    String previousSnapshot = cachedReportsArray.toString();
+                    JSONArray latestArray = new JSONArray(response);
+                    boolean changed = !latestArray.toString().equals(previousSnapshot);
+                    cachedReportsArray = latestArray;
+
                     runOnUiThread(() -> {
+                        if (isFinishing() || isDestroyed()) return;
+                        if (swipeRefreshAdmin != null) swipeRefreshAdmin.setRefreshing(false);
                         if (progressReports != null) progressReports.setVisibility(View.GONE);
-                        renderFilteredReports();
+
+                        if (!silentPoll || changed || ticketsListContainer == null) {
+                            if (ticketsListContainer == null) {
+                                renderFilteredReports();
+                            } else {
+                                populateTicketItemsOnly();
+                            }
+                        }
                     });
                 } else {
                     runOnUiThread(() -> {
+                        if (isFinishing() || isDestroyed()) return;
+                        if (swipeRefreshAdmin != null) swipeRefreshAdmin.setRefreshing(false);
                         if (progressReports != null) progressReports.setVisibility(View.GONE);
-                        renderFilteredReports();
+                        if (!silentPoll) renderFilteredReports();
                     });
                 }
 
             } catch (Exception e) {
                 runOnUiThread(() -> {
+                    if (isFinishing() || isDestroyed()) return;
+                    if (swipeRefreshAdmin != null) swipeRefreshAdmin.setRefreshing(false);
                     if (progressReports != null) progressReports.setVisibility(View.GONE);
-                    renderFilteredReports();
+                    if (!silentPoll) renderFilteredReports();
                 });
             } finally {
                 if (conn != null) conn.disconnect();
@@ -221,7 +279,6 @@ public class AdminReportsActivity extends AppCompatActivity {
 
     private void renderFilteredReports() {
         if (reportsContainer == null) return;
-        // Always keep the top XML tvEmptyReports hidden so it never pushes the filter bar to the bottom!
         if (tvEmptyReports != null) {
             tvEmptyReports.setVisibility(View.GONE);
         }
@@ -361,7 +418,7 @@ public class AdminReportsActivity extends AppCompatActivity {
         topToolbar.addView(viewSwitcher);
         reportsContainer.addView(topToolbar);
 
-        // 3. Dedicated Full-Width Horizontal Filter Chips Row (Never blocked by the List/Cards button!)
+        // 3. Dedicated Full-Width Horizontal Filter Chips Row
         HorizontalScrollView hsv = new HorizontalScrollView(this);
         hsv.setHorizontalScrollBarEnabled(false);
         LinearLayout.LayoutParams hsvLp = new LinearLayout.LayoutParams(
@@ -406,7 +463,7 @@ public class AdminReportsActivity extends AppCompatActivity {
         hsv.addView(filterBar);
         reportsContainer.addView(hsv);
 
-        // 4. Child Container for Ticket Items (and Empty State below the filters)
+        // 4. Child Container for Ticket Items
         ticketsListContainer = new LinearLayout(this);
         ticketsListContainer.setOrientation(LinearLayout.VERTICAL);
         ticketsListContainer.setLayoutParams(new LinearLayout.LayoutParams(
@@ -786,7 +843,7 @@ public class AdminReportsActivity extends AppCompatActivity {
             btnDismiss.setAllCaps(false);
             btnDismiss.setTextColor(Color.parseColor("#495057"));
             btnDismiss.setTypeface(null, Typeface.BOLD);
-            android.graphics.drawable.GradientDrawable dBg = new android.graphics.drawable.GradientDrawable();
+            GradientDrawable dBg = new GradientDrawable();
             dBg.setColor(Color.WHITE);
             dBg.setCornerRadius(dp(10));
             dBg.setStroke(dp(1), Color.parseColor("#D6CBC2"));
@@ -946,7 +1003,7 @@ public class AdminReportsActivity extends AppCompatActivity {
             btnDismiss.setTextSize(13f);
             btnDismiss.setTypeface(null, Typeface.BOLD);
             btnDismiss.setTextColor(Color.parseColor("#495057"));
-            android.graphics.drawable.GradientDrawable disBg = new android.graphics.drawable.GradientDrawable();
+            GradientDrawable disBg = new GradientDrawable();
             disBg.setColor(Color.parseColor("#F5F1EC"));
             disBg.setCornerRadius(dp(10));
             disBg.setStroke(dp(1), Color.parseColor("#DFD6CE"));
@@ -1076,13 +1133,14 @@ public class AdminReportsActivity extends AppCompatActivity {
         });
     }
 
-    private void loadGuestSupportChats() {
+    private void loadGuestSupportChats(boolean silentPoll) {
         String token = SupabaseHelper.getAccessToken(this);
         if (token == null || token.isEmpty()) return;
 
-        progressReports.setVisibility(View.VISIBLE);
-        tvEmptyReports.setVisibility(View.GONE);
-        reportsContainer.removeAllViews();
+        if (!silentPoll) {
+            progressReports.setVisibility(View.VISIBLE);
+            tvEmptyReports.setVisibility(View.GONE);
+        }
 
         executor.execute(() -> {
             try {
@@ -1097,54 +1155,76 @@ public class AdminReportsActivity extends AppCompatActivity {
 
                 if (code >= 200 && code < 300) {
                     JSONArray arr = new JSONArray(res);
-                    HashSet<String> seenGuests = new HashSet<>();
+                    HashMap<String, JSONObject> latestMsgMap = new HashMap<>();
+                    HashMap<String, String> bestHintMap = new HashMap<>();
                     final JSONArray uniqueChats = new JSONArray();
                     for (int i = 0; i < arr.length(); i++) {
                         JSONObject msg = arr.getJSONObject(i);
                         String gId = msg.optString("guest_id", "");
-                        if (!gId.isEmpty() && !seenGuests.contains(gId)) {
-                            seenGuests.add(gId);
-                            uniqueChats.put(msg);
+                        if (!gId.isEmpty()) {
+                            if (!latestMsgMap.containsKey(gId)) {
+                                latestMsgMap.put(gId, msg);
+                                uniqueChats.put(msg);
+                            }
+                            String h = msg.optString("guest_hint", "");
+                            if (h.isEmpty() || h.startsWith("guest_") || h.startsWith("Guest (guest_")) {
+                                h = msg.optString("sender_name", "");
+                            }
+                            if (!h.isEmpty() && !h.startsWith("guest_") && !h.startsWith("Guest (guest_") && !"iKhaya Admin Support".equals(h)) {
+                                if (!bestHintMap.containsKey(gId)) {
+                                    bestHintMap.put(gId, h);
+                                }
+                            }
                         }
                     }
 
                     runOnUiThread(() -> {
                         if (isFinishing() || isDestroyed()) return;
+                        if (swipeRefreshAdmin != null) swipeRefreshAdmin.setRefreshing(false);
                         progressReports.setVisibility(View.GONE);
+                        reportsContainer.removeAllViews();
+                        ticketsListContainer = null;
                         tabGuestChats.setText("Guest Chats (" + uniqueChats.length() + ")");
 
                         if (uniqueChats.length() == 0) {
                             tvEmptyReports.setText("No active guest support chats found.");
                             tvEmptyReports.setVisibility(View.VISIBLE);
                         } else {
+                            tvEmptyReports.setVisibility(View.GONE);
                             for (int i = 0; i < uniqueChats.length(); i++) {
                                 JSONObject msg = uniqueChats.optJSONObject(i);
-                                if (msg != null) addGuestChatCard(msg);
+                                if (msg != null) {
+                                    String gId = msg.optString("guest_id", "");
+                                    String bestHint = bestHintMap.get(gId);
+                                    addGuestChatCard(msg, bestHint);
+                                }
                             }
                         }
                     });
                 } else {
                     runOnUiThread(() -> {
+                        if (swipeRefreshAdmin != null) swipeRefreshAdmin.setRefreshing(false);
                         progressReports.setVisibility(View.GONE);
-                        Toast.makeText(this, "Failed to load chats.", Toast.LENGTH_SHORT).show();
+                        if (!silentPoll) Toast.makeText(this, "Failed to load chats.", Toast.LENGTH_SHORT).show();
                     });
                 }
             } catch (Exception e) {
                 runOnUiThread(() -> {
+                    if (swipeRefreshAdmin != null) swipeRefreshAdmin.setRefreshing(false);
                     progressReports.setVisibility(View.GONE);
-                    Toast.makeText(this, "Error fetching chats.", Toast.LENGTH_SHORT).show();
+                    if (!silentPoll) Toast.makeText(this, "Error fetching chats.", Toast.LENGTH_SHORT).show();
                 });
             }
         });
     }
 
-    private void addGuestChatCard(JSONObject msg) {
+    private void addGuestChatCard(JSONObject msg, String bestHint) {
         String gId = msg.optString("guest_id", "");
-        String gHint = msg.optString("guest_hint", "");
-        if (gHint.isEmpty() || gHint.startsWith("guest_")) {
+        String gHint = bestHint != null && !bestHint.isEmpty() ? bestHint : msg.optString("guest_hint", "");
+        if (gHint.isEmpty() || gHint.startsWith("guest_") || gHint.startsWith("Guest (guest_")) {
             gHint = msg.optString("sender_name", "");
         }
-        if (gHint.isEmpty() || gHint.startsWith("guest_")) {
+        if (gHint.isEmpty() || gHint.startsWith("guest_") || gHint.startsWith("Guest (guest_")) {
             gHint = "Guest (" + gId.substring(0, Math.min(12, gId.length())) + ")";
         }
 
@@ -1302,7 +1382,7 @@ public class AdminReportsActivity extends AppCompatActivity {
                     archiveConn.disconnect();
                 } catch (Exception ignored) {}
 
-                String encodedGuestId = java.net.URLEncoder.encode(guestId, "UTF-8");
+                String encodedGuestId = URLEncoder.encode(guestId, "UTF-8");
                 delConn = SupabaseHelper.createConnection(
                         "/rest/v1/guest_support_messages?guest_id=eq." + encodedGuestId,
                         "DELETE",

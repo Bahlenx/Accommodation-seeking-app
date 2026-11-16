@@ -25,7 +25,7 @@
         android:background="#E0E0E0"
         android:paddingHorizontal="8dp"
         android:paddingVertical="2dp"
-        android:text="PENDING_VERIFICATION"
+        android:text="@string/status_pending_verification"
         android:textColor="#1F1614"
         android:textSize="11sp"
         android:textStyle="bold" />

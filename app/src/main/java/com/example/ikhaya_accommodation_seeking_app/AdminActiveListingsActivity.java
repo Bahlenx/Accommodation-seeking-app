@@ -1,6 +1,9 @@
 package com.example.ikhaya_accommodation_seeking_app;
 
+import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
@@ -12,6 +15,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -33,6 +37,20 @@ public class AdminActiveListingsActivity extends AppCompatActivity implements Ad
     private EditText etSearchActive;
     private TextView tvEmptyActive;
 
+    private SwipeRefreshLayout swipeRefreshAdmin;
+    private final Handler refreshHandler = new Handler(Looper.getMainLooper());
+    private boolean isScreenVisible = false;
+
+    private final Runnable autoRefreshRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (isScreenVisible) {
+                loadActiveListings();
+                refreshHandler.postDelayed(this, 8000);
+            }
+        }
+    };
+
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     @Override
@@ -51,6 +69,12 @@ public class AdminActiveListingsActivity extends AppCompatActivity implements Ad
 
         listingAdapter = new AdminActiveListingAdapter(this, displayedQueue, this);
         rvActiveListings.setAdapter(listingAdapter);
+
+        swipeRefreshAdmin = findViewById(R.id.swipeRefreshAdmin);
+        if (swipeRefreshAdmin != null) {
+            swipeRefreshAdmin.setColorSchemeColors(Color.parseColor("#BA5536"));
+            swipeRefreshAdmin.setOnRefreshListener(this::loadActiveListings);
+        }
 
         setupSearch();
         loadActiveListings();
@@ -136,13 +160,17 @@ public class AdminActiveListingsActivity extends AppCompatActivity implements Ad
                     }
 
                     runOnUiThread(() -> {
+                        if (swipeRefreshAdmin != null) swipeRefreshAdmin.setRefreshing(false);
                         masterQueue.clear();
                         masterQueue.addAll(fetched);
                         applySearch(etSearchActive.getText().toString());
                     });
                 }
             } catch (Exception e) {
-                runOnUiThread(() -> Toast.makeText(this, getString(R.string.error_loading_queue_prefix) + e.getMessage(), Toast.LENGTH_SHORT).show());
+                runOnUiThread(() -> {
+                    if (swipeRefreshAdmin != null) swipeRefreshAdmin.setRefreshing(false);
+                    Toast.makeText(this, getString(R.string.error_loading_queue_prefix) + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
             } finally {
                 if (conn != null) conn.disconnect();
             }
@@ -152,6 +180,21 @@ public class AdminActiveListingsActivity extends AppCompatActivity implements Ad
     @Override
     public void onListingRevoked() {
         loadActiveListings();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        isScreenVisible = true;
+        refreshHandler.removeCallbacks(autoRefreshRunnable);
+        refreshHandler.post(autoRefreshRunnable);
+    }
+
+    @Override
+    protected void onPause() {
+        isScreenVisible = false;
+        refreshHandler.removeCallbacks(autoRefreshRunnable);
+        super.onPause();
     }
 
     @Override

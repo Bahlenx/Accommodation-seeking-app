@@ -433,7 +433,7 @@
                 android:layout_height="38dp"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginBottom="24dp"
-                android:text="Remove Photo"
+                android:text="@string/btn_remove_photo"
                 android:textColor="#DC3545"
                 app:strokeColor="#DC3545"
                 android:visibility="gone" />
@@ -442,7 +442,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Authority &amp; Ownership Verification"
+                android:text="@string/authority_ownership_verification"
                 android:textColor="@color/black"
                 android:textStyle="bold"
                 android:textSize="14sp" />
@@ -452,7 +452,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:layout_marginBottom="8dp"
-                android:text="Select document category and upload proof of property authority."
+                android:text="@string/select_doc_category_desc"
                 android:textColor="@color/black"
                 android:textSize="13sp" />
 
@@ -468,7 +468,7 @@
                     android:layout_height="52dp"
                     android:inputType="none"
                     android:paddingHorizontal="12dp"
-                    android:hint="Select Authority Document Type" />
+                    android:hint="@string/hint_select_authority_doc_type" />
 
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -477,7 +477,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="6dp"
-                android:text="No authority document attached"
+                android:text="@string/no_authority_doc_attached"
                 android:textColor="#8C7A70"
                 android:textSize="13sp" />
 
@@ -487,7 +487,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:layout_marginBottom="24dp"
-                android:text="Upload New Authority Proof Document"
+                android:text="@string/btn_upload_new_authority_proof_doc"
                 android:textAllCaps="false"
                 android:textColor="#BA5536"
                 app:strokeColor="#BA5536" />

@@ -144,20 +144,27 @@ public class EditProfileActivity extends AppCompatActivity {
         SupabaseHelper.fetchProfileById(currentUserId, (profileObj, error) -> {
             if (profileObj != null) {
                 runOnUiThread(() -> {
-                    if (profileObj.has("sa_id_number")) {
-                        String existingSaId = profileObj.optString("sa_id_number", "");
-                        if (!existingSaId.isEmpty()) {
-                            etSaIdNumber.setText(existingSaId);
-                            // Lock the field so the user cannot enter a different ID number
+                    String existingSaId = profileObj.optString("sa_id_number", "");
+                    String status = profileObj.optString("identity_status", "UNVERIFIED");
+
+                    if (!existingSaId.isEmpty()) {
+                        etSaIdNumber.setText(existingSaId);
+                        // Only lock the field if the stored SA ID is mathematically valid
+                        if (IdValidationUtils.isValidSAID(existingSaId)) {
                             etSaIdNumber.setEnabled(false);
                             etSaIdNumber.setFocusable(false);
                         }
                     }
-                    String status = profileObj.optString("identity_status", "UNVERIFIED");
                     uploadedIdDocUrl = profileObj.optString("id_document_url", null);
                     uploadedSelfieUrl = profileObj.optString("selfie_url", null);
 
-                    tvIdentityStatus.setText("Status: " + status);
+                    if ("VERIFIED".equalsIgnoreCase(status)) {
+                        tvIdentityStatus.setText("Status: " + status);
+                    } else if ("PENDING_VERIFICATION".equalsIgnoreCase(status)) {
+                        tvIdentityStatus.setText("Status: " + status + "\nYour documents have been submitted and are under review by an administrator.");
+                    } else {
+                        tvIdentityStatus.setText("Status: " + status + "\nAction Required: Upload your 13-digit SA ID and live selfie below to verify your landlord account.");
+                    }
                     updateStatusColor(status);
 
                     if (uploadedIdDocUrl != null && !uploadedIdDocUrl.isEmpty()) {

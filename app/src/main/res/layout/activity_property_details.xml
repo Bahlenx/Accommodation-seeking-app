@@ -471,7 +471,7 @@
         <ImageView
             android:layout_width="64dp"
             android:layout_height="64dp"
-            android:contentDescription="Unavailable"
+            android:contentDescription="@string/desc_unavailable"
             android:src="@android:drawable/ic_dialog_alert"
             app:tint="#DC3545" />
 
@@ -479,7 +479,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Listing Unavailable"
+            android:text="@string/listing_unavailable"
             android:textColor="#1F1614"
             android:textSize="22sp"
             android:textStyle="bold" />
@@ -500,7 +500,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:backgroundTint="#BA5536"
-            android:text="Back to Discover"
+            android:text="@string/btn_back_to_discover"
             android:textColor="#FFFFFF"
             app:cornerRadius="20dp" />
     </LinearLayout>

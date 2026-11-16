@@ -61,25 +61,41 @@
             android:textSize="16sp" />
     </androidx.cardview.widget.CardView>
 
-    <!-- Queue Empty State -->
-    <TextView
-        android:id="@+id/tvEmptyActive"
+    <!-- Listing Container -->
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefreshAdmin"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:padding="16dp"
-        android:text="@string/admin_no_active_listings"
-        android:textAlignment="center"
-        android:textColor="#8898AA"
-        android:textSize="16sp"
-        android:visibility="gone" />
+        android:layout_height="0dp"
+        android:layout_weight="1">
 
-    <!-- Listing Queue -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvActiveListings"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:clipToPadding="false"
-        android:padding="16dp" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <!-- Queue Empty State -->
+            <TextView
+                android:id="@+id/tvEmptyActive"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:padding="16dp"
+                android:text="@string/admin_no_active_listings"
+                android:textAlignment="center"
+                android:textColor="#8898AA"
+                android:textSize="16sp"
+                android:visibility="gone" />
+
+            <!-- Listing Queue -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvActiveListings"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:padding="16dp" />
+
+        </LinearLayout>
+
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
 </LinearLayout>

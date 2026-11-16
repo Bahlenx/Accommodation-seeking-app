@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.method.HideReturnsTransformationMethod;
 import android.text.method.PasswordTransformationMethod;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -47,12 +48,39 @@ public class LoginActivity extends AppCompatActivity {
         forgotPasswordText = findViewById(R.id.forgotPasswordText);
         togglePasswordButton = findViewById(R.id.btnTogglePassword);
 
-        android.view.View btnSupportMail = findViewById(R.id.btnSupportMail);
+        View btnSupportMail = findViewById(R.id.btnSupportMail);
         if (btnSupportMail != null) {
             btnSupportMail.setOnClickListener(v -> {
                 String userHint = emailInput != null ? emailInput.getText().toString().trim() : "";
                 SupabaseHelper.openAdminSupportChat(this, userHint);
             });
+        }
+
+        String extraReason = getIntent().getStringExtra("SUSPENDED_REASON");
+
+        if (getIntent().getBooleanExtra("OPEN_SUPPORT_CHAT", false)) {
+            String userHint = getIntent().getStringExtra("USER_EMAIL");
+            if (userHint == null || userHint.trim().isEmpty()) {
+                userHint = emailInput != null ? emailInput.getText().toString().trim() : "";
+            }
+            SupabaseHelper.openAdminSupportChat(this, userHint);
+        } else if (getIntent().getBooleanExtra("SUSPENDED_NOTICE", false)) {
+            String noticeMsg = "Your account is currently suspended by an administrator."
+                    + (extraReason != null && !extraReason.trim().isEmpty() ? "\n\nReason: " + extraReason.trim() : "")
+                    + "\n\nPlease contact iKhaya Admin Support for assistance.";
+
+            new AlertDialog.Builder(this)
+                    .setTitle("Account Suspended")
+                    .setMessage(noticeMsg)
+                    .setPositiveButton("OK", null)
+                    .setNeutralButton("Contact Support", (d, w) -> {
+                        String userHint = getIntent().getStringExtra("USER_EMAIL");
+                        if (userHint == null || userHint.trim().isEmpty()) {
+                            userHint = emailInput != null ? emailInput.getText().toString().trim() : "";
+                        }
+                        SupabaseHelper.openAdminSupportChat(this, userHint);
+                    })
+                    .show();
         }
 
         // Back button navigation
@@ -170,7 +198,7 @@ public class LoginActivity extends AppCompatActivity {
                         executor.execute(() -> {
                             try {
                                 HttpURLConnection delConn = SupabaseHelper.createConnection(
-                                        "/rest/v1/guest_support_messages?guest_id=eq." + java.net.URLEncoder.encode(guestIdToDelete, "UTF-8"),
+                                        "/rest/v1/guest_support_messages?guest_id=eq." + URLEncoder.encode(guestIdToDelete, "UTF-8"),
                                         "DELETE",
                                         accessToken
                                 );
@@ -261,7 +289,11 @@ public class LoginActivity extends AppCompatActivity {
                         // Block account access if flagged as suspended by an admin
                         boolean isSuspended = profile.optBoolean("is_suspended", false);
                         if (isSuspended) {
-                            showLoginError("Your account has been suspended by an administrator. Please contact support.");
+                            String reason = fetchSuspensionReason(userId, accessToken);
+                            String errorMsg = "Your account has been suspended by an administrator."
+                                    + (reason.isEmpty() ? "" : "\nReason: " + reason)
+                                    + "\nPlease contact support for assistance.";
+                            showLoginError(errorMsg);
                             return;
                         }
 
@@ -287,6 +319,30 @@ public class LoginActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private String fetchSuspensionReason(String userId, String token) {
+        try {
+            String encUid = URLEncoder.encode(userId, "UTF-8");
+            HttpURLConnection conn = SupabaseHelper.createConnection(
+                    "/rest/v1/notifications?select=message&user_id=eq." + encUid + "&title=eq.Account%20Suspended&order=created_at.desc&limit=1",
+                    "GET", token);
+            if (conn.getResponseCode() >= 200 && conn.getResponseCode() < 300) {
+                JSONArray notifArr = new JSONArray(SupabaseHelper.readResponse(conn));
+                conn.disconnect();
+                if (notifArr.length() > 0) {
+                    String msg = notifArr.getJSONObject(0).optString("message", "");
+                    if (msg.contains("Reason: ")) {
+                        int start = msg.indexOf("Reason: ") + "Reason: ".length();
+                        int end = msg.indexOf("\n", start);
+                        return end != -1 ? msg.substring(start, end).trim() : msg.substring(start).trim();
+                    }
+                }
+            } else {
+                conn.disconnect();
+            }
+        } catch (Exception ignored) {}
+        return "";
     }
 
     /**
