@@ -399,9 +399,20 @@ public class LandlordDashboardActivity extends AppCompatActivity {
         String reverificationReason = listing.optString("reverification_reason", "");
         String rejectionReason = listing.optString("rejection_reason", "");
 
+        String listingType = firstValue(listing, "listing_type", "purpose", "category", "offer_type", "type");
+        boolean isForSale = listingType.equalsIgnoreCase("For Sale")
+                || listingType.equalsIgnoreCase("Sale")
+                || listingType.equalsIgnoreCase("For_Sale")
+                || PriceUtils.isSaleProperty(listing);
+
+        boolean isCurrentlyClosed = "SOLD".equalsIgnoreCase(status) || "Sold".equalsIgnoreCase(availability)
+                || "RENTED".equalsIgnoreCase(status) || "Rented".equalsIgnoreCase(availability)
+                || "Unavailable".equalsIgnoreCase(availability);
+
         if (tvBadge != null) {
-            if ("RENTED".equalsIgnoreCase(status) || "SOLD".equalsIgnoreCase(status) || "Unavailable".equalsIgnoreCase(availability)) {
-                tvBadge.setText("RENTED");
+            if (isCurrentlyClosed) {
+                boolean showSold = "SOLD".equalsIgnoreCase(status) || "Sold".equalsIgnoreCase(availability) || isForSale;
+                tvBadge.setText(showSold ? "SOLD" : "RENTED");
                 tvBadge.setBackgroundColor(Color.parseColor("#6C757D"));
                 tvBadge.setTextColor(Color.WHITE);
                 if (layoutAlert != null) layoutAlert.setVisibility(View.GONE);

@@ -245,11 +245,24 @@ public class MyListingsActivity extends AppCompatActivity {
         txtListingName.setText(propertyName);
         txtListingName.setTextColor(Color.parseColor("#241A18"));
 
-        boolean isRented = "RENTED".equalsIgnoreCase(status) || "SOLD".equalsIgnoreCase(status) || "Unavailable".equalsIgnoreCase(availability);
+        String listingType = firstValue(listing, "listing_type", "purpose", "category", "offer_type", "type");
+        boolean isForSale = listingType.equalsIgnoreCase("For Sale")
+                || listingType.equalsIgnoreCase("Sale")
+                || listingType.equalsIgnoreCase("For_Sale")
+                || PriceUtils.isSaleProperty(listing);
 
-        if (isRented) {
+        String closedStatus = isForSale ? "SOLD" : "RENTED";
+        String closedAvailability = isForSale ? "Sold" : "Rented";
+        String toggleActiveButtonText = isForSale ? "Mark Sold" : "Mark Rented";
+
+        boolean isCurrentlyClosed = "SOLD".equalsIgnoreCase(status) || "Sold".equalsIgnoreCase(availability)
+                || "RENTED".equalsIgnoreCase(status) || "Rented".equalsIgnoreCase(availability)
+                || "Unavailable".equalsIgnoreCase(availability);
+
+        if (isCurrentlyClosed) {
+            boolean showSold = "SOLD".equalsIgnoreCase(status) || "Sold".equalsIgnoreCase(availability) || isForSale;
             if (tvBadge != null) {
-                tvBadge.setText("RENTED");
+                tvBadge.setText(showSold ? "SOLD" : "RENTED");
                 tvBadge.setBackgroundColor(Color.parseColor("#6C757D"));
                 tvBadge.setTextColor(Color.WHITE);
             }
@@ -271,7 +284,7 @@ public class MyListingsActivity extends AppCompatActivity {
                 tvReason.setText("Action Required: " + (!reverificationReason.isEmpty() ? reverificationReason : "Address or authority proof updated. Re-verification required."));
             }
             if (btnMarkRented != null) {
-                btnMarkRented.setText("Mark Rented");
+                btnMarkRented.setText(toggleActiveButtonText);
                 btnMarkRented.setBackgroundColor(Color.parseColor("#6C757D"));
             }
         } else if ("CHANGES_PENDING_REVIEW".equalsIgnoreCase(status)) {
@@ -282,7 +295,7 @@ public class MyListingsActivity extends AppCompatActivity {
             }
             if (layoutAlert != null) layoutAlert.setVisibility(View.GONE);
             if (btnMarkRented != null) {
-                btnMarkRented.setText("Mark Rented");
+                btnMarkRented.setText(toggleActiveButtonText);
                 btnMarkRented.setBackgroundColor(Color.parseColor("#6C757D"));
             }
         } else if ("PENDING_VERIFICATION".equalsIgnoreCase(status) || "PENDING".equalsIgnoreCase(status)) {
@@ -293,7 +306,7 @@ public class MyListingsActivity extends AppCompatActivity {
             }
             if (layoutAlert != null) layoutAlert.setVisibility(View.GONE);
             if (btnMarkRented != null) {
-                btnMarkRented.setText("Mark Rented");
+                btnMarkRented.setText(toggleActiveButtonText);
                 btnMarkRented.setBackgroundColor(Color.parseColor("#6C757D"));
             }
         } else if ("APPROVED".equalsIgnoreCase(status) || "VERIFIED".equalsIgnoreCase(status)) {
@@ -304,7 +317,7 @@ public class MyListingsActivity extends AppCompatActivity {
             }
             if (layoutAlert != null) layoutAlert.setVisibility(View.GONE);
             if (btnMarkRented != null) {
-                btnMarkRented.setText("Mark Rented");
+                btnMarkRented.setText(toggleActiveButtonText);
                 btnMarkRented.setBackgroundColor(Color.parseColor("#6C757D"));
             }
         } else if ("REJECTED".equalsIgnoreCase(status) || "REMOVED_BY_ADMIN".equalsIgnoreCase(status)) {
@@ -318,7 +331,7 @@ public class MyListingsActivity extends AppCompatActivity {
                 tvReason.setText("Rejection Reason: " + (!rejectionReason.isEmpty() ? rejectionReason : "Listing details require corrections."));
             }
             if (btnMarkRented != null) {
-                btnMarkRented.setText("Mark Rented");
+                btnMarkRented.setText(toggleActiveButtonText);
                 btnMarkRented.setBackgroundColor(Color.parseColor("#6C757D"));
             }
         } else {
@@ -329,7 +342,7 @@ public class MyListingsActivity extends AppCompatActivity {
             }
             if (layoutAlert != null) layoutAlert.setVisibility(View.GONE);
             if (btnMarkRented != null) {
-                btnMarkRented.setText("Mark Rented");
+                btnMarkRented.setText(toggleActiveButtonText);
                 btnMarkRented.setBackgroundColor(Color.parseColor("#6C757D"));
             }
         }
@@ -373,7 +386,11 @@ public class MyListingsActivity extends AppCompatActivity {
         }
 
         if (btnMarkRented != null) {
-            final boolean finalIsRented = isRented;
+            final boolean finalIsClosed = isCurrentlyClosed;
+            final String finalClosedStatus = closedStatus;
+            final String finalClosedAvailability = closedAvailability;
+            final boolean finalIsForSale = isForSale;
+
             btnMarkRented.setOnClickListener(v -> {
                 if (listingId.isEmpty()) {
                     showMessage(getString(R.string.error_missing_credentials_or_listing));
@@ -381,14 +398,15 @@ public class MyListingsActivity extends AppCompatActivity {
                 }
                 JSONObject body = new JSONObject();
                 try {
-                    body.put("status", finalIsRented ? "APPROVED" : "RENTED");
-                    body.put("availability", finalIsRented ? "Available" : "Unavailable");
+                    body.put("status", finalIsClosed ? "APPROVED" : finalClosedStatus);
+                    body.put("availability", finalIsClosed ? "Available" : finalClosedAvailability);
                 } catch (Exception ignored) {}
 
                 SupabaseHelper.updateListing(listingId, body, (success, error) -> {
                     runOnUiThread(() -> {
                         if (success) {
-                            Toast.makeText(this, finalIsRented ? "Listing marked as available." : "Listing marked as rented.", Toast.LENGTH_SHORT).show();
+                            String msg = finalIsClosed ? "Listing marked as available." : (finalIsForSale ? "Listing marked as sold." : "Listing marked as rented.");
+                            Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
                             loadMyListings();
                         } else {
                             Toast.makeText(this, "Failed to update listing: " + error, Toast.LENGTH_SHORT).show();
