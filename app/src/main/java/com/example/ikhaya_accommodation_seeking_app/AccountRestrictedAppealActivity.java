@@ -87,8 +87,9 @@ public class AccountRestrictedAppealActivity extends AppCompatActivity {
     private void loadCaseDetails() {
         executor.execute(() -> {
             try {
+                String encUid = SupabaseHelper.encode(userId);
                 java.net.HttpURLConnection conn = SupabaseHelper.createConnection(
-                        "/rest/v1/moderation_cases?select=*&user_id=eq." + userId + "&order=created_at.desc&limit=1",
+                        "/rest/v1/moderation_cases?select=*&or=(user_id.eq." + encUid + ",profile_id.eq." + encUid + ")&order=created_at.desc&limit=1",
                         "GET", appealToken);
 
                 if (conn.getResponseCode() >= 200 && conn.getResponseCode() < 300) {
@@ -99,7 +100,8 @@ public class AccountRestrictedAppealActivity extends AppCompatActivity {
                         String actionType = caseObj.optString("action_type");
                         long endTime = caseObj.optLong("suspension_end_time", 0);
                         String reason = caseObj.optString("admin_reason", "No reason provided.");
-                        adminAttachmentUrl = caseObj.optString("admin_attachment_url", null);
+                        adminAttachmentUrl = caseObj.optString("admin_file_url", caseObj.optString("admin_attachment_url", null));
+                        String appealStatus = caseObj.optString("appeal_status", "NONE");
 
                         runOnUiThread(() -> {
                             if ("BANNED".equals(actionType) || endTime == 0) {
@@ -110,7 +112,11 @@ public class AccountRestrictedAppealActivity extends AppCompatActivity {
                                 long hours = (remaining / (1000 * 60 * 60)) % 24;
                                 tvRestrictionType.setText("Suspended (" + days + "d " + hours + "h remaining)");
                             }
-                            tvAdminReason.setText("Reason: " + reason);
+                            String displayReason = "Reason: " + reason;
+                            if ("PENDING".equalsIgnoreCase(appealStatus)) {
+                                displayReason += "\n\nAppeal Status: PENDING ADMIN REVIEW";
+                            }
+                            tvAdminReason.setText(displayReason);
                             if (adminAttachmentUrl != null && !adminAttachmentUrl.isEmpty()) {
                                 btnViewAdminAttachment.setVisibility(View.VISIBLE);
                             }
@@ -139,14 +145,14 @@ public class AccountRestrictedAppealActivity extends AppCompatActivity {
                 if (userEvidenceUri != null) {
                     byte[] data = SupabaseHelper.getBytesFromUri(this, userEvidenceUri);
                     String fileName = System.currentTimeMillis() + "_user_evidence";
-                    attachmentUrl = SupabaseHelper.uploadStorageBytes("moderation-evidence", fileName, data, appealToken);
+                    attachmentUrl = SupabaseHelper.uploadStorageBytes("property-images", "moderation/" + fileName, data, appealToken);
                 }
 
                 JSONObject patchData = new JSONObject();
                 patchData.put("user_appeal_text", appealText);
                 patchData.put("appeal_status", "PENDING");
                 if (!attachmentUrl.isEmpty()) {
-                    patchData.put("user_attachment_url", attachmentUrl);
+                    patchData.put("user_file_url", attachmentUrl);
                 }
 
                 java.net.HttpURLConnection conn = SupabaseHelper.createConnection(

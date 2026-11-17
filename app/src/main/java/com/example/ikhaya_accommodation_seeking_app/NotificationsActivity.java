@@ -66,6 +66,21 @@ public class NotificationsActivity extends AppCompatActivity {
         swipeRefresh = findViewById(R.id.swipeRefreshNotifications);
         rvNotifications = findViewById(R.id.rvNotifications);
 
+        SharedPreferences notifPrefs = getSharedPreferences("NotificationPrefs", MODE_PRIVATE);
+        android.widget.Switch switchSystem = findViewById(R.id.switchSystemNotifications);
+        android.widget.Switch switchChat = findViewById(R.id.switchChatNotifications);
+
+        if (switchSystem != null) {
+            switchSystem.setChecked(notifPrefs.getBoolean("PREF_MASTER_ENABLED", true));
+            switchSystem.setOnCheckedChangeListener((btn, isChecked) ->
+                    notifPrefs.edit().putBoolean("PREF_MASTER_ENABLED", isChecked).apply());
+        }
+        if (switchChat != null) {
+            switchChat.setChecked(notifPrefs.getBoolean("PREF_CHAT_MESSAGES", true));
+            switchChat.setOnCheckedChangeListener((btn, isChecked) ->
+                    notifPrefs.edit().putBoolean("PREF_CHAT_MESSAGES", isChecked).apply());
+        }
+
         if (rvNotifications != null) {
             rvNotifications.setLayoutManager(new LinearLayoutManager(this));
             adapter = new NotificationsAdapter();

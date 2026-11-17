@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:background="#F8F9FA">
+    android:background="#FAF7F5">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -16,32 +16,51 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Moderation Action"
-            android:textSize="24sp"
-            android:textColor="#1F2937"
+            android:textSize="22sp"
+            android:textColor="#1F1614"
             android:textStyle="bold"
-            android:layout_marginBottom="24dp" />
+            android:layout_marginBottom="20dp" />
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="2dp"
-            app:cardBackgroundColor="#FFFFFF"
-            android:layout_marginBottom="24dp">
+            app:cardCornerRadius="18dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="#FAF6F2"
+            app:strokeColor="#D6CBC2"
+            app:strokeWidth="1dp"
+            android:layout_marginBottom="20dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="20dp">
+                android:padding="22dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ACTION TYPE"
+                    android:textSize="11sp"
+                    android:textColor="#B91C1C"
+                    android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Select Action Type"
-                    android:textSize="18sp"
-                    android:textColor="#1F2937"
+                    android:textSize="19sp"
+                    android:textColor="#1F1614"
                     android:textStyle="bold"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginBottom="4dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Choose whether to permanently ban or temporarily suspend the user."
+                    android:textSize="13sp"
+                    android:textColor="#786F6B"
                     android:layout_marginBottom="12dp"/>
 
                 <RadioGroup
@@ -53,14 +72,14 @@
                         android:id="@+id/rbBan"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="#1F2937"
+                        android:textColor="#1F1614"
                         android:text="Permanent Ban"
                         android:checked="true"/>
                     <RadioButton
                         android:id="@+id/rbSuspend"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="#1F2937"
+                        android:textColor="#1F1614"
                         android:text="Timed Suspension"/>
                 </RadioGroup>
 
@@ -77,10 +96,11 @@
                         android:layout_weight="1"
                         android:layout_height="wrap_content"
                         android:hint="Duration"
-                        android:textColor="#1F2937"
-                        android:textColorHint="#4B5563"
+                        android:textColor="#1F1614"
+                        android:textColorHint="#9E9E9E"
+                        android:textSize="15sp"
                         android:padding="14dp"
-                        android:background="@android:drawable/edit_text"
+                        android:background="@drawable/bg_ikhaya_input_box"
                         android:inputType="number" />
                     <Spinner
                         android:id="@+id/spinnerDurationType"
@@ -95,24 +115,43 @@
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="2dp"
-            app:cardBackgroundColor="#FFFFFF"
-            android:layout_marginBottom="24dp">
+            app:cardCornerRadius="18dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="#FAF6F2"
+            app:strokeColor="#D6CBC2"
+            app:strokeWidth="1dp"
+            android:layout_marginBottom="20dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="20dp">
+                android:padding="22dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="EVIDENCE &amp; REASON"
+                    android:textSize="11sp"
+                    android:textColor="#B91C1C"
+                    android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Reason for Moderation"
-                    android:textSize="18sp"
-                    android:textColor="#1F2937"
+                    android:textSize="19sp"
+                    android:textColor="#1F1614"
                     android:textStyle="bold"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginBottom="4dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Provide detailed information and optionally attach supporting evidence."
+                    android:textSize="13sp"
+                    android:textColor="#786F6B"
                     android:layout_marginBottom="12dp"/>
 
                 <EditText
@@ -120,28 +159,32 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Provide detailed reason..."
-                    android:textColor="#1F2937"
-                    android:textColorHint="#4B5563"
+                    android:textColor="#1F1614"
+                    android:textColorHint="#9E9E9E"
+                    android:textSize="15sp"
                     android:inputType="textMultiLine"
                     android:lines="4"
                     android:gravity="top"
                     android:padding="14dp"
-                    android:background="@android:drawable/edit_text"
+                    android:background="@drawable/bg_ikhaya_input_box"
                     android:layout_marginBottom="16dp"/>
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnAttachEvidence"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     android:layout_width="match_parent"
-                    android:layout_height="54dp"
+                    android:layout_height="52dp"
                     app:cornerRadius="12dp"
                     android:text="Attach Evidence (Image/PDF)"
-                    app:backgroundTint="#4B5563" />
+                    android:textColor="#1F1614"
+                    app:strokeColor="#D6CBC2"
+                    app:backgroundTint="#FFFFFF" />
 
                 <TextView
                     android:id="@+id/tvAttachmentName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="#1F2937"
+                    android:textColor="#1F1614"
                     android:layout_marginTop="8dp"
                     android:visibility="gone" />
             </LinearLayout>
@@ -150,11 +193,13 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSubmitAction"
             android:layout_width="match_parent"
-            android:layout_height="54dp"
+            android:layout_height="52dp"
             app:cornerRadius="12dp"
             android:text="Submit Moderation Action"
-            app:backgroundTint="#D32F2F"
-            android:layout_marginTop="16dp"
+            app:backgroundTint="#B91C1C"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:textStyle="bold"
             android:layout_marginBottom="24dp"/>
 
     </LinearLayout>

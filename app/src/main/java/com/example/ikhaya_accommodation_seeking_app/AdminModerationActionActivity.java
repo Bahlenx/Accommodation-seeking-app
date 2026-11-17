@@ -109,7 +109,7 @@ public class AdminModerationActionActivity extends AppCompatActivity {
                 if (evidenceUri != null) {
                     byte[] data = SupabaseHelper.getBytesFromUri(this, evidenceUri);
                     String fileName = System.currentTimeMillis() + "_evidence";
-                    attachmentUrl = SupabaseHelper.uploadStorageBytes("moderation-evidence", fileName, data, token);
+                    attachmentUrl = SupabaseHelper.uploadStorageBytes("property-images", "moderation/" + fileName, data, token);
                 }
 
                 // POST to moderation_cases
@@ -119,7 +119,7 @@ public class AdminModerationActionActivity extends AppCompatActivity {
                 postData.put("admin_reason", reason);
                 postData.put("suspension_end_time", finalSuspensionEndTime);
                 if (!attachmentUrl.isEmpty()) {
-                    postData.put("admin_attachment_url", attachmentUrl);
+                    postData.put("admin_file_url", attachmentUrl);
                 }
 
                 java.net.HttpURLConnection conn = SupabaseHelper.createConnection("/rest/v1/moderation_cases", "POST", token);
@@ -129,9 +129,10 @@ public class AdminModerationActionActivity extends AppCompatActivity {
 
                 if (code >= 200 && code < 300) {
                     // PATCH user profile
+                    String encUid = SupabaseHelper.encode(targetUserId);
                     JSONObject patchData = new JSONObject();
                     patchData.put("is_suspended", true);
-                    SupabaseHelper.patch("/rest/v1/profiles?id=eq." + targetUserId, patchData, token);
+                    SupabaseHelper.patch("/rest/v1/profiles?or=(id.eq." + encUid + ",firebase_uid.eq." + encUid + ")", patchData, token);
 
                     runOnUiThread(() -> {
                         Toast.makeText(this, "User restricted successfully", Toast.LENGTH_SHORT).show();

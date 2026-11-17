@@ -4,16 +4,25 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="20dp"
-    android:background="#F8F9FA">
+    android:background="#FAF7F5">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Bans &amp; Appeals"
-        android:textColor="#1F2937"
-        android:textSize="26sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="20dp" />
+        android:text="ADMIN MODERATION"
+        android:textColor="#B91C1C"
+        android:textSize="11sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="16dp"
+        android:text="Bans &amp; Appeals Management"
+        android:textColor="#1F1614"
+        android:textSize="22sp"
+        android:textStyle="bold" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvBansAppeals"

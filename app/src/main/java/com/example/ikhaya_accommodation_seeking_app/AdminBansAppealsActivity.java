@@ -122,11 +122,12 @@ public class AdminBansAppealsActivity extends AppCompatActivity {
         String caseId = caseObj.optString("id");
         String userId = caseObj.optString("user_id");
         String actionType = caseObj.optString("action_type");
+        long suspensionEndTime = caseObj.optLong("suspension_end_time", 0);
         String adminReason = caseObj.optString("admin_reason", "");
         String userAppealText = caseObj.optString("user_appeal_text", "");
         String appealStatus = caseObj.optString("appeal_status", "");
-        String adminUrl = caseObj.optString("admin_attachment_url", null);
-        String userUrl = caseObj.optString("user_attachment_url", null);
+        String adminUrl = caseObj.optString("admin_file_url", caseObj.optString("admin_attachment_url", null));
+        String userUrl = caseObj.optString("user_file_url", caseObj.optString("user_attachment_url", null));
 
         View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_ban_appeal_details, null);
         TextView tvDetails = dialogView.findViewById(R.id.tvDetails);
@@ -135,6 +136,12 @@ public class AdminBansAppealsActivity extends AppCompatActivity {
         Button btnLiftRestriction = dialogView.findViewById(R.id.btnLiftRestriction);
 
         String details = "User: " + userId + "\nAction: " + actionType + "\n\nAdmin Reason: " + adminReason;
+        if ("SUSPENDED".equalsIgnoreCase(actionType) && suspensionEndTime > System.currentTimeMillis()) {
+            long remaining = suspensionEndTime - System.currentTimeMillis();
+            long days = remaining / (1000 * 60 * 60 * 24);
+            long hours = (remaining / (1000 * 60 * 60)) % 24;
+            details += "\nRemaining Suspension: " + days + "d " + hours + "h";
+        }
         if (!userAppealText.isEmpty()) {
             details += "\n\nUser Appeal (" + appealStatus + "): " + userAppealText;
         }
@@ -177,10 +184,15 @@ public class AdminBansAppealsActivity extends AppCompatActivity {
         executor.execute(() -> {
             try {
                 String token = SupabaseHelper.getAccessToken(this);
+                String encTarget = SupabaseHelper.encode(userId);
                 // PATCH user profile
                 JSONObject profilePatch = new JSONObject();
                 profilePatch.put("is_suspended", false);
-                SupabaseHelper.patch("/rest/v1/profiles?id=eq." + userId, profilePatch, token);
+                SupabaseHelper.patch(
+                        "/rest/v1/profiles?or=(id.eq." + encTarget + ",firebase_uid.eq." + encTarget + ")",
+                        profilePatch,
+                        token
+                );
 
                 // PATCH case
                 JSONObject casePatch = new JSONObject();
