@@ -1,5 +1,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <style name="Theme.IkhayaAccommodationSeekingApp" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Theme.IkhayaAccommodationSeekingApp" parent="Theme.MaterialComponents.Light.NoActionBar">
         <!-- Keep your existing colors here -->
 
         <!-- Brand Colors -->
@@ -16,6 +16,13 @@
         <item name="android:statusBarColor">@color/appBackground</item>
         <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
         <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
+
+        <item name="android:textColorPrimary">#1F1614</item>
+        <item name="android:textColorSecondary">#4B5563</item>
+        <item name="android:editTextColor">#1F1614</item>
+        <item name="android:textColorHint">#8A8A8A</item>
+        <item name="android:itemBackground">@color/white</item>
+        <item name="android:popupMenuStyle">@style/Widget.AppCompat.Light.PopupMenu</item>
 
         <!-- Fix native EditText.setError() popup window text visibility -->
         <item name="android:textColorPrimaryInverse">#FFFFFF</item>

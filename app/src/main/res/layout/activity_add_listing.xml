@@ -80,6 +80,8 @@
                 android:background="@drawable/custom_input"
                 android:paddingHorizontal="12dp"
                 android:hint="@string/enter_property_name"
+                android:textColor="#1F1614"
+                android:textColorHint="#8A8A8A"
                 android:inputType="textCapSentences"
                 android:singleLine="true" />
 
@@ -100,6 +102,8 @@
                 android:background="@drawable/custom_input"
                 android:paddingHorizontal="12dp"
                 android:hint="@string/search_location_hint"
+                android:textColor="#1F1614"
+                android:textColorHint="#8A8A8A"
                 android:inputType="textCapSentences"
                 android:completionThreshold="3" />
 
@@ -194,6 +198,8 @@
                 android:layout_marginBottom="14dp"
                 android:background="@drawable/custom_input"
                 android:paddingHorizontal="12dp"
+                android:textColor="#1F1614"
+                android:textColorHint="#8A8A8A"
                 android:inputType="numberDecimal"
                 android:singleLine="true" />
 
@@ -215,6 +221,8 @@
                 android:background="@drawable/custom_input"
                 android:paddingHorizontal="12dp"
                 android:hint="@string/number_of_available_rooms"
+                android:textColor="#1F1614"
+                android:textColorHint="#8A8A8A"
                 android:inputType="number"
                 android:singleLine="true" />
 
@@ -231,14 +239,21 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
-                android:layout_marginBottom="14dp">
+                android:layout_marginBottom="14dp"
+                app:boxBackgroundColor="#FFFFFF"
+                app:hintEnabled="false">
 
                 <AutoCompleteTextView
                     android:id="@+id/dropdownPropertyType"
                     android:layout_width="match_parent"
-                    android:layout_height="52dp"
+                    android:layout_height="wrap_content"
+                    android:minHeight="52dp"
+                    android:textColor="#1F1614"
+                    android:textColorHint="#8A8A8A"
+                    android:popupBackground="#FFFFFF"
                     android:inputType="none"
                     android:paddingHorizontal="12dp"
+                    android:paddingVertical="12dp"
                     android:hint="@string/select_accommodation_type" />
 
             </com.google.android.material.textfield.TextInputLayout>
@@ -256,14 +271,21 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
-                android:layout_marginBottom="14dp">
+                android:layout_marginBottom="14dp"
+                app:boxBackgroundColor="#FFFFFF"
+                app:hintEnabled="false">
 
                 <AutoCompleteTextView
                     android:id="@+id/dropdownWaterSource"
                     android:layout_width="match_parent"
-                    android:layout_height="52dp"
+                    android:layout_height="wrap_content"
+                    android:minHeight="52dp"
+                    android:textColor="#1F1614"
+                    android:textColorHint="#8A8A8A"
+                    android:popupBackground="#FFFFFF"
                     android:inputType="none"
                     android:paddingHorizontal="12dp"
+                    android:paddingVertical="12dp"
                     android:hint="@string/select_water_source" />
 
             </com.google.android.material.textfield.TextInputLayout>
@@ -281,14 +303,21 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
-                android:layout_marginBottom="14dp">
+                android:layout_marginBottom="14dp"
+                app:boxBackgroundColor="#FFFFFF"
+                app:hintEnabled="false">
 
                 <AutoCompleteTextView
                     android:id="@+id/dropdownElectricity"
                     android:layout_width="match_parent"
-                    android:layout_height="52dp"
+                    android:layout_height="wrap_content"
+                    android:minHeight="52dp"
+                    android:textColor="#1F1614"
+                    android:textColorHint="#8A8A8A"
+                    android:popupBackground="#FFFFFF"
                     android:inputType="none"
                     android:paddingHorizontal="12dp"
+                    android:paddingVertical="12dp"
                     android:hint="@string/select_electricity_supply" />
 
             </com.google.android.material.textfield.TextInputLayout>
@@ -306,14 +335,21 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
-                android:layout_marginBottom="14dp">
+                android:layout_marginBottom="14dp"
+                app:boxBackgroundColor="#FFFFFF"
+                app:hintEnabled="false">
 
                 <AutoCompleteTextView
                     android:id="@+id/dropdownSanitation"
                     android:layout_width="match_parent"
-                    android:layout_height="52dp"
+                    android:layout_height="wrap_content"
+                    android:minHeight="52dp"
+                    android:textColor="#1F1614"
+                    android:textColorHint="#8A8A8A"
+                    android:popupBackground="#FFFFFF"
                     android:inputType="none"
                     android:paddingHorizontal="12dp"
+                    android:paddingVertical="12dp"
                     android:hint="@string/select_sanitation_type" />
 
             </com.google.android.material.textfield.TextInputLayout>
@@ -335,6 +371,8 @@
                 android:background="@drawable/custom_input"
                 android:gravity="top|start"
                 android:padding="12dp"
+                android:textColor="#1F1614"
+                android:textColorHint="#8A8A8A"
                 android:hint="@string/describe_the_property_and_rental_conditions"
                 android:inputType="textCapSentences|textMultiLine"
                 android:minLines="4" />
@@ -444,14 +482,21 @@
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp">
+                android:layout_marginBottom="12dp"
+                app:boxBackgroundColor="#FFFFFF"
+                app:hintEnabled="false">
 
                 <AutoCompleteTextView
                     android:id="@+id/dropdownAuthorityDocType"
                     android:layout_width="match_parent"
-                    android:layout_height="52dp"
+                    android:layout_height="wrap_content"
+                    android:minHeight="52dp"
+                    android:textColor="#1F1614"
+                    android:textColorHint="#8A8A8A"
+                    android:popupBackground="#FFFFFF"
                     android:inputType="none"
                     android:paddingHorizontal="12dp"
+                    android:paddingVertical="12dp"
                     android:hint="@string/hint_select_authority_doc_type" />
 
             </com.google.android.material.textfield.TextInputLayout>

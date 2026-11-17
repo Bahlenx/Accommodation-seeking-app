@@ -128,6 +128,10 @@ public class EditListingActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(
+                androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
+        );
 
         Configuration.getInstance().load(getApplicationContext(),
                 PreferenceManager.getDefaultSharedPreferences(getApplicationContext()));
@@ -137,6 +141,11 @@ public class EditListingActivity extends AppCompatActivity {
 
         nameInput = findViewById(R.id.edtEditPropertyName);
         locationInput = findViewById(R.id.autoCompleteLocationEdit);
+
+        if (locationInput != null) {
+            locationInput.setFocusable(false);
+            locationInput.setClickable(true);
+        }
 
         cgOfferTypeEdit = findViewById(R.id.cgOfferTypeEdit);
         chipRentEdit = findViewById(R.id.chipRentEdit);
@@ -154,19 +163,26 @@ public class EditListingActivity extends AppCompatActivity {
         }
 
         View btnAdjustPin = findViewById(R.id.btnAdjustPinOnMapEdit);
+        
+        View.OnClickListener openPickerListener = v -> {
+            AddListingActivity.launchUberStylePinPicker(
+                    this,
+                    propertyLatitude,
+                    propertyLongitude,
+                    (lat, lon, resolvedAddress) -> {
+                        propertyLatitude = lat;
+                        propertyLongitude = lon;
+                        locationInput.setText(resolvedAddress);
+                    }
+            );
+        };
+        
+        if (locationInput != null) {
+            locationInput.setOnClickListener(openPickerListener);
+        }
+        
         if (btnAdjustPin != null) {
-            btnAdjustPin.setOnClickListener(v -> {
-                AddListingActivity.launchUberStylePinPicker(
-                        this,
-                        propertyLatitude,
-                        propertyLongitude,
-                        (lat, lon, resolvedAddress) -> {
-                            propertyLatitude = lat;
-                            propertyLongitude = lon;
-                            locationInput.setText(resolvedAddress);
-                        }
-                );
-            });
+            btnAdjustPin.setOnClickListener(openPickerListener);
         }
 
         View btnUseGps = findViewById(R.id.btnUseCurrentGpsEdit);
@@ -220,6 +236,14 @@ public class EditListingActivity extends AppCompatActivity {
 
         if (btnExtraAmenities != null) {
             btnExtraAmenities.setOnClickListener(v -> showAmenitiesPickerDialog());
+        }
+
+        EditText[] inputs = {nameInput, locationInput, priceInput, roomsInput, descriptionInput};
+        for (EditText et : inputs) {
+            if (et != null) {
+                et.setTextColor(Color.parseColor("#1F1614"));
+                et.setHintTextColor(Color.parseColor("#8A8A8A"));
+            }
         }
 
         if (btnRemovePhoto != null) {
@@ -277,17 +301,45 @@ public class EditListingActivity extends AppCompatActivity {
         loadListing();
     }
 
-    private void setupDropdown(AutoCompleteTextView dropdown, int arrayResource) {
+    private void setupDropdown(AutoCompleteTextView dropdown, int arrayResId) {
         if (dropdown == null) return;
-        String[] items = getResources().getStringArray(arrayResource);
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                this, android.R.layout.simple_dropdown_item_1line, items);
-        dropdown.setAdapter(adapter);
+        dropdown.setTextColor(Color.parseColor("#1F1614"));
+        dropdown.setHintTextColor(Color.parseColor("#8A8A8A"));
+        dropdown.setDropDownBackgroundDrawable(new android.graphics.drawable.ColorDrawable(Color.WHITE));
+        
         dropdown.setKeyListener(null);
         dropdown.setOnClickListener(v -> dropdown.showDropDown());
         dropdown.setOnFocusChangeListener((v, hasFocus) -> {
             if (hasFocus) dropdown.showDropDown();
         });
+
+        String[] items = getResources().getStringArray(arrayResId);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, items) {
+            @androidx.annotation.NonNull
+            @Override
+            public View getView(int position, View convertView, @androidx.annotation.NonNull android.view.ViewGroup parent) {
+                return styleRow(super.getView(position, convertView, parent));
+            }
+
+            @Override
+            public View getDropDownView(int position, View convertView, @androidx.annotation.NonNull android.view.ViewGroup parent) {
+                return styleRow(super.getDropDownView(position, convertView, parent));
+            }
+
+            private View styleRow(View view) {
+                view.setBackgroundColor(Color.WHITE);
+                if (view instanceof TextView) {
+                    TextView tv = (TextView) view;
+                    tv.setTextColor(Color.parseColor("#1F1614"));
+                    tv.setTextSize(15f);
+                    tv.setSingleLine(false);
+                    tv.setLineSpacing(6f, 1.0f);
+                    tv.setPadding(40, 32, 40, 32);
+                }
+                return view;
+            }
+        };
+        dropdown.setAdapter(adapter);
     }
 
     private void showAmenitiesPickerDialog() {
