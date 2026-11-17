@@ -79,7 +79,7 @@ public class ChatActivity extends AppCompatActivity {
 
     private String receiverNameField = "";
     
-    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private final ExecutorService executor = Executors.newCachedThreadPool();
 
     private final Handler pollHandler = new Handler(Looper.getMainLooper());
 
@@ -87,7 +87,11 @@ public class ChatActivity extends AppCompatActivity {
         @Override
         public void run() {
             fetchMessages();
-            pollHandler.postDelayed(this, 3000);
+            if (!isGuestSupportChat) {
+                SupabaseHelper.verifyActiveSessionOrKick(ChatActivity.this);
+            }
+            long delay = isGuestSupportChat ? 1500 : 3000;
+            pollHandler.postDelayed(this, delay);
         }
     };
 
@@ -446,6 +450,9 @@ public class ChatActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        if (!isGuestSupportChat) {
+            SupabaseHelper.verifyActiveSessionOrKick(this);
+        }
         if (senderId != null && !senderId.isEmpty()
                 && receiverId != null && !receiverId.isEmpty()
                 && (isGuestSupportChat || (accessToken != null && !accessToken.isEmpty()))) {

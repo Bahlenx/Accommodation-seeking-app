@@ -331,10 +331,27 @@ public class SupabaseHelper {
         });
     }
 
+    private static final android.os.Handler sessionWatchdogHandler =
+            new android.os.Handler(android.os.Looper.getMainLooper());
+    private static Runnable sessionWatchdogRunnable;
+
     public static void verifyActiveSessionOrKick(android.app.Activity activity) {
+        if (activity == null || activity.isFinishing() || activity.isDestroyed()) return;
+
         String uid = getUserId(activity);
         String token = getAccessToken(activity);
         if (uid == null || uid.isEmpty() || token == null || token.isEmpty()) return;
+
+        // Schedule the next automatic check in 3 seconds while this screen remains visible
+        if (sessionWatchdogRunnable != null) {
+            sessionWatchdogHandler.removeCallbacks(sessionWatchdogRunnable);
+        }
+        sessionWatchdogRunnable = () -> {
+            if (!activity.isFinishing() && !activity.isDestroyed() && activity.hasWindowFocus()) {
+                verifyActiveSessionOrKick(activity);
+            }
+        };
+        sessionWatchdogHandler.postDelayed(sessionWatchdogRunnable, 3000);
 
         java.util.concurrent.Executors.newSingleThreadExecutor().execute(() -> {
             try {
@@ -380,6 +397,10 @@ public class SupabaseHelper {
                         activity.runOnUiThread(() -> {
                             if (activity.isFinishing() || activity.isDestroyed()) return;
 
+                            if (sessionWatchdogRunnable != null) {
+                                sessionWatchdogHandler.removeCallbacks(sessionWatchdogRunnable);
+                            }
+
                             String savedEmail = activity.getSharedPreferences("iKhayaSession", Context.MODE_PRIVATE).getString("USER_EMAIL", "");
 
                             // 1. Wipe local session immediately so they cannot press Back
@@ -420,6 +441,9 @@ public class SupabaseHelper {
                     } else if (isRemoved) {
                         activity.runOnUiThread(() -> {
                             if (activity.isFinishing() || activity.isDestroyed()) return;
+                            if (sessionWatchdogRunnable != null) {
+                                sessionWatchdogHandler.removeCallbacks(sessionWatchdogRunnable);
+                            }
                             clearSession(activity);
                             Toast.makeText(activity, "Your account has been removed.", Toast.LENGTH_LONG).show();
                             Intent intent = new Intent(activity, OuterMainActivity.class);

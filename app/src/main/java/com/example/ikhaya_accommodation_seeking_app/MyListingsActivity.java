@@ -125,6 +125,7 @@ public class MyListingsActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        SupabaseHelper.verifyActiveSessionOrKick(this);
         if (listingsContainer != null) {
             loadMyListings();
         }

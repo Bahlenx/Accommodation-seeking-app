@@ -220,6 +220,7 @@ public class UserSelectionActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        SupabaseHelper.verifyActiveSessionOrKick(this);
         messagesScreenVisible = true;
 
         accessToken = SupabaseHelper.getAccessToken(this);
