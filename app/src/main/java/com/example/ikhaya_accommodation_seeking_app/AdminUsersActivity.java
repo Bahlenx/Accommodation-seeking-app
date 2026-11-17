@@ -87,6 +87,10 @@ public class AdminUsersActivity extends AppCompatActivity {
         btnFilterTenants = findViewById(R.id.btnFilterTenants);
         btnFilterLandlords = findViewById(R.id.btnFilterLandlords);
         btnFilterSuspended = findViewById(R.id.btnFilterSuspended);
+        Button btnBansAppeals = findViewById(R.id.btnBansAppeals);
+        if (btnBansAppeals != null) {
+            btnBansAppeals.setOnClickListener(v -> startActivity(new Intent(this, AdminBansAppealsActivity.class)));
+        }
 
         rvUserDirectory = findViewById(R.id.rvUserDirectory);
         rvUserDirectory.setLayoutManager(new LinearLayoutManager(this));

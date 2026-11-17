@@ -112,6 +112,16 @@
                 android:text="@string/admin_status_suspended"
                 android:backgroundTint="#E9ECEF"
                 android:textColor="#32325D"
+                android:textSize="12sp"
+                android:layout_marginEnd="8dp"/>
+
+            <Button
+                android:id="@+id/btnBansAppeals"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="Bans &amp; Appeals"
+                android:backgroundTint="#E9ECEF"
+                android:textColor="#32325D"
                 android:textSize="12sp" />
         </LinearLayout>
     </HorizontalScrollView>

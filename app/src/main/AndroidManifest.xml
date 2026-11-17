@@ -55,6 +55,9 @@
         <activity android:name=".AdminPendingQueueActivity" android:exported="false" />
         <activity android:name=".AdminActiveListingsActivity" android:exported="false" />
         <activity android:name=".AdminReportsActivity" android:exported="false" />
+        <activity android:name=".AdminModerationActionActivity" android:exported="false" />
+        <activity android:name=".AccountRestrictedAppealActivity" android:exported="false" />
+        <activity android:name=".AdminBansAppealsActivity" android:exported="false" />
 
         <!-- Listing Management & Landlord Actions -->
         <activity

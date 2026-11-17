@@ -2,6 +2,7 @@ package com.example.ikhaya_accommodation_seeking_app;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
@@ -125,22 +126,9 @@ public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.View
             boolean targetState = !user.isSuspended();
 
             if (targetState) {
-                // Prompt admin for suspension reason
-                final EditText inputReason = new EditText(context);
-                inputReason.setHint("e.g. Policy violation, suspicious activity, invalid ID...");
-                int paddingPx = (int) (16 * context.getResources().getDisplayMetrics().density);
-                inputReason.setPadding(paddingPx, paddingPx, paddingPx, paddingPx);
-
-                new AlertDialog.Builder(context)
-                        .setTitle("Suspend " + user.getName())
-                        .setMessage("Please specify a reason for suspending this user's account:")
-                        .setView(inputReason)
-                        .setPositiveButton("Suspend", (dialog, which) -> {
-                            String reason = inputReason.getText().toString().trim();
-                            executeSuspensionChange(holder, user, true, reason);
-                        })
-                        .setNegativeButton("Cancel", null)
-                        .show();
+                Intent intent = new Intent(context, AdminModerationActionActivity.class);
+                intent.putExtra("USER_ID", user.getUserId());
+                context.startActivity(intent);
             } else {
                 executeSuspensionChange(holder, user, false, "");
             }

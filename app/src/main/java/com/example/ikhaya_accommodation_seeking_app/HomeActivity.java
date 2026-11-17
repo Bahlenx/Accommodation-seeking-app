@@ -898,7 +898,69 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
+    private void sortListingsByRelevance(List<JSONObject> listings) {
+        SharedPreferences prefs = getSharedPreferences("iKhayaSession", MODE_PRIVATE);
+        String userLocation = prefs.getString("USER_LOCATION", prefs.getString("user_location", ""));
+        double userBudget = prefs.getFloat("USER_BUDGET", prefs.getFloat("user_budget", 999999f));
+
+        listings.sort((a, b) -> {
+            int scoreA = 0;
+            int scoreB = 0;
+
+            String locA = a.optString("location", "").toLowerCase();
+            String locB = b.optString("location", "").toLowerCase();
+            if (!userLocation.isEmpty() && locA.contains(userLocation.toLowerCase())) {
+                scoreA += 2;
+            }
+            if (!userLocation.isEmpty() && locB.contains(userLocation.toLowerCase())) {
+                scoreB += 2;
+            }
+
+            double priceA = a.optDouble("price", 0.0);
+            double priceB = b.optDouble("price", 0.0);
+            if (priceA > 0 && priceA <= userBudget) {
+                scoreA += 1;
+            }
+            if (priceB > 0 && priceB <= userBudget) {
+                scoreB += 1;
+            }
+
+            if (scoreA != scoreB) {
+                return Integer.compare(scoreB, scoreA);
+            }
+
+            String dateA = a.optString("created_at", "");
+            String dateB = b.optString("created_at", "");
+            return dateB.compareTo(dateA);
+        });
+    }
+
     private void loadHomeFeedFromSupabase() {
+        SharedPreferences cachePrefs = getSharedPreferences("iKhayaCache", MODE_PRIVATE);
+        String cachedJson = cachePrefs.getString("cached_listings_json", "");
+        if (!cachedJson.isEmpty()) {
+            try {
+                JSONArray cachedArray = new JSONArray(cachedJson);
+                List<JSONObject> cachedList = new ArrayList<>();
+                for (int i = 0; i < cachedArray.length(); i++) {
+                    JSONObject item = cachedArray.optJSONObject(i);
+                    if (item != null) cachedList.add(item);
+                }
+                sortListingsByRelevance(cachedList);
+                List<JSONObject> popList = new ArrayList<>();
+                List<JSONObject> expList = new ArrayList<>();
+                for (int i = 0; i < cachedList.size(); i++) {
+                    if (i % 2 == 0) popList.add(cachedList.get(i));
+                    else expList.add(cachedList.get(i));
+                }
+                if (expList.isEmpty()) expList.addAll(popList);
+                runOnUiThread(() -> {
+                    if (isFinishing() || isDestroyed()) return;
+                    if (rvPopularPlaces != null) rvPopularPlaces.setAdapter(new ListingCarouselAdapter(popList));
+                    if (rvExploreNewArea != null) rvExploreNewArea.setAdapter(new ListingCarouselAdapter(expList));
+                });
+            } catch (Exception ignored) {}
+        }
 
         String accessToken =
                 SupabaseHelper.getAccessToken(this);
@@ -930,9 +992,20 @@ public class HomeActivity extends AppCompatActivity {
                         SupabaseHelper.readResponse(conn);
 
                 if (code >= 200 && code < 300) {
+                    cachePrefs.edit().putString("cached_listings_json", response).apply();
 
                     JSONArray rawListings =
                             new JSONArray(response);
+
+                    List<JSONObject> fullList =
+                            new ArrayList<>();
+
+                    for (int i = 0; i < rawListings.length(); i++) {
+                        JSONObject item = rawListings.optJSONObject(i);
+                        if (item != null) fullList.add(item);
+                    }
+
+                    sortListingsByRelevance(fullList);
 
                     List<JSONObject> popularList =
                             new ArrayList<>();
@@ -940,14 +1013,10 @@ public class HomeActivity extends AppCompatActivity {
                     List<JSONObject> exploreList =
                             new ArrayList<>();
 
-                    for (int i = 0; i < rawListings.length(); i++) {
+                    for (int i = 0; i < fullList.size(); i++) {
 
                         JSONObject item =
-                                rawListings.optJSONObject(i);
-
-                        if (item == null) {
-                            continue;
-                        }
+                                fullList.get(i);
 
                         if (i % 2 == 0) {
                             popularList.add(item);

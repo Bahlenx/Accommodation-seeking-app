@@ -203,6 +203,13 @@ public class AdminDashboardActivity extends AppCompatActivity {
             );
         }
 
+        View cardBansAppeals = findViewById(R.id.cardBansAppeals);
+        if (cardBansAppeals != null) {
+            cardBansAppeals.setOnClickListener(v ->
+                    startActivity(new Intent(this, AdminBansAppealsActivity.class))
+            );
+        }
+
         // View cardProblemReports = findViewById(R.id.cardProblemReports);
 
         View rowSupabaseEngine = findViewById(R.id.rowSupabaseEngine);

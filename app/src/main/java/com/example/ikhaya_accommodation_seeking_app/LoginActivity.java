@@ -289,11 +289,15 @@ public class LoginActivity extends AppCompatActivity {
                         // Block account access if flagged as suspended by an admin
                         boolean isSuspended = profile.optBoolean("is_suspended", false);
                         if (isSuspended) {
-                            String reason = fetchSuspensionReason(userId, accessToken);
-                            String errorMsg = "Your account has been suspended by an administrator."
-                                    + (reason.isEmpty() ? "" : "\nReason: " + reason)
-                                    + "\nPlease contact support for assistance.";
-                            showLoginError(errorMsg);
+                            SupabaseHelper.clearSession(LoginActivity.this);
+                            runOnUiThread(() -> {
+                                Intent intent = new Intent(LoginActivity.this, AccountRestrictedAppealActivity.class);
+                                intent.putExtra("APPEAL_TOKEN", accessToken);
+                                intent.putExtra("USER_ID", userId);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                startActivity(intent);
+                                finish();
+                            });
                             return;
                         }
 
@@ -364,7 +368,15 @@ public class LoginActivity extends AppCompatActivity {
 
                     boolean isSuspended = userObj.optBoolean("is_suspended", false);
                     if (isSuspended) {
-                        showLoginError("Your account has been suspended by an administrator. Please contact support.");
+                        SupabaseHelper.clearSession(LoginActivity.this);
+                        runOnUiThread(() -> {
+                            Intent intent = new Intent(LoginActivity.this, AccountRestrictedAppealActivity.class);
+                            intent.putExtra("APPEAL_TOKEN", accessToken);
+                            intent.putExtra("USER_ID", userId);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                            startActivity(intent);
+                            finish();
+                        });
                         conn.disconnect();
                         return;
                     }

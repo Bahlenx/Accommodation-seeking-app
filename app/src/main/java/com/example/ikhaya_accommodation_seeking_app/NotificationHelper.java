@@ -97,6 +97,22 @@ public final class NotificationHelper {
 
     public static void showPhoneNotification(Context context, String title, String message, Class<?> targetActivity, int notificationId) {
         Context appContext = context.getApplicationContext();
+
+        String prefKey = "PREF_GENERAL";
+        if (title.contains("Message") || title.contains("Chat") || title.contains("Enquiry")) {
+            prefKey = "PREF_CHAT_MESSAGES";
+        } else if (title.contains("Viewing") || title.contains("📅")) {
+            prefKey = "PREF_VIEWINGS";
+        } else if (title.contains("Application") || title.contains("Rent") || title.contains("Lease")) {
+            prefKey = "PREF_APPLICATIONS";
+        } else if (title.contains("Ticket") || title.contains("Verification") || title.contains("ID") || title.contains("Listing")) {
+            prefKey = "PREF_LISTING_AND_VERIFY";
+        }
+
+        if (!isCategoryEnabled(appContext, prefKey)) {
+            return;
+        }
+
         createChannel(appContext);
         markUnreadDot(appContext, true);
 
@@ -215,14 +231,14 @@ public final class NotificationHelper {
     }
 
     public static boolean isCategoryEnabled(Context context, String key) {
-        SharedPreferences prefs = context.getSharedPreferences("iKhayaNotifSettings", Context.MODE_PRIVATE);
+        SharedPreferences prefs = context.getSharedPreferences("NotificationPrefs", Context.MODE_PRIVATE);
         boolean master = prefs.getBoolean("PREF_MASTER_ENABLED", true);
         if (!master) return false;
         return prefs.getBoolean(key, true);
     }
 
     public static String getPreferencesSummaryLabel(Context context) {
-        SharedPreferences prefs = context.getSharedPreferences("iKhayaNotifSettings", Context.MODE_PRIVATE);
+        SharedPreferences prefs = context.getSharedPreferences("NotificationPrefs", Context.MODE_PRIVATE);
         if (!prefs.getBoolean("PREF_MASTER_ENABLED", true)) return "Muted";
         
         String[] keys = {
@@ -239,7 +255,7 @@ public final class NotificationHelper {
 
     public static void openNotificationSettingsDialog(android.app.Activity activity, Runnable onUpdated) {
         if (activity == null || activity.isFinishing()) return;
-        SharedPreferences prefs = activity.getSharedPreferences("iKhayaNotifSettings", Context.MODE_PRIVATE);
+        SharedPreferences prefs = activity.getSharedPreferences("NotificationPrefs", Context.MODE_PRIVATE);
         
         Dialog dialog = new Dialog(activity, android.R.style.Theme_Light_NoTitleBar);
         float density = activity.getResources().getDisplayMetrics().density;

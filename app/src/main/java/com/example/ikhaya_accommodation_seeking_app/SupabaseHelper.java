@@ -3,6 +3,7 @@ package com.example.ikhaya_accommodation_seeking_app;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -353,69 +354,47 @@ public class SupabaseHelper {
                         isSuspended = prof.optBoolean("is_suspended", false);
                     }
                     if (isSuspended) {
-                        String fetchedReason = "";
+                        boolean expired = false;
                         try {
-                            HttpURLConnection notifConn = createConnection(
-                                    "/rest/v1/notifications?select=message&user_id=eq." + encUid + "&title=eq.Account%20Suspended&order=created_at.desc&limit=1",
+                            java.net.HttpURLConnection caseConn = createConnection(
+                                    "/rest/v1/moderation_cases?select=*&user_id=eq." + encUid + "&order=created_at.desc&limit=1",
                                     "GET", token);
-                            if (notifConn.getResponseCode() >= 200 && notifConn.getResponseCode() < 300) {
-                                JSONArray notifArr = new JSONArray(readResponse(notifConn));
-                                if (notifArr.length() > 0) {
-                                    String msg = notifArr.getJSONObject(0).optString("message", "");
-                                    if (msg.contains("Reason: ")) {
-                                        int start = msg.indexOf("Reason: ") + "Reason: ".length();
-                                        int end = msg.indexOf("\n", start);
-                                        if (end != -1) {
-                                            fetchedReason = msg.substring(start, end).trim();
-                                        } else {
-                                            fetchedReason = msg.substring(start).trim();
-                                        }
+                            if (caseConn.getResponseCode() >= 200 && caseConn.getResponseCode() < 300) {
+                                JSONArray caseArr = new JSONArray(readResponse(caseConn));
+                                if (caseArr.length() > 0) {
+                                    JSONObject caseObj = caseArr.getJSONObject(0);
+                                    long endTime = caseObj.optLong("suspension_end_time", 0);
+                                    if (endTime > 0 && System.currentTimeMillis() > endTime) {
+                                        expired = true;
                                     }
                                 }
                             }
-                            notifConn.disconnect();
+                            caseConn.disconnect();
                         } catch (Exception ignored) {}
 
-                        final String reason = fetchedReason;
+                        if (expired) {
+                            try {
+                                JSONObject patch = new JSONObject();
+                                patch.put("is_suspended", false);
+                                patch("/rest/v1/profiles?id=eq." + encUid, patch, token);
+                            } catch (Exception ignored) {}
+                            return;
+                        }
+
                         activity.runOnUiThread(() -> {
                             if (activity.isFinishing() || activity.isDestroyed()) return;
 
-                            String savedEmail = activity.getSharedPreferences("iKhayaSession", Context.MODE_PRIVATE).getString("USER_EMAIL", "");
-
-                            // 1. Wipe local session immediately so they cannot press Back
                             activity.getSharedPreferences("iKhayaSession", Context.MODE_PRIVATE)
                                     .edit()
                                     .clear()
                                     .apply();
 
-                            String alertMsg = "Your account has been suspended by an administrator."
-                                    + (reason.isEmpty() ? "" : "\n\nReason: " + reason)
-                                    + "\n\nYou have been signed out immediately. If you believe this is a mistake, tap Contact Support below.";
-
-                            // 2. Show clear suspension notice before kicking to LoginActivity
-                            new AlertDialog.Builder(activity)
-                                    .setTitle("Account Suspended")
-                                    .setMessage(alertMsg)
-                                    .setCancelable(false)
-                                    .setPositiveButton("Return to Login", (dialog, which) -> {
-                                        Intent intent = new Intent(activity, LoginActivity.class);
-                                        intent.putExtra("SUSPENDED_NOTICE", true);
-                                        if (!reason.isEmpty()) intent.putExtra("SUSPENDED_REASON", reason);
-                                        if (!savedEmail.isEmpty()) intent.putExtra("USER_EMAIL", savedEmail);
-                                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                                        activity.startActivity(intent);
-                                        activity.finish();
-                                    })
-                                    .setNeutralButton("Contact Support", (dialog, which) -> {
-                                        Intent intent = new Intent(activity, LoginActivity.class);
-                                        intent.putExtra("OPEN_SUPPORT_CHAT", true);
-                                        if (!reason.isEmpty()) intent.putExtra("SUSPENDED_REASON", reason);
-                                        if (!savedEmail.isEmpty()) intent.putExtra("USER_EMAIL", savedEmail);
-                                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                                        activity.startActivity(intent);
-                                        activity.finish();
-                                    })
-                                    .show();
+                            Intent intent = new Intent(activity, AccountRestrictedAppealActivity.class);
+                            intent.putExtra("APPEAL_TOKEN", token);
+                            intent.putExtra("USER_ID", uid);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                            activity.startActivity(intent);
+                            activity.finish();
                         });
                     } else if (isRemoved) {
                         activity.runOnUiThread(() -> {
@@ -600,11 +579,8 @@ public class SupabaseHelper {
         return connection;
     }
 
-    public static String uploadStorageBytes(String bucket, String imagePath, byte[] data) throws Exception {
-        Context ctx = getAppContext();
-        String token = ctx != null ? getAccessToken(ctx) : null;
-
-        HttpURLConnection conn = createStorageConnection(bucket, imagePath, "POST", token);
+    public static String uploadStorageBytes(String bucket, String imagePath, byte[] data, String explicitToken) throws Exception {
+        HttpURLConnection conn = createStorageConnection(bucket, imagePath, "POST", explicitToken);
         conn.setDoOutput(true);
 
         try (OutputStream os = conn.getOutputStream()) {
@@ -621,6 +597,12 @@ public class SupabaseHelper {
         } else {
             throw new Exception("Storage Upload Failed (HTTP " + responseCode + "): " + responseStr);
         }
+    }
+
+    public static String uploadStorageBytes(String bucket, String imagePath, byte[] data) throws Exception {
+        Context ctx = getAppContext();
+        String token = ctx != null ? getAccessToken(ctx) : null;
+        return uploadStorageBytes(bucket, imagePath, data, token);
     }
 
     public static String getPublicStorageUrl(String bucket, String imagePath) {
@@ -848,5 +830,18 @@ public class SupabaseHelper {
                 if (conn != null) conn.disconnect();
             }
         });
+    }
+
+    public static byte[] getBytesFromUri(Context context, Uri uri) throws Exception {
+        try (InputStream inputStream = context.getContentResolver().openInputStream(uri);
+             java.io.ByteArrayOutputStream byteBuffer = new java.io.ByteArrayOutputStream()) {
+            int bufferSize = 1024;
+            byte[] buffer = new byte[bufferSize];
+            int len;
+            while ((len = inputStream.read(buffer)) != -1) {
+                byteBuffer.write(buffer, 0, len);
+            }
+            return byteBuffer.toByteArray();
+        }
     }
 }

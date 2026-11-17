@@ -1252,4 +1252,8 @@
     <string name="msg_reverification_action_required">Action Required: Address updated — please re-upload valid proof of authority.</string>
     <string name="btn_mark_rented">Mark Rented</string>
     <string name="btn_mark_available">Mark Available</string>
+    <string-array name="duration_types">
+        <item>Hours</item>
+        <item>Days</item>
+    </string-array>
 </resources>
