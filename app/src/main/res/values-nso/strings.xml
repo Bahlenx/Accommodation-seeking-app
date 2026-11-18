@@ -1213,4 +1213,35 @@
     <string name="msg_reverification_action_required">Khato e a Nyakega: Aterese e mpšhafaditswe — hle laetša gape bohlatse bja maatla bjo bo šomago.</string>
     <string name="btn_mark_rented">Swaya e Hirišitšwe</string>
     <string name="btn_mark_available">Swaya e Hwetšagala</string>
+
+    <!-- Localized Amenities & Features -->
+    <string name="amenity_ensuite_bathroom">Kamore ya go Hlapela ya En-Suite</string>
+    <string name="amenity_jojo_tank">Metsi a Tanka ya JoJo</string>
+    <string name="amenity_solar_inverter">Thušo ya Solar / Inverter</string>
+    <string name="amenity_electric_fence">Morafe wa Motlakase</string>
+    <string name="amenity_kitchenette">Khikhine ye e Agilwego</string>
+    <string name="amenity_builtin_cupboards">Likhabote tše di Agilwego</string>
+
+    <!-- My Listings & Badges -->
+    <string name="title_all_my_listings">Phatlalatso tša ka ka Moka</string>
+    <string name="btn_mark_sold">Swaya e Rekišitšwe</string>
+    <string name="status_suspended">E EMISITŠWE</string>
+    <string name="status_edits_pending">DIPHETOGO TŠE DI EMETŠEGONGA</string>
+    <string name="status_active_caps">E ŠOMAGO</string>
+    <string name="status_rented">E HIRIŠITŠWE</string>
+    <string name="status_sold">E REKIŠITŠWE</string>
+    <string name="status_rejected">GA SE YA AMOGELWA</string>
+    <string name="msg_rejection_reason_prefix">Leba la go Gana: %1$s</string>
+    <string name="msg_listing_details_require_corrections">Dintlha tsa bodulo di nyaka diphetogo.</string>
+
+    <!-- Viewing Requests -->
+    <string name="subtitle_viewing_requests">Lekola dikgopelo tša go bona ntlo tše di kgopetšwego ke badudi.</string>
+    <string name="summary_viewing_requests_count">%1$d tše di emetšego • %2$d palomoka ya dikgopelo</string>
+    <string name="msg_no_viewing_requests">Ga se gwa ba le dikgopelo tša go bona ntlo sethong.</string>
+    <string name="btn_refresh_requests">Mpšhafatsa Dikgopelo</string>
+    <string name="msg_unable_to_load_requests">Ga go kgonege go laetša dikgopelo.</string>
+    <string name="slot_morning">Mesong</string>
+    <string name="slot_midday">Mosegare</string>
+    <string name="slot_afternoon">Maitseboa</string>
+    <string name="btn_decline">Gana</string>
 </resources>

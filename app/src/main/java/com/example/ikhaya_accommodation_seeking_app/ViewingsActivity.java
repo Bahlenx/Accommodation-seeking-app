@@ -216,6 +216,31 @@ public class ViewingsActivity extends AppCompatActivity {
         }
     }
 
+    private String getLocalizedStatus(String status) {
+        if ("Confirmed".equalsIgnoreCase(status) || "Approved".equalsIgnoreCase(status)) {
+            return getString(R.string.status_confirmed);
+        } else if ("Declined".equalsIgnoreCase(status) || "Cancelled".equalsIgnoreCase(status) || "Rejected".equalsIgnoreCase(status)) {
+            return getString(R.string.status_declined);
+        } else {
+            return getString(R.string.status_pending);
+        }
+    }
+
+    private String getLocalizedViewingDate(String rawDate) {
+        if (rawDate == null || rawDate.isEmpty()) return getString(R.string.label_date_not_provided);
+        String result = rawDate;
+        if (result.contains("Morning")) {
+            result = result.replace("Morning", getString(R.string.slot_morning));
+        }
+        if (result.contains("Midday")) {
+            result = result.replace("Midday", getString(R.string.slot_midday));
+        }
+        if (result.contains("Afternoon")) {
+            result = result.replace("Afternoon", getString(R.string.slot_afternoon));
+        }
+        return result;
+    }
+
     private void addViewingCard(JSONObject item) {
         String listingId = clean(item.optString("listing_id", ""));
         String title = clean(item.optString("property_name", ""));
@@ -267,7 +292,7 @@ public class ViewingsActivity extends AppCompatActivity {
         header.addView(tvTitle);
 
         TextView tvStatus = new TextView(this);
-        tvStatus.setText(status);
+        tvStatus.setText(getLocalizedStatus(status));
         tvStatus.setTextSize(11);
         tvStatus.setTypeface(null, Typeface.BOLD);
         tvStatus.setPadding(dpToPx(10), dpToPx(4), dpToPx(10), dpToPx(4));
@@ -288,7 +313,7 @@ public class ViewingsActivity extends AppCompatActivity {
 
         // Appointment Date
         TextView tvDate = new TextView(this);
-        tvDate.setText(date);
+        tvDate.setText(getLocalizedViewingDate(date));
         tvDate.setTextSize(13);
         tvDate.setTextColor(Color.parseColor("#BA5536"));
         tvDate.setTypeface(null, Typeface.BOLD);

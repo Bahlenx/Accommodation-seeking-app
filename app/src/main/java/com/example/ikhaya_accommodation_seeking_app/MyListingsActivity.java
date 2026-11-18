@@ -253,7 +253,7 @@ public class MyListingsActivity extends AppCompatActivity {
 
         String closedStatus = isForSale ? "SOLD" : "RENTED";
         String closedAvailability = isForSale ? "Sold" : "Rented";
-        String toggleActiveButtonText = isForSale ? "Mark Sold" : "Mark Rented";
+        String toggleActiveButtonText = isForSale ? getString(R.string.btn_mark_sold) : getString(R.string.btn_mark_rented);
 
         boolean isCurrentlyClosed = "SOLD".equalsIgnoreCase(status) || "Sold".equalsIgnoreCase(availability)
                 || "RENTED".equalsIgnoreCase(status) || "Rented".equalsIgnoreCase(availability)
@@ -262,7 +262,7 @@ public class MyListingsActivity extends AppCompatActivity {
         if (isCurrentlyClosed) {
             boolean showSold = "SOLD".equalsIgnoreCase(status) || "Sold".equalsIgnoreCase(availability) || isForSale;
             if (tvBadge != null) {
-                tvBadge.setText(showSold ? "SOLD" : "RENTED");
+                tvBadge.setText(showSold ? getString(R.string.status_sold) : getString(R.string.status_rented));
                 tvBadge.setBackgroundColor(Color.parseColor("#6C757D"));
                 tvBadge.setTextColor(Color.WHITE);
             }
@@ -270,18 +270,19 @@ public class MyListingsActivity extends AppCompatActivity {
                 layoutAlert.setVisibility(View.GONE);
             }
             if (btnMarkRented != null) {
-                btnMarkRented.setText("Mark Available");
+                btnMarkRented.setText(R.string.btn_mark_available);
                 btnMarkRented.setBackgroundColor(Color.parseColor("#28A745"));
             }
         } else if ("SUSPENDED_FOR_REVERIFICATION".equalsIgnoreCase(status)) {
             if (tvBadge != null) {
-                tvBadge.setText("SUSPENDED");
+                tvBadge.setText(R.string.status_suspended);
                 tvBadge.setBackgroundColor(Color.parseColor("#DC3545"));
                 tvBadge.setTextColor(Color.WHITE);
             }
             if (layoutAlert != null && tvReason != null) {
                 layoutAlert.setVisibility(View.VISIBLE);
-                tvReason.setText("Action Required: " + (!reverificationReason.isEmpty() ? reverificationReason : "Address or authority proof updated. Re-verification required."));
+                String detail = !reverificationReason.isEmpty() ? reverificationReason : getString(R.string.msg_reverification_action_required);
+                tvReason.setText("Action Required: " + detail);
             }
             if (btnMarkRented != null) {
                 btnMarkRented.setText(toggleActiveButtonText);
@@ -289,7 +290,7 @@ public class MyListingsActivity extends AppCompatActivity {
             }
         } else if ("CHANGES_PENDING_REVIEW".equalsIgnoreCase(status)) {
             if (tvBadge != null) {
-                tvBadge.setText("EDITS PENDING");
+                tvBadge.setText(R.string.status_edits_pending);
                 tvBadge.setBackgroundColor(Color.parseColor("#2CA8FF"));
                 tvBadge.setTextColor(Color.WHITE);
             }
@@ -300,7 +301,7 @@ public class MyListingsActivity extends AppCompatActivity {
             }
         } else if ("PENDING_VERIFICATION".equalsIgnoreCase(status) || "PENDING".equalsIgnoreCase(status)) {
             if (tvBadge != null) {
-                tvBadge.setText("PENDING APPROVAL");
+                tvBadge.setText(R.string.status_pending_approval);
                 tvBadge.setBackgroundColor(Color.parseColor("#FFC107"));
                 tvBadge.setTextColor(Color.BLACK);
             }
@@ -311,7 +312,7 @@ public class MyListingsActivity extends AppCompatActivity {
             }
         } else if ("APPROVED".equalsIgnoreCase(status) || "VERIFIED".equalsIgnoreCase(status)) {
             if (tvBadge != null) {
-                tvBadge.setText("ACTIVE");
+                tvBadge.setText(R.string.status_active_caps);
                 tvBadge.setBackgroundColor(Color.parseColor("#28A745"));
                 tvBadge.setTextColor(Color.WHITE);
             }
@@ -322,13 +323,14 @@ public class MyListingsActivity extends AppCompatActivity {
             }
         } else if ("REJECTED".equalsIgnoreCase(status) || "REMOVED_BY_ADMIN".equalsIgnoreCase(status)) {
             if (tvBadge != null) {
-                tvBadge.setText("REJECTED");
+                tvBadge.setText(R.string.status_rejected);
                 tvBadge.setBackgroundColor(Color.parseColor("#DC3545"));
                 tvBadge.setTextColor(Color.WHITE);
             }
             if (layoutAlert != null && tvReason != null) {
                 layoutAlert.setVisibility(View.VISIBLE);
-                tvReason.setText("Rejection Reason: " + (!rejectionReason.isEmpty() ? rejectionReason : "Listing details require corrections."));
+                String detail = !rejectionReason.isEmpty() ? rejectionReason : getString(R.string.msg_listing_details_require_corrections);
+                tvReason.setText(getString(R.string.msg_rejection_reason_prefix, detail));
             }
             if (btnMarkRented != null) {
                 btnMarkRented.setText(toggleActiveButtonText);
@@ -336,7 +338,7 @@ public class MyListingsActivity extends AppCompatActivity {
             }
         } else {
             if (tvBadge != null) {
-                tvBadge.setText("PENDING APPROVAL");
+                tvBadge.setText(R.string.status_pending_approval);
                 tvBadge.setBackgroundColor(Color.parseColor("#FFC107"));
                 tvBadge.setTextColor(Color.BLACK);
             }

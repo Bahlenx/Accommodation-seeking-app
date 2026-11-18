@@ -2,6 +2,7 @@
 package com.example.ikhaya_accommodation_seeking_app;
 
 import android.app.DatePickerDialog;
+import android.app.assist.AssistContent;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
@@ -102,7 +103,7 @@ public class PropertyDetailsActivity extends AppCompatActivity {
             Executors.newFixedThreadPool(3);
 
     @Override
-    public void onProvideAssistContent(android.app.assist.AssistContent outContent) {
+    public void onProvideAssistContent(AssistContent outContent) {
         super.onProvideAssistContent(outContent);
         try {
             if (listingId != null && !listingId.isEmpty()) {
@@ -624,6 +625,50 @@ public class PropertyDetailsActivity extends AppCompatActivity {
         }
     }
 
+    private String getLocalizedAmenity(String rawValue) {
+        if (rawValue == null || rawValue.trim().isEmpty()) return "";
+        String key = rawValue.trim().toLowerCase(Locale.ROOT);
+
+        if (key.contains("wifi") || key.contains("wi-fi")) {
+            return getString(R.string.amenity_wifi);
+        } else if (key.contains("en-suite") || key.contains("ensuite")) {
+            return getString(R.string.amenity_ensuite_bathroom);
+        } else if (key.contains("jojo") || key.contains("tank")) {
+            return getString(R.string.amenity_jojo_tank);
+        } else if (key.contains("solar") || key.contains("inverter")) {
+            return getString(R.string.amenity_solar_inverter);
+        } else if (key.contains("electric fence") || key.contains("fencing")) {
+            return getString(R.string.amenity_electric_fence);
+        } else if (key.contains("kitchenette") || key.contains("kitchen")) {
+            return getString(R.string.amenity_kitchenette);
+        } else if (key.contains("cupboard") || key.contains("built-in")) {
+            return getString(R.string.amenity_builtin_cupboards);
+        } else if (key.contains("prepaid") || key.contains("meter") || key.contains("electricity")) {
+            return getString(R.string.amenity_electricity);
+        } else if (key.contains("parking") || key.contains("garage")) {
+            return getString(R.string.amenity_parking);
+        } else if (key.contains("security") || key.contains("cctv") || key.contains("guard")) {
+            return getString(R.string.amenity_security);
+        } else if (key.contains("furnished")) {
+            return getString(R.string.amenity_furnished);
+        } else if (key.contains("borehole")) {
+            return getString(R.string.amenity_borehole);
+        } else if (key.contains("laundry")) {
+            return getString(R.string.amenity_laundry_facilities);
+        } else if (key.contains("water")) {
+            return getString(R.string.amenity_water);
+        } else if (key.contains("no pets") || key.contains("pet")) {
+            return getString(R.string.rule_no_pets);
+        } else if (key.contains("no smoking") || key.contains("smok")) {
+            return getString(R.string.amenity_no_smoking);
+        } else if (key.contains("deposit")) {
+            return getString(R.string.rule_deposit_req);
+        } else if (key.contains("fence") || key.contains("gated")) {
+            return getString(R.string.rule_fenced);
+        }
+        return rawValue.trim();
+    }
+
     private void addChip(ChipGroup group, String value) {
         if (value == null || value.trim().isEmpty()) {
             return;
@@ -631,7 +676,7 @@ public class PropertyDetailsActivity extends AppCompatActivity {
 
         Chip chip = new Chip(this);
 
-        chip.setText(value.trim());
+        chip.setText(getLocalizedAmenity(value));
         chip.setClickable(false);
         chip.setCheckable(false);
         chip.setChipBackgroundColor(
@@ -704,7 +749,7 @@ public class PropertyDetailsActivity extends AppCompatActivity {
 
             if (btnApplyToRent != null) {
                 btnApplyToRent.setVisibility(View.VISIBLE);
-                btnApplyToRent.setText("Edit Listing");
+                btnApplyToRent.setText(R.string.edit_listing);
                 btnApplyToRent.setOnClickListener(v -> {
                     Intent intent = new Intent(this, EditListingActivity.class);
                     intent.putExtra("LISTING_ID", listingId);
@@ -772,7 +817,7 @@ public class PropertyDetailsActivity extends AppCompatActivity {
         }
 
         if (isLandlord) {
-            btnApplyToRent.setText("Edit Listing");
+            btnApplyToRent.setText(R.string.edit_listing);
             btnApplyToRent.setVisibility(View.VISIBLE);
             btnApplyToRent.setOnClickListener(v -> {
                 Intent intent = new Intent(this, EditListingActivity.class);

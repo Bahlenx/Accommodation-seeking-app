@@ -93,7 +93,7 @@ public class LandlordViewingsActivity extends AppCompatActivity {
         btnBack.setOnClickListener(v -> finish());
 
         TextView heading = new TextView(this);
-        heading.setText("Viewing Requests");
+        heading.setText(R.string.viewing_requests);
         heading.setTextSize(24);
         heading.setTypeface(null, Typeface.BOLD);
         heading.setTextColor(Color.parseColor("#1F1614"));
@@ -108,9 +108,7 @@ public class LandlordViewingsActivity extends AppCompatActivity {
         root.addView(heading, headingParams);
 
         TextView subtitle = new TextView(this);
-        subtitle.setText(
-                "Review viewing appointments requested by residents."
-        );
+        subtitle.setText(R.string.subtitle_viewing_requests);
         subtitle.setTextSize(14);
         subtitle.setTextColor(Color.parseColor("#756763"));
 
@@ -123,7 +121,7 @@ public class LandlordViewingsActivity extends AppCompatActivity {
         root.addView(subtitle, subtitleParams);
 
         txtCount = new TextView(this);
-        txtCount.setText("Loading requests...");
+        txtCount.setText(R.string.loading_text);
         txtCount.setTextSize(14);
         txtCount.setTypeface(null, Typeface.BOLD);
         txtCount.setTextColor(Color.parseColor("#BA5536"));
@@ -157,7 +155,7 @@ public class LandlordViewingsActivity extends AppCompatActivity {
         scrollView.addView(scrollContent);
 
         txtEmpty = new TextView(this);
-        txtEmpty.setText("No viewing requests yet.");
+        txtEmpty.setText(R.string.msg_no_viewing_requests);
         txtEmpty.setTextSize(15);
         txtEmpty.setGravity(Gravity.CENTER);
         txtEmpty.setTextColor(Color.parseColor("#756763"));
@@ -183,7 +181,7 @@ public class LandlordViewingsActivity extends AppCompatActivity {
         scrollContent.addView(requestsContainer);
 
         Button btnRefresh = new Button(this);
-        btnRefresh.setText("Refresh Requests");
+        btnRefresh.setText(R.string.btn_refresh_requests);
         btnRefresh.setTransformationMethod(null);
         btnRefresh.setTextSize(15);
         btnRefresh.setTypeface(null, Typeface.BOLD);
@@ -315,10 +313,7 @@ public class LandlordViewingsActivity extends AppCompatActivity {
                     );
 
                     txtCount.setText(
-                            pendingCount
-                                    + " pending • "
-                                    + requests.length()
-                                    + " total requests"
+                            getString(R.string.summary_viewing_requests_count, pendingCount, requests.length())
                     );
                 });
 
@@ -335,7 +330,7 @@ public class LandlordViewingsActivity extends AppCompatActivity {
                     }
 
                     txtCount.setText(
-                            "Unable to load requests."
+                            R.string.msg_unable_to_load_requests
                     );
 
                     Toast.makeText(
@@ -351,6 +346,31 @@ public class LandlordViewingsActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private String getLocalizedStatus(String status) {
+        if ("Confirmed".equalsIgnoreCase(status) || "Approved".equalsIgnoreCase(status)) {
+            return getString(R.string.status_confirmed);
+        } else if ("Declined".equalsIgnoreCase(status) || "Cancelled".equalsIgnoreCase(status) || "Rejected".equalsIgnoreCase(status)) {
+            return getString(R.string.status_declined);
+        } else {
+            return getString(R.string.status_pending);
+        }
+    }
+
+    private String getLocalizedViewingDate(String rawDate) {
+        if (rawDate == null || rawDate.isEmpty()) return getString(R.string.label_date_not_provided);
+        String result = rawDate;
+        if (result.contains("Morning")) {
+            result = result.replace("Morning", getString(R.string.slot_morning));
+        }
+        if (result.contains("Midday")) {
+            result = result.replace("Midday", getString(R.string.slot_midday));
+        }
+        if (result.contains("Afternoon")) {
+            result = result.replace("Afternoon", getString(R.string.slot_afternoon));
+        }
+        return result;
     }
 
     private void addRequestCard(JSONObject item) {
@@ -375,11 +395,11 @@ public class LandlordViewingsActivity extends AppCompatActivity {
         );
 
         if (propertyName.isEmpty()) {
-            propertyName = "Accommodation";
+            propertyName = getString(R.string.accommodation);
         }
 
         if (location.isEmpty()) {
-            location = "Location not provided";
+            location = getString(R.string.default_unknown_location);
         }
 
         LinearLayout card = new LinearLayout(this);
@@ -428,7 +448,7 @@ public class LandlordViewingsActivity extends AppCompatActivity {
         headerLayout.addView(tvProperty, propParams);
 
         TextView tvStatus = new TextView(this);
-        tvStatus.setText(status);
+        tvStatus.setText(getLocalizedStatus(status));
         tvStatus.setTextSize(12);
         tvStatus.setTypeface(null, Typeface.BOLD);
         tvStatus.setPadding(dp(10), dp(4), dp(10), dp(4));
@@ -452,7 +472,7 @@ public class LandlordViewingsActivity extends AppCompatActivity {
         card.addView(headerLayout);
 
         TextView tvDate = createText(
-                viewingDate,
+                getLocalizedViewingDate(viewingDate),
                 14,
                 "#BA5536",
                 true
@@ -487,7 +507,7 @@ public class LandlordViewingsActivity extends AppCompatActivity {
         card.addView(actions, actionsParams);
 
         Button btnApprove = new Button(this);
-        btnApprove.setText("Approve");
+        btnApprove.setText(R.string.btn_approve);
         btnApprove.setTransformationMethod(null);
         btnApprove.setTextColor(Color.WHITE);
         btnApprove.setBackground(
@@ -505,7 +525,9 @@ public class LandlordViewingsActivity extends AppCompatActivity {
         actions.addView(btnApprove, approveParams);
 
         Button btnDecline = new Button(this);
-        btnDecline.setText("Decline");
+        btnDecline.setText(R.string.btn_decline);
+        btnDecline.setTransformationMethod(null);
+        btnDecline.setTextColor(Color.WHITE);
         btnDecline.setTransformationMethod(null);
         btnDecline.setTextColor(Color.WHITE);
         btnDecline.setBackground(

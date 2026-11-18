@@ -1213,4 +1213,35 @@
     <string name="msg_reverification_action_required">Isenzo Esidingekayo: Ikheli libuyekeziwe — sicela ulayishe kabusha ubufakazi obuvumelekile begunya.</string>
     <string name="btn_mark_rented">Phawula Njengokuqashisiwe</string>
     <string name="btn_mark_available">Phawula Njengokutholakala</string>
+
+    <!-- Localized Amenities & Features -->
+    <string name="amenity_ensuite_bathroom">Ikamelo lokugezela le-En-Suite</string>
+    <string name="amenity_jojo_tank">Amanzi a-Tanka ye-JoJo</string>
+    <string name="amenity_solar_inverter">Ukusekelwa kwe-Solar / Inverter</string>
+    <string name="amenity_electric_fence">Ucingo lwaMagesi</string>
+    <string name="amenity_kitchenette">Ikhishi eliFakiwe</string>
+    <string name="amenity_builtin_cupboards">Iikhabethe eziFakiwe</string>
+
+    <!-- My Listings & Badges -->
+    <string name="title_all_my_listings">Zonke Izindlu Zami</string>
+    <string name="btn_mark_sold">Phawula Njengokuthengisiwe</string>
+    <string name="status_suspended">IMISIWE</string>
+    <string name="status_edits_pending">IZINGUQUKO EZISALINDIWE</string>
+    <string name="status_active_caps">IYAFAKA</string>
+    <string name="status_rented">IQASHISIWE</string>
+    <string name="status_sold">ITHENGISIWE</string>
+    <string name="status_rejected">INQATSHIWE</string>
+    <string name="msg_rejection_reason_prefix">Isizathu Sokuqasha: %1$s</string>
+    <string name="msg_listing_details_require_corrections">Imininingwane yendlu idinga ukulungiswa.</string>
+
+    <!-- Viewing Requests -->
+    <string name="subtitle_viewing_requests">Buyekeza izicelo zokubona indlu ezicelwe ngabahlali.</string>
+    <string name="summary_viewing_requests_count">%1$d ezisalindiwe • %2$d isamba sezicelo</string>
+    <string name="msg_no_viewing_requests">Azikho izicelo zokubona indlu namanje.</string>
+    <string name="btn_refresh_requests">Thuthukisa Izicelo</string>
+    <string name="msg_unable_to_load_requests">Yehlulekile ukulayisha izicelo.</string>
+    <string name="slot_morning">Ekuseni</string>
+    <string name="slot_midday">Emini</string>
+    <string name="slot_afternoon">Ntambama</string>
+    <string name="btn_decline">Nqaba</string>
 </resources>

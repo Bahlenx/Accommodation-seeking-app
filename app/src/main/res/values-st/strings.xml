@@ -1213,4 +1213,35 @@
     <string name="msg_reverification_action_required">Ketso e Hlokahalang: Aterese e ntlafalitsoe — ka kopo kenya hape bopaki bo nepahetseng ba matla.</string>
     <string name="btn_mark_rented">Tshwaya e Hantshitswe</string>
     <string name="btn_mark_available">Tshwaya e Fumaneha</string>
+
+    <!-- Localized Amenities & Features -->
+    <string name="amenity_ensuite_bathroom">Phaposi ea go Hlapela ea En-Suite</string>
+    <string name="amenity_jojo_tank">Metsi a Tanka ea JoJo</string>
+    <string name="amenity_solar_inverter">Tshehetso ea Solar / Inverter</string>
+    <string name="amenity_electric_fence">Lefapha la Motlakase</string>
+    <string name="amenity_kitchenette">Khitjhini e Hahetsoeng</string>
+    <string name="amenity_builtin_cupboards">Likhabinete tse Hahetsoeng</string>
+
+    <!-- My Listings & Badges -->
+    <string name="title_all_my_listings">Dithathamo tsa ka ka Tsohle</string>
+    <string name="btn_mark_sold">Tshwaya e Rekisitswe</string>
+    <string name="status_suspended">E EMISITSOENG</string>
+    <string name="status_edits_pending">DIPHETOGO TSE LETSENG</string>
+    <string name="status_active_caps">E SEBETSANG</string>
+    <string name="status_rented">E HANTSHITSOENG</string>
+    <string name="status_sold">E REKISITSOENG</string>
+    <string name="status_rejected">E HANNWENG</string>
+    <string name="msg_rejection_reason_prefix">Lebaka la go Hana: %1$s</string>
+    <string name="msg_listing_details_require_corrections">Dintlha tsa bodulo di hloka diphetogo.</string>
+
+    <!-- Viewing Requests -->
+    <string name="subtitle_viewing_requests">Lekola likopo tsa go bona ntlo tse koptsoeng ke baahi.</string>
+    <string name="summary_viewing_requests_count">%1$d tse letseng • %2$d kakaretso ea likopo</string>
+    <string name="msg_no_viewing_requests">Ha ho likopo tsa go bona ntlo hajoale.</string>
+    <string name="btn_refresh_requests">Ntlafatsa Likopo</string>
+    <string name="msg_unable_to_load_requests">Ha e kone ho kenya likopo.</string>
+    <string name="slot_morning">Hoseng</string>
+    <string name="slot_midday">Motshehare</string>
+    <string name="slot_afternoon">Mantsiboea</string>
+    <string name="btn_decline">Hana</string>
 </resources>
