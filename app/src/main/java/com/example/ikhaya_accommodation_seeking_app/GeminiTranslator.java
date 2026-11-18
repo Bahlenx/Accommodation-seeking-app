@@ -21,9 +21,13 @@ public class GeminiTranslator {
 
     private static final String API_KEY = BuildConfig.GEMINI_API_KEY;
 
-    // Direct, pinned model endpoint to avoid deprecated alias 404s
-    // Use the current active 3.5 production model
-    private static final String API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
+    // Active 2026 Gemini model serving pools (strictly no retired 1.5 models)
+    private static final String[] CANDIDATE_MODELS = {
+            "gemini-2.5-flash-lite",
+            "gemini-3-flash-preview",
+            "gemini-flash-latest"
+    };
+
     // Reusable client with socket timeouts to prevent timeout drops
     private static final OkHttpClient client = new OkHttpClient.Builder()
             .connectTimeout(25, TimeUnit.SECONDS)
@@ -38,10 +42,18 @@ public class GeminiTranslator {
     }
 
     public static void translate(String text, String targetLang, TranslationCallback callback) {
-        translateWithRetry(text, targetLang, callback, 2);
+        translateWithModel(text, targetLang, callback, 0, 1);
     }
 
-    private static void translateWithRetry(String text, String targetLang, TranslationCallback callback, int retriesLeft) {
+    private static void translateWithModel(String text, String targetLang, TranslationCallback callback, int modelIndex, int retriesLeft) {
+        if (modelIndex >= CANDIDATE_MODELS.length) {
+            callback.onError("Translation failed across all available Gemini models.");
+            return;
+        }
+
+        String modelName = CANDIDATE_MODELS[modelIndex];
+        String apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/" + modelName + ":generateContent";
+
         String languageName;
         switch (targetLang) {
             case "zu":
@@ -93,7 +105,7 @@ public class GeminiTranslator {
             );
 
             Request request = new Request.Builder()
-                    .url(API_URL)
+                    .url(apiUrl)
                     .addHeader("X-goog-api-key", API_KEY)
                     .addHeader("Content-Type", "application/json")
                     .post(body)
@@ -102,12 +114,19 @@ public class GeminiTranslator {
             client.newCall(request).enqueue(new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
-                    mainHandler.post(() -> callback.onError("Network error: " + e.getMessage()));
+                    if (retriesLeft > 0) {
+                        mainHandler.postDelayed(() -> translateWithModel(text, targetLang, callback, modelIndex, retriesLeft - 1), 1000);
+                    } else if (modelIndex + 1 < CANDIDATE_MODELS.length) {
+                        mainHandler.post(() -> translateWithModel(text, targetLang, callback, modelIndex + 1, 1));
+                    } else {
+                        mainHandler.post(() -> callback.onError("Network error: " + e.getMessage()));
+                    }
                 }
 
                 @Override
                 public void onResponse(Call call, Response response) throws IOException {
                     String responseBody = response.body() != null ? response.body().string() : "";
+                    int code = response.code();
 
                     if (response.isSuccessful()) {
                         try {
@@ -122,15 +141,17 @@ public class GeminiTranslator {
                         } catch (Exception e) {
                             mainHandler.post(() -> callback.onError("Parsing error: " + e.getMessage()));
                         }
-                    } else if (response.code() == 503 && retriesLeft > 0) {
-                        mainHandler.postDelayed(() -> translateWithRetry(text, targetLang, callback, retriesLeft - 1), 2000);
+                    } else if ((code == 503 || code == 429 || code == 404 || code == 400) && modelIndex + 1 < CANDIDATE_MODELS.length) {
+                        // Pause 1200ms on 503/429 rate limit or traffic spike so it clears before trying the next model
+                        long delayMs = (code == 503 || code == 429) ? 1200 : 0;
+                        mainHandler.postDelayed(() -> translateWithModel(text, targetLang, callback, modelIndex + 1, 1), delayMs);
                     } else {
                         try {
                             JSONObject errJson = new JSONObject(responseBody);
                             String message = errJson.getJSONObject("error").getString("message");
-                            mainHandler.post(() -> callback.onError("(" + response.code() + ") " + message));
+                            mainHandler.post(() -> callback.onError("(" + code + ") " + message));
                         } catch (Exception e) {
-                            mainHandler.post(() -> callback.onError("(" + response.code() + ") " + responseBody));
+                            mainHandler.post(() -> callback.onError("(" + code + ") " + responseBody));
                         }
                     }
                 }

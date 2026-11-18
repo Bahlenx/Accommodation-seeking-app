@@ -1252,4 +1252,35 @@
     <string name="msg_reverification_action_required">Action Required: Address updated — please re-upload valid proof of authority.</string>
     <string name="btn_mark_rented">Mark Rented</string>
     <string name="btn_mark_available">Mark Available</string>
+
+    <!-- Localized Amenities & Features -->
+    <string name="amenity_ensuite_bathroom">En-Suite Bathroom</string>
+    <string name="amenity_jojo_tank">JoJo Tank Water</string>
+    <string name="amenity_solar_inverter">Solar / Inverter Backup</string>
+    <string name="amenity_electric_fence">Electric Fence</string>
+    <string name="amenity_kitchenette">Fitted Kitchenette</string>
+    <string name="amenity_builtin_cupboards">Built-in Cupboards</string>
+
+    <!-- My Listings & Badges -->
+    <string name="title_all_my_listings">All My Listings</string>
+    <string name="btn_mark_sold">Mark Sold</string>
+    <string name="status_suspended">SUSPENDED</string>
+    <string name="status_edits_pending">EDITS PENDING</string>
+    <string name="status_active_caps">ACTIVE</string>
+    <string name="status_rented">RENTED</string>
+    <string name="status_sold">SOLD</string>
+    <string name="status_rejected">REJECTED</string>
+    <string name="msg_rejection_reason_prefix">Rejection Reason: %1$s</string>
+    <string name="msg_listing_details_require_corrections">Listing details require corrections.</string>
+
+    <!-- Viewing Requests -->
+    <string name="subtitle_viewing_requests">Review viewing appointments requested by residents.</string>
+    <string name="summary_viewing_requests_count">%1$d pending • %2$d total requests</string>
+    <string name="msg_no_viewing_requests">No viewing requests yet.</string>
+    <string name="btn_refresh_requests">Refresh Requests</string>
+    <string name="msg_unable_to_load_requests">Unable to load requests.</string>
+    <string name="slot_morning">Morning</string>
+    <string name="slot_midday">Midday</string>
+    <string name="slot_afternoon">Afternoon</string>
+    <string name="btn_decline">Decline</string>
 </resources>

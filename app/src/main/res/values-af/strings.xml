@@ -1213,4 +1213,35 @@
     <string name="msg_reverification_action_required">Aksie Vereis: Adres opgedateer — laai asseblief weer geldige magtigingsbewys op.</string>
     <string name="btn_mark_rented">Merk as Verhuur</string>
     <string name="btn_mark_available">Merk as Beskikbaar</string>
+
+    <!-- Localized Amenities & Features -->
+    <string name="amenity_ensuite_bathroom">En-Suite Badkamer</string>
+    <string name="amenity_jojo_tank">JoJo-tenk Water</string>
+    <string name="amenity_solar_inverter">Sonkrag / Inverter Rugsteun</string>
+    <string name="amenity_electric_fence">Elektriese Omheining</string>
+    <string name="amenity_kitchenette">Ingeboude Kombuisie</string>
+    <string name="amenity_builtin_cupboards">Ingeboude Kaste</string>
+
+    <!-- My Listings & Badges -->
+    <string name="title_all_my_listings">Al My Noterings</string>
+    <string name="btn_mark_sold">Merk as Verkoop</string>
+    <string name="status_suspended">OPGESKORT</string>
+    <string name="status_edits_pending">WYSIGINGS HANGEND</string>
+    <string name="status_active_caps">AKTIEF</string>
+    <string name="status_rented">VERHUUR</string>
+    <string name="status_sold">VERKOOP</string>
+    <string name="status_rejected">AFGEKEUR</string>
+    <string name="msg_rejection_reason_prefix">Rede vir afkeuring: %1$s</string>
+    <string name="msg_listing_details_require_corrections">Noteringbesonderhede vereis regstellings.</string>
+
+    <!-- Viewing Requests -->
+    <string name="subtitle_viewing_requests">Hersien besigtigingsafsprake wat deur inwoners versoek is.</string>
+    <string name="summary_viewing_requests_count">%1$d hangend • %2$d totale versoeke</string>
+    <string name="msg_no_viewing_requests">Nog geen besigtigingsversoeke nie.</string>
+    <string name="btn_refresh_requests">Verfris Versoeke</string>
+    <string name="msg_unable_to_load_requests">Kan nie versoeke laai nie.</string>
+    <string name="slot_morning">Oggend</string>
+    <string name="slot_midday">Middag</string>
+    <string name="slot_afternoon">Namiddag</string>
+    <string name="btn_decline">Afskeep</string>
 </resources>

@@ -1213,4 +1213,35 @@
     <string name="msg_reverification_action_required">Isenzo Esidingekayo: Idilesi ihlaziyiwe — nceda ulayishe kabusha ubungqina obusebenzayo begunya.</string>
     <string name="btn_mark_rented">Phawula Ngesiqeshiso</string>
     <string name="btn_mark_available">Phawula Ngesifumanekayo</string>
+
+    <!-- Localized Amenities & Features -->
+    <string name="amenity_ensuite_bathroom">Igowum xha le-En-Suite</string>
+    <string name="amenity_jojo_tank">Amanzi a-Tanka ye-JoJo</string>
+    <string name="amenity_solar_inverter">Inkxaso ye-Solar / Inverter</string>
+    <string name="amenity_electric_fence">Icingo lwoMbane</string>
+    <string name="amenity_kitchenette">Ikhitshi eFakiweyo</string>
+    <string name="amenity_builtin_cupboards">Iikhabhathi ezaFakiweyo</string>
+
+    <!-- My Listings & Badges -->
+    <string name="title_all_my_listings">Zonke Izindlu Zam</string>
+    <string name="btn_mark_sold">Phawula Ngesithengisiweyo</string>
+    <string name="status_suspended">IYAMISWA</string>
+    <string name="status_edits_pending">UTSHINTSHO LULINDILE</string>
+    <string name="status_active_caps">ISEBENZA</string>
+    <string name="status_rented">IQESHISIWE</string>
+    <string name="status_sold">ITHENGISIWE</string>
+    <string name="status_rejected">IKHETHIWE</string>
+    <string name="msg_rejection_reason_prefix">Isizathu saKhanyo: %1$s</string>
+    <string name="msg_listing_details_require_corrections">Iinkcukacha zendawo zidinga izilungiso.</string>
+
+    <!-- Viewing Requests -->
+    <string name="subtitle_viewing_requests">Hlaziya izicelo zokubukela izindlu ezicelwe ngabahlali.</string>
+    <string name="summary_viewing_requests_count">%1$d ezisalindiweyo • %2$d iyonke izicelo</string>
+    <string name="msg_no_viewing_requests">Kukhangeleke kungekho zizicelo zokubukela.</string>
+    <string name="btn_refresh_requests">Hlaziya Izicelo</string>
+    <string name="msg_unable_to_load_requests">Ayikwazi ukulayisha izicelo.</string>
+    <string name="slot_morning">Ekuseni</string>
+    <string name="slot_midday">Emini</string>
+    <string name="slot_afternoon">Isemini</string>
+    <string name="btn_decline">Nqaba</string>
 </resources>
