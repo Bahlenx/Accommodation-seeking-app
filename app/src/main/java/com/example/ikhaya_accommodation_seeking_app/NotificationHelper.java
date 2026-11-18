@@ -575,7 +575,7 @@ public final class NotificationHelper {
                                 String sender = msg.optString("sender_name", "iKhaya User");
                                 String roleLabel = msg.optString("sender_role", "Member").toUpperCase(java.util.Locale.ROOT);
                                 String text = msg.optString("message_text", "Sent a message");
-                                showPhoneNotification(context, "💬 New Message from " + sender + " (" + roleLabel + ")", formatCleanMessageBody(text, sender), UserSelectionActivity.class, ("msg_" + msgId).hashCode());
+                                showPhoneNotification(context, "New Message from " + sender + " (" + roleLabel + ")", formatCleanMessageBody(text, sender), UserSelectionActivity.class, ("msg_" + msgId).hashCode());
                             }
                         }
                     }
@@ -620,7 +620,7 @@ public final class NotificationHelper {
                             
                             if (!savedStatus.isEmpty() && !savedStatus.equals(status) && isCategoryEnabled(context, "PREF_APPLICATIONS")) {
                                 anyUnread = true;
-                                String notifTitle = "APPROVED".equals(status) ? "🎉 Rental Application Approved!" : ("REJECTED".equals(status) || "DECLINED".equals(status) ? "Rental Application Update" : "Application Status Updated");
+                                String notifTitle = "APPROVED".equals(status) ? "Rental Application Approved!" : ("REJECTED".equals(status) || "DECLINED".equals(status) ? "Rental Application Update" : "Application Status Updated");
                                 String notifBody = "APPROVED".equals(status) ? "Great news! Your rental application for " + propName + " (Move in: " + moveIn + ") has been approved." : ("REJECTED".equals(status) || "DECLINED".equals(status) ? "Your rental application for " + propName + " was not approved. Tap to view details." : "Your rental application for " + propName + " status is now " + status + ".");
                                 showPhoneNotification(context, notifTitle, notifBody, ApplicationsActivity.class, ("app_" + appId).hashCode());
                             }
@@ -630,7 +630,7 @@ public final class NotificationHelper {
                             if (("APPROVED".equals(status) || "ACTIVE".equals(status)) && !statePrefs.getBoolean("RENT_REMINDER_SENT_" + appId, false) && isCategoryEnabled(context, "PREF_RENT_REMINDERS")) {
                                 statePrefs.edit().putBoolean("RENT_REMINDER_SENT_" + appId, true).apply();
                                 anyUnread = true;
-                                showPhoneNotification(context, "📅 Upcoming Rent Reminder", "Friendly reminder: Monthly rent for your active lease at " + propName + " is due on the 1st of the month.", NotificationsActivity.class, ("rent_" + appId).hashCode());
+                                showPhoneNotification(context, "Upcoming Rent Reminder", "Friendly reminder: Monthly rent for your active lease at " + propName + " is due on the 1st of the month.", NotificationsActivity.class, ("rent_" + appId).hashCode());
                             }
                         }
                     }
@@ -651,7 +651,7 @@ public final class NotificationHelper {
                                     String loc = vObj.optString("location", "").trim();
                                     String body = "Your viewing for " + propName + " (" + vObj.optString("viewing_date", "") + ") is now " + vStat + ".";
                                     if (!loc.isEmpty() && !loc.equalsIgnoreCase("null")) body += " Location: " + loc;
-                                    showPhoneNotification(context, "📅 Viewing " + vStat, body, ViewingsActivity.class, ("v_" + vId).hashCode());
+                                    showPhoneNotification(context, "Viewing " + vStat, body, ViewingsActivity.class, ("v_" + vId).hashCode());
                                 }
                                 statePrefs.edit().putString("VIEWING_STATE_" + vId, vStat).apply();
                             }
@@ -674,7 +674,7 @@ public final class NotificationHelper {
                                 anyUnread = true;
                                 statePrefs.edit().putString("LAST_LANDLORD_APP_ID", lAppId).apply();
                                 String duration = aObj.optString("lease_duration", "12");
-                                showPhoneNotification(context, "📋 New Rental Application", aObj.optString("applicant_name", "A tenant") + " submitted a new " + duration + "-month rental application. Tap to review.", ApplicationsActivity.class, ("lapp_" + lAppId).hashCode());
+                                showPhoneNotification(context, "New Rental Application", aObj.optString("applicant_name", "A tenant") + " submitted a new " + duration + "-month rental application. Tap to review.", ApplicationsActivity.class, ("lapp_" + lAppId).hashCode());
                             }
                         }
                     }
@@ -691,7 +691,7 @@ public final class NotificationHelper {
                                 if (!vId.isEmpty() && !vId.equals(savedVId)) {
                                     anyUnread = true;
                                     statePrefs.edit().putString("LAST_LANDLORD_VIEWING_ID", vId).apply();
-                                    showPhoneNotification(context, "📅 New Viewing Scheduled", "A tenant scheduled a viewing for " + vObj.optString("property_name", "your listing") + " on " + vObj.optString("viewing_date", "an upcoming date") + ".", UserSelectionActivity.class, ("lv_" + vId).hashCode());
+                                    showPhoneNotification(context, "New Viewing Scheduled", "A tenant scheduled a viewing for " + vObj.optString("property_name", "your listing") + " on " + vObj.optString("viewing_date", "an upcoming date") + ".", UserSelectionActivity.class, ("lv_" + vId).hashCode());
                                 }
                             }
                         }
@@ -709,9 +709,9 @@ public final class NotificationHelper {
                                 if (!vStatus.equals(savedVStatus)) {
                                     statePrefs.edit().putString("LAST_VERIF_STATE", vStatus).apply();
                                     if ("VERIFIED".equals(vStatus) || "APPROVED".equals(vStatus)) {
-                                        showPhoneNotification(context, "✅ Identity Verification Approved", "Your identity documents have been verified! Your profile and listings now display the Verified badge.", LandlordProfileActivity.class, "verif_upd".hashCode());
+                                        showPhoneNotification(context, "Identity Verification Approved", "Your identity documents have been verified! Your profile and listings now display the Verified badge.", LandlordProfileActivity.class, "verif_upd".hashCode());
                                     } else {
-                                        showPhoneNotification(context, "⚠️ Identity Verification Update", "Your identity verification status was updated to " + vStatus + ". Tap to check your profile.", LandlordProfileActivity.class, "verif_upd".hashCode());
+                                        showPhoneNotification(context, "Identity Verification Update", "Your identity verification status was updated to " + vStatus + ". Tap to check your profile.", LandlordProfileActivity.class, "verif_upd".hashCode());
                                     }
                                 }
                             }
@@ -730,9 +730,9 @@ public final class NotificationHelper {
                                 if (!lstStat.equals(savedLstStat)) {
                                     statePrefs.edit().putString("LISTING_STATE_" + lstId, lstStat).apply();
                                     if ("AVAILABLE".equals(lstStat) || "APPROVED".equals(lstStat) || "ACTIVE".equals(lstStat)) {
-                                        showPhoneNotification(context, "🏠 Property Listing Approved!", "Your listing '" + lstName + "' is now live and visible to tenants.", MyListingsActivity.class, ("lst_" + lstId).hashCode());
+                                        showPhoneNotification(context, "Property Listing Approved!", "Your listing '" + lstName + "' is now live and visible to tenants.", MyListingsActivity.class, ("lst_" + lstId).hashCode());
                                     } else {
-                                        showPhoneNotification(context, "🏠 Listing Status Updated", "Your listing '" + lstName + "' status is now " + lstStat + ".", MyListingsActivity.class, ("lst_" + lstId).hashCode());
+                                        showPhoneNotification(context, "Listing Status Updated", "Your listing '" + lstName + "' status is now " + lstStat + ".", MyListingsActivity.class, ("lst_" + lstId).hashCode());
                                     }
                                 }
                             }
@@ -782,7 +782,7 @@ public final class NotificationHelper {
                                 statePrefs.edit().putString("LAST_ADMIN_RPT_ID", rptId).apply();
                                 String issueType = rpt.optString("issue_type", "").trim();
                                 if (issueType.equalsIgnoreCase("null")) issueType = "";
-                                String title = !issueType.isEmpty() ? "🛠️ Ticket: " + issueType : "🛠️ New Support Ticket";
+                                String title = !issueType.isEmpty() ? "Ticket: " + issueType : "New Support Ticket";
                                 String repName = rpt.optString("reporter_name", "User");
                                 String repRole = rpt.optString("reporter_role", "Member").toUpperCase(java.util.Locale.ROOT);
                                 String body = cleanPreview(rpt.optString("reason", "A new issue was reported."));
@@ -805,7 +805,7 @@ public final class NotificationHelper {
                                 statePrefs.edit().putString("LAST_ADMIN_VERIF_ID", vId).apply();
                                 String cityName = vObj.optString("city", "").trim();
                                 String cityTag = (!cityName.isEmpty() && !cityName.equalsIgnoreCase("null")) ? " from " + cityName : "";
-                                showPhoneNotification(context, "🪪 New ID Verification Request", 
+                                showPhoneNotification(context, "New ID Verification Request", 
                                         vObj.optString("full_name", "A landlord") + cityTag + " submitted identity documents for Admin verification.", 
                                         AdminDashboardActivity.class, ("adm_v_" + vId).hashCode());
                             }
@@ -823,19 +823,19 @@ public final class NotificationHelper {
 
     private static String formatCleanMessageBody(String text, String sender) {
         if (text == null) return "Sent a message";
-        if (text.startsWith("[IMAGE_BASE64]:") || text.startsWith("[IMAGE")) return "📷 " + sender + " sent you a photo.";
+        if (text.startsWith("[IMAGE_BASE64]:") || text.startsWith("[IMAGE")) return "[Photo] " + sender + " sent you a photo.";
         if (text.startsWith("[PDF_FILE]:")) {
             String[] parts = text.substring("[PDF_FILE]:".length()).split("\\|", 2);
             String fileName = parts.length > 0 ? parts[0] : "Document.pdf";
-            return "📄 " + sender + " sent you a PDF document: " + fileName;
+            return "[PDF] " + sender + " sent you a PDF document: " + fileName;
         }
-        return "💬 \"" + text + "\"";
+        return "\"" + text + "\"";
     }
 
     private static String cleanPreview(String text) {
         if (text == null) return "";
-        if (text.startsWith("[IMAGE_BASE64]:") || text.startsWith("[IMAGE")) return "📷 Sent a photo";
-        if (text.startsWith("[PDF_FILE]:")) return "📄 Sent a PDF document";
+        if (text.startsWith("[IMAGE_BASE64]:") || text.startsWith("[IMAGE")) return "[Photo] Sent a photo";
+        if (text.startsWith("[PDF_FILE]:")) return "[PDF] Sent a PDF document";
         return text;
     }
 }

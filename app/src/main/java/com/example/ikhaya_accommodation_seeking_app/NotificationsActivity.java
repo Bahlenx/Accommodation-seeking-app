@@ -407,6 +407,21 @@ public class NotificationsActivity extends AppCompatActivity {
         }
     }
 
+    private void setInlineIcon(TextView tv, int iconRes, String label) {
+        if (tv == null) return;
+        tv.setText(label);
+        int colorHex = tv.getCurrentTextColor();
+        android.graphics.drawable.Drawable icon = androidx.core.content.ContextCompat.getDrawable(this, iconRes);
+        if (icon != null) {
+            icon = androidx.core.graphics.drawable.DrawableCompat.wrap(icon).mutate();
+            androidx.core.graphics.drawable.DrawableCompat.setTint(icon, colorHex);
+            int size = dp(16);
+            icon.setBounds(0, 0, size, size);
+            tv.setCompoundDrawablesRelative(icon, null, null, null);
+            tv.setCompoundDrawablePadding(dp(4));
+        }
+    }
+
     private class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdapter.ViewHolder> {
 
         @NonNull
@@ -438,14 +453,12 @@ public class NotificationsActivity extends AppCompatActivity {
 
             inner.addView(textCol);
 
-            // '✕' Close Button instead of trash icon
+            // Close Button using vector icon instead of '✕' text
             TextView btnClose = new TextView(NotificationsActivity.this);
             btnClose.setId(View.generateViewId());
-            btnClose.setText("✕");
-            btnClose.setTextSize(18f);
-            btnClose.setTypeface(null, Typeface.BOLD);
             btnClose.setTextColor(Color.parseColor("#A09893"));
             btnClose.setPadding(dp(12), dp(8), dp(8), dp(8));
+            setInlineIcon(btnClose, R.drawable.ic_vec_close, "");
             inner.addView(btnClose);
 
             card.addView(inner);

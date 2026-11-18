@@ -924,7 +924,7 @@
     <!-- App UI & Layout References -->
     <string name="btn_apply">Pas toe</string>
     <string name="symbol_plus">+</string>
-    <string name="btn_select_date">Kies Datum 📅</string>
+    <string name="btn_select_date">Kies Datum</string>
     <string name="status_loading">Laai tans…</string>
 
     <!-- Dummy Fallback Data (Required by your layouts) -->
@@ -1123,7 +1123,7 @@
     <string name="btn_change_authority_doc">Verander Magtigingsdokument</string>
     <string name="label_reason_prefix">Rede: %1$s</string>
     <string name="pinned_property_location">Gespelde Eiendomslokasie</string>
-    <string name="btn_pick_date">📅 Datum</string>
+    <string name="btn_pick_date">Datum</string>
     <string name="no_matching_tickets_in">Geen toepaslike kaartjies in %1$s</string>
 
     <!-- Profile & Notification Settings Translations -->
