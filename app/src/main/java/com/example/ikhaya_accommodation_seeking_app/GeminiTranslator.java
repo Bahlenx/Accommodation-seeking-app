@@ -53,6 +53,12 @@ public class GeminiTranslator {
             case "st":
                 languageName = "Southern Sotho (Sesotho)";
                 break;
+            case "af":
+                languageName = "Afrikaans";
+                break;
+            case "nso":
+                languageName = "Sepedi (Northern Sotho)";
+                break;
             default:
                 languageName = "English";
                 break;

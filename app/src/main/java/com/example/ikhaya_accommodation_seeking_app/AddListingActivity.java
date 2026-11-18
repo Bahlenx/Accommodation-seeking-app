@@ -322,22 +322,45 @@ public class AddListingActivity extends AppCompatActivity {
         submitButton.setOnClickListener(v -> addListing());
     }
 
-    private void setupDropdown(AutoCompleteTextView dropdown, int arrayResource) {
+    private void setupDropdown(AutoCompleteTextView dropdown, int arrayResId) {
         if (dropdown == null) return;
-        String[] items = getResources().getStringArray(arrayResource);
+        dropdown.setTextColor(Color.parseColor("#1F1614"));
+        dropdown.setHintTextColor(Color.parseColor("#8A8A8A"));
+        dropdown.setDropDownBackgroundDrawable(new android.graphics.drawable.ColorDrawable(Color.WHITE));
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                this,
-                android.R.layout.simple_dropdown_item_1line,
-                items
-        );
-
-        dropdown.setAdapter(adapter);
         dropdown.setKeyListener(null);
         dropdown.setOnClickListener(v -> dropdown.showDropDown());
         dropdown.setOnFocusChangeListener((v, hasFocus) -> {
             if (hasFocus) dropdown.showDropDown();
         });
+
+        String[] items = getResources().getStringArray(arrayResId);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, items) {
+            @androidx.annotation.NonNull
+            @Override
+            public View getView(int position, View convertView, @androidx.annotation.NonNull android.view.ViewGroup parent) {
+                return styleRow(super.getView(position, convertView, parent));
+            }
+
+            @Override
+            public View getDropDownView(int position, View convertView, @androidx.annotation.NonNull android.view.ViewGroup parent) {
+                return styleRow(super.getDropDownView(position, convertView, parent));
+            }
+
+            private View styleRow(View view) {
+                view.setBackgroundColor(Color.WHITE);
+                if (view instanceof TextView) {
+                    TextView tv = (TextView) view;
+                    tv.setTextColor(Color.parseColor("#1F1614"));
+                    tv.setTextSize(15f);
+                    tv.setSingleLine(false);
+                    tv.setLineSpacing(6f, 1.0f);
+                    tv.setPadding(40, 32, 40, 32);
+                }
+                return view;
+            }
+        };
+        dropdown.setAdapter(adapter);
     }
 
     private void showAmenitiesPickerDialog() {
@@ -750,11 +773,6 @@ public class AddListingActivity extends AppCompatActivity {
                 || sanitation.isEmpty()) {
 
             Toast.makeText(this, R.string.error_complete_required_fields, Toast.LENGTH_LONG).show();
-            return;
-        }
-
-        if (!isLocationVerified) {
-            Toast.makeText(this, R.string.error_verify_location_first, Toast.LENGTH_LONG).show();
             return;
         }
 

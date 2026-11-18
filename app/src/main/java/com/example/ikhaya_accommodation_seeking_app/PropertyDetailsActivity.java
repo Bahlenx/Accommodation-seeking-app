@@ -2127,6 +2127,7 @@ public class PropertyDetailsActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        SupabaseHelper.verifyActiveSessionOrKick(this);
 
         if (mapView != null) {
             mapView.onResume();
