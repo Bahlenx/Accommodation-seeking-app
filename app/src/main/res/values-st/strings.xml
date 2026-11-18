@@ -924,7 +924,7 @@
     <!-- App UI & Layout References -->
     <string name="btn_apply">Sebelisa</string>
     <string name="symbol_plus">+</string>
-    <string name="btn_select_date">Kgetha Letsatsi 📅</string>
+    <string name="btn_select_date">Kgetha Letsatsi</string>
     <string name="status_loading">Ho kenngoa…</string>
 
     <!-- Dummy Fallback Data (Required by your layouts) -->
@@ -1123,7 +1123,7 @@
     <string name="btn_change_authority_doc">Fetola Tokomane ea Taolo</string>
     <string name="label_reason_prefix">Lebaka: %1$s</string>
     <string name="pinned_property_location">Sebaka sa Thepa se Tlamiloeng</string>
-    <string name="btn_pick_date">📅 Letsatsi</string>
+    <string name="btn_pick_date">Letsatsi</string>
     <string name="no_matching_tickets_in">Ha ho dithikiti tse tsamaisanang ho %1$s</string>
 
     <!-- Profile & Notification Settings Translations -->

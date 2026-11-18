@@ -924,7 +924,7 @@
     <!-- App UI & Layout References -->
     <string name="btn_apply">Sebenzisa</string>
     <string name="symbol_plus">+</string>
-    <string name="btn_select_date">Khephe Usuku 📅</string>
+    <string name="btn_select_date">Khephe Usuku</string>
     <string name="status_loading">Kulayishwa…</string>
 
     <!-- Dummy Fallback Data (Required by your layouts) -->
@@ -1123,7 +1123,7 @@
     <string name="btn_change_authority_doc">Shintsha Umbhalo Wegunya</string>
     <string name="label_reason_prefix">Isizathu: %1$s</string>
     <string name="pinned_property_location">Indawo Yendlu Ebekwe Isikhonkwane</string>
-    <string name="btn_pick_date">📅 Usuku</string>
+    <string name="btn_pick_date">Usuku</string>
     <string name="no_matching_tickets_in">Awekho amathikithi afanayo ku-%1$s</string>
 
     <!-- Profile & Notification Settings Translations -->

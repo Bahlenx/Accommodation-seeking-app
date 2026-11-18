@@ -98,6 +98,21 @@ public class AdminReportsActivity extends AppCompatActivity {
         return gd;
     }
 
+    private void setInlineIcon(TextView tv, int iconRes, String label) {
+        if (tv == null) return;
+        tv.setText(label);
+        int colorHex = tv.getCurrentTextColor();
+        android.graphics.drawable.Drawable icon = androidx.core.content.ContextCompat.getDrawable(this, iconRes);
+        if (icon != null) {
+            icon = androidx.core.graphics.drawable.DrawableCompat.wrap(icon).mutate();
+            androidx.core.graphics.drawable.DrawableCompat.setTint(icon, colorHex);
+            int size = dp(16);
+            icon.setBounds(0, 0, size, size);
+            tv.setCompoundDrawablesRelative(icon, null, null, null);
+            tv.setCompoundDrawablePadding(dp(6));
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -309,20 +324,20 @@ public class AdminReportsActivity extends AppCompatActivity {
         etSearch.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
 
         TextView btnClearSearch = new TextView(this);
-        btnClearSearch.setText("✕");
         btnClearSearch.setTextSize(13f);
         btnClearSearch.setTypeface(null, Typeface.BOLD);
         btnClearSearch.setTextColor(Color.parseColor("#8C7A70"));
         btnClearSearch.setPadding(dp(8), dp(6), dp(8), dp(6));
+        setInlineIcon(btnClearSearch, R.drawable.ic_vec_close, "");
         btnClearSearch.setVisibility(currentSearchQuery.isEmpty() ? View.GONE : View.VISIBLE);
 
         TextView btnPickDate = new TextView(this);
-        btnPickDate.setText(R.string.btn_pick_date);
         btnPickDate.setTextSize(11f);
         btnPickDate.setTypeface(null, Typeface.BOLD);
         btnPickDate.setTextColor(Color.parseColor("#B85032"));
         btnPickDate.setBackground(roundedBg("#FDE8E1", 8));
         btnPickDate.setPadding(dp(10), dp(6), dp(10), dp(6));
+        setInlineIcon(btnPickDate, R.drawable.ic_vec_calendar, getString(R.string.btn_pick_date));
         btnPickDate.setOnClickListener(v -> {
             Calendar cal = Calendar.getInstance();
             new DatePickerDialog(this, (view, year, month, dayOfMonth) -> {
@@ -378,7 +393,6 @@ public class AdminReportsActivity extends AppCompatActivity {
         viewSwitcher.setBackground(roundedBg("#EBE5DF", 10));
 
         TextView btnListMode = new TextView(this);
-        btnListMode.setText("☰ List");
         btnListMode.setTextSize(11f);
         btnListMode.setTypeface(null, Typeface.BOLD);
         btnListMode.setPadding(dp(12), dp(5), dp(12), dp(5));
@@ -388,6 +402,7 @@ public class AdminReportsActivity extends AppCompatActivity {
         } else {
             btnListMode.setTextColor(Color.parseColor("#5C534E"));
         }
+        setInlineIcon(btnListMode, R.drawable.ic_vec_list, "List");
         btnListMode.setOnClickListener(v -> {
             if (!isCompactListView) {
                 isCompactListView = true;
@@ -396,7 +411,6 @@ public class AdminReportsActivity extends AppCompatActivity {
         });
 
         TextView btnCardMode = new TextView(this);
-        btnCardMode.setText("⊞ Cards");
         btnCardMode.setTextSize(11f);
         btnCardMode.setTypeface(null, Typeface.BOLD);
         btnCardMode.setPadding(dp(12), dp(5), dp(12), dp(5));
@@ -406,6 +420,7 @@ public class AdminReportsActivity extends AppCompatActivity {
         } else {
             btnCardMode.setTextColor(Color.parseColor("#5C534E"));
         }
+        setInlineIcon(btnCardMode, R.drawable.ic_vec_grid, "Cards");
         btnCardMode.setOnClickListener(v -> {
             if (isCompactListView) {
                 isCompactListView = false;
@@ -657,9 +672,9 @@ public class AdminReportsActivity extends AppCompatActivity {
         textCol.addView(tvDesc);
 
         TextView tvDate = new TextView(this);
-        tvDate.setText("🕒 " + dateTimeText);
         tvDate.setTextColor(Color.parseColor("#9C8F86"));
         tvDate.setTextSize(11f);
+        setInlineIcon(tvDate, R.drawable.ic_vec_clock, dateTimeText);
         textCol.addView(tvDate);
 
         contentRow.addView(textCol);
@@ -744,11 +759,11 @@ public class AdminReportsActivity extends AppCompatActivity {
         topHeader.addView(spacer, new LinearLayout.LayoutParams(0, dp(1), 1f));
 
         TextView btnClose = new TextView(this);
-        btnClose.setText("✕");
         btnClose.setTextSize(16f);
         btnClose.setTypeface(null, Typeface.BOLD);
         btnClose.setTextColor(Color.parseColor("#6E625C"));
         btnClose.setPadding(dp(8), dp(2), dp(8), dp(2));
+        setInlineIcon(btnClose, R.drawable.ic_vec_close, "");
         topHeader.addView(btnClose);
         content.addView(topHeader);
 
@@ -809,12 +824,12 @@ public class AdminReportsActivity extends AppCompatActivity {
 
         if (isAccountDeletion) {
             Button btnAck = new Button(this);
-            btnAck.setText("✓ Acknowledge & Archive Log");
             btnAck.setAllCaps(false);
             btnAck.setTextSize(14f);
             btnAck.setTypeface(null, Typeface.BOLD);
             btnAck.setTextColor(Color.WHITE);
             btnAck.setBackground(roundedBg("#1F1614", 10));
+            setInlineIcon(btnAck, R.drawable.ic_vec_check, "Acknowledge & Archive Log");
             btnAck.setOnClickListener(v -> {
                 dialog.dismiss();
                 updateTicketStatus(ticketId, "", reason, "RESOLVED", "Account deletion log acknowledged by Admin", rowView);
@@ -946,10 +961,10 @@ public class AdminReportsActivity extends AppCompatActivity {
         badgeRow.addView(spacer, new LinearLayout.LayoutParams(0, dp(1), 1f));
 
         TextView tvStatus = new TextView(this);
-        tvStatus.setText("🕒 " + dateTimeText + "  •  ● " + status);
         tvStatus.setTextSize(11f);
         tvStatus.setTypeface(null, Typeface.BOLD);
         tvStatus.setTextColor(Color.parseColor("#2DCE89"));
+        setInlineIcon(tvStatus, R.drawable.ic_vec_clock, dateTimeText + "  •  ● " + status);
         badgeRow.addView(tvStatus);
         layout.addView(badgeRow);
 
@@ -974,13 +989,13 @@ public class AdminReportsActivity extends AppCompatActivity {
 
         if (isAccountDeletion) {
             Button btnAck = new Button(this);
-            btnAck.setText("✓ Acknowledge & Archive Log");
             btnAck.setAllCaps(false);
             btnAck.setTextSize(13f);
             btnAck.setTypeface(null, Typeface.BOLD);
             btnAck.setTextColor(Color.WHITE);
             btnAck.setBackground(roundedBg("#1F1614", 10));
             btnAck.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(42)));
+            setInlineIcon(btnAck, R.drawable.ic_vec_check, "Acknowledge & Archive Log");
             btnAck.setOnClickListener(v -> updateTicketStatus(ticketId, "", reason, "RESOLVED", "Account deletion log acknowledged by Admin", card));
             actionRow.addView(btnAck);
         } else {
@@ -1230,11 +1245,11 @@ public class AdminReportsActivity extends AppCompatActivity {
 
         String latestText = msg.optString("message_text", "Sent a message");
         if (latestText.startsWith("[IMAGE_BASE64]:") || latestText.startsWith("[IMAGE")) {
-            latestText = "📷 Sent a photo";
+            latestText = "[Photo] Sent a photo";
         } else if (latestText.startsWith("[PDF_FILE]:")) {
             String[] parts = latestText.substring("[PDF_FILE]:".length()).split("\\|", 2);
             String fileName = parts.length > 0 ? parts[0] : "Document.pdf";
-            latestText = "📄 Sent a PDF document (" + fileName + ")";
+            latestText = "[PDF] Sent a PDF document (" + fileName + ")";
         }
 
         String senderName = msg.optString("sender_name", "");

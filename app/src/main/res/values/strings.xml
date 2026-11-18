@@ -932,7 +932,7 @@
     <!-- App UI & Layout References -->
     <string name="btn_apply">Apply</string>
     <string name="symbol_plus">+</string>
-    <string name="btn_select_date">Select Date 📅</string>
+    <string name="btn_select_date">Select Date</string>
     <string name="status_loading">Loading…</string>
 
     <!-- Dummy Fallback Data (Required by your layouts) -->
@@ -1162,7 +1162,7 @@
     <string name="btn_change_authority_doc">Change Authority Document</string>
     <string name="label_reason_prefix">Reason: %1$s</string>
     <string name="pinned_property_location">Pinned Property Location</string>
-    <string name="btn_pick_date">📅 Date</string>
+    <string name="btn_pick_date">Date</string>
     <string name="no_matching_tickets_in">No matching tickets in %1$s</string>
 
     <!-- Profile & Notification Settings Translations -->

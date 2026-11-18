@@ -461,7 +461,7 @@ public class AdminUsersActivity extends AppCompatActivity {
                 if (user.getUserId() != null && !user.getUserId().isEmpty()) {
                     SupabaseHelper.createNotification(
                             user.getUserId(),
-                            "✅ Identity Verification Approved",
+                            "Identity Verification Approved",
                             "Your Landlord identity verification has been approved! Your profile now displays the Verified badge and you can post listings.",
                             token
                     );

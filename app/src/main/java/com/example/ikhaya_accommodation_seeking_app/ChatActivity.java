@@ -611,6 +611,21 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
+    private void setInlineIcon(TextView tv, int iconRes, String label) {
+        if (tv == null) return;
+        tv.setText(label);
+        int colorHex = tv.getCurrentTextColor();
+        android.graphics.drawable.Drawable icon = androidx.core.content.ContextCompat.getDrawable(this, iconRes);
+        if (icon != null) {
+            icon = androidx.core.graphics.drawable.DrawableCompat.wrap(icon).mutate();
+            androidx.core.graphics.drawable.DrawableCompat.setTint(icon, colorHex);
+            int size = dpToPx(16);
+            icon.setBounds(0, 0, size, size);
+            tv.setCompoundDrawablesRelative(icon, null, null, null);
+            tv.setCompoundDrawablePadding(dpToPx(6));
+        }
+    }
+
     private void addDatePill(String dateText) {
         LinearLayout wrapper = new LinearLayout(this);
         wrapper.setLayoutParams(new LinearLayout.LayoutParams(
@@ -708,10 +723,10 @@ public class ChatActivity extends AppCompatActivity {
                 imgContainer.addView(imageView);
 
                 TextView tvImgCaption = new TextView(this);
-                tvImgCaption.setText("📷 Photo • Tap to view full screen");
                 tvImgCaption.setTextSize(11f);
                 tvImgCaption.setTextColor(isMe ? Color.parseColor("#FDE8E1") : Color.parseColor("#6D635E"));
                 tvImgCaption.setPadding(dpToPx(10), dpToPx(6), dpToPx(10), dpToPx(6));
+                setInlineIcon(tvImgCaption, R.drawable.ic_vec_camera, "Photo • Tap to view full screen");
                 imgContainer.addView(tvImgCaption);
 
                 imgCard.addView(imgContainer);
@@ -770,9 +785,9 @@ public class ChatActivity extends AppCompatActivity {
             metaCol.addView(tvFileName);
 
             TextView tvFileSub = new TextView(this);
-            tvFileSub.setText("📄 PDF • Tap to view full screen");
             tvFileSub.setTextColor(isMe ? Color.parseColor("#FDE8E1") : Color.parseColor("#786F6B"));
             tvFileSub.setTextSize(11f);
+            setInlineIcon(tvFileSub, R.drawable.ic_vec_pdf, "PDF • Tap to view full screen");
             metaCol.addView(tvFileSub);
 
             pdfCard.addView(metaCol);
@@ -988,11 +1003,11 @@ public class ChatActivity extends AppCompatActivity {
         root.addView(fullScreenImage);
 
         TextView btnClose = new TextView(this);
-        btnClose.setText("✕ Close");
         btnClose.setTextColor(Color.WHITE);
         btnClose.setTextSize(14f);
         btnClose.setTypeface(null, Typeface.BOLD);
         btnClose.setPadding(dpToPx(16), dpToPx(8), dpToPx(16), dpToPx(8));
+        setInlineIcon(btnClose, R.drawable.ic_vec_close, "Close");
         android.graphics.drawable.GradientDrawable closeBg = new android.graphics.drawable.GradientDrawable();
         closeBg.setColor(Color.parseColor("#99000000"));
         closeBg.setCornerRadius(dpToPx(20));
@@ -1059,21 +1074,21 @@ public class ChatActivity extends AppCompatActivity {
                     topBar.setBackgroundColor(Color.parseColor("#1F1614"));
 
                     TextView tvTitle = new TextView(this);
-                    tvTitle.setText("📄 " + fileName + " (" + pageBitmaps.size() + "p)");
                     tvTitle.setTextColor(Color.WHITE);
                     tvTitle.setTextSize(15f);
                     tvTitle.setTypeface(null, Typeface.BOLD);
                     tvTitle.setSingleLine(true);
                     tvTitle.setEllipsize(android.text.TextUtils.TruncateAt.MIDDLE);
                     tvTitle.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+                    setInlineIcon(tvTitle, R.drawable.ic_vec_pdf, fileName + " (" + pageBitmaps.size() + "p)");
                     topBar.addView(tvTitle);
 
                     TextView btnClose = new TextView(this);
-                    btnClose.setText("✕ Close");
                     btnClose.setTextColor(Color.WHITE);
                     btnClose.setTextSize(13f);
                     btnClose.setTypeface(null, Typeface.BOLD);
                     btnClose.setPadding(dpToPx(14), dpToPx(6), dpToPx(14), dpToPx(6));
+                    setInlineIcon(btnClose, R.drawable.ic_vec_close, "Close");
                     android.graphics.drawable.GradientDrawable closeBg = new android.graphics.drawable.GradientDrawable();
                     closeBg.setColor(Color.parseColor("#B85032"));
                     closeBg.setCornerRadius(dpToPx(16));
