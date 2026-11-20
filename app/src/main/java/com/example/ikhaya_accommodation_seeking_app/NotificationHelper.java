@@ -241,21 +241,36 @@ public final class NotificationHelper {
         SharedPreferences prefs = context.getSharedPreferences("NotificationPrefs", Context.MODE_PRIVATE);
         if (!prefs.getBoolean("PREF_MASTER_ENABLED", true)) return "Muted";
         
-        String[] keys = {
-            "PREF_CHAT_MESSAGES", "PREF_ENQUIRIES", "PREF_APPLICATIONS", 
-            "PREF_VIEWINGS", "PREF_RENT_REMINDERS", "PREF_LISTING_AND_VERIFY"
-        };
+        String role = context.getSharedPreferences("iKhayaSession", Context.MODE_PRIVATE).getString("USER_ROLE", "tenant");
+        
+        String[] keys = "admin".equalsIgnoreCase(role)
+            ? new String[]{
+                "PREF_ADMIN_GUEST_SUPPORT",
+                "PREF_ADMIN_TICKETS",
+                "PREF_ADMIN_ID_VERIFY",
+                "PREF_ADMIN_APPEALS",
+                "PREF_ADMIN_PENDING_LISTINGS",
+                "PREF_ADMIN_NEW_USERS",
+                "PREF_ADMIN_ACCOUNT_DELETIONS",
+                "PREF_ADMIN_SYSTEM_HEALTH"
+            }
+            : new String[]{
+                "PREF_CHAT_MESSAGES", "PREF_ENQUIRIES", "PREF_APPLICATIONS", 
+                "PREF_VIEWINGS", "PREF_RENT_REMINDERS", "PREF_LISTING_AND_VERIFY",
+                "PREF_PRICE_ALERTS"
+            };
+            
         int count = 0;
         for (String k : keys) {
             if (prefs.getBoolean(k, true)) count++;
         }
-        if (count == keys.length) return "All On";
-        return count + "/6 On";
+        return count == keys.length ? "All On" : count + "/" + keys.length + " On";
     }
 
     public static void openNotificationSettingsDialog(android.app.Activity activity, Runnable onUpdated) {
         if (activity == null || activity.isFinishing()) return;
         SharedPreferences prefs = activity.getSharedPreferences("NotificationPrefs", Context.MODE_PRIVATE);
+        String role = activity.getSharedPreferences("iKhayaSession", Context.MODE_PRIVATE).getString("USER_ROLE", "tenant");
         
         Dialog dialog = new Dialog(activity, android.R.style.Theme_Light_NoTitleBar);
         float density = activity.getResources().getDisplayMetrics().density;
@@ -298,15 +313,20 @@ public final class NotificationHelper {
         root.addView(topBar);
 
         ScrollView scrollView = new ScrollView(activity);
+        LinearLayout.LayoutParams scrollLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f);
+        scrollView.setLayoutParams(scrollLp);
+
         LinearLayout scrollContent = new LinearLayout(activity);
         scrollContent.setOrientation(LinearLayout.VERTICAL);
-        scrollContent.setPadding(Math.round(20 * density), Math.round(8 * density), Math.round(20 * density), Math.round(32 * density));
+        scrollContent.setPadding(Math.round(20 * density), Math.round(20 * density), Math.round(20 * density), Math.round(32 * density));
         
         TextView title = new TextView(activity);
         title.setText(R.string.title_notification_preferences);
         title.setTextColor(Color.parseColor("#1F1F1F"));
         title.setTextSize(26f);
         title.setTypeface(null, Typeface.BOLD);
+        LinearLayout.LayoutParams titleLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        title.setLayoutParams(titleLp);
         scrollContent.addView(title);
         
         TextView badge = new TextView(activity);
@@ -339,47 +359,80 @@ public final class NotificationHelper {
         card1.setLayoutParams(card1Lp);
         scrollContent.addView(card1);
         
-        CardView card2 = new CardView(activity);
-        card2.setRadius(16 * density);
-        card2.setCardElevation(0f);
-        LinearLayout c2 = new LinearLayout(activity);
-        c2.setOrientation(LinearLayout.VERTICAL);
-        allSwitches.add(buildSwitchRow(activity, c2, activity.getString(R.string.pref_direct_chat_messages), activity.getString(R.string.desc_direct_chat_messages), prefs, "PREF_CHAT_MESSAGES"));
-        buildDivider(activity, c2);
-        allSwitches.add(buildSwitchRow(activity, c2, activity.getString(R.string.pref_enquiries_chat_requests), activity.getString(R.string.desc_enquiries_chat_requests), prefs, "PREF_ENQUIRIES"));
-        card2.addView(c2);
-        LinearLayout.LayoutParams card2Lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        card2Lp.bottomMargin = Math.round(16 * density);
-        card2.setLayoutParams(card2Lp);
-        scrollContent.addView(card2);
-        
-        CardView card3 = new CardView(activity);
-        card3.setRadius(16 * density);
-        card3.setCardElevation(0f);
-        LinearLayout c3 = new LinearLayout(activity);
-        c3.setOrientation(LinearLayout.VERTICAL);
-        allSwitches.add(buildSwitchRow(activity, c3, activity.getString(R.string.pref_rental_applications), activity.getString(R.string.desc_rental_applications), prefs, "PREF_APPLICATIONS"));
-        buildDivider(activity, c3);
-        allSwitches.add(buildSwitchRow(activity, c3, activity.getString(R.string.pref_property_viewings), activity.getString(R.string.desc_property_viewings), prefs, "PREF_VIEWINGS"));
-        buildDivider(activity, c3);
-        allSwitches.add(buildSwitchRow(activity, c3, activity.getString(R.string.pref_monthly_rent_reminders), activity.getString(R.string.desc_monthly_rent_reminders), prefs, "PREF_RENT_REMINDERS"));
-        card3.addView(c3);
-        LinearLayout.LayoutParams card3Lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        card3Lp.bottomMargin = Math.round(16 * density);
-        card3.setLayoutParams(card3Lp);
-        scrollContent.addView(card3);
-        
-        CardView card4 = new CardView(activity);
-        card4.setRadius(16 * density);
-        card4.setCardElevation(0f);
-        LinearLayout c4 = new LinearLayout(activity);
-        c4.setOrientation(LinearLayout.VERTICAL);
-        allSwitches.add(buildSwitchRow(activity, c4, activity.getString(R.string.pref_listings_id_verification), activity.getString(R.string.desc_listings_id_verification), prefs, "PREF_LISTING_AND_VERIFY"));
-        card4.addView(c4);
-        LinearLayout.LayoutParams card4Lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        card4Lp.bottomMargin = Math.round(24 * density);
-        card4.setLayoutParams(card4Lp);
-        scrollContent.addView(card4);
+        if ("admin".equalsIgnoreCase(role)) {
+            CardView cardAdmin = new CardView(activity);
+            cardAdmin.setRadius(16 * density);
+            cardAdmin.setCardElevation(0f);
+            LinearLayout ca = new LinearLayout(activity);
+            ca.setOrientation(LinearLayout.VERTICAL);
+            
+            allSwitches.add(buildSwitchRow(activity, ca, "Guest Support Messages", "Instant alerts when a guest sends a support chat message", prefs, "PREF_ADMIN_GUEST_SUPPORT"));
+            buildDivider(activity, ca);
+            allSwitches.add(buildSwitchRow(activity, ca, "Support & Issue Tickets", "Alerts when users submit new problem reports or tickets", prefs, "PREF_ADMIN_TICKETS"));
+            buildDivider(activity, ca);
+            allSwitches.add(buildSwitchRow(activity, ca, "Landlord ID Verifications", "Alerts when a landlord submits identity documents for review", prefs, "PREF_ADMIN_ID_VERIFY"));
+            buildDivider(activity, ca);
+            allSwitches.add(buildSwitchRow(activity, ca, "Ban & Suspension Appeals", "Alerts when a restricted user submits an appeal", prefs, "PREF_ADMIN_APPEALS"));
+            buildDivider(activity, ca);
+            allSwitches.add(buildSwitchRow(activity, ca, "Pending Listing Approvals", "Alerts when a new property listing awaits verification", prefs, "PREF_ADMIN_PENDING_LISTINGS"));
+            buildDivider(activity, ca);
+            allSwitches.add(buildSwitchRow(activity, ca, "New User Registrations", "Alerts when a new Tenant or Landlord registers", prefs, "PREF_ADMIN_NEW_USERS"));
+            buildDivider(activity, ca);
+            allSwitches.add(buildSwitchRow(activity, ca, "User Account Deletions", "Alerts when a user permanently deletes their account", prefs, "PREF_ADMIN_ACCOUNT_DELETIONS"));
+            buildDivider(activity, ca);
+            allSwitches.add(buildSwitchRow(activity, ca, "System & API Health Alerts", "Alerts if Supabase requests repeatedly fail or time out", prefs, "PREF_ADMIN_SYSTEM_HEALTH"));
+            
+            cardAdmin.addView(ca);
+            LinearLayout.LayoutParams cardAdminLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            cardAdminLp.bottomMargin = Math.round(24 * density);
+            cardAdmin.setLayoutParams(cardAdminLp);
+            scrollContent.addView(cardAdmin);
+        } else {
+            CardView card2 = new CardView(activity);
+            card2.setRadius(16 * density);
+            card2.setCardElevation(0f);
+            LinearLayout c2 = new LinearLayout(activity);
+            c2.setOrientation(LinearLayout.VERTICAL);
+            allSwitches.add(buildSwitchRow(activity, c2, activity.getString(R.string.pref_direct_chat_messages), activity.getString(R.string.desc_direct_chat_messages), prefs, "PREF_CHAT_MESSAGES"));
+            buildDivider(activity, c2);
+            allSwitches.add(buildSwitchRow(activity, c2, activity.getString(R.string.pref_enquiries_chat_requests), activity.getString(R.string.desc_enquiries_chat_requests), prefs, "PREF_ENQUIRIES"));
+            card2.addView(c2);
+            LinearLayout.LayoutParams card2Lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            card2Lp.bottomMargin = Math.round(16 * density);
+            card2.setLayoutParams(card2Lp);
+            scrollContent.addView(card2);
+            
+            CardView card3 = new CardView(activity);
+            card3.setRadius(16 * density);
+            card3.setCardElevation(0f);
+            LinearLayout c3 = new LinearLayout(activity);
+            c3.setOrientation(LinearLayout.VERTICAL);
+            allSwitches.add(buildSwitchRow(activity, c3, activity.getString(R.string.pref_rental_applications), activity.getString(R.string.desc_rental_applications), prefs, "PREF_APPLICATIONS"));
+            buildDivider(activity, c3);
+            allSwitches.add(buildSwitchRow(activity, c3, activity.getString(R.string.pref_property_viewings), activity.getString(R.string.desc_property_viewings), prefs, "PREF_VIEWINGS"));
+            buildDivider(activity, c3);
+            allSwitches.add(buildSwitchRow(activity, c3, activity.getString(R.string.pref_monthly_rent_reminders), activity.getString(R.string.desc_monthly_rent_reminders), prefs, "PREF_RENT_REMINDERS"));
+            card3.addView(c3);
+            LinearLayout.LayoutParams card3Lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            card3Lp.bottomMargin = Math.round(16 * density);
+            card3.setLayoutParams(card3Lp);
+            scrollContent.addView(card3);
+            
+            CardView card4 = new CardView(activity);
+            card4.setRadius(16 * density);
+            card4.setCardElevation(0f);
+            LinearLayout c4 = new LinearLayout(activity);
+            c4.setOrientation(LinearLayout.VERTICAL);
+            String descListings = activity.getString(R.string.desc_listings_id_verification).replace("price updates, ", "");
+            allSwitches.add(buildSwitchRow(activity, c4, activity.getString(R.string.pref_listings_id_verification), descListings, prefs, "PREF_LISTING_AND_VERIFY"));
+            buildDivider(activity, c4);
+            allSwitches.add(buildSwitchRow(activity, c4, "Property Price Drop Alerts", "Alerts when a saved or watched listing changes price", prefs, "PREF_PRICE_ALERTS"));
+            card4.addView(c4);
+            LinearLayout.LayoutParams card4Lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            card4Lp.bottomMargin = Math.round(24 * density);
+            card4.setLayoutParams(card4Lp);
+            scrollContent.addView(card4);
+        }
 
         swMaster.setOnCheckedChangeListener((buttonView, isChecked) -> {
             prefs.edit().putBoolean("PREF_MASTER_ENABLED", isChecked).apply();
@@ -420,6 +473,11 @@ public final class NotificationHelper {
             if (onUpdated != null) onUpdated.run();
         });
         dialog.show();
+    }
+
+    public static void notifyAdminSystemHealth(Context context, String detail) {
+        if (!isCategoryEnabled(context, "PREF_ADMIN_SYSTEM_HEALTH")) return;
+        showPhoneNotification(context, "System / API Health Warning", detail, AdminReportsActivity.class, "sys_health".hashCode());
     }
 
     private static androidx.appcompat.widget.SwitchCompat buildSwitchRow(Context context, android.widget.LinearLayout parent, String titleText, String subText, SharedPreferences prefs, String prefKey) {
@@ -555,52 +613,56 @@ public final class NotificationHelper {
                 conn.disconnect();
 
                 // C. Incoming Direct Chat Messages
-                conn = SupabaseHelper.createConnection(
-                        "/rest/v1/messages?select=id,sender_name,sender_role,message_text,created_at&receiver_id=eq." + userId + "&order=created_at.desc&limit=1",
-                        "GET", token);
-                if (conn.getResponseCode() >= 200 && conn.getResponseCode() < 300) {
-                    JSONArray msgs = new JSONArray(SupabaseHelper.readResponse(conn));
-                    if (msgs.length() > 0) {
-                        JSONObject msg = msgs.getJSONObject(0);
-                        String msgId = msg.optString("id", "");
-                        String lastMsgId = statePrefs.getString("LAST_MSG_ID", "");
-                        boolean isInitDone = statePrefs.getBoolean("INIT_DONE_MSG", false);
-                        
-                        if (!msgId.isEmpty() && !msgId.equals(lastMsgId)) {
-                            statePrefs.edit().putString("LAST_MSG_ID", msgId).apply();
-                            if (!isInitDone) {
-                                statePrefs.edit().putBoolean("INIT_DONE_MSG", true).apply();
-                            } else {
-                                anyUnread = true;
-                                String sender = msg.optString("sender_name", "iKhaya User");
-                                String roleLabel = msg.optString("sender_role", "Member").toUpperCase(java.util.Locale.ROOT);
-                                String text = msg.optString("message_text", "Sent a message");
-                                showPhoneNotification(context, "New Message from " + sender + " (" + roleLabel + ")", formatCleanMessageBody(text, sender), UserSelectionActivity.class, ("msg_" + msgId).hashCode());
+                if (isCategoryEnabled(context, "PREF_CHAT_MESSAGES")) {
+                    conn = SupabaseHelper.createConnection(
+                            "/rest/v1/messages?select=id,sender_name,sender_role,message_text,created_at&receiver_id=eq." + userId + "&order=created_at.desc&limit=1",
+                            "GET", token);
+                    if (conn.getResponseCode() >= 200 && conn.getResponseCode() < 300) {
+                        JSONArray msgs = new JSONArray(SupabaseHelper.readResponse(conn));
+                        if (msgs.length() > 0) {
+                            JSONObject msg = msgs.getJSONObject(0);
+                            String msgId = msg.optString("id", "");
+                            String lastMsgId = statePrefs.getString("LAST_MSG_ID", "");
+                            boolean isInitDone = statePrefs.getBoolean("INIT_DONE_MSG", false);
+                            
+                            if (!msgId.isEmpty() && !msgId.equals(lastMsgId)) {
+                                statePrefs.edit().putString("LAST_MSG_ID", msgId).apply();
+                                if (!isInitDone) {
+                                    statePrefs.edit().putBoolean("INIT_DONE_MSG", true).apply();
+                                } else {
+                                    anyUnread = true;
+                                    String sender = msg.optString("sender_name", "iKhaya User");
+                                    String roleLabel = msg.optString("sender_role", "Member").toUpperCase(java.util.Locale.ROOT);
+                                    String text = msg.optString("message_text", "Sent a message");
+                                    showPhoneNotification(context, "New Message from " + sender + " (" + roleLabel + ")", formatCleanMessageBody(text, sender), UserSelectionActivity.class, ("msg_" + msgId).hashCode());
+                                }
                             }
                         }
                     }
+                    conn.disconnect();
                 }
-                conn.disconnect();
 
                 // D. Pending Chat Requests / Listing Enquiries
-                conn = SupabaseHelper.createConnection(
-                        "/rest/v1/chat_requests?select=id,sender_name&receiver_id=eq." + userId + "&status=eq.pending",
-                        "GET", token);
-                if (conn.getResponseCode() >= 200 && conn.getResponseCode() < 300) {
-                    JSONArray reqs = new JSONArray(SupabaseHelper.readResponse(conn));
-                    if (reqs.length() > 0) {
-                        String latestReqId = reqs.getJSONObject(0).optString("id", "");
-                        String savedReqId = statePrefs.getString("LAST_CHAT_REQ_ID", "");
-                        
-                        if (!latestReqId.isEmpty() && !latestReqId.equals(savedReqId)) {
-                            anyUnread = true;
-                            statePrefs.edit().putString("LAST_CHAT_REQ_ID", latestReqId).apply();
-                            String sender = reqs.getJSONObject(0).optString("sender_name", "A user");
-                            showPhoneNotification(context, "New Listing Enquiry", sender + " sent you a chat request.", UserSelectionActivity.class, ("req_" + latestReqId).hashCode());
+                if (isCategoryEnabled(context, "PREF_ENQUIRIES")) {
+                    conn = SupabaseHelper.createConnection(
+                            "/rest/v1/chat_requests?select=id,sender_name&receiver_id=eq." + userId + "&status=eq.pending",
+                            "GET", token);
+                    if (conn.getResponseCode() >= 200 && conn.getResponseCode() < 300) {
+                        JSONArray reqs = new JSONArray(SupabaseHelper.readResponse(conn));
+                        if (reqs.length() > 0) {
+                            String latestReqId = reqs.getJSONObject(0).optString("id", "");
+                            String savedReqId = statePrefs.getString("LAST_CHAT_REQ_ID", "");
+                            
+                            if (!latestReqId.isEmpty() && !latestReqId.equals(savedReqId)) {
+                                anyUnread = true;
+                                statePrefs.edit().putString("LAST_CHAT_REQ_ID", latestReqId).apply();
+                                String sender = reqs.getJSONObject(0).optString("sender_name", "A user");
+                                showPhoneNotification(context, "New Listing Enquiry", sender + " sent you a chat request.", UserSelectionActivity.class, ("req_" + latestReqId).hashCode());
+                            }
                         }
                     }
+                    conn.disconnect();
                 }
-                conn.disconnect();
 
                 // E. Tenant & Landlord Rental Applications & Viewing Requests
                 String role = context.getSharedPreferences("iKhayaSession", Context.MODE_PRIVATE).getString("USER_ROLE", "tenant");
@@ -657,6 +719,35 @@ public final class NotificationHelper {
                             }
                         }
                         vConn.disconnect();
+                    }
+                    
+                    // Price Drop Alerts
+                    if (isCategoryEnabled(context, "PREF_PRICE_ALERTS")) {
+                        HttpURLConnection pConn = SupabaseHelper.createConnection("/rest/v1/saved_listings?select=listing_id,listings(property_name,price)&tenant_uid=eq." + userId, "GET", token);
+                        if (pConn.getResponseCode() >= 200 && pConn.getResponseCode() < 300) {
+                            JSONArray pArr = new JSONArray(SupabaseHelper.readResponse(pConn));
+                            for (int i = 0; i < pArr.length(); i++) {
+                                JSONObject pObj = pArr.getJSONObject(i);
+                                String lId = pObj.optString("listing_id", "");
+                                JSONObject listObj = pObj.optJSONObject("listings");
+                                if (!lId.isEmpty() && listObj != null) {
+                                    float newPrice = (float) listObj.optDouble("price", -1.0);
+                                    if (newPrice > 0) {
+                                        float oldPrice = statePrefs.getFloat("SEEN_PRICE_" + lId, -1f);
+                                        if (oldPrice > 0 && oldPrice != newPrice) {
+                                            anyUnread = true;
+                                            String propName = listObj.optString("property_name", "A saved listing");
+                                            String msg = oldPrice > newPrice 
+                                                ? "Price drop! " + propName + " went from R" + Math.round(oldPrice) + " to R" + Math.round(newPrice) 
+                                                : propName + " price changed from R" + Math.round(oldPrice) + " to R" + Math.round(newPrice);
+                                            showPhoneNotification(context, "Property Price Updated", msg, SavedListingsActivity.class, ("prc_" + lId).hashCode());
+                                        }
+                                        statePrefs.edit().putFloat("SEEN_PRICE_" + lId, newPrice).apply();
+                                    }
+                                }
+                            }
+                        }
+                        pConn.disconnect();
                     }
                     
                 } else if ("landlord".equalsIgnoreCase(role)) {
@@ -743,75 +834,160 @@ public final class NotificationHelper {
                 
                 // F. Admin Important Alerts
                 if ("admin".equalsIgnoreCase(role)) {
-                    HttpURLConnection admConn = SupabaseHelper.createConnection(
-                            "/rest/v1/guest_support_messages?select=id,guest_hint,sender_id,message_text&sender_id=neq.ADMIN_SUPPORT&order=created_at.desc&limit=1",
-                            "GET", token);
-                    admConn.setRequestProperty("x-admin-panel", "true");
-                    if (admConn.getResponseCode() >= 200 && admConn.getResponseCode() < 300) {
-                        JSONArray admArr = new JSONArray(SupabaseHelper.readResponse(admConn));
-                        if (admArr.length() > 0) {
-                            JSONObject admMsg = admArr.getJSONObject(0);
-                            String aMsgId = admMsg.optString("id", "");
-                            if (!aMsgId.isEmpty()) {
-                                String savedAMsgId = statePrefs.getString("LAST_ADMIN_GUEST_MSG_ID", "");
-                                if (!aMsgId.equals(savedAMsgId)) {
-                                    statePrefs.edit().putString("LAST_ADMIN_GUEST_MSG_ID", aMsgId).apply();
-                                    String hint = admMsg.optString("guest_hint", "Guest");
-                                    if (hint.isEmpty() || hint.startsWith("guest_")) {
-                                        hint = "Guest";
+                    if (isCategoryEnabled(context, "PREF_ADMIN_GUEST_SUPPORT")) {
+                        HttpURLConnection admConn = SupabaseHelper.createConnection(
+                                "/rest/v1/guest_support_messages?select=id,guest_hint,sender_id,message_text&sender_id=neq.ADMIN_SUPPORT&order=created_at.desc&limit=1",
+                                "GET", token);
+                        admConn.setRequestProperty("x-admin-panel", "true");
+                        if (admConn.getResponseCode() >= 200 && admConn.getResponseCode() < 300) {
+                            JSONArray admArr = new JSONArray(SupabaseHelper.readResponse(admConn));
+                            if (admArr.length() > 0) {
+                                JSONObject admMsg = admArr.getJSONObject(0);
+                                String aMsgId = admMsg.optString("id", "");
+                                if (!aMsgId.isEmpty()) {
+                                    String savedAMsgId = statePrefs.getString("LAST_ADMIN_GUEST_MSG_ID", "");
+                                    if (!aMsgId.equals(savedAMsgId)) {
+                                        statePrefs.edit().putString("LAST_ADMIN_GUEST_MSG_ID", aMsgId).apply();
+                                        String hint = admMsg.optString("guest_hint", "Guest");
+                                        if (hint.isEmpty() || hint.startsWith("guest_")) {
+                                            hint = "Guest";
+                                        }
+                                        showPhoneNotification(context, "New Guest Support Message", 
+                                                hint + ": " + cleanPreview(admMsg.optString("message_text", "")), 
+                                                AdminReportsActivity.class, ("adm_g_" + aMsgId).hashCode());
                                     }
-                                    showPhoneNotification(context, "New Guest Support Message", 
-                                            hint + ": " + cleanPreview(admMsg.optString("message_text", "")), 
-                                            AdminReportsActivity.class, ("adm_g_" + aMsgId).hashCode());
                                 }
                             }
                         }
+                        admConn.disconnect();
                     }
-                    admConn.disconnect();
                     
-                    HttpURLConnection rptConn = SupabaseHelper.createConnection(
-                            "/rest/v1/reports?select=id,issue_type,reason,reporter_name,reporter_role&status=in.(OPEN,open,PENDING,pending)&order=created_at.desc&limit=1",
-                            "GET", token);
-                    if (rptConn.getResponseCode() >= 200 && rptConn.getResponseCode() < 300) {
-                        JSONArray rptArr = new JSONArray(SupabaseHelper.readResponse(rptConn));
-                        if (rptArr.length() > 0) {
-                            JSONObject rpt = rptArr.getJSONObject(0);
-                            String rptId = rpt.optString("id", "");
-                            String savedRptId = statePrefs.getString("LAST_ADMIN_RPT_ID", "");
-                            if (!rptId.isEmpty() && !rptId.equals(savedRptId)) {
-                                statePrefs.edit().putString("LAST_ADMIN_RPT_ID", rptId).apply();
-                                String issueType = rpt.optString("issue_type", "").trim();
-                                if (issueType.equalsIgnoreCase("null")) issueType = "";
-                                String title = !issueType.isEmpty() ? "Ticket: " + issueType : "New Support Ticket";
-                                String repName = rpt.optString("reporter_name", "User");
-                                String repRole = rpt.optString("reporter_role", "Member").toUpperCase(java.util.Locale.ROOT);
-                                String body = cleanPreview(rpt.optString("reason", "A new issue was reported."));
-                                showPhoneNotification(context, title, repName + " (" + repRole + "): " + body, AdminReportsActivity.class, ("adm_r_" + rptId).hashCode());
+                    if (isCategoryEnabled(context, "PREF_ADMIN_TICKETS") || isCategoryEnabled(context, "PREF_ADMIN_ACCOUNT_DELETIONS")) {
+                        HttpURLConnection rptConn = SupabaseHelper.createConnection(
+                                "/rest/v1/reports?select=id,issue_type,reason,reporter_name,reporter_role&status=in.(OPEN,open,PENDING,pending)&order=created_at.desc&limit=1",
+                                "GET", token);
+                        if (rptConn.getResponseCode() >= 200 && rptConn.getResponseCode() < 300) {
+                            JSONArray rptArr = new JSONArray(SupabaseHelper.readResponse(rptConn));
+                            if (rptArr.length() > 0) {
+                                JSONObject rpt = rptArr.getJSONObject(0);
+                                String rptId = rpt.optString("id", "");
+                                String savedRptId = statePrefs.getString("LAST_ADMIN_RPT_ID", "");
+                                if (!rptId.isEmpty() && !rptId.equals(savedRptId)) {
+                                    statePrefs.edit().putString("LAST_ADMIN_RPT_ID", rptId).apply();
+                                    String issueType = rpt.optString("issue_type", "").trim();
+                                    if (issueType.equalsIgnoreCase("null")) issueType = "";
+                                    
+                                    boolean isDeletion = issueType.toUpperCase(java.util.Locale.ROOT).contains("DELETION") || 
+                                                         rpt.optString("reason", "").toUpperCase(java.util.Locale.ROOT).contains("ACCOUNT DELETED");
+                                                         
+                                    if (isDeletion && isCategoryEnabled(context, "PREF_ADMIN_ACCOUNT_DELETIONS")) {
+                                        String repName = rpt.optString("reporter_name", "A user");
+                                        showPhoneNotification(context, "User Account Deleted", repName + " has permanently deleted their account.", AdminReportsActivity.class, ("adm_d_" + rptId).hashCode());
+                                    } else if (!isDeletion && isCategoryEnabled(context, "PREF_ADMIN_TICKETS")) {
+                                        String title = !issueType.isEmpty() ? "Ticket: " + issueType : "New Support Ticket";
+                                        String repName = rpt.optString("reporter_name", "User");
+                                        String repRole = rpt.optString("reporter_role", "Member").toUpperCase(java.util.Locale.ROOT);
+                                        String body = cleanPreview(rpt.optString("reason", "A new issue was reported."));
+                                        showPhoneNotification(context, title, repName + " (" + repRole + "): " + body, AdminReportsActivity.class, ("adm_r_" + rptId).hashCode());
+                                    }
+                                }
                             }
                         }
+                        rptConn.disconnect();
                     }
-                    rptConn.disconnect();
                     
-                    HttpURLConnection admVerifConn = SupabaseHelper.createConnection(
-                            "/rest/v1/profiles?select=id,full_name,city,identity_status&identity_status=eq.PENDING_VERIFICATION&limit=1",
-                            "GET", token);
-                    if (admVerifConn.getResponseCode() >= 200 && admVerifConn.getResponseCode() < 300) {
-                        JSONArray vArr = new JSONArray(SupabaseHelper.readResponse(admVerifConn));
-                        if (vArr.length() > 0) {
-                            JSONObject vObj = vArr.getJSONObject(0);
-                            String vId = vObj.optString("id", "");
-                            String savedVId = statePrefs.getString("LAST_ADMIN_VERIF_ID", "");
-                            if (!vId.isEmpty() && !vId.equals(savedVId)) {
-                                statePrefs.edit().putString("LAST_ADMIN_VERIF_ID", vId).apply();
-                                String cityName = vObj.optString("city", "").trim();
-                                String cityTag = (!cityName.isEmpty() && !cityName.equalsIgnoreCase("null")) ? " from " + cityName : "";
-                                showPhoneNotification(context, "New ID Verification Request", 
-                                        vObj.optString("full_name", "A landlord") + cityTag + " submitted identity documents for Admin verification.", 
-                                        AdminDashboardActivity.class, ("adm_v_" + vId).hashCode());
+                    if (isCategoryEnabled(context, "PREF_ADMIN_ID_VERIFY")) {
+                        HttpURLConnection admVerifConn = SupabaseHelper.createConnection(
+                                "/rest/v1/profiles?select=id,full_name,city,identity_status&identity_status=eq.PENDING_VERIFICATION&limit=1",
+                                "GET", token);
+                        if (admVerifConn.getResponseCode() >= 200 && admVerifConn.getResponseCode() < 300) {
+                            JSONArray vArr = new JSONArray(SupabaseHelper.readResponse(admVerifConn));
+                            if (vArr.length() > 0) {
+                                JSONObject vObj = vArr.getJSONObject(0);
+                                String vId = vObj.optString("id", "");
+                                String savedVId = statePrefs.getString("LAST_ADMIN_VERIF_ID", "");
+                                if (!vId.isEmpty() && !vId.equals(savedVId)) {
+                                    statePrefs.edit().putString("LAST_ADMIN_VERIF_ID", vId).apply();
+                                    String cityName = vObj.optString("city", "").trim();
+                                    String cityTag = (!cityName.isEmpty() && !cityName.equalsIgnoreCase("null")) ? " from " + cityName : "";
+                                    showPhoneNotification(context, "New ID Verification Request", 
+                                            vObj.optString("full_name", "A landlord") + cityTag + " submitted identity documents for Admin verification.", 
+                                            AdminDashboardActivity.class, ("adm_v_" + vId).hashCode());
+                                }
                             }
                         }
+                        admVerifConn.disconnect();
                     }
-                    admVerifConn.disconnect();
+                    
+                    if (isCategoryEnabled(context, "PREF_ADMIN_APPEALS")) {
+                        HttpURLConnection appealConn = SupabaseHelper.createConnection(
+                                "/rest/v1/moderation_cases?select=id,user_id,action_type&appeal_status=eq.PENDING&order=created_at.desc&limit=1",
+                                "GET", token);
+                        if (appealConn.getResponseCode() >= 200 && appealConn.getResponseCode() < 300) {
+                            JSONArray arr = new JSONArray(SupabaseHelper.readResponse(appealConn));
+                            if (arr.length() > 0) {
+                                JSONObject obj = arr.getJSONObject(0);
+                                String id = obj.optString("id", "");
+                                if (!id.isEmpty() && !id.equals(statePrefs.getString("LAST_ADMIN_APPEAL_ID", ""))) {
+                                    statePrefs.edit().putString("LAST_ADMIN_APPEAL_ID", id).apply();
+                                    showPhoneNotification(context, "New Ban/Suspension Appeal",
+                                            "A restricted user submitted an appeal for Admin review.",
+                                            AdminBansAppealsActivity.class, ("adm_app_" + id).hashCode());
+                                }
+                            }
+                        }
+                        appealConn.disconnect();
+                    }
+                    
+                    if (isCategoryEnabled(context, "PREF_ADMIN_PENDING_LISTINGS")) {
+                        HttpURLConnection pendConn = SupabaseHelper.createConnection(
+                                "/rest/v1/listings?select=id,property_name&status=eq.PENDING_VERIFICATION&order=created_at.desc&limit=1",
+                                "GET", token);
+                        if (pendConn.getResponseCode() >= 200 && pendConn.getResponseCode() < 300) {
+                            JSONArray arr = new JSONArray(SupabaseHelper.readResponse(pendConn));
+                            if (arr.length() > 0) {
+                                JSONObject obj = arr.getJSONObject(0);
+                                String id = obj.optString("id", "");
+                                if (!id.isEmpty() && !id.equals(statePrefs.getString("LAST_ADMIN_PEND_LISTING_ID", ""))) {
+                                    statePrefs.edit().putString("LAST_ADMIN_PEND_LISTING_ID", id).apply();
+                                    String propName = obj.optString("property_name", "A property");
+                                    showPhoneNotification(context, "New Listing Awaiting Approval",
+                                            "'" + propName + "' was submitted and requires Admin verification.",
+                                            AdminPendingQueueActivity.class, ("adm_lst_" + id).hashCode());
+                                }
+                            }
+                        }
+                        pendConn.disconnect();
+                    }
+                    
+                    if (isCategoryEnabled(context, "PREF_ADMIN_NEW_USERS")) {
+                        HttpURLConnection newUserConn = SupabaseHelper.createConnection(
+                                "/rest/v1/profiles?select=id,full_name,role,created_at&order=created_at.desc&limit=1",
+                                "GET", token);
+                        if (newUserConn.getResponseCode() >= 200 && newUserConn.getResponseCode() < 300) {
+                            JSONArray arr = new JSONArray(SupabaseHelper.readResponse(newUserConn));
+                            if (arr.length() > 0) {
+                                JSONObject obj = arr.getJSONObject(0);
+                                String id = obj.optString("id", "");
+                                String savedId = statePrefs.getString("LAST_ADMIN_NEW_USER_ID", "");
+                                boolean isInitDone = statePrefs.getBoolean("INIT_DONE_ADMIN_USER", false);
+                                
+                                if (!id.isEmpty() && !id.equals(savedId)) {
+                                    statePrefs.edit().putString("LAST_ADMIN_NEW_USER_ID", id).apply();
+                                    if (!isInitDone) {
+                                        statePrefs.edit().putBoolean("INIT_DONE_ADMIN_USER", true).apply();
+                                    } else {
+                                        String name = obj.optString("full_name", "A new user");
+                                        String newUserRole = obj.optString("role", "member");
+                                        showPhoneNotification(context, "New User Registration",
+                                                name + " just joined as a " + newUserRole + ".",
+                                                AdminUsersActivity.class, ("adm_usr_" + id).hashCode());
+                                    }
+                                }
+                            }
+                        }
+                        newUserConn.disconnect();
+                    }
                 }
 
                 if (anyUnread) {

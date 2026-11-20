@@ -101,6 +101,9 @@ public class HomeActivity extends AppCompatActivity {
             }
         }
         NotificationHelper.startBackgroundPoller(this);
+        
+        refreshCachedUserLocation();
+        refreshReturningUserBookingHistory();
 
         setContentView(R.layout.activity_home);
 
@@ -898,35 +901,143 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
+    private void refreshCachedUserLocation() {
+        boolean fineGranted = androidx.core.content.ContextCompat.checkSelfPermission(
+                this, android.Manifest.permission.ACCESS_FINE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED;
+        boolean coarseGranted = androidx.core.content.ContextCompat.checkSelfPermission(
+                this, android.Manifest.permission.ACCESS_COARSE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED;
+        if (!fineGranted && !coarseGranted) return;
+
+        try {
+            android.location.LocationManager lm = (android.location.LocationManager) getSystemService(LOCATION_SERVICE);
+            if (lm == null) return;
+            android.location.Location best = null;
+            for (String provider : lm.getProviders(true)) {
+                android.location.Location loc = lm.getLastKnownLocation(provider);
+                if (loc != null && (best == null || loc.getAccuracy() < best.getAccuracy())) {
+                    best = loc;
+                }
+            }
+            if (best != null) {
+                getSharedPreferences("iKhayaCache", MODE_PRIVATE).edit()
+                        .putFloat("USER_LAST_LAT", (float) best.getLatitude())
+                        .putFloat("USER_LAST_LON", (float) best.getLongitude())
+                        .apply();
+            }
+        } catch (SecurityException ignored) {}
+    }
+
+    private void refreshReturningUserBookingHistory() {
+        String userId = SupabaseHelper.getUserId(this);
+        String token = SupabaseHelper.getAccessToken(this);
+        if (userId == null || userId.isEmpty() || token == null || token.isEmpty()) return;
+
+        new Thread(() -> {
+            HttpURLConnection conn = null;
+            try {
+                String encUid = SupabaseHelper.encode(userId);
+                conn = SupabaseHelper.createConnection(
+                        "/rest/v1/rental_applications?select=listing_id,listings(property_type,location,price)&tenant_uid=eq."
+                                + encUid + "&order=created_at.desc&limit=1",
+                        "GET", token);
+                if (conn.getResponseCode() >= 200 && conn.getResponseCode() < 300) {
+                    JSONArray arr = new JSONArray(SupabaseHelper.readResponse(conn));
+                    if (arr.length() > 0) {
+                        JSONObject listing = arr.getJSONObject(0).optJSONObject("listings");
+                        if (listing != null) {
+                            getSharedPreferences("iKhayaCache", MODE_PRIVATE).edit()
+                                    .putString("LAST_BOOKED_TYPE", listing.optString("property_type", ""))
+                                    .putString("LAST_BOOKED_LOC", listing.optString("location", ""))
+                                    .putFloat("LAST_BOOKED_PRICE", (float) listing.optDouble("price", 0.0))
+                                    .apply();
+                        }
+                    }
+                }
+            } catch (Exception ignored) {
+            } finally {
+                if (conn != null) conn.disconnect();
+            }
+        }).start();
+    }
+
+    private double calculateDistanceKm(double lat1, double lon1, double lat2, double lon2) {
+        if ((lat1 == 0.0 && lon1 == 0.0) || (lat2 == 0.0 && lon2 == 0.0)) return -1.0;
+        final double R = 6371.0;
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double sinLat = Math.sin(dLat / 2.0);
+        double sinLon = Math.sin(dLon / 2.0);
+        double a = (sinLat * sinLat)
+                + (Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) * sinLon * sinLon);
+        a = Math.max(0.0, Math.min(1.0, a));
+        return 2.0 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1.0 - a));
+    }
+
+    private double computeListingScore(JSONObject item, double userLat, double userLon,
+                                       String lastSearch, String lastBookedType,
+                                       String lastBookedLoc, double lastBookedPrice,
+                                       double minFilter, double maxFilter) {
+        double score = 0.0;
+        double lat = item.optDouble("latitude", 0.0);
+        double lon = item.optDouble("longitude", 0.0);
+        double distKm = calculateDistanceKm(userLat, userLon, lat, lon);
+
+        // 1. Proximity boost + distance decay (moves distant properties to the bottom)
+        if (distKm >= 0) {
+            if (distKm <= 5.0) score += 6.0;
+            else if (distKm <= 15.0) score += 3.5;
+            else if (distKm <= 30.0) score += 1.5;
+            score -= Math.min(distKm * 0.08, 12.0);
+            try { item.put("computed_distance_km", distKm); } catch (Exception ignored) {}
+        } else {
+            score -= 2.0; // Unpinned listings rank below verified nearby ones
+        }
+
+        // 2. Returning-user purchase / application history match
+        String loc = item.optString("location", "").toLowerCase(java.util.Locale.ROOT);
+        String type = item.optString("property_type", "").toLowerCase(java.util.Locale.ROOT);
+        double price = item.optDouble("price", 0.0);
+
+        if (!lastBookedType.isEmpty() && type.contains(lastBookedType)) score += 2.5;
+        if (!lastBookedLoc.isEmpty() && loc.contains(lastBookedLoc)) score += 2.5;
+        if (lastBookedPrice > 0 && price > 0 && Math.abs(price - lastBookedPrice) <= lastBookedPrice * 0.25) {
+            score += 2.0;
+        }
+
+        // 3. Recent search & price filter match
+        if (!lastSearch.isEmpty() && loc.contains(lastSearch)) score += 2.0;
+        if (maxFilter > 0 && price >= minFilter && price <= maxFilter) score += 1.0;
+
+        return score;
+    }
+
     private void sortListingsByRelevance(List<JSONObject> listings) {
         SharedPreferences prefs = getSharedPreferences("iKhayaSession", MODE_PRIVATE);
-        String userLocation = prefs.getString("USER_LOCATION", prefs.getString("user_location", ""));
-        double userBudget = prefs.getFloat("USER_BUDGET", prefs.getFloat("user_budget", 999999f));
+        SharedPreferences cache = getSharedPreferences("iKhayaCache", MODE_PRIVATE);
+        
+        String userLocation = prefs.getString("USER_LOCATION", prefs.getString("user_location", "")).toLowerCase(java.util.Locale.ROOT);
+        double minBudget = prefs.getFloat("USER_MIN_BUDGET", 0f);
+        double maxBudget = prefs.getFloat("USER_MAX_BUDGET", prefs.getFloat("USER_BUDGET", prefs.getFloat("user_budget", 999999f)));
+        
+        double uLat = cache.getFloat("USER_LAST_LAT", 0f);
+        double uLon = cache.getFloat("USER_LAST_LON", 0f);
+        
+        String lastBookedType = cache.getString("LAST_BOOKED_TYPE", "").toLowerCase(java.util.Locale.ROOT);
+        String lastBookedLoc = cache.getString("LAST_BOOKED_LOC", "").toLowerCase(java.util.Locale.ROOT);
+        double lastBookedPrice = cache.getFloat("LAST_BOOKED_PRICE", 0f);
 
         listings.sort((a, b) -> {
-            int scoreA = 0;
-            int scoreB = 0;
-
-            String locA = a.optString("location", "").toLowerCase();
-            String locB = b.optString("location", "").toLowerCase();
-            if (!userLocation.isEmpty() && locA.contains(userLocation.toLowerCase())) {
-                scoreA += 2;
-            }
-            if (!userLocation.isEmpty() && locB.contains(userLocation.toLowerCase())) {
-                scoreB += 2;
-            }
-
-            double priceA = a.optDouble("price", 0.0);
-            double priceB = b.optDouble("price", 0.0);
-            if (priceA > 0 && priceA <= userBudget) {
-                scoreA += 1;
-            }
-            if (priceB > 0 && priceB <= userBudget) {
-                scoreB += 1;
-            }
+            double scoreA = computeListingScore(a, uLat, uLon, userLocation, lastBookedType, lastBookedLoc, lastBookedPrice, minBudget, maxBudget);
+            double scoreB = computeListingScore(b, uLat, uLon, userLocation, lastBookedType, lastBookedLoc, lastBookedPrice, minBudget, maxBudget);
 
             if (scoreA != scoreB) {
-                return Integer.compare(scoreB, scoreA);
+                return Double.compare(scoreB, scoreA);
+            }
+            
+            double dKA = a.optDouble("computed_distance_km", -1.0);
+            double dKB = b.optDouble("computed_distance_km", -1.0);
+            if (dKA >= 0 && dKB >= 0 && dKA != dKB) {
+                return Double.compare(dKA, dKB);
             }
 
             String dateA = a.optString("created_at", "");

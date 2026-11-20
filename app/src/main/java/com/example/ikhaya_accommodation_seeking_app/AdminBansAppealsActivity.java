@@ -28,24 +28,133 @@ public class AdminBansAppealsActivity extends AppCompatActivity {
 
     private RecyclerView rvBansAppeals;
     private BansAppealsAdapter adapter;
-    private List<JSONObject> caseList;
+    private final List<JSONObject> allCases = new ArrayList<>();
+    private final List<JSONObject> filteredCases = new ArrayList<>();
     private ExecutorService executor;
+
+    private String currentQuery = "";
+    private String activeFilter = "ALL"; 
+    private String activeSort = "NEWEST";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_admin_bans_appeals);
 
+        View btnBack = findViewById(R.id.btnBackBansAppeals);
+        if (btnBack != null) btnBack.setOnClickListener(v -> finish());
+
         rvBansAppeals = findViewById(R.id.rvBansAppeals);
         rvBansAppeals.setLayoutManager(new LinearLayoutManager(this));
 
-        caseList = new ArrayList<>();
-        adapter = new BansAppealsAdapter(caseList);
+        adapter = new BansAppealsAdapter(filteredCases);
         rvBansAppeals.setAdapter(adapter);
 
         executor = Executors.newSingleThreadExecutor();
+        
+        setupSearchAndFilters();
 
         loadCases();
+    }
+
+    private void setupSearchAndFilters() {
+        android.widget.EditText etSearch = findViewById(R.id.etSearchBans);
+        android.widget.ImageButton btnClearSearch = findViewById(R.id.btnClearBanSearch);
+        android.widget.Button btnSearch = findViewById(R.id.btnSearchBans);
+        android.widget.Button btnFilter = findViewById(R.id.btnFilterBans);
+        android.widget.Button btnSort = findViewById(R.id.btnSortBans);
+
+        if (etSearch != null) {
+            etSearch.addTextChangedListener(new android.text.TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    if (btnClearSearch != null) {
+                        btnClearSearch.setVisibility(s.length() > 0 ? View.VISIBLE : View.GONE);
+                    }
+                    // Real-time search
+                    currentQuery = s.toString();
+                    applyFilterAndSort();
+                }
+                @Override
+                public void afterTextChanged(android.text.Editable s) {}
+            });
+            
+            etSearch.setOnEditorActionListener((v, actionId, event) -> {
+                if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH) {
+                    currentQuery = etSearch.getText().toString();
+                    applyFilterAndSort();
+                    android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
+                    if (imm != null) imm.hideSoftInputFromWindow(etSearch.getWindowToken(), 0);
+                    return true;
+                }
+                return false;
+            });
+        }
+
+        if (btnClearSearch != null) {
+            btnClearSearch.setOnClickListener(v -> {
+                if (etSearch != null) {
+                    etSearch.setText("");
+                    currentQuery = "";
+                    applyFilterAndSort();
+                }
+            });
+        }
+
+        if (btnSearch != null) {
+            btnSearch.setOnClickListener(v -> {
+                if (etSearch != null) {
+                    currentQuery = etSearch.getText().toString();
+                    applyFilterAndSort();
+                }
+            });
+        }
+
+        if (btnFilter != null) {
+            btnFilter.setOnClickListener(v -> {
+                android.widget.PopupMenu popup = new android.widget.PopupMenu(this, v);
+                popup.getMenu().add("All");
+                popup.getMenu().add("Pending Appeals");
+                popup.getMenu().add("Permanent Bans");
+                popup.getMenu().add("Timed Suspensions");
+                popup.getMenu().add("Approved / Lifted");
+                popup.setOnMenuItemClickListener(item -> {
+                    String title = item.getTitle().toString();
+                    if ("Pending Appeals".equals(title)) activeFilter = "PENDING";
+                    else if ("Permanent Bans".equals(title)) activeFilter = "BANNED";
+                    else if ("Timed Suspensions".equals(title)) activeFilter = "SUSPENDED";
+                    else if ("Approved / Lifted".equals(title)) activeFilter = "APPROVED";
+                    else activeFilter = "ALL";
+                    
+                    btnFilter.setText("Filter: " + title);
+                    applyFilterAndSort();
+                    return true;
+                });
+                popup.show();
+            });
+        }
+
+        if (btnSort != null) {
+            btnSort.setOnClickListener(v -> {
+                android.widget.PopupMenu popup = new android.widget.PopupMenu(this, v);
+                popup.getMenu().add("Newest First");
+                popup.getMenu().add("Oldest First");
+                popup.getMenu().add("Pending Appeals First");
+                popup.setOnMenuItemClickListener(item -> {
+                    String title = item.getTitle().toString();
+                    if ("Oldest First".equals(title)) activeSort = "OLDEST";
+                    else if ("Pending Appeals First".equals(title)) activeSort = "PENDING_FIRST";
+                    else activeSort = "NEWEST";
+                    
+                    btnSort.setText("Sort: " + title);
+                    applyFilterAndSort();
+                    return true;
+                });
+                popup.show();
+            });
+        }
     }
 
     private void loadCases() {
@@ -62,9 +171,9 @@ public class AdminBansAppealsActivity extends AppCompatActivity {
                         tempList.add(arr.getJSONObject(i));
                     }
                     runOnUiThread(() -> {
-                        caseList.clear();
-                        caseList.addAll(tempList);
-                        adapter.notifyDataSetChanged();
+                        allCases.clear();
+                        allCases.addAll(tempList);
+                        applyFilterAndSort();
                     });
                 }
                 conn.disconnect();
@@ -72,6 +181,59 @@ public class AdminBansAppealsActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         });
+    }
+
+    private void applyFilterAndSort() {
+        filteredCases.clear();
+        String q = currentQuery.trim().toLowerCase(java.util.Locale.ROOT);
+
+        for (JSONObject obj : allCases) {
+            String actionType = obj.optString("action_type", "").toUpperCase(java.util.Locale.ROOT);
+            String appealStatus = obj.optString("appeal_status", "NONE").toUpperCase(java.util.Locale.ROOT);
+
+            boolean matchesFilter = "ALL".equals(activeFilter)
+                    || ("PENDING".equals(activeFilter) && "PENDING".equals(appealStatus))
+                    || ("BANNED".equals(activeFilter) && "BANNED".equals(actionType))
+                    || ("SUSPENDED".equals(activeFilter) && "SUSPENDED".equals(actionType))
+                    || ("APPROVED".equals(activeFilter) && "APPROVED".equals(appealStatus));
+
+            if (!matchesFilter) continue;
+
+            if (!q.isEmpty()) {
+                String hay = (obj.optString("user_name", "") + " "
+                        + obj.optString("user_id", "") + " "
+                        + obj.optString("admin_reason", "") + " "
+                        + obj.optString("user_appeal_text", "") + " "
+                        + actionType + " " + appealStatus).toLowerCase(java.util.Locale.ROOT);
+                if (!hay.contains(q)) continue;
+            }
+            filteredCases.add(obj);
+        }
+
+        java.util.Collections.sort(filteredCases, (a, b) -> {
+            String dateA = a.optString("created_at", "");
+            String dateB = b.optString("created_at", "");
+            if ("OLDEST".equals(activeSort)) {
+                return dateA.compareTo(dateB);
+            } else if ("PENDING_FIRST".equals(activeSort)) {
+                int pA = "PENDING".equalsIgnoreCase(a.optString("appeal_status", "")) ? 0 : 1;
+                int pB = "PENDING".equalsIgnoreCase(b.optString("appeal_status", "")) ? 0 : 1;
+                return pA != pB ? Integer.compare(pA, pB) : dateB.compareTo(dateA);
+            }
+            return dateB.compareTo(dateA); // NEWEST default
+        });
+
+        adapter.notifyDataSetChanged();
+        
+        TextView tvResults = findViewById(R.id.tvBanResultsCount);
+        TextView tvEmpty = findViewById(R.id.tvEmptyBans);
+        if (tvResults != null) {
+            tvResults.setText("Showing " + filteredCases.size() + " results");
+            tvResults.setVisibility(filteredCases.isEmpty() ? View.GONE : View.VISIBLE);
+        }
+        if (tvEmpty != null) {
+            tvEmpty.setVisibility(filteredCases.isEmpty() ? View.VISIBLE : View.GONE);
+        }
     }
 
     private class BansAppealsAdapter extends RecyclerView.Adapter<BansAppealsAdapter.ViewHolder> {

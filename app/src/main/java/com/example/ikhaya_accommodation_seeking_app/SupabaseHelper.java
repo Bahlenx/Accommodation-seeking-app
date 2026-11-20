@@ -30,6 +30,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class SupabaseHelper {
 
@@ -40,9 +41,28 @@ public class SupabaseHelper {
             "sb_publishable_SgXZRNFBL4tswVtapc3pFQ_qpD-DijB";
 
     private static final OkHttpClient httpClient = new OkHttpClient();
+    private static final AtomicInteger consecutiveFailures = new AtomicInteger(0);
 
     public static String getSupabaseUrl() {
         return SUPABASE_URL;
+    }
+
+    public static void recordApiHealthResult(boolean success, String contextInfo, Context context) {
+        if (success) {
+            consecutiveFailures.set(0);
+        } else {
+            int fails = consecutiveFailures.incrementAndGet();
+            if (fails >= 3 && context != null) {
+                String role = context.getSharedPreferences("iKhayaSession", Context.MODE_PRIVATE).getString("USER_ROLE", "");
+                if ("admin".equalsIgnoreCase(role)) {
+                    long lastSent = context.getSharedPreferences("iKhayaState", Context.MODE_PRIVATE).getLong("LAST_API_ALERT", 0);
+                    if (System.currentTimeMillis() - lastSent > 300000) { // 5 mins
+                        context.getSharedPreferences("iKhayaState", Context.MODE_PRIVATE).edit().putLong("LAST_API_ALERT", System.currentTimeMillis()).apply();
+                        NotificationHelper.notifyAdminSystemHealth(context, contextInfo);
+                    }
+                }
+            }
+        }
     }
 
     public static String getSupabaseKey() {
@@ -332,12 +352,55 @@ public class SupabaseHelper {
         });
     }
 
+    private static final java.util.concurrent.ExecutorService sessionWatchdogExecutor =
+            Executors.newSingleThreadExecutor();
+
+    public static synchronized String refreshAccessTokenSync(Context context) {
+        if (context == null) return null;
+        String refreshToken = getRefreshToken(context);
+        if (refreshToken == null || refreshToken.isEmpty()) return null;
+
+        try {
+            JSONObject payload = new JSONObject();
+            payload.put("refresh_token", refreshToken);
+
+            RequestBody body = RequestBody.create(
+                    payload.toString(),
+                    MediaType.get("application/json; charset=utf-8")
+            );
+            Request req = new Request.Builder()
+                    .url(SUPABASE_URL + "/auth/v1/token?grant_type=refresh_token")
+                    .addHeader("apikey", SUPABASE_KEY)
+                    .addHeader("Content-Type", "application/json")
+                    .post(body)
+                    .build();
+
+            try (Response resp = httpClient.newCall(req).execute()) {
+                if (!resp.isSuccessful() || resp.body() == null) return null;
+                JSONObject json = new JSONObject(resp.body().string());
+                String newAccess = json.optString("access_token", "");
+                String newRefresh = json.optString("refresh_token", refreshToken);
+                if (newAccess.isEmpty()) return null;
+
+                context.getSharedPreferences("iKhayaSession", Context.MODE_PRIVATE).edit()
+                        .putString("access_token", newAccess)
+                        .putString("refresh_token", newRefresh)
+                        .putLong("login_timestamp", System.currentTimeMillis())
+                        .apply();
+                return newAccess;
+            }
+        } catch (Exception e) {
+            Log.e("SupabaseHelper", "Token refresh failed", e);
+            return null;
+        }
+    }
+
     public static void verifyActiveSessionOrKick(android.app.Activity activity) {
         String uid = getUserId(activity);
         String token = getAccessToken(activity);
         if (uid == null || uid.isEmpty() || token == null || token.isEmpty()) return;
 
-        java.util.concurrent.Executors.newSingleThreadExecutor().execute(() -> {
+        sessionWatchdogExecutor.execute(() -> {
             try {
                 String encUid = java.net.URLEncoder.encode(uid, "UTF-8");
                 java.net.HttpURLConnection profConn = createConnection(
@@ -497,10 +560,34 @@ public class SupabaseHelper {
         }
 
         try (Response response = httpClient.newCall(builder.build()).execute()) {
+            if (response.code() == 401) {
+                String newToken = refreshAccessTokenSync(getAppContext());
+                if (newToken != null && !newToken.isEmpty()) {
+                    Request.Builder retryBuilder = builder.header("Authorization", "Bearer " + newToken);
+                    try (Response retryResp = httpClient.newCall(retryBuilder.build()).execute()) {
+                        if (!retryResp.isSuccessful()) {
+                            String err = retryResp.body() != null ? retryResp.body().string() : "";
+                            if (retryResp.code() >= 500) {
+                                recordApiHealthResult(false, "patch error: HTTP " + retryResp.code(), getAppContext());
+                            }
+                            throw new Exception("HTTP " + retryResp.code() + ": " + err);
+                        }
+                        recordApiHealthResult(true, "patch", getAppContext());
+                        return;
+                    }
+                }
+            }
             if (!response.isSuccessful()) {
                 String err = response.body() != null ? response.body().string() : "";
+                if (response.code() >= 500) {
+                    recordApiHealthResult(false, "patch error: HTTP " + response.code(), getAppContext());
+                }
                 throw new Exception("HTTP " + response.code() + ": " + err);
             }
+            recordApiHealthResult(true, "patch", getAppContext());
+        } catch (java.io.IOException e) {
+            recordApiHealthResult(false, "patch network error: " + e.getClass().getSimpleName(), getAppContext());
+            throw e;
         }
     }
 
@@ -617,8 +704,12 @@ public class SupabaseHelper {
 
             if (responseCode >= 200 && responseCode < 400) {
                 inputStream = connection.getInputStream();
+                recordApiHealthResult(true, "readResponse", getAppContext());
             } else {
                 inputStream = connection.getErrorStream();
+                if (responseCode >= 500) {
+                    recordApiHealthResult(false, "readResponse 5xx: " + connection.getURL().toString(), getAppContext());
+                }
                 if (inputStream == null) {
                     return "HTTP Error " + responseCode;
                 }
@@ -637,6 +728,7 @@ public class SupabaseHelper {
 
             return response.toString();
         } catch (Exception e) {
+            recordApiHealthResult(false, "Network timeout/error: " + e.getClass().getSimpleName(), getAppContext());
             return "Connection error: " + e.getMessage();
         }
     }

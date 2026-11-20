@@ -68,6 +68,11 @@ public class AdminDashboardActivity extends AppCompatActivity {
         }
     };
 
+    private android.net.ConnectivityManager connectivityManager;
+    private android.net.ConnectivityManager.NetworkCallback networkCallback;
+    private View viewAdminConnectionDot;
+    private TextView tvAdminConsoleBadge;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -86,6 +91,14 @@ public class AdminDashboardActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_admin_dashboard);
 
+        viewAdminConnectionDot = findViewById(R.id.viewAdminConnectionDot);
+        tvAdminConsoleBadge = findViewById(R.id.tvAdminConsoleBadge);
+        
+        View btnAdminProfile = findViewById(R.id.btnAdminProfile);
+        if (btnAdminProfile != null) {
+            btnAdminProfile.setOnClickListener(v -> startActivity(new Intent(this, AdminProfileActivity.class)));
+        }
+
         tvStatPending = findViewById(R.id.tvStatPending);
         // tvTrendPending = findViewById(R.id.tvTrendPending);
         tvStatActive = findViewById(R.id.tvStatActive);
@@ -100,7 +113,6 @@ public class AdminDashboardActivity extends AppCompatActivity {
         tvAnalyticsViews = findViewById(R.id.tvAnalyticsViews);
         tvAnalyticsBookings = findViewById(R.id.tvAnalyticsBookings);
 
-        View btnAdminLogout = findViewById(R.id.btnAdminLogout);
         // View btnAdminExit = findViewById(R.id.btnAdminExit);
         TextView tvAdminGreeting = findViewById(R.id.tvAdminGreeting);
 
@@ -118,10 +130,6 @@ public class AdminDashboardActivity extends AppCompatActivity {
             );
         }
 
-        if (btnAdminLogout != null) {
-            btnAdminLogout.setOnClickListener(v -> performLogout());
-        }
-
         View btnNotificationsAdmin = findViewById(R.id.btnNotificationsAdmin);
         if (btnNotificationsAdmin != null) {
             btnNotificationsAdmin.setOnClickListener(v ->
@@ -137,6 +145,23 @@ public class AdminDashboardActivity extends AppCompatActivity {
         super.onResume();
         isDashboardVisible = true;
         refreshHandler.post(dataPoll);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        startConnectionMonitor();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (connectivityManager != null && networkCallback != null) {
+            try {
+                connectivityManager.unregisterNetworkCallback(networkCallback);
+            } catch (Exception ignored) {}
+            networkCallback = null;
+        }
     }
 
     @Override
@@ -221,6 +246,104 @@ public class AdminDashboardActivity extends AppCompatActivity {
                 );
                 startActivity(browserIntent);
             });
+        }
+    }
+
+    private void startConnectionMonitor() {
+        connectivityManager = (android.net.ConnectivityManager) getSystemService(android.content.Context.CONNECTIVITY_SERVICE);
+        if (connectivityManager == null) return;
+
+        evaluateCurrentNetwork(); // Set initial color immediately on open
+
+        networkCallback = new android.net.ConnectivityManager.NetworkCallback() {
+            @Override
+            public void onAvailable(@androidx.annotation.NonNull android.net.Network network) {
+                evaluateCurrentNetwork();
+            }
+
+            @Override
+            public void onCapabilitiesChanged(@androidx.annotation.NonNull android.net.Network network,
+                                              @androidx.annotation.NonNull android.net.NetworkCapabilities caps) {
+                evaluateCapabilities(caps);
+            }
+
+            @Override
+            public void onLost(@androidx.annotation.NonNull android.net.Network network) {
+                runOnUiThread(() -> setConnectionUiState("OFFLINE"));
+            }
+        };
+        try {
+            connectivityManager.registerDefaultNetworkCallback(networkCallback);
+        } catch (Exception e) {
+            setConnectionUiState("UNSTABLE");
+        }
+    }
+
+    private void evaluateCurrentNetwork() {
+        if (connectivityManager == null) return;
+        android.net.Network active = connectivityManager.getActiveNetwork();
+        if (active == null) {
+            runOnUiThread(() -> setConnectionUiState("OFFLINE"));
+            return;
+        }
+        evaluateCapabilities(connectivityManager.getNetworkCapabilities(active));
+    }
+
+    private void evaluateCapabilities(android.net.NetworkCapabilities caps) {
+        if (caps == null || !caps.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET)) {
+            runOnUiThread(() -> setConnectionUiState("OFFLINE"));
+            return;
+        }
+        boolean isValidated = caps.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_VALIDATED);
+        int downKbps = caps.getLinkDownstreamBandwidthKbps();
+
+        if (!isValidated || (downKbps > 0 && downKbps < 1500)) {
+            runOnUiThread(() -> setConnectionUiState("UNSTABLE"));
+            return;
+        }
+
+        // Quick non-blocking latency check to confirm real stability
+        executor.execute(() -> {
+            long start = System.currentTimeMillis();
+            try {
+                java.net.HttpURLConnection conn = SupabaseHelper.createConnection(
+                        "/rest/v1/profiles?select=id&limit=1", "HEAD", SupabaseHelper.getAccessToken(this));
+                conn.setConnectTimeout(3000);
+                conn.setReadTimeout(3000);
+                int code = conn.getResponseCode();
+                conn.disconnect();
+                long elapsed = System.currentTimeMillis() - start;
+                if (code >= 200 && code < 500) {
+                    runOnUiThread(() -> setConnectionUiState(elapsed > 1500 ? "UNSTABLE" : "STABLE"));
+                } else {
+                    runOnUiThread(() -> setConnectionUiState("UNSTABLE"));
+                }
+            } catch (Exception e) {
+                runOnUiThread(() -> setConnectionUiState("UNSTABLE"));
+            }
+        });
+    }
+
+    private void setConnectionUiState(String state) {
+        if (isFinishing() || isDestroyed()) return;
+        int color;
+        String label;
+        if ("STABLE".equals(state)) {
+            color = Color.parseColor("#15803D");   // Green
+            label = getString(R.string.badge_admin_console);
+        } else if ("UNSTABLE".equals(state)) {
+            color = Color.parseColor("#CA8A04");   // Amber / Yellow
+            label = "Admin Console • Unstable";
+        } else {
+            color = Color.parseColor("#DC2626");   // Red
+            label = "Admin Console • Offline";
+        }
+        if (tvAdminConsoleBadge != null) {
+            tvAdminConsoleBadge.setText(label);
+            tvAdminConsoleBadge.setTextColor(color);
+        }
+        if (viewAdminConnectionDot != null) {
+            viewAdminConnectionDot.setBackgroundTintList(android.content.res.ColorStateList.valueOf(color));
         }
     }
 
@@ -510,16 +633,6 @@ public class AdminDashboardActivity extends AppCompatActivity {
                 tvTrendPending.setTextColor(Color.parseColor("#2DCE89"));
             }
         }
-    }
-
-    private void performLogout() {
-        SharedPreferences prefs = getSharedPreferences("iKhayaSession", MODE_PRIVATE);
-        prefs.edit().clear().apply();
-
-        Intent intent = new Intent(this, LoginActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-        finish();
     }
 
     @Override
