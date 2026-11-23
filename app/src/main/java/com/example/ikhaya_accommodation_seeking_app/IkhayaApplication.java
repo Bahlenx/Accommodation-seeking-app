@@ -12,6 +12,8 @@ public class IkhayaApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        
+        SessionCacheManager.clearMemoryCaches();
 
         final Thread.UncaughtExceptionHandler defaultHandler = Thread.getDefaultUncaughtExceptionHandler();
         Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
@@ -36,5 +38,15 @@ public class IkhayaApplication extends Application {
                 }
             }
         });
+    }
+
+    @Override
+    public void onTrimMemory(int level) {
+        super.onTrimMemory(level);
+        if (level >= TRIM_MEMORY_BACKGROUND) {
+            SessionCacheManager.clearMemoryCaches();
+        } else if (level >= TRIM_MEMORY_UI_HIDDEN) {
+            SessionCacheManager.trimBitmapsToHalf();
+        }
     }
 }

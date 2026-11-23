@@ -439,42 +439,44 @@ public class ViewingsActivity extends AppCompatActivity {
     }
     
     private void showViewingDetailsDialog(JSONObject item, String landlordUid, String landlordName, String location, String title, String date, String status, String listingId, boolean isActive, boolean isPast) {
-        View dialogView = android.view.LayoutInflater.from(this).inflate(R.layout.dialog_ban_appeal_details, null);
+        View dialogView = android.view.LayoutInflater.from(this).inflate(R.layout.dialog_viewing_details, null);
         TextView tvDetails = dialogView.findViewById(R.id.tvDetails);
-        Button btnViewListing = dialogView.findViewById(R.id.btnAdminEvidence);
-        Button btnAddToCal = dialogView.findViewById(R.id.btnUserEvidence);
-        Button btnContactHost = dialogView.findViewById(R.id.btnLiftRestriction);
+        Button btnViewListing = dialogView.findViewById(R.id.btnViewListing);
+        Button btnAddToCal = dialogView.findViewById(R.id.btnAddToCalendar);
+        Button btnContactHost = dialogView.findViewById(R.id.btnContactHost);
+        Button btnCancelViewing = dialogView.findViewById(R.id.btnCancelViewing);
 
-        String details = "Property: " + title + "\nStatus: " + status + (isPast ? " • Past" : "") + "\nDate: " + date + "\nAddress: " + location + "\nHost: " + landlordName;
+        String details = "Property: " + title + "\nStatus: " + status + (isPast ? " \u2022 Past" : "") + "\nDate: " + date + "\nAddress: " + location + "\nHost: " + landlordName;
         tvDetails.setText(details);
         tvDetails.setTextColor(Color.parseColor("#1F1614"));
 
-        btnViewListing.setVisibility(View.VISIBLE);
-        btnViewListing.setText("View Listing");
         btnViewListing.setOnClickListener(v -> {
             Intent intent = new Intent(ViewingsActivity.this, PropertyDetailsActivity.class);
             intent.putExtra("LISTING_ID", listingId);
             startActivity(intent);
         });
 
-        btnAddToCal.setVisibility(View.VISIBLE);
-        btnAddToCal.setText("Add to Calendar");
         btnAddToCal.setOnClickListener(v -> {
             WorkflowAutomationHelper.openAddToCalendarIntent(this, title, date, location, 0.0, 0.0);
         });
 
-        btnContactHost.setText("Contact Host");
         btnContactHost.setOnClickListener(v -> openChatWithHost(landlordUid, landlordName));
 
         androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(this)
                 .setView(dialogView)
                 .setNegativeButton("Close", null);
                 
-        if (isActive) {
-            builder.setNeutralButton("Cancel Viewing", (dialog, which) -> confirmCancelViewing(item.optString("id", ""), listingId, landlordUid, title));
+        androidx.appcompat.app.AlertDialog dialog = builder.create();
+                
+        if (isActive && !isPast) {
+            btnCancelViewing.setVisibility(View.VISIBLE);
+            btnCancelViewing.setOnClickListener(v -> {
+                dialog.dismiss();
+                confirmCancelViewing(item.optString("id", ""), listingId, landlordUid, title);
+            });
         }
 
-        androidx.appcompat.app.AlertDialog dialog = builder.show();
+        dialog.show();
 
         if (dialog.getWindow() != null) {
             dialog.getWindow().setLayout(
@@ -504,6 +506,7 @@ public class ViewingsActivity extends AppCompatActivity {
                     this, endpoint, "Cancelled", "Declined", token);
 
             if (ok) {
+                SessionCacheManager.invalidateJson("home_feed_listings");
                 WorkflowAutomationHelper.syncListingViewingAvailability(this, listingId, token);
                 try {
                     if (landlordUid != null && !landlordUid.isEmpty()) {
@@ -541,29 +544,9 @@ public class ViewingsActivity extends AppCompatActivity {
 
         // Register an accepted chat_request in the background so it shows on Messages & Community
         executor.execute(() -> {
-            HttpURLConnection conn = null;
-            try {
-                SharedPreferences prefs = getSharedPreferences("iKhayaSession", MODE_PRIVATE);
-                String myName = prefs.getString("USER_NAME", "Resident");
-                String myRole = prefs.getString("USER_ROLE", "tenant");
-
-                JSONObject body = new JSONObject();
-                body.put("sender_id", myUid);
-                body.put("sender_name", myName);
-                body.put("sender_role", myRole);
-                body.put("receiver_id", hostUid);
-                body.put("receiver_name", hostName != null && !hostName.isEmpty() ? hostName : "Landlord");
-                body.put("receiver_role", "landlord");
-                body.put("status", "accepted");
-
-                conn = SupabaseHelper.createConnection("/rest/v1/chat_requests", "POST", token);
-                conn.setRequestProperty("Prefer", "resolution=merge-duplicates,return=minimal");
-                SupabaseHelper.writeJson(conn, body);
-                conn.getResponseCode();
-            } catch (Exception ignored) {
-            } finally {
-                if (conn != null) conn.disconnect();
-            }
+            SharedPreferences prefs = getSharedPreferences("iKhayaSession", MODE_PRIVATE);
+            String myName = prefs.getString("USER_NAME", "Resident");
+            WorkflowAutomationHelper.ensureDirectChatUnlocked(this, myUid, hostUid, myName, token);
         });
     }
 

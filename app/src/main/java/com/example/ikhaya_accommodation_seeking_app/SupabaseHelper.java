@@ -937,38 +937,44 @@ public class SupabaseHelper {
         }
     }
 
-    public static boolean postCrashReportSync(Context context, String reason, String description) {
+    public static boolean postDiagnosticReportSync(
+            Context context, String issueType, String reason, String description) {
+        HttpURLConnection conn = null;
         try {
             SharedPreferences prefs = context.getSharedPreferences("iKhayaSession", Context.MODE_PRIVATE);
-            String uid = prefs.getString("USER_ID", "UNKNOWN_UID");
-            String name = prefs.getString("USER_NAME", "Unknown User");
-            String email = prefs.getString("USER_EMAIL", "unknown@system.local");
-            String token = prefs.getString("ACCESS_TOKEN", "");
-            
+            String uid = getUserId(context);
+            if (uid == null || uid.isEmpty()) uid = "ANON_DEVICE";
+            String token = getAccessToken(context);
+            String name = prefs.getString("USER_NAME", "System Diagnostic");
+            String email = prefs.getString("USER_EMAIL", "diagnostics@ikhaya.local");
+
             JSONObject body = new JSONObject();
             body.put("reporter_uid", uid);
             body.put("reporter_id", uid);
             body.put("reporter_name", name);
             body.put("reporter_email", email);
             body.put("reporter_role", "SYSTEM_DIAGNOSTIC");
-            body.put("issue_type", "APP_CRASH");
+            body.put("issue_type", issueType); // "APP_CRASH" or "APP_WARNING"
             body.put("reason", reason);
             body.put("description", description);
             body.put("status", "open");
-            
-            StringBuilder response = new StringBuilder();
-            String[] optionalKeys = new String[]{"reporter_uid", "reporter_id", "reporter_name", "reporter_email", "reporter_role", "issue_type"};
-            int code = WorkflowAutomationHelper.postWithOptionalFallback(
-                "/rest/v1/reports", 
-                body, 
-                optionalKeys, 
-                token, 
-                response
-            );
+
+            conn = createConnection("/rest/v1/reports", "POST", token);
+            conn.setConnectTimeout(5000);
+            conn.setReadTimeout(5000);
+            conn.setRequestProperty("Prefer", "return=minimal");
+            writeJson(conn, body);
+            int code = conn.getResponseCode();
             return code >= 200 && code < 300;
         } catch (Exception e) {
-            Log.e("SupabaseHelper", "Crash report sync failed", e);
+            Log.e("SupabaseHelper", "Diagnostic upload failed", e);
             return false;
+        } finally {
+            if (conn != null) conn.disconnect();
         }
+    }
+
+    public static boolean postCrashReportSync(Context context, String reason, String description) {
+        return postDiagnosticReportSync(context, "APP_CRASH", reason, description);
     }
 }

@@ -400,6 +400,14 @@ public class PropertyDetailsActivity extends AppCompatActivity {
         }
 
         final int requestId = ++galleryRequestId;
+        propertyImage.setTag(imageUrl);
+
+        Bitmap cached = SessionCacheManager.getBitmap(imageUrl);
+        if (cached != null) {
+            propertyImage.setImageBitmap(cached);
+            propertyImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            return;
+        }
 
         executor.execute(() -> {
             HttpURLConnection connection = null;
@@ -420,9 +428,10 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                                  connection.getInputStream()) {
 
                         Bitmap bitmap =
-                                BitmapFactory.decodeStream(stream);
+                                SessionCacheManager.decodeSampledBitmap(stream, 1080, 720);
 
                         if (bitmap != null) {
+                            SessionCacheManager.putBitmap(imageUrl, bitmap);
                             runOnUiThread(() -> {
                                 if (isFinishing()
                                         || isDestroyed()
@@ -431,10 +440,12 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                                     return;
                                 }
 
-                                propertyImage.setImageBitmap(bitmap);
-                                propertyImage.setScaleType(
-                                        ImageView.ScaleType.CENTER_CROP
-                                );
+                                if (imageUrl.equals(propertyImage.getTag())) {
+                                    propertyImage.setImageBitmap(bitmap);
+                                    propertyImage.setScaleType(
+                                            ImageView.ScaleType.CENTER_CROP
+                                    );
+                                }
                             });
                         }
                     }
@@ -941,26 +952,76 @@ public class PropertyDetailsActivity extends AppCompatActivity {
     }
 
     private void showTimeSlotPicker(String viewingDate) {
-        String[] slots = {
-                "Morning (09:00 - 11:00)",
-                "Midday (11:00 - 13:00)",
-                "Afternoon (14:00 - 16:00)",
-                "Late Afternoon (16:00 - 18:00)"
-        };
-
         String title = isForSale
                 ? "Select Site Inspection Time"
                 : "Select Viewing Time";
 
-        new AlertDialog.Builder(this)
-                .setTitle(title)
-                .setItems(slots, (dialog, which) -> {
-                    String selectedSlot =
-                            viewingDate + " " + slots[which];
+        if (loadingOverlayHelper != null) loadingOverlayHelper.beginTask();
 
-                    submitViewingToSupabase(selectedSlot);
-                })
-                .show();
+        executor.execute(() -> {
+            try {
+                String token = SupabaseHelper.getAccessToken(this);
+                String q = "listing_id=eq." + SupabaseHelper.encode(listingId) + "&viewing_date=like." + SupabaseHelper.encode(viewingDate + "%");
+                HttpURLConnection conn = SupabaseHelper.createConnection("/rest/v1/viewings?select=viewing_date,status&" + q, "GET", token);
+                List<String> bookedSlots = new ArrayList<>();
+                if (conn.getResponseCode() >= 200 && conn.getResponseCode() < 300) {
+                    JSONArray arr = new JSONArray(SupabaseHelper.readResponse(conn));
+                    for (int i = 0; i < arr.length(); i++) {
+                        JSONObject obj = arr.getJSONObject(i);
+                        String status = obj.optString("status", "");
+                        if (!"Cancelled".equalsIgnoreCase(status) && !"Declined".equalsIgnoreCase(status)) {
+                            bookedSlots.add(obj.optString("viewing_date", ""));
+                        }
+                    }
+                }
+                conn.disconnect();
+
+                runOnUiThread(() -> {
+                    if (loadingOverlayHelper != null) loadingOverlayHelper.endTask();
+
+                    String[] allSlots = {
+                            "Morning (09:00 - 11:00)",
+                            "Midday (11:00 - 13:00)",
+                            "Afternoon (14:00 - 16:00)",
+                            "Late Afternoon (16:00 - 18:00)"
+                    };
+
+                    List<String> availableSlots = new ArrayList<>();
+                    for (String slot : allSlots) {
+                        String fullSlot = viewingDate + " " + slot;
+                        if (!bookedSlots.contains(fullSlot)) {
+                            availableSlots.add(slot);
+                        }
+                    }
+
+                    if (availableSlots.isEmpty()) {
+                        new AlertDialog.Builder(this)
+                                .setTitle(title)
+                                .setMessage("No available slots on this date. Please choose another date.")
+                                .setPositiveButton("OK", null)
+                                .show();
+                        return;
+                    }
+
+                    String[] slotsArray = availableSlots.toArray(new String[0]);
+
+                    new AlertDialog.Builder(this)
+                            .setTitle(title)
+                            .setItems(slotsArray, (dialog, which) -> {
+                                String selectedSlot =
+                                        viewingDate + " " + slotsArray[which];
+
+                                submitViewingToSupabase(selectedSlot);
+                            })
+                            .show();
+                });
+            } catch (Exception e) {
+                runOnUiThread(() -> {
+                    if (loadingOverlayHelper != null) loadingOverlayHelper.endTask();
+                    Toast.makeText(this, "Failed to check availability.", Toast.LENGTH_SHORT).show();
+                });
+            }
+        });
     }
 
     private void submitViewingToSupabase(
@@ -1066,6 +1127,19 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                                 + response
                 );
 
+                if (responseCode >= 200 && responseCode < 300) {
+                    SessionCacheManager.invalidateJson("home_feed_listings");
+                    WorkflowAutomationHelper.syncListingViewingAvailability(this, listingId, accessToken);
+                    try {
+                        SupabaseHelper.createNotification(
+                                landlordUid,
+                                "New Viewing Request",
+                                "A tenant requested a viewing for " + propertyName + " on " + formattedViewingTime + ".",
+                                accessToken
+                        );
+                    } catch (Exception ignored) {}
+                }
+
                 runOnUiThread(() -> {
                     viewingSubmitting = false;
 
@@ -1076,16 +1150,6 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                     if (responseCode >= 200
                             && responseCode < 300) {
                         AnalyticsHelper.logViewingBooked(this, listingId);
-                        
-                        WorkflowAutomationHelper.syncListingViewingAvailability(this, listingId, accessToken);
-                        try {
-                            SupabaseHelper.createNotification(
-                                    landlordUid,
-                                    "New Viewing Request",
-                                    "A tenant requested a viewing for " + propertyName + " on " + formattedViewingTime + ".",
-                                    accessToken
-                            );
-                        } catch (Exception ignored) {}
                         
                         String successMessage = isForSale
                                 ? "Your site inspection request was sent successfully."

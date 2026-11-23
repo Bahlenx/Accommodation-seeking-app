@@ -23,11 +23,16 @@ public class LoadingOverlayHelper {
     }
 
     public void beginTask() {
-        if (pendingTasks.getAndIncrement() == 0) {
+        beginTask(defaultTimeoutMs);
+    }
+
+    public void beginTask(long timeoutMs) {
+        if (overlay == null) return;
+        if (pendingTasks.incrementAndGet() == 1) {
             cancelCallbacks();
 
             showRunnable = () -> {
-                if (overlay != null) {
+                if (overlay != null && pendingTasks.get() > 0) {
                     overlay.setVisibility(View.VISIBLE);
                 }
             };
@@ -38,7 +43,10 @@ public class LoadingOverlayHelper {
             };
 
             mainHandler.postDelayed(showRunnable, SHOW_DELAY_MS);
-            mainHandler.postDelayed(timeoutRunnable, defaultTimeoutMs);
+        }
+        if (timeoutRunnable != null) {
+            mainHandler.removeCallbacks(timeoutRunnable);
+            mainHandler.postDelayed(timeoutRunnable, timeoutMs);
         }
     }
 
@@ -51,9 +59,11 @@ public class LoadingOverlayHelper {
     }
 
     private void hideOverlay() {
-        if (overlay != null) {
-            overlay.setVisibility(View.GONE);
-        }
+        mainHandler.post(() -> {
+            if (overlay != null) {
+                overlay.setVisibility(View.GONE);
+            }
+        });
     }
 
     private void cancelCallbacks() {
@@ -68,6 +78,6 @@ public class LoadingOverlayHelper {
     public void cleanup() {
         cancelCallbacks();
         pendingTasks.set(0);
-        hideOverlay();
+        overlay = null;
     }
 }

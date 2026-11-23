@@ -28,7 +28,9 @@ public class OuterMainActivity extends AppCompatActivity {
         bootExecutor.execute(() -> {
             try {
                 updateBootStatus("Loading preferences & language...");
-                Thread.sleep(400);
+
+                updateBootStatus("Cleaning temporary cache...");
+                SessionCacheManager.purgeDiskCachesBackground(this, DiagnosticLogger.isNetworkAvailable(this));
 
                 updateBootStatus("Syncing diagnostics...");
                 DiagnosticLogger.flushPendingCrashReports(this);
@@ -38,7 +40,9 @@ public class OuterMainActivity extends AppCompatActivity {
                 
                 Intent intent;
                 if (hasSession) {
-                    SupabaseHelper.refreshAccessToken(this);
+                    if (DiagnosticLogger.isNetworkAvailable(this)) {
+                        SupabaseHelper.refreshAccessToken(this);
+                    }
                     String role = getSharedPreferences("iKhayaSession", MODE_PRIVATE).getString("USER_ROLE", "");
 
                     if ("landlord".equalsIgnoreCase(role)) {
@@ -56,7 +60,6 @@ public class OuterMainActivity extends AppCompatActivity {
                 }
 
                 updateBootStatus("Preparing your workspace...");
-                Thread.sleep(300);
 
                 final Intent finalIntent = intent;
                 runOnUiThread(() -> {

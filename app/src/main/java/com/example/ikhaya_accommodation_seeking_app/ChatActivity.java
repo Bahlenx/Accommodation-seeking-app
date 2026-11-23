@@ -198,6 +198,51 @@ public class ChatActivity extends AppCompatActivity {
                     : getString(R.string.subtitle_direct_message));
         }
 
+        TextView txtHeaderRoleBadge = findViewById(R.id.txtHeaderRoleBadge);
+        if (txtHeaderRoleBadge != null) {
+            String initialHeaderRole = "TENANT";
+            if (isCommunity) {
+                initialHeaderRole = "COMMUNITY";
+            } else if (isGuestSupportChat) {
+                initialHeaderRole = "ADMIN";
+            } else {
+                String rxRole = getIntent().getStringExtra("RECEIVER_ROLE");
+                if (rxRole != null && !rxRole.trim().isEmpty()) {
+                    initialHeaderRole = rxRole;
+                }
+            }
+            updateRoleBadge(txtHeaderRoleBadge, initialHeaderRole);
+            txtHeaderRoleBadge.setVisibility(View.VISIBLE);
+
+            if (!isCommunity && !isGuestSupportChat && receiverId != null && !receiverId.trim().isEmpty()) {
+                final String targetReceiverId = receiverId;
+                executor.execute(() -> {
+                    try {
+                        String encId = SupabaseHelper.encode(targetReceiverId);
+                        HttpURLConnection profConn = SupabaseHelper.createConnection(
+                                "/rest/v1/profiles?select=full_name,role&or=(id.eq." + encId + ",firebase_uid.eq." + encId + ")",
+                                "GET", accessToken);
+                        if (profConn.getResponseCode() >= 200 && profConn.getResponseCode() < 300) {
+                            JSONArray arr = new JSONArray(SupabaseHelper.readResponse(profConn));
+                            if (arr.length() > 0) {
+                                JSONObject prof = arr.getJSONObject(0);
+                                String recRole = prof.optString("role", "TENANT");
+                                String recName = prof.optString("full_name", "");
+                                runOnUiThread(() -> {
+                                    if (isFinishing() || isDestroyed()) return;
+                                    if (!recName.isEmpty() && txtTitle != null) {
+                                        txtTitle.setText(recName);
+                                    }
+                                    updateRoleBadge(txtHeaderRoleBadge, recRole);
+                                });
+                            }
+                        }
+                        profConn.disconnect();
+                    } catch (Exception ignored) {}
+                });
+            }
+        }
+
         if (btnBack != null) {
             btnBack.setOnClickListener(v -> finish());
         }
@@ -652,6 +697,43 @@ public class ChatActivity extends AppCompatActivity {
         messagesContainer.addView(wrapper);
     }
 
+    private TextView createRoleBadge(String rawRole) {
+        TextView badge = new TextView(this);
+        updateRoleBadge(badge, rawRole);
+        return badge;
+    }
+
+    private void updateRoleBadge(TextView badge, String rawRole) {
+        String role = (rawRole == null || rawRole.trim().isEmpty())
+                ? "MEMBER" : rawRole.trim().toUpperCase(Locale.ROOT);
+        int textColor;
+        int bgColor;
+        if ("LANDLORD".equals(role)) {
+            textColor = Color.parseColor("#B85032");
+            bgColor = Color.parseColor("#FDEEE9");
+        } else if ("ADMIN".equals(role)) {
+            textColor = Color.parseColor("#B91C1C");
+            bgColor = Color.parseColor("#FEE2E2");
+        } else if ("COMMUNITY".equals(role)) {
+            textColor = Color.parseColor("#1D4ED8");
+            bgColor = Color.parseColor("#DBEAFE");
+        } else { // TENANT / RESIDENT / MEMBER / GUEST
+            textColor = Color.parseColor("#15803D");
+            bgColor = Color.parseColor("#E6F4EA");
+        }
+
+        badge.setText(role);
+        badge.setTextSize(TypedValue.COMPLEX_UNIT_SP, 10f);
+        badge.setTypeface(null, Typeface.BOLD);
+        badge.setTextColor(textColor);
+        badge.setPadding(dpToPx(7), dpToPx(2), dpToPx(7), dpToPx(2));
+
+        android.graphics.drawable.GradientDrawable bg = new android.graphics.drawable.GradientDrawable();
+        bg.setColor(bgColor);
+        bg.setCornerRadius(dpToPx(10));
+        badge.setBackground(bg);
+    }
+
     private void addMessageBubble(
             String messageId,
             String authorName,
@@ -690,14 +772,35 @@ public class ChatActivity extends AppCompatActivity {
         content.setOrientation(LinearLayout.VERTICAL);
         content.setPadding(dpToPx(16), dpToPx(12), dpToPx(16), dpToPx(12));
 
-        if (!isMe && isCommunity) {
-            TextView txtAuthor = new TextView(this);
-            txtAuthor.setText(String.format(Locale.getDefault(), "%s • %s", authorName, authorRole.toUpperCase(Locale.getDefault())));
-            txtAuthor.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f);
-            txtAuthor.setTypeface(null, Typeface.BOLD);
-            txtAuthor.setTextColor(Color.parseColor("#BA5536"));
-            content.addView(txtAuthor);
-        }
+        LinearLayout headerRow = new LinearLayout(this);
+        headerRow.setOrientation(LinearLayout.HORIZONTAL);
+        headerRow.setGravity(Gravity.CENTER_VERTICAL);
+        LinearLayout.LayoutParams headerParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        headerParams.setMargins(0, 0, 0, dpToPx(4));
+        headerRow.setLayoutParams(headerParams);
+
+        TextView txtAuthor = new TextView(this);
+        String displayName = isMe ? (senderName != null && !senderName.isEmpty() ? senderName : "You") : authorName;
+        txtAuthor.setText(displayName);
+        txtAuthor.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f);
+        txtAuthor.setTypeface(null, Typeface.BOLD);
+        txtAuthor.setTextColor(Color.parseColor("#6D635E"));
+        headerRow.addView(txtAuthor);
+
+        String effectiveRole = isMe ? (senderRole != null && !senderRole.isEmpty() ? senderRole : "TENANT") : authorRole;
+        TextView rolePill = createRoleBadge(effectiveRole);
+        LinearLayout.LayoutParams pillLp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        pillLp.setMarginStart(dpToPx(6));
+        rolePill.setLayoutParams(pillLp);
+        headerRow.addView(rolePill);
+
+        content.addView(headerRow);
 
         if (messageText.startsWith("[IMAGE_BASE64]:")) {
             String base64Image = messageText.substring("[IMAGE_BASE64]:".length());

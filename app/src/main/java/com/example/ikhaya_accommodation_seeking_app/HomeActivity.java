@@ -52,6 +52,9 @@ public class HomeActivity extends AppCompatActivity {
     private View messageDot;
 
     private LoadingOverlayHelper loadingOverlayHelper;
+    private NetworkStatusMonitor networkStatusMonitor;
+
+    private final java.util.Map<String, String> tenantViewingBadges = new java.util.concurrent.ConcurrentHashMap<>();
 
     private final ExecutorService imageExecutor =
             Executors.newFixedThreadPool(3);
@@ -110,6 +113,7 @@ public class HomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_home);
 
         loadingOverlayHelper = new LoadingOverlayHelper(findViewById(R.id.layoutLoadingOverlay), 3000L);
+        networkStatusMonitor = new NetworkStatusMonitor(this, findViewById(R.id.viewHomeConnectionDot), findViewById(R.id.tvHomeConnectionStatus));
 
         View homeRoot = findViewById(R.id.homeRoot);
         View floatingBottomNav =
@@ -166,6 +170,7 @@ public class HomeActivity extends AppCompatActivity {
         if (swipeRefreshHome != null) {
             swipeRefreshHome.setColorSchemeColors(Color.parseColor("#BA5536"));
             swipeRefreshHome.setOnRefreshListener(() -> {
+                SessionCacheManager.invalidateJson("home_feed_listings");
                 loadHomeFeedFromSupabase();
                 refreshNotifications();
             });
@@ -279,6 +284,22 @@ public class HomeActivity extends AppCompatActivity {
 
         setupBottomNavigation();
         loadHomeFeedFromSupabase();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (networkStatusMonitor != null) {
+            networkStatusMonitor.start();
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (networkStatusMonitor != null) {
+            networkStatusMonitor.stop();
+        }
     }
 
     @Override
@@ -923,7 +944,7 @@ public class HomeActivity extends AppCompatActivity {
                 }
             }
             if (best != null) {
-                getSharedPreferences("iKhayaCache", MODE_PRIVATE).edit()
+                getSharedPreferences("iKhayaUserPrefs", MODE_PRIVATE).edit()
                         .putFloat("USER_LAST_LAT", (float) best.getLatitude())
                         .putFloat("USER_LAST_LON", (float) best.getLongitude())
                         .apply();
@@ -949,7 +970,7 @@ public class HomeActivity extends AppCompatActivity {
                     if (arr.length() > 0) {
                         JSONObject listing = arr.getJSONObject(0).optJSONObject("listings");
                         if (listing != null) {
-                            getSharedPreferences("iKhayaCache", MODE_PRIVATE).edit()
+                            getSharedPreferences("iKhayaUserPrefs", MODE_PRIVATE).edit()
                                     .putString("LAST_BOOKED_TYPE", listing.optString("property_type", ""))
                                     .putString("LAST_BOOKED_LOC", listing.optString("location", ""))
                                     .putFloat("LAST_BOOKED_PRICE", (float) listing.optDouble("price", 0.0))
@@ -1017,18 +1038,18 @@ public class HomeActivity extends AppCompatActivity {
 
     private void sortListingsByRelevance(List<JSONObject> listings) {
         SharedPreferences prefs = getSharedPreferences("iKhayaSession", MODE_PRIVATE);
-        SharedPreferences cache = getSharedPreferences("iKhayaCache", MODE_PRIVATE);
+        SharedPreferences userPrefs = getSharedPreferences("iKhayaUserPrefs", MODE_PRIVATE);
         
         String userLocation = prefs.getString("USER_LOCATION", prefs.getString("user_location", "")).toLowerCase(java.util.Locale.ROOT);
         double minBudget = prefs.getFloat("USER_MIN_BUDGET", 0f);
         double maxBudget = prefs.getFloat("USER_MAX_BUDGET", prefs.getFloat("USER_BUDGET", prefs.getFloat("user_budget", 999999f)));
         
-        double uLat = cache.getFloat("USER_LAST_LAT", 0f);
-        double uLon = cache.getFloat("USER_LAST_LON", 0f);
+        double uLat = userPrefs.getFloat("USER_LAST_LAT", 0f);
+        double uLon = userPrefs.getFloat("USER_LAST_LON", 0f);
         
-        String lastBookedType = cache.getString("LAST_BOOKED_TYPE", "").toLowerCase(java.util.Locale.ROOT);
-        String lastBookedLoc = cache.getString("LAST_BOOKED_LOC", "").toLowerCase(java.util.Locale.ROOT);
-        double lastBookedPrice = cache.getFloat("LAST_BOOKED_PRICE", 0f);
+        String lastBookedType = userPrefs.getString("LAST_BOOKED_TYPE", "").toLowerCase(java.util.Locale.ROOT);
+        String lastBookedLoc = userPrefs.getString("LAST_BOOKED_LOC", "").toLowerCase(java.util.Locale.ROOT);
+        double lastBookedPrice = userPrefs.getFloat("LAST_BOOKED_PRICE", 0f);
 
         listings.sort((a, b) -> {
             double scoreA = computeListingScore(a, uLat, uLon, userLocation, lastBookedType, lastBookedLoc, lastBookedPrice, minBudget, maxBudget);
@@ -1052,11 +1073,10 @@ public class HomeActivity extends AppCompatActivity {
 
     private void loadHomeFeedFromSupabase() {
         if (loadingOverlayHelper != null) loadingOverlayHelper.beginTask();
-        SharedPreferences cachePrefs = getSharedPreferences("iKhayaCache", MODE_PRIVATE);
-        String cachedJson = cachePrefs.getString("cached_listings_json", "");
-        if (!cachedJson.isEmpty()) {
+        
+        JSONArray cachedArray = SessionCacheManager.getJsonArraySafe("home_feed_listings");
+        if (cachedArray != null) {
             try {
-                JSONArray cachedArray = new JSONArray(cachedJson);
                 List<JSONObject> cachedList = new ArrayList<>();
                 for (int i = 0; i < cachedArray.length(); i++) {
                     JSONObject item = cachedArray.optJSONObject(i);
@@ -1083,9 +1103,9 @@ public class HomeActivity extends AppCompatActivity {
 
         if (accessToken == null
                 || accessToken.isEmpty()) {
+            if (loadingOverlayHelper != null) loadingOverlayHelper.endTask();
             runOnUiThread(() -> {
                 if (swipeRefreshHome != null && swipeRefreshHome.isRefreshing()) {
-                    if(loadingOverlayHelper != null) loadingOverlayHelper.endTask();
                     swipeRefreshHome.setRefreshing(false);
                 }
             });
@@ -1097,6 +1117,33 @@ public class HomeActivity extends AppCompatActivity {
             HttpURLConnection conn = null;
 
             try {
+                String userId = SupabaseHelper.getUserId(this);
+                if (userId != null && !userId.isEmpty()) {
+                    try {
+                        HttpURLConnection vConn = SupabaseHelper.createConnection(
+                                "/rest/v1/viewings?select=listing_id,status,viewing_date&tenant_uid=eq." + SupabaseHelper.encode(userId),
+                                "GET", accessToken);
+                        if (vConn.getResponseCode() >= 200 && vConn.getResponseCode() < 300) {
+                            JSONArray vArr = new JSONArray(SupabaseHelper.readResponse(vConn));
+                            tenantViewingBadges.clear();
+                            for (int i = 0; i < vArr.length(); i++) {
+                                JSONObject v = vArr.getJSONObject(i);
+                                String lid = v.optString("listing_id", "");
+                                String vst = v.optString("status", "");
+                                String vDate = v.optString("viewing_date", "");
+                                if (!lid.isEmpty() && !WorkflowAutomationHelper.isViewingDateInPast(vDate)) {
+                                    if ("Confirmed".equalsIgnoreCase(vst)) {
+                                        tenantViewingBadges.put(lid, "Under Viewing");
+                                    } else if (("Pending".equalsIgnoreCase(vst) || "Pending Host".equalsIgnoreCase(vst)) && !"Under Viewing".equals(tenantViewingBadges.get(lid))) {
+                                        tenantViewingBadges.put(lid, "Pending Viewing");
+                                    }
+                                }
+                            }
+                        }
+                        vConn.disconnect();
+                    } catch (Exception ignored) {}
+                }
+
                 conn = SupabaseHelper.createConnection(
                         "/rest/v1/listings?select=*&status=eq.APPROVED&is_archived=eq.false&order=created_at.desc&limit=20",
                         "GET",
@@ -1109,7 +1156,7 @@ public class HomeActivity extends AppCompatActivity {
                         SupabaseHelper.readResponse(conn);
 
                 if (code >= 200 && code < 300) {
-                    cachePrefs.edit().putString("cached_listings_json", response).apply();
+                    SessionCacheManager.putJson("home_feed_listings", response, 120_000L);
 
                     JSONArray rawListings =
                             new JSONArray(response);
@@ -1149,8 +1196,7 @@ public class HomeActivity extends AppCompatActivity {
                     runOnUiThread(() -> {
 
                         if (swipeRefreshHome != null && swipeRefreshHome.isRefreshing()) {
-                            if(loadingOverlayHelper != null) loadingOverlayHelper.endTask();
-                    swipeRefreshHome.setRefreshing(false);
+                            swipeRefreshHome.setRefreshing(false);
                         }
 
                         if (isFinishing() || isDestroyed()) {
@@ -1176,8 +1222,7 @@ public class HomeActivity extends AppCompatActivity {
                 } else {
                     runOnUiThread(() -> {
                         if (swipeRefreshHome != null && swipeRefreshHome.isRefreshing()) {
-                            if(loadingOverlayHelper != null) loadingOverlayHelper.endTask();
-                    swipeRefreshHome.setRefreshing(false);
+                            swipeRefreshHome.setRefreshing(false);
                         }
                     });
                 }
@@ -1185,14 +1230,14 @@ public class HomeActivity extends AppCompatActivity {
             } catch (Exception ignored) {
                 runOnUiThread(() -> {
                     if (swipeRefreshHome != null && swipeRefreshHome.isRefreshing()) {
-                        if(loadingOverlayHelper != null) loadingOverlayHelper.endTask();
-                    swipeRefreshHome.setRefreshing(false);
+                        swipeRefreshHome.setRefreshing(false);
                     }
                 });
             } finally {
                 if (conn != null) {
                     conn.disconnect();
                 }
+                if (loadingOverlayHelper != null) loadingOverlayHelper.endTask();
             }
         }).start();
     }
@@ -1289,6 +1334,10 @@ public class HomeActivity extends AppCompatActivity {
     protected void onDestroy() {
         if (loadingOverlayHelper != null) {
             loadingOverlayHelper.cleanup();
+        }
+
+        if (networkStatusMonitor != null) {
+            networkStatusMonitor.cleanup();
         }
 
         notificationHandler.removeCallbacks(
@@ -1424,6 +1473,24 @@ public class HomeActivity extends AppCompatActivity {
             price.setLayoutParams(priceParams);
             root.addView(price);
 
+            TextView availabilityBadge = new TextView(HomeActivity.this);
+            availabilityBadge.setTextSize(10.5f);
+            availabilityBadge.setTypeface(null, Typeface.BOLD);
+            availabilityBadge.setPadding(
+                    Math.round(8f * density),
+                    Math.round(3f * density),
+                    Math.round(8f * density),
+                    Math.round(3f * density)
+            );
+            LinearLayout.LayoutParams badgeParams = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+            );
+            badgeParams.topMargin = Math.round(6f * density);
+            availabilityBadge.setLayoutParams(badgeParams);
+            availabilityBadge.setVisibility(View.GONE);
+            root.addView(availabilityBadge);
+
             card.addView(root);
 
             return new ListingViewHolder(
@@ -1431,7 +1498,8 @@ public class HomeActivity extends AppCompatActivity {
                     image,
                     title,
                     location,
-                    price
+                    price,
+                    availabilityBadge
             );
         }
 
@@ -1467,6 +1535,33 @@ public class HomeActivity extends AppCompatActivity {
 
             holder.tvPrice.setText(PriceUtils.formatDisplayPrice(item));
 
+            float density = getResources().getDisplayMetrics().density;
+            String avail = item.optString("availability", "Available");
+            String fallback = tenantViewingBadges.get(id);
+            if (("Available".equalsIgnoreCase(avail) || avail.isEmpty()) && fallback != null) {
+                avail = fallback;
+            }
+
+            if ("Under Viewing".equalsIgnoreCase(avail)) {
+                holder.tvAvailabilityBadge.setText("Under Viewing");
+                holder.tvAvailabilityBadge.setTextColor(Color.parseColor("#1D4ED8"));
+                android.graphics.drawable.GradientDrawable bg = new android.graphics.drawable.GradientDrawable();
+                bg.setColor(Color.parseColor("#DBEAFE"));
+                bg.setCornerRadius(Math.round(8f * density));
+                holder.tvAvailabilityBadge.setBackground(bg);
+                holder.tvAvailabilityBadge.setVisibility(View.VISIBLE);
+            } else if ("Pending Viewing".equalsIgnoreCase(avail)) {
+                holder.tvAvailabilityBadge.setText("Pending Viewing");
+                holder.tvAvailabilityBadge.setTextColor(Color.parseColor("#B85032"));
+                android.graphics.drawable.GradientDrawable bg = new android.graphics.drawable.GradientDrawable();
+                bg.setColor(Color.parseColor("#FDEEE9"));
+                bg.setCornerRadius(Math.round(8f * density));
+                holder.tvAvailabilityBadge.setBackground(bg);
+                holder.tvAvailabilityBadge.setVisibility(View.VISIBLE);
+            } else {
+                holder.tvAvailabilityBadge.setVisibility(View.GONE);
+            }
+
             holder.ivImage.setImageResource(
                     android.R.drawable.ic_menu_gallery
             );
@@ -1500,6 +1595,14 @@ public class HomeActivity extends AppCompatActivity {
                 String urlStr,
                 ImageView imageView
         ) {
+            imageView.setTag(urlStr);
+            Bitmap cached = SessionCacheManager.getBitmap(urlStr);
+            if (cached != null) {
+                imageView.setImageBitmap(cached);
+                imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                return;
+            }
+            
             imageExecutor.execute(() -> {
 
                 HttpURLConnection conn = null;
@@ -1517,23 +1620,16 @@ public class HomeActivity extends AppCompatActivity {
 
                         try (InputStream in = conn.getInputStream()) {
 
-                            Bitmap bmp =
-                                    BitmapFactory.decodeStream(in);
+                            Bitmap bmp = SessionCacheManager.decodeSampledBitmap(in, 600, 400);
 
                             if (bmp != null) {
-
+                                SessionCacheManager.putBitmap(urlStr, bmp);
                                 runOnUiThread(() -> {
-
-                                    if (isFinishing()
-                                            || isDestroyed()) {
-                                        return;
+                                    if (isFinishing() || isDestroyed()) return;
+                                    if (urlStr.equals(imageView.getTag())) {
+                                        imageView.setImageBitmap(bmp);
+                                        imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
                                     }
-
-                                    imageView.setImageBitmap(bmp);
-
-                                    imageView.setScaleType(
-                                            ImageView.ScaleType.CENTER_CROP
-                                    );
                                 });
                             }
                         }
@@ -1556,13 +1652,15 @@ public class HomeActivity extends AppCompatActivity {
             final TextView tvTitle;
             final TextView tvLocation;
             final TextView tvPrice;
+            final TextView tvAvailabilityBadge;
 
             ListingViewHolder(
                     View itemView,
                     ImageView ivImage,
                     TextView tvTitle,
                     TextView tvLocation,
-                    TextView tvPrice
+                    TextView tvPrice,
+                    TextView tvAvailabilityBadge
             ) {
                 super(itemView);
 
@@ -1570,6 +1668,7 @@ public class HomeActivity extends AppCompatActivity {
                 this.tvTitle = tvTitle;
                 this.tvLocation = tvLocation;
                 this.tvPrice = tvPrice;
+                this.tvAvailabilityBadge = tvAvailabilityBadge;
             }
         }
     }

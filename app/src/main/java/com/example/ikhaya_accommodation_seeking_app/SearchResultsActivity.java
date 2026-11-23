@@ -56,6 +56,8 @@ public class SearchResultsActivity extends AppCompatActivity {
     private String currentSearchQuery = "";
     private String currentPropertyType = "";
 
+    private final java.util.Map<String, String> tenantViewingBadges = new java.util.concurrent.ConcurrentHashMap<>();
+
     // Filter State Variables
     private double minPrice = 0;
     private double maxPrice = 5000000;
@@ -359,6 +361,32 @@ public class SearchResultsActivity extends AppCompatActivity {
             HttpURLConnection conn = null;
 
             try {
+                String userId = SupabaseHelper.getUserId(this);
+                if (userId != null && !userId.isEmpty()) {
+                    try {
+                        HttpURLConnection vConn = SupabaseHelper.createConnection(
+                                "/rest/v1/viewings?select=listing_id,status,viewing_date&tenant_uid=eq." + SupabaseHelper.encode(userId),
+                                "GET", token);
+                        if (vConn.getResponseCode() >= 200 && vConn.getResponseCode() < 300) {
+                            JSONArray vArr = new JSONArray(SupabaseHelper.readResponse(vConn));
+                            tenantViewingBadges.clear();
+                            for (int i = 0; i < vArr.length(); i++) {
+                                JSONObject v = vArr.getJSONObject(i);
+                                String lid = v.optString("listing_id", "");
+                                String vst = v.optString("status", "");
+                                String vDate = v.optString("viewing_date", "");
+                                if (!lid.isEmpty() && !WorkflowAutomationHelper.isViewingDateInPast(vDate)) {
+                                    if ("Confirmed".equalsIgnoreCase(vst)) {
+                                        tenantViewingBadges.put(lid, "Under Viewing");
+                                    } else if (("Pending".equalsIgnoreCase(vst) || "Pending Host".equalsIgnoreCase(vst)) && !"Under Viewing".equals(tenantViewingBadges.get(lid))) {
+                                        tenantViewingBadges.put(lid, "Pending Viewing");
+                                    }
+                                }
+                            }
+                        }
+                        vConn.disconnect();
+                    } catch (Exception ignored) {}
+                }
 
                 StringBuilder endpoint = new StringBuilder(
                         "/rest/v1/listings?select=*" +
@@ -716,6 +744,42 @@ public class SearchResultsActivity extends AppCompatActivity {
 
         details.addView(priceTv);
 
+        String avail = listing.optString("availability", "Available");
+        String fallback = tenantViewingBadges.get(listingId);
+        if (("Available".equalsIgnoreCase(avail) || avail.isEmpty()) && fallback != null) {
+            avail = fallback;
+        }
+
+        if ("Under Viewing".equalsIgnoreCase(avail) || "Pending Viewing".equalsIgnoreCase(avail)) {
+            TextView availabilityBadge = new TextView(this);
+            availabilityBadge.setTextSize(10.5f);
+            availabilityBadge.setTypeface(null, Typeface.BOLD);
+            availabilityBadge.setPadding(dpToPx(8), dpToPx(3), dpToPx(8), dpToPx(3));
+            LinearLayout.LayoutParams badgeParams = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+            );
+            badgeParams.topMargin = dpToPx(6);
+            availabilityBadge.setLayoutParams(badgeParams);
+
+            if ("Under Viewing".equalsIgnoreCase(avail)) {
+                availabilityBadge.setText("Under Viewing");
+                availabilityBadge.setTextColor(Color.parseColor("#1D4ED8"));
+                android.graphics.drawable.GradientDrawable bg = new android.graphics.drawable.GradientDrawable();
+                bg.setColor(Color.parseColor("#DBEAFE"));
+                bg.setCornerRadius(dpToPx(8));
+                availabilityBadge.setBackground(bg);
+            } else {
+                availabilityBadge.setText("Pending Viewing");
+                availabilityBadge.setTextColor(Color.parseColor("#B85032"));
+                android.graphics.drawable.GradientDrawable bg = new android.graphics.drawable.GradientDrawable();
+                bg.setColor(Color.parseColor("#FDEEE9"));
+                bg.setCornerRadius(dpToPx(8));
+                availabilityBadge.setBackground(bg);
+            }
+            details.addView(availabilityBadge);
+        }
+
         root.addView(details);
         card.addView(root);
 
@@ -764,6 +828,13 @@ public class SearchResultsActivity extends AppCompatActivity {
             String urlStr,
             ImageView imageView
     ) {
+        imageView.setTag(urlStr);
+        Bitmap cached = SessionCacheManager.getBitmap(urlStr);
+        if (cached != null) {
+            imageView.setImageBitmap(cached);
+            imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            return;
+        }
 
         executor.execute(() -> {
 
@@ -784,9 +855,10 @@ public class SearchResultsActivity extends AppCompatActivity {
                                  conn.getInputStream()) {
 
                         Bitmap bmp =
-                                BitmapFactory.decodeStream(in);
+                                SessionCacheManager.decodeSampledBitmap(in, 600, 400);
 
                         if (bmp != null) {
+                            SessionCacheManager.putBitmap(urlStr, bmp);
 
                             runOnUiThread(() -> {
 
@@ -795,11 +867,13 @@ public class SearchResultsActivity extends AppCompatActivity {
                                     return;
                                 }
 
-                                imageView.setImageBitmap(bmp);
+                                if (urlStr.equals(imageView.getTag())) {
+                                    imageView.setImageBitmap(bmp);
 
-                                imageView.setScaleType(
-                                        ImageView.ScaleType.CENTER_CROP
-                                );
+                                    imageView.setScaleType(
+                                            ImageView.ScaleType.CENTER_CROP
+                                    );
+                                }
                             });
                         }
                     }

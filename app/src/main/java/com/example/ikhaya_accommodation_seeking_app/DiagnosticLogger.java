@@ -5,17 +5,33 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Build;
 import android.util.Log;
 
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class DiagnosticLogger {
     private static final String TAG = "DiagnosticLogger";
     private static final String PREF_NAME = "iKhayaCrashQueue";
+    private static final ExecutorService warningExecutor = Executors.newSingleThreadExecutor();
+
+    public static boolean isNetworkAvailable(Context context) {
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (cm == null) return false;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            android.net.Network network = cm.getActiveNetwork();
+            if (network == null) return false;
+            android.net.NetworkCapabilities caps = cm.getNetworkCapabilities(network);
+            return caps != null && (caps.hasTransport(android.net.NetworkCapabilities.TRANSPORT_WIFI) || caps.hasTransport(android.net.NetworkCapabilities.TRANSPORT_CELLULAR) || caps.hasTransport(android.net.NetworkCapabilities.TRANSPORT_ETHERNET));
+        } else {
+            android.net.NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+            return activeNetwork != null && activeNetwork.isConnected();
+        }
+    }
 
     public static String sanitizeDiagnosticText(String raw) {
         if (raw == null) return null;
@@ -49,8 +65,7 @@ public class DiagnosticLogger {
                                 // We found a new ANR or native crash
                                 String reasonStr = (info.getReason() == ApplicationExitInfo.REASON_ANR) ? "ANR" : "Native Crash";
                                 String trace = info.getDescription();
-                                try {
-                                    InputStream traceStream = info.getTraceInputStream();
+                                try (InputStream traceStream = info.getTraceInputStream()) {
                                     if (traceStream != null) {
                                         byte[] bytes = new byte[1024];
                                         int read = traceStream.read(bytes);
@@ -83,12 +98,8 @@ public class DiagnosticLogger {
         try {
             captureHistoricalAnrOrNativeCrash(context);
 
-            ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-            if (cm != null) {
-                NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-                if (activeNetwork == null || !activeNetwork.isConnected()) {
-                    return; // Offline, don't increment retry count
-                }
+            if (!isNetworkAvailable(context)) {
+                return; // Offline, don't increment retry count
             }
 
             SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
@@ -128,14 +139,19 @@ public class DiagnosticLogger {
     }
 
     public static void logWarning(Context context, String screenName, String detail) {
-        // Rate-limited background warning reporter
-        new Thread(() -> {
+        warningExecutor.execute(() -> {
             try {
+                if (!isNetworkAvailable(context)) return;
+                SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+                long lastTs = prefs.getLong("WARN_TS_" + screenName, 0);
+                long now = System.currentTimeMillis();
+                if (now - lastTs < 5 * 60 * 1000) return; // 5-minute cooldown
+                prefs.edit().putLong("WARN_TS_" + screenName, now).apply();
                 String warningText = sanitizeDiagnosticText(detail);
-                SupabaseHelper.postCrashReportSync(context, "WARNING: " + screenName, warningText);
+                SupabaseHelper.postDiagnosticReportSync(context, "APP_WARNING", "WARNING: " + screenName, warningText);
             } catch (Exception e) {
                 Log.e(TAG, "Failed to log warning", e);
             }
-        }).start();
+        });
     }
 }
