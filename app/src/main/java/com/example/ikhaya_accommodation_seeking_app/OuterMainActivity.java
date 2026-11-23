@@ -1,170 +1,97 @@
 package com.example.ikhaya_accommodation_seeking_app;
 
 import android.content.Intent;
-import android.content.res.ColorStateList;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
-import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
-import androidx.core.graphics.Insets;
-import androidx.core.os.LocaleListCompat;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
-import java.util.Locale;
-import java.util.function.Consumer;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class OuterMainActivity extends AppCompatActivity {
 
-    private String selectedLanguage = "English";
+    private TextView tvBootStatus;
+    private final ExecutorService bootExecutor = Executors.newSingleThreadExecutor();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
+        setContentView(R.layout.activity_outer_main);
 
-        if (SupabaseHelper.isSessionWithinThirtyDays(this) && SupabaseHelper.getUserId(this) != null) {
-            new Thread(() -> {
-                SupabaseHelper.refreshAccessToken(this);
-                String role = getSharedPreferences("iKhayaSession", MODE_PRIVATE).getString("USER_ROLE", "");
+        tvBootStatus = findViewById(R.id.tvBootStatus);
+
+        bootExecutor.execute(() -> {
+            try {
+                updateBootStatus("Loading preferences & language...");
+                Thread.sleep(400);
+
+                updateBootStatus("Syncing diagnostics...");
+                DiagnosticLogger.flushPendingCrashReports(this);
+
+                updateBootStatus("Verifying session...");
+                boolean hasSession = SupabaseHelper.isSessionWithinThirtyDays(this) && SupabaseHelper.getUserId(this) != null;
                 
-                // If role is missing, we could fetch from Supabase, but for now we fallback to tenant if missing
                 Intent intent;
-                if ("landlord".equalsIgnoreCase(role)) {
-                    intent = new Intent(OuterMainActivity.this, LandlordDashboardActivity.class);
-                } else if ("admin".equalsIgnoreCase(role)) {
-                    intent = new Intent(OuterMainActivity.this, AdminDashboardActivity.class);
-                    String fullName = getSharedPreferences("iKhayaSession", MODE_PRIVATE).getString("USER_NAME", "Admin");
-                    intent.putExtra("USER_ROLE", "ADMIN");
-                    intent.putExtra("USER_NAME", fullName);
+                if (hasSession) {
+                    SupabaseHelper.refreshAccessToken(this);
+                    String role = getSharedPreferences("iKhayaSession", MODE_PRIVATE).getString("USER_ROLE", "");
+
+                    if ("landlord".equalsIgnoreCase(role)) {
+                        intent = new Intent(OuterMainActivity.this, LandlordDashboardActivity.class);
+                    } else if ("admin".equalsIgnoreCase(role)) {
+                        intent = new Intent(OuterMainActivity.this, AdminDashboardActivity.class);
+                        String fullName = getSharedPreferences("iKhayaSession", MODE_PRIVATE).getString("USER_NAME", "Admin");
+                        intent.putExtra("USER_ROLE", "ADMIN");
+                        intent.putExtra("USER_NAME", fullName);
+                    } else {
+                        intent = new Intent(OuterMainActivity.this, HomeActivity.class);
+                    }
                 } else {
-                    intent = new Intent(OuterMainActivity.this, HomeActivity.class);
+                    intent = new Intent(OuterMainActivity.this, GreetingActivity.class);
                 }
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                
+
+                updateBootStatus("Preparing your workspace...");
+                Thread.sleep(300);
+
+                final Intent finalIntent = intent;
                 runOnUiThread(() -> {
-                    startActivity(intent);
+                    if (isFinishing() || isDestroyed()) return;
+                    finalIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(finalIntent);
                     finish();
                 });
-            }).start();
-            return;
-        }
-
-        EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_greetingpage);
-
-        // Ensure true edge-to-edge: do not pad the root layout so the background fills 100% of the screen
-        View mainView = findViewById(R.id.main);
-        if (mainView != null) {
-            ViewCompat.setOnApplyWindowInsetsListener(mainView, (v, insets) -> insets);
-        }
-
-        // 1. Reference all buttons
-        Button btnEnglish = findViewById(R.id.English_btn);
-        Button btnIsiXhosa = findViewById(R.id.isiXhosa_btn);
-        Button btnAfrikaans = findViewById(R.id.afrikaans_btn);
-        Button btnSepedi = findViewById(R.id.sepedi_btn);
-        Button btnSesotho = findViewById(R.id.sesotho_btn);
-        Button btnIsiZulu = findViewById(R.id.isiZulu_btn);
-        Button btnGetStarted = findViewById(R.id.get_started_btn);
-        Button btnExistingUser = findViewById(R.id.existingUserBtn);
-
-        Button[] langButtons = {btnEnglish, btnIsiXhosa, btnAfrikaans, btnSepedi, btnSesotho, btnIsiZulu};
-
-        int activeColor = Color.parseColor("#C85A32");
-        int inactiveColor = Color.parseColor("#EADFD5");
-
-        Consumer<Button> highlightButton = (activeBtn) -> {
-            for (Button b : langButtons) {
-                if (b != null) {
-                    boolean isActive = (b == activeBtn);
-                    b.setBackgroundTintList(ColorStateList.valueOf(isActive ? activeColor : inactiveColor));
-                    b.setTextColor(isActive ? Color.WHITE : Color.BLACK);
-                }
+            } catch (Exception e) {
+                // fallback
+                runOnUiThread(() -> {
+                    if (isFinishing() || isDestroyed()) return;
+                    startActivity(new Intent(OuterMainActivity.this, GreetingActivity.class));
+                    finish();
+                });
             }
-        };
+        });
+    }
 
-        // 2. Fetch current locale & highlight matching button
-        Locale currentLocale = getResources().getConfiguration().getLocales().get(0);
-        String currentLang = currentLocale.getLanguage();
-
-        if ("xh".equals(currentLang)) {
-            selectedLanguage = "isiXhosa";
-            highlightButton.accept(btnIsiXhosa);
-        } else if ("af".equals(currentLang)) {
-            selectedLanguage = "Afrikaans";
-            highlightButton.accept(btnAfrikaans);
-        } else if ("nso".equals(currentLang)) {
-            selectedLanguage = "Sepedi";
-            highlightButton.accept(btnSepedi);
-        } else if ("st".equals(currentLang)) {
-            selectedLanguage = "Sesotho";
-            highlightButton.accept(btnSesotho);
-        } else if ("zu".equals(currentLang)) {
-            selectedLanguage = "isiZulu";
-            highlightButton.accept(btnIsiZulu);
-        } else {
-            selectedLanguage = "English";
-            highlightButton.accept(btnEnglish);
-        }
-
-        // 3. Click listener to change language dynamically
-        View.OnClickListener languageClickListener = v -> {
-            highlightButton.accept((Button) v);
-
-            String tag = "en";
-            int id = v.getId();
-            if (id == R.id.English_btn) {
-                selectedLanguage = "English";
-                tag = "en";
-            } else if (id == R.id.isiXhosa_btn) {
-                selectedLanguage = "isiXhosa";
-                tag = "xh";
-            } else if (id == R.id.afrikaans_btn) {
-                selectedLanguage = "Afrikaans";
-                tag = "af";
-            } else if (id == R.id.sepedi_btn) {
-                selectedLanguage = "Sepedi";
-                tag = "nso";
-            } else if (id == R.id.sesotho_btn) {
-                selectedLanguage = "Sesotho";
-                tag = "st";
-            } else if (id == R.id.isiZulu_btn) {
-                selectedLanguage = "isiZulu";
-                tag = "zu";
+    private void updateBootStatus(String processText) {
+        runOnUiThread(() -> {
+            if (tvBootStatus != null) {
+                tvBootStatus.animate().cancel();
+                tvBootStatus.setText(processText);
+                tvBootStatus.setAlpha(0.25f);
+                tvBootStatus.animate().alpha(1f).setDuration(140).start();
             }
+        });
+    }
 
-            LocaleListCompat appLocale = LocaleListCompat.forLanguageTags(tag);
-            AppCompatDelegate.setApplicationLocales(appLocale);
-        };
-
-        if (btnEnglish != null) btnEnglish.setOnClickListener(languageClickListener);
-        if (btnIsiXhosa != null) btnIsiXhosa.setOnClickListener(languageClickListener);
-        if (btnAfrikaans != null) btnAfrikaans.setOnClickListener(languageClickListener);
-        if (btnSepedi != null) btnSepedi.setOnClickListener(languageClickListener);
-        if (btnSesotho != null) btnSesotho.setOnClickListener(languageClickListener);
-        if (btnIsiZulu != null) btnIsiZulu.setOnClickListener(languageClickListener);
-
-        if (btnGetStarted != null) {
-            btnGetStarted.setOnClickListener(v -> {
-                Intent intent = new Intent(OuterMainActivity.this, RegistrationActivity.class);
-                intent.putExtra("CHOSEN_LANGUAGE", selectedLanguage);
-                startActivity(intent);
-            });
-        }
-
-        if (btnExistingUser != null) {
-            btnExistingUser.setOnClickListener(v -> {
-                Intent intent = new Intent(OuterMainActivity.this, LoginActivity.class);
-                intent.putExtra("EXPLICIT_LOGIN", true);
-                startActivity(intent);
-            });
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (bootExecutor != null) {
+            bootExecutor.shutdownNow();
         }
     }
 }

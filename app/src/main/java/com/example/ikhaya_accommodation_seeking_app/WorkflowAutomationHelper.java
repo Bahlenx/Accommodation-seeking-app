@@ -62,7 +62,7 @@ public class WorkflowAutomationHelper {
         return code;
     }
 
-    private static boolean isViewingDateInPast(String viewingDateStr) {
+    public static boolean isViewingDateInPast(String viewingDateStr) {
         if (viewingDateStr == null || viewingDateStr.isEmpty()) return false;
         try {
             String ymd = viewingDateStr.length() > 10 ? viewingDateStr.substring(0, 10) : viewingDateStr;
@@ -128,6 +128,67 @@ public class WorkflowAutomationHelper {
             vConn.disconnect();
         } catch (Exception e) {
             Log.w(TAG, "syncListingViewingAvailability failed", e);
+        }
+    }
+
+    public static void openAddToCalendarIntent(
+            Context context, String propertyName, String viewingDateStr,
+            String location, double lat, double lon) {
+        long startMillis = parseViewingStartMillis(viewingDateStr);
+        long endMillis = startMillis + (60L * 60L * 1000L); // 1-hour viewing block
+
+        String cleanProp = (propertyName == null || propertyName.trim().isEmpty()) ? "Property" : propertyName.trim();
+        StringBuilder desc = new StringBuilder("Scheduled viewing via iKhaya for ").append(cleanProp);
+        if (viewingDateStr != null && !viewingDateStr.isEmpty()) {
+            desc.append("\nSlot: ").append(viewingDateStr);
+        }
+        if (lat != 0.0 || lon != 0.0) {
+            desc.append("\nMap Pin: https://maps.google.com/?q=").append(lat).append(",").append(lon);
+        }
+
+        android.content.Intent intent = new android.content.Intent(android.content.Intent.ACTION_INSERT)
+                .setData(android.provider.CalendarContract.Events.CONTENT_URI)
+                .putExtra(android.provider.CalendarContract.Events.TITLE, "Scheduled viewing for " + cleanProp)
+                .putExtra(android.provider.CalendarContract.Events.EVENT_LOCATION, location != null ? location : "")
+                .putExtra(android.provider.CalendarContract.Events.DESCRIPTION, desc.toString())
+                .putExtra(android.provider.CalendarContract.EXTRA_EVENT_BEGIN_TIME, startMillis)
+                .putExtra(android.provider.CalendarContract.EXTRA_EVENT_END_TIME, endMillis)
+                .putExtra(android.provider.CalendarContract.Events.HAS_ALARM, 1);
+
+        try {
+            context.startActivity(intent);
+        } catch (Exception e) {
+            android.widget.Toast.makeText(context, "No calendar app found on this device.", android.widget.Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private static long parseViewingStartMillis(String viewingDateStr) {
+        if (viewingDateStr == null || viewingDateStr.isEmpty()) return System.currentTimeMillis();
+        try {
+            String ymd = viewingDateStr.length() > 10 ? viewingDateStr.substring(0, 10) : viewingDateStr;
+            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.ROOT);
+            java.util.Date vDate = sdf.parse(ymd);
+            if (vDate == null) return System.currentTimeMillis();
+            
+            java.util.Calendar cal = java.util.Calendar.getInstance();
+            cal.setTime(vDate);
+            
+            if (viewingDateStr.contains("Morning") || viewingDateStr.contains("09:00")) {
+                cal.set(java.util.Calendar.HOUR_OF_DAY, 9);
+            } else if (viewingDateStr.contains("Midday") || viewingDateStr.contains("11:00") || viewingDateStr.contains("12:00")) {
+                cal.set(java.util.Calendar.HOUR_OF_DAY, 12);
+            } else if (viewingDateStr.contains("Afternoon") || viewingDateStr.contains("14:00")) {
+                cal.set(java.util.Calendar.HOUR_OF_DAY, 14);
+            } else if (viewingDateStr.contains("Late") || viewingDateStr.contains("16:00")) {
+                cal.set(java.util.Calendar.HOUR_OF_DAY, 16);
+            } else {
+                cal.set(java.util.Calendar.HOUR_OF_DAY, 10);
+            }
+            cal.set(java.util.Calendar.MINUTE, 0);
+            cal.set(java.util.Calendar.SECOND, 0);
+            return cal.getTimeInMillis();
+        } catch (Exception e) {
+            return System.currentTimeMillis();
         }
     }
 

@@ -936,4 +936,39 @@ public class SupabaseHelper {
             return byteBuffer.toByteArray();
         }
     }
+
+    public static boolean postCrashReportSync(Context context, String reason, String description) {
+        try {
+            SharedPreferences prefs = context.getSharedPreferences("iKhayaSession", Context.MODE_PRIVATE);
+            String uid = prefs.getString("USER_ID", "UNKNOWN_UID");
+            String name = prefs.getString("USER_NAME", "Unknown User");
+            String email = prefs.getString("USER_EMAIL", "unknown@system.local");
+            String token = prefs.getString("ACCESS_TOKEN", "");
+            
+            JSONObject body = new JSONObject();
+            body.put("reporter_uid", uid);
+            body.put("reporter_id", uid);
+            body.put("reporter_name", name);
+            body.put("reporter_email", email);
+            body.put("reporter_role", "SYSTEM_DIAGNOSTIC");
+            body.put("issue_type", "APP_CRASH");
+            body.put("reason", reason);
+            body.put("description", description);
+            body.put("status", "open");
+            
+            StringBuilder response = new StringBuilder();
+            String[] optionalKeys = new String[]{"reporter_uid", "reporter_id", "reporter_name", "reporter_email", "reporter_role", "issue_type"};
+            int code = WorkflowAutomationHelper.postWithOptionalFallback(
+                "/rest/v1/reports", 
+                body, 
+                optionalKeys, 
+                token, 
+                response
+            );
+            return code >= 200 && code < 300;
+        } catch (Exception e) {
+            Log.e("SupabaseHelper", "Crash report sync failed", e);
+            return false;
+        }
+    }
 }

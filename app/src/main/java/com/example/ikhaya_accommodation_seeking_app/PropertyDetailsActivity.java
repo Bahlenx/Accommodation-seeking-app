@@ -57,6 +57,8 @@ import java.util.concurrent.Executors;
 
 public class PropertyDetailsActivity extends AppCompatActivity {
 
+    private LoadingOverlayHelper loadingOverlayHelper;
+
     private static final String TAG = "PropertyDetails";
 
     private ImageView propertyImage;
@@ -141,6 +143,7 @@ public class PropertyDetailsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_property_details);
 
         setupWindowInsets();
+        loadingOverlayHelper = new LoadingOverlayHelper(findViewById(R.id.layoutLoadingOverlay), 3000L);
 
         listingId = getIntent().getStringExtra("LISTING_ID");
 
@@ -341,6 +344,9 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                 if (connection != null) {
                     connection.disconnect();
                 }
+                if (loadingOverlayHelper != null) {
+                    runOnUiThread(() -> loadingOverlayHelper.endTask());
+                }
             }
 
             runOnUiThread(() -> {
@@ -444,6 +450,9 @@ public class PropertyDetailsActivity extends AppCompatActivity {
             } finally {
                 if (connection != null) {
                     connection.disconnect();
+                }
+                if (loadingOverlayHelper != null) {
+                    runOnUiThread(() -> loadingOverlayHelper.endTask());
                 }
             }
         });
@@ -1000,9 +1009,33 @@ public class PropertyDetailsActivity extends AppCompatActivity {
         viewingSubmitting = true;
 
         executor.execute(() -> {
-            HttpURLConnection connection = null;
-
             try {
+                // 1. Block duplicate active booking by this tenant for the same listing
+                HttpURLConnection dupConn = SupabaseHelper.createConnection(
+                        "/rest/v1/viewings?select=id,status,viewing_date&tenant_uid=eq."
+                                + SupabaseHelper.encode(userId)
+                                + "&listing_id=eq." + SupabaseHelper.encode(listingId),
+                        "GET", accessToken);
+                if (dupConn.getResponseCode() >= 200 && dupConn.getResponseCode() < 300) {
+                    JSONArray existing = new JSONArray(SupabaseHelper.readResponse(dupConn));
+                    for (int i = 0; i < existing.length(); i++) {
+                        JSONObject v = existing.getJSONObject(i);
+                        String st = v.optString("status", "");
+                        boolean active = "Pending".equalsIgnoreCase(st)
+                                || "Pending Host".equalsIgnoreCase(st)
+                                || "Confirmed".equalsIgnoreCase(st);
+                        if (active && !WorkflowAutomationHelper.isViewingDateInPast(v.optString("viewing_date", ""))) {
+                            dupConn.disconnect();
+                            runOnUiThread(() -> {
+                                viewingSubmitting = false;
+                                Toast.makeText(this, "You already have an active viewing for this property.", Toast.LENGTH_LONG).show();
+                            });
+                            return;
+                        }
+                    }
+                }
+                dupConn.disconnect();
+
                 JSONObject body = new JSONObject();
 
                 body.put("tenant_uid", userId);
@@ -1013,24 +1046,17 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                 body.put("viewing_date", formattedViewingTime);
                 body.put("status", "Pending Host");
 
-                connection = SupabaseHelper.createConnection(
+                // 2. Insert viewing using PGRST204-safe fallback for optional landlord contact fields
+                StringBuilder postResp = new StringBuilder();
+                int responseCode = WorkflowAutomationHelper.postWithOptionalFallback(
                         "/rest/v1/viewings",
-                        "POST",
-                        accessToken
+                        body,
+                        new String[]{"landlord_name", "landlord_phone"},
+                        accessToken,
+                        postResp
                 );
 
-                connection.setRequestProperty(
-                        "Prefer",
-                        "return=representation"
-                );
-
-                SupabaseHelper.writeJson(connection, body);
-
-                int responseCode =
-                        connection.getResponseCode();
-
-                String response =
-                        SupabaseHelper.readResponse(connection);
+                String response = postResp.toString();
 
                 Log.d(
                         TAG,
@@ -1050,6 +1076,17 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                     if (responseCode >= 200
                             && responseCode < 300) {
                         AnalyticsHelper.logViewingBooked(this, listingId);
+                        
+                        WorkflowAutomationHelper.syncListingViewingAvailability(this, listingId, accessToken);
+                        try {
+                            SupabaseHelper.createNotification(
+                                    landlordUid,
+                                    "New Viewing Request",
+                                    "A tenant requested a viewing for " + propertyName + " on " + formattedViewingTime + ".",
+                                    accessToken
+                            );
+                        } catch (Exception ignored) {}
+                        
                         String successMessage = isForSale
                                 ? "Your site inspection request was sent successfully."
                                 : "Your viewing request was sent successfully.";
@@ -1065,10 +1102,10 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                                                 + "\nStatus: Pending Host"
                                                 + "\n\nYou can track this request in My Viewings."
                                 )
-                                .setNegativeButton(
-                                        "Stay Here",
-                                        null
-                                )
+                                .setNegativeButton("Stay Here", null)
+                                .setNeutralButton("Add to Calendar", (dialog, which) -> {
+                                    WorkflowAutomationHelper.openAddToCalendarIntent(this, propertyName, formattedViewingTime, locationText, 0.0, 0.0);
+                                })
                                 .setPositiveButton(
                                         "My Viewings",
                                         (dialog, which) -> {
@@ -1107,10 +1144,6 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                     }
                 });
 
-            } finally {
-                if (connection != null) {
-                    connection.disconnect();
-                }
             }
         });
     }
@@ -1467,6 +1500,9 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                 if (connection != null) {
                     connection.disconnect();
                 }
+                if (loadingOverlayHelper != null) {
+                    runOnUiThread(() -> loadingOverlayHelper.endTask());
+                }
             }
         });
     }
@@ -1665,6 +1701,7 @@ public class PropertyDetailsActivity extends AppCompatActivity {
     }
 
     private void loadListingFromSupabase() {
+        if (loadingOverlayHelper != null) loadingOverlayHelper.beginTask();
         String accessToken =
                 SupabaseHelper.getAccessToken(this);
 
@@ -1906,6 +1943,9 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                 if (connection != null) {
                     connection.disconnect();
                 }
+                if (loadingOverlayHelper != null) {
+                    runOnUiThread(() -> loadingOverlayHelper.endTask());
+                }
             }
         });
     }
@@ -2133,6 +2173,9 @@ public class PropertyDetailsActivity extends AppCompatActivity {
                 if (connection != null) {
                     connection.disconnect();
                 }
+                if (loadingOverlayHelper != null) {
+                    runOnUiThread(() -> loadingOverlayHelper.endTask());
+                }
             }
         });
     }
@@ -2190,6 +2233,9 @@ public class PropertyDetailsActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+        if (loadingOverlayHelper != null) {
+            loadingOverlayHelper.cleanup();
+        }
         if (mapView != null) {
             mapView.onDetach();
         }

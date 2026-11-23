@@ -256,4 +256,6 @@
         </LinearLayout>
     </LinearLayout>
 
+    <include layout="@layout/view_loading_overlay" />
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

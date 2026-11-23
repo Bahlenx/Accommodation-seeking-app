@@ -12,6 +12,8 @@
         <item name="colorOnSecondary">@color/black</item>
         <!-- Background Color -->
         <item name="android:colorBackground">@color/appBackground</item>
+        <item name="android:windowBackground">#F9F6F3</item>
+        <item name="android:windowSplashScreenBackground" tools:targetApi="31">#F9F6F3</item>
         <!-- Status bar color. -->
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
         <!-- Force Light Mode -->

@@ -31,6 +31,8 @@ import java.util.concurrent.Executors;
 
 public class ViewingsActivity extends AppCompatActivity {
 
+    private LoadingOverlayHelper loadingOverlayHelper;
+
     private static final String TAG = "ViewingsActivity";
 
     private LinearLayout viewingsContainer;
@@ -39,10 +41,12 @@ public class ViewingsActivity extends AppCompatActivity {
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private boolean loading = false;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_viewings);
+        loadingOverlayHelper = new LoadingOverlayHelper(findViewById(R.id.layoutLoadingOverlay), 3000L);
 
         viewingsContainer = findViewById(R.id.viewingsContainer);
         layoutEmptyViewings = findViewById(R.id.layoutEmptyViewings);
@@ -131,6 +135,7 @@ public class ViewingsActivity extends AppCompatActivity {
     }
 
     private void loadScheduledViewings() {
+        if (loadingOverlayHelper != null) loadingOverlayHelper.beginTask();
         if (loading || executor.isShutdown()) {
             return;
         }
@@ -203,6 +208,9 @@ public class ViewingsActivity extends AppCompatActivity {
                     connection.disconnect();
                 }
                 loading = false;
+                if (loadingOverlayHelper != null) {
+                    runOnUiThread(() -> loadingOverlayHelper.endTask());
+                }
             }
         });
     }
@@ -394,18 +402,125 @@ public class ViewingsActivity extends AppCompatActivity {
         });
 
         actions.addView(btnContact);
+        
+        boolean isPast = WorkflowAutomationHelper.isViewingDateInPast(date);
+        boolean isActive = !isPast && ("Pending".equalsIgnoreCase(status)
+                || "Pending Host".equalsIgnoreCase(status)
+                || "Confirmed".equalsIgnoreCase(status));
+
+        if (isActive) {
+            Button btnCancel = new Button(this);
+            btnCancel.setText("Cancel Viewing");
+            btnCancel.setAllCaps(false);
+            btnCancel.setTextColor(Color.parseColor("#B91C1C"));
+            btnCancel.setBackgroundColor(Color.TRANSPARENT);
+            LinearLayout.LayoutParams cancelParams = new LinearLayout.LayoutParams(0, dpToPx(44), 1.0f);
+            btnCancel.setLayoutParams(cancelParams);
+            final String finalTitleParam = title;
+            btnCancel.setOnClickListener(v -> confirmCancelViewing(item.optString("id", ""), listingId, finalLandlordUid, finalTitleParam));
+            actions.addView(btnCancel);
+        } else if (isPast) {
+            card.setAlpha(0.65f); // Visually separate expired past viewings
+        }
+
         content.addView(actions);
         card.addView(content);
 
         if (!listingId.isEmpty()) {
+            final String finalTitleParam = title;
+            final String finalDateParam = date;
+            final String finalStatusParam = status;
             card.setOnClickListener(v -> {
-                Intent intent = new Intent(ViewingsActivity.this, PropertyDetailsActivity.class);
-                intent.putExtra("LISTING_ID", listingId);
-                startActivity(intent);
+                showViewingDetailsDialog(item, finalLandlordUid, finalLandlordName, finalLocation, finalTitleParam, finalDateParam, finalStatusParam, listingId, isActive, isPast);
             });
         }
 
         viewingsContainer.addView(card);
+    }
+    
+    private void showViewingDetailsDialog(JSONObject item, String landlordUid, String landlordName, String location, String title, String date, String status, String listingId, boolean isActive, boolean isPast) {
+        View dialogView = android.view.LayoutInflater.from(this).inflate(R.layout.dialog_ban_appeal_details, null);
+        TextView tvDetails = dialogView.findViewById(R.id.tvDetails);
+        Button btnViewListing = dialogView.findViewById(R.id.btnAdminEvidence);
+        Button btnAddToCal = dialogView.findViewById(R.id.btnUserEvidence);
+        Button btnContactHost = dialogView.findViewById(R.id.btnLiftRestriction);
+
+        String details = "Property: " + title + "\nStatus: " + status + (isPast ? " • Past" : "") + "\nDate: " + date + "\nAddress: " + location + "\nHost: " + landlordName;
+        tvDetails.setText(details);
+        tvDetails.setTextColor(Color.parseColor("#1F1614"));
+
+        btnViewListing.setVisibility(View.VISIBLE);
+        btnViewListing.setText("View Listing");
+        btnViewListing.setOnClickListener(v -> {
+            Intent intent = new Intent(ViewingsActivity.this, PropertyDetailsActivity.class);
+            intent.putExtra("LISTING_ID", listingId);
+            startActivity(intent);
+        });
+
+        btnAddToCal.setVisibility(View.VISIBLE);
+        btnAddToCal.setText("Add to Calendar");
+        btnAddToCal.setOnClickListener(v -> {
+            WorkflowAutomationHelper.openAddToCalendarIntent(this, title, date, location, 0.0, 0.0);
+        });
+
+        btnContactHost.setText("Contact Host");
+        btnContactHost.setOnClickListener(v -> openChatWithHost(landlordUid, landlordName));
+
+        androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setView(dialogView)
+                .setNegativeButton("Close", null);
+                
+        if (isActive) {
+            builder.setNeutralButton("Cancel Viewing", (dialog, which) -> confirmCancelViewing(item.optString("id", ""), listingId, landlordUid, title));
+        }
+
+        androidx.appcompat.app.AlertDialog dialog = builder.show();
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setLayout(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+            );
+            dialog.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(Color.parseColor("#F8F9FA")));
+        }
+    }
+    
+    private void confirmCancelViewing(String viewingId, String listingId, String landlordUid, String propertyName) {
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Cancel Viewing")
+                .setMessage("Are you sure you want to cancel this scheduled viewing?")
+                .setPositiveButton("Cancel Viewing", (dialog, which) -> cancelViewing(viewingId, listingId, landlordUid, propertyName))
+                .setNegativeButton("Keep", null)
+                .show();
+    }
+    
+    private void cancelViewing(String viewingId, String listingId, String landlordUid, String propertyName) {
+        executor.execute(() -> {
+            String token = SupabaseHelper.getAccessToken(this);
+            String endpoint = "/rest/v1/viewings?id=eq." + SupabaseHelper.encode(viewingId)
+                    + "&tenant_uid=eq." + SupabaseHelper.encode(SupabaseHelper.getUserId(this));
+
+            boolean ok = WorkflowAutomationHelper.patchStatusWithFallback(
+                    this, endpoint, "Cancelled", "Declined", token);
+
+            if (ok) {
+                WorkflowAutomationHelper.syncListingViewingAvailability(this, listingId, token);
+                try {
+                    if (landlordUid != null && !landlordUid.isEmpty()) {
+                        SupabaseHelper.createNotification(
+                                landlordUid,
+                                "Viewing Cancelled",
+                                "A tenant cancelled their scheduled viewing for " + propertyName + ".",
+                                token
+                        );
+                    }
+                } catch (Exception ignored) {}
+            }
+            runOnUiThread(() -> {
+                Toast.makeText(this, ok ? "Viewing cancelled." : "Could not cancel viewing.", Toast.LENGTH_SHORT).show();
+                if (ok) loadScheduledViewings();
+            });
+        });
     }
 
     private void openChatWithHost(String hostUid, String hostName) {
@@ -466,6 +581,9 @@ public class ViewingsActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+        if (loadingOverlayHelper != null) {
+            loadingOverlayHelper.cleanup();
+        }
         executor.shutdownNow();
         super.onDestroy();
     }

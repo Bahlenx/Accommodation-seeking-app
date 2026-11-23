@@ -51,6 +51,8 @@ public class HomeActivity extends AppCompatActivity {
     private View notificationDot;
     private View messageDot;
 
+    private LoadingOverlayHelper loadingOverlayHelper;
+
     private final ExecutorService imageExecutor =
             Executors.newFixedThreadPool(3);
 
@@ -106,6 +108,8 @@ public class HomeActivity extends AppCompatActivity {
         refreshReturningUserBookingHistory();
 
         setContentView(R.layout.activity_home);
+
+        loadingOverlayHelper = new LoadingOverlayHelper(findViewById(R.id.layoutLoadingOverlay), 3000L);
 
         View homeRoot = findViewById(R.id.homeRoot);
         View floatingBottomNav =
@@ -1047,6 +1051,7 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void loadHomeFeedFromSupabase() {
+        if (loadingOverlayHelper != null) loadingOverlayHelper.beginTask();
         SharedPreferences cachePrefs = getSharedPreferences("iKhayaCache", MODE_PRIVATE);
         String cachedJson = cachePrefs.getString("cached_listings_json", "");
         if (!cachedJson.isEmpty()) {
@@ -1080,6 +1085,7 @@ public class HomeActivity extends AppCompatActivity {
                 || accessToken.isEmpty()) {
             runOnUiThread(() -> {
                 if (swipeRefreshHome != null && swipeRefreshHome.isRefreshing()) {
+                    if(loadingOverlayHelper != null) loadingOverlayHelper.endTask();
                     swipeRefreshHome.setRefreshing(false);
                 }
             });
@@ -1143,7 +1149,8 @@ public class HomeActivity extends AppCompatActivity {
                     runOnUiThread(() -> {
 
                         if (swipeRefreshHome != null && swipeRefreshHome.isRefreshing()) {
-                            swipeRefreshHome.setRefreshing(false);
+                            if(loadingOverlayHelper != null) loadingOverlayHelper.endTask();
+                    swipeRefreshHome.setRefreshing(false);
                         }
 
                         if (isFinishing() || isDestroyed()) {
@@ -1169,7 +1176,8 @@ public class HomeActivity extends AppCompatActivity {
                 } else {
                     runOnUiThread(() -> {
                         if (swipeRefreshHome != null && swipeRefreshHome.isRefreshing()) {
-                            swipeRefreshHome.setRefreshing(false);
+                            if(loadingOverlayHelper != null) loadingOverlayHelper.endTask();
+                    swipeRefreshHome.setRefreshing(false);
                         }
                     });
                 }
@@ -1177,7 +1185,8 @@ public class HomeActivity extends AppCompatActivity {
             } catch (Exception ignored) {
                 runOnUiThread(() -> {
                     if (swipeRefreshHome != null && swipeRefreshHome.isRefreshing()) {
-                        swipeRefreshHome.setRefreshing(false);
+                        if(loadingOverlayHelper != null) loadingOverlayHelper.endTask();
+                    swipeRefreshHome.setRefreshing(false);
                     }
                 });
             } finally {
@@ -1278,6 +1287,9 @@ public class HomeActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+        if (loadingOverlayHelper != null) {
+            loadingOverlayHelper.cleanup();
+        }
 
         notificationHandler.removeCallbacks(
                 notificationPoll

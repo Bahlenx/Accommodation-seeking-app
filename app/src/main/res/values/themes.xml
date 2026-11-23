@@ -10,6 +10,8 @@
         <item name="colorSecondaryVariant">@color/colorPrimary</item>
         <item name="colorOnSecondary">@color/white</item>
         <item name="android:colorBackground">@color/appBackground</item>
+        <item name="android:windowBackground">#F9F6F3</item>
+        <item name="android:windowSplashScreenBackground" tools:targetApi="31">#F9F6F3</item>
 
         <!-- Push all activity content cleanly below the status bar -->
         <item name="android:fitsSystemWindows">true</item>
