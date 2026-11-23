@@ -176,10 +176,16 @@ public class ChatActivity extends AppCompatActivity {
         }
 
 
+        android.content.SharedPreferences session = getSharedPreferences("iKhayaSession", MODE_PRIVATE);
+        if (senderName == null || senderName.trim().isEmpty()) {
+            senderName = session.getString("USER_NAME", session.getString("user_name", ""));
+        }
         if (senderName == null || senderName.trim().isEmpty()) {
             senderName = getString(R.string.default_chat_user_name);
         }
-
+        if (senderRole == null || senderRole.trim().isEmpty()) {
+            senderRole = session.getString("USER_ROLE", session.getString("user_role", ""));
+        }
         if (senderRole == null || senderRole.trim().isEmpty()) {
             senderRole = getString(R.string.default_chat_member_role);
         }

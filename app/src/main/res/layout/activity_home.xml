@@ -39,6 +39,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentStart="true"
+                        android:layout_toStartOf="@id/layoutHomeConnectionStatus"
+                        android:layout_marginEnd="8dp"
                         android:layout_centerVertical="true"
                         android:gravity="center_vertical"
                         android:orientation="horizontal">
@@ -154,13 +156,15 @@
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
 
-                    <androidx.cardview.widget.CardView
+                    <com.google.android.material.card.MaterialCardView
                         android:layout_width="0dp"
                         android:layout_weight="1"
                         android:layout_height="54dp"
                         app:cardBackgroundColor="#FFFFFF"
                         app:cardCornerRadius="27dp"
-                        app:cardElevation="2dp">
+                        app:cardElevation="2dp"
+                        app:strokeColor="#EAE3DC"
+                        app:strokeWidth="1dp">
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -191,7 +195,7 @@
                                 android:textColorHint="#9E8F87"
                                 android:textSize="14sp" />
                         </LinearLayout>
-                    </androidx.cardview.widget.CardView>
+                    </com.google.android.material.card.MaterialCardView>
 
                     <!-- NEW FILTER BUTTON -->
                     <ImageButton

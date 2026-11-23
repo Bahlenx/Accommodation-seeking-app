@@ -245,16 +245,14 @@ public class SavedListingsActivity extends AppCompatActivity {
         if (location.isEmpty()) location = getString(R.string.location_not_available);
         if (price.isEmpty()) price = getString(R.string.price_not_available);
 
-        CardView card = new CardView(this);
+        com.google.android.material.card.MaterialCardView card =
+                UiCardHelper.createAppCard(this, 16, 2);
         LinearLayout.LayoutParams cardParams = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
         );
         cardParams.setMargins(0, 0, 0, dpToPx(16));
         card.setLayoutParams(cardParams);
-        card.setCardElevation(dpToPx(2));
-        card.setRadius(dpToPx(18));
-        card.setCardBackgroundColor(Color.WHITE);
 
         LinearLayout content = new LinearLayout(this);
         content.setOrientation(LinearLayout.VERTICAL);

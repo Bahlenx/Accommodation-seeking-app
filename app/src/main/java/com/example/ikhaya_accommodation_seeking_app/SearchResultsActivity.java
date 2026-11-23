@@ -590,7 +590,8 @@ public class SearchResultsActivity extends AppCompatActivity {
             return;
         }
 
-        CardView card = new CardView(this);
+        com.google.android.material.card.MaterialCardView card =
+                UiCardHelper.createAppCard(this, 16, 2);
 
         LinearLayout.LayoutParams cardLp =
                 new LinearLayout.LayoutParams(
@@ -606,10 +607,7 @@ public class SearchResultsActivity extends AppCompatActivity {
         );
 
         card.setLayoutParams(cardLp);
-        card.setRadius(dpToPx(16));
-        card.setCardElevation(dpToPx(2));
         card.setUseCompatPadding(true);
-        card.setCardBackgroundColor(Color.WHITE);
 
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);

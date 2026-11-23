@@ -1369,8 +1369,8 @@ public class HomeActivity extends AppCompatActivity {
             float density =
                     getResources().getDisplayMetrics().density;
 
-            CardView card =
-                    new CardView(HomeActivity.this);
+            com.google.android.material.card.MaterialCardView card =
+                    UiCardHelper.createAppCard(HomeActivity.this, 16, 2);
 
             RecyclerView.LayoutParams cardParams =
                     new RecyclerView.LayoutParams(
@@ -1383,10 +1383,7 @@ public class HomeActivity extends AppCompatActivity {
             );
 
             card.setLayoutParams(cardParams);
-            card.setRadius(Math.round(18f * density));
-            card.setCardElevation(Math.round(2f * density));
             card.setUseCompatPadding(true);
-            card.setCardBackgroundColor(Color.WHITE);
 
             LinearLayout root =
                     new LinearLayout(HomeActivity.this);
